@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'windows-latest'
@@ -15,5 +15,8 @@ variables:
 steps:
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'build'
+    command: publish
     projects: src/number-sequence.sln
+    arguments: '-o $(Build.ArtifactStagingDirectory)/output'
+    zipAfterPublish: true
+    modifyOutputPath: true
