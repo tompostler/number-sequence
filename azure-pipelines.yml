@@ -9,7 +9,7 @@ trigger:
 pool:
   vmImage: 'windows-latest'
 
-name: '$(Date:y).$(DayOfYear).$(Rev:r)'
+name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 steps:
 # Build and copy to the staging directory
