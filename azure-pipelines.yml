@@ -9,8 +9,7 @@ trigger:
 pool:
   vmImage: 'windows-latest'
 
-variables:
-  buildConfiguration: 'Debug'
+name: '$(Year).$(DayOfYear).$(Rev)'
 
 steps:
 # Build and copy to the staging directory
