@@ -1,0 +1,20 @@
+{
+  "$schema": "http://schemas.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "siteName": {
+      "type": "string",
+      "defaultValue": "ns-tcp-wtf"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2020-06-01",
+      "name": "[concat(parameters('siteName)', '/appsettings')]",
+      "properties": {
+        "test": "testValue"
+      }
+    }
+  ]
+}
