@@ -22,9 +22,16 @@ steps:
     zipAfterPublish: true
     modifyOutputPath: true
 
+# Copy deployment files to output
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: $(Build.SourcesDirectory)/deployment/
+    contents: '**' 
+    targetFolder: $(Build.ArtifactStagingDirectory)
+
 # Publish build artifacts
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)' 
-    artifactName: 'drop' 
-    publishLocation: 'Container'
+    pathToPublish: $(Build.ArtifactStagingDirectory)
+    artifactName: drop
+    publishLocation: Container
