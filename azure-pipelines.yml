@@ -19,7 +19,7 @@ steps:
   inputs:
     command: publish
     projects: src/number-sequence.sln
-    arguments: '-c Debug -o $(Build.ArtifactStagingDirectory)/output -r'
+    arguments: '-c Debug -o $(Build.ArtifactStagingDirectory)/output'
     zipAfterPublish: true
     modifyOutputPath: true
 
