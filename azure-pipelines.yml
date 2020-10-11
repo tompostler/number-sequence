@@ -13,10 +13,19 @@ variables:
   buildConfiguration: 'Debug'
 
 steps:
+# Build and copy to the staging directory
 - task: DotNetCoreCLI@2
+  displayName: dotnet publish
   inputs:
     command: publish
     projects: src/number-sequence.sln
     arguments: '-o $(Build.ArtifactStagingDirectory)/output'
     zipAfterPublish: true
     modifyOutputPath: true
+
+# Publish build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)' 
+    artifactName: 'drop' 
+    publishLocation: 'Container'
