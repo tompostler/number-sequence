@@ -8,7 +8,7 @@
     },
     "location": {
       "type": "string",
-      "defaultValue": "[resourceGroup().location]"
+      "defaultValue": "centralus"
     },
     "sku": {
       "type": "string",
