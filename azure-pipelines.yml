@@ -1,8 +1,3 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
 trigger:
 - main
 
@@ -12,9 +7,8 @@ pool:
 name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 steps:
-# Build and copy to the staging directory
 - task: DotNetCoreCLI@2
-  displayName: dotnet publish
+  displayName: Build and zip to the staging directory
   inputs:
     command: publish
     projects: src/number-sequence.sln
@@ -22,15 +16,15 @@ steps:
     zipAfterPublish: true
     modifyOutputPath: true
 
-# Copy deployment files to output
 - task: CopyFiles@2
+  displayName: Copy deployment files to output
   inputs:
     sourceFolder: $(Build.SourcesDirectory)/deployment/
     contents: '**' 
     targetFolder: $(Build.ArtifactStagingDirectory)
 
-# Publish build artifacts
 - task: PublishBuildArtifacts@1
+  displayName: Publish build artifacts
   inputs:
     pathToPublish: $(Build.ArtifactStagingDirectory)
     artifactName: drop
