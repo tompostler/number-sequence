@@ -13,7 +13,9 @@
       "apiVersion": "2020-06-01",
       "name": "[concat(parameters('siteName'), '/appsettings')]",
       "properties": {
-        "test": "testValue"
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(concat('microsoft.insights/components/', parameters('siteName'))).InstrumentationKey]",
+        "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
+        "WEBSITE_RUN_FROM_PACKAGE": "1"
       }
     }
   ]
