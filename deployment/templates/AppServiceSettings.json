@@ -2,10 +2,20 @@
   "$schema": "http://schemas.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "cosmosDb": {
+      "type": "object",
+      "defaultValue": {
+        "resourceGroupName": "tompostler",
+        "name": "tompostler-free"
+      }
+    },
     "siteName": {
       "type": "string",
       "defaultValue": "ns-tcp-wtf"
     }
+  },
+  "variables": {
+    "cosmosDbId": "[resourceId(parameters('cosmosDb').resourceGroupName, 'Microsoft.DocumentDB/databaseAccounts/', parameters('cosmosDb').name)]"
   },
   "resources": [
     {
@@ -15,6 +25,8 @@
       "properties": {
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', parameters('siteName')), '2015-05-01').InstrumentationKey]",
         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
+        "CosmosDB:Endpoint": "[concat('https://', parameters('cosmosDb').name, '.documents.azure.com:443/')]",
+        "CosmosDB:Key": "[listKeys(variables('cosmosDbId'), providers('Microsoft.DocumentDB','databaseAccounts').apiVersions[0]).primaryMasterKey]",
         "WEBSITE_RUN_FROM_PACKAGE": "1"
       }
     }
