@@ -3,7 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30517.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "number-sequence", "number-sequence\number-sequence.csproj", "{030D6D09-E439-41FC-AA7F-5A49D4086709}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "number-sequence", "number-sequence\number-sequence.csproj", "{030D6D09-E439-41FC-AA7F-5A49D4086709}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deployment", "deployment", "{77743DFD-358C-4233-8085-B0C07FDAC275}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{2F3C52CE-C582-4806-BA42-E9CB46A91863}"
+	ProjectSection(SolutionItems) = preProject
+		..\deployment\templates\AppServiceSettings.json = ..\deployment\templates\AppServiceSettings.json
+		..\deployment\templates\CosmosDbSpecifics.json = ..\deployment\templates\CosmosDbSpecifics.json
+		..\deployment\templates\FreeCosmosDbAccount.json = ..\deployment\templates\FreeCosmosDbAccount.json
+		..\deployment\templates\SharedAppServicePlan.json = ..\deployment\templates\SharedAppServicePlan.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +28,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2F3C52CE-C582-4806-BA42-E9CB46A91863} = {77743DFD-358C-4233-8085-B0C07FDAC275}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DED5E358-0D1E-4F70-9EFE-38964D01AFD5}

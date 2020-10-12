@@ -27,6 +27,8 @@
         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
         "CosmosDB:Endpoint": "[concat('https://', parameters('cosmosDb').name, '.documents.azure.com:443/')]",
         "CosmosDB:Key": "[listKeys(variables('cosmosDbId'), providers('Microsoft.DocumentDB','databaseAccounts').apiVersions[0]).primaryMasterKey]",
+        "CosmosDB:DatabaseId": "shared",
+        "CosmosDB:ContainerId": "nstcpwtf",
         "WEBSITE_RUN_FROM_PACKAGE": "1"
       }
     }
