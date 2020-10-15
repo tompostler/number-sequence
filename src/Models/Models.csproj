@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>TcpWtf.NumberSequence.Models</RootNamespace>
+    <AssemblyName>TcpWtf.NumberSequence.Models</AssemblyName>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <Authors>Tom Postler</Authors>
+    <RepositoryUrl>https://dev.azure.com/tompostler/public/_git/number-sequence</RepositoryUrl>
+    <Description>Contracts and models for the ns.tcp.wtf project.</Description>
+    <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
+using TcpWtf.NumberSequence.Models;
 
 namespace number_sequence.DataAccess
 {
@@ -27,11 +27,10 @@ namespace number_sequence.DataAccess
                 return default;
             }
         }
-    }
 
-    public sealed class Account
-    {
-        [Required, MaxLength(64)]
-        public string Name { get; set; }
+        public async Task CreateAsync(Account account)
+        {
+
+        }
     }
 }
