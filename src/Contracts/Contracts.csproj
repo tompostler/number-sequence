@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>TcpWtf.NumberSequence.Models</RootNamespace>
-    <AssemblyName>TcpWtf.NumberSequence.Models</AssemblyName>
+    <RootNamespace>TcpWtf.NumberSequence.Contracts</RootNamespace>
+    <AssemblyName>TcpWtf.NumberSequence.Contracts</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
     <Authors>Tom Postler</Authors>
     <RepositoryUrl>https://dev.azure.com/tompostler/public/_git/number-sequence</RepositoryUrl>
-    <Description>Contracts and models for the ns.tcp.wtf project.</Description>
+    <Description>Contracts and Contracts for the ns.tcp.wtf project.</Description>
     <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 

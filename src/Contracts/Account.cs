@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace TcpWtf.NumberSequence.Models
+namespace TcpWtf.NumberSequence.Contracts
 {
     /// <summary>
     /// An account is used for authentication, data partitioning, and throttling limits.

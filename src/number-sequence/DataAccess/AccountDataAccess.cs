@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Threading.Tasks;
-using TcpWtf.NumberSequence.Models;
+using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.DataAccess
 {

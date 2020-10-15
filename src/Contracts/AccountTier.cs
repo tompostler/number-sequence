@@ -1,4 +1,4 @@
-﻿namespace TcpWtf.NumberSequence.Models
+﻿namespace TcpWtf.NumberSequence.Contracts
 {
     /// <summary>
     /// The tier for an account. This plays into the limit for numbers, requests, and other resources.
