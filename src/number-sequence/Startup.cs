@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using number_sequence.DataAccess;
+using number_sequence.Middleware;
+using System.Text.Json.Serialization;
 
 namespace number_sequence
 {
@@ -19,25 +19,23 @@ namespace number_sequence
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
+                );
             services.AddApplicationInsightsTelemetry();
             services.AddSingleton<AccountDataAccess>();
             services.Configure<Options.CosmosDB>(this.Configuration.GetSection(nameof(Options.CosmosDB)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
+            app.UseDeveloperExceptionPage();
             app.UseHttpsRedirection();
-
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseMiddleware<ExceptionToStatusCodeMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
