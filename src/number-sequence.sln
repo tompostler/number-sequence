@@ -15,6 +15,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 		..\deployment\templates\SharedAppServicePlan.json = ..\deployment\templates\SharedAppServicePlan.json
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Models\Models.csproj", "{12B13818-14C7-4FFE-8E46-D3512861B8B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{C9448C0C-3AF4-4623-BF5D-6816A6988D55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,14 @@ Global
 		{030D6D09-E439-41FC-AA7F-5A49D4086709}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{030D6D09-E439-41FC-AA7F-5A49D4086709}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{030D6D09-E439-41FC-AA7F-5A49D4086709}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12B13818-14C7-4FFE-8E46-D3512861B8B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12B13818-14C7-4FFE-8E46-D3512861B8B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12B13818-14C7-4FFE-8E46-D3512861B8B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12B13818-14C7-4FFE-8E46-D3512861B8B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9448C0C-3AF4-4623-BF5D-6816A6988D55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9448C0C-3AF4-4623-BF5D-6816A6988D55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9448C0C-3AF4-4623-BF5D-6816A6988D55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9448C0C-3AF4-4623-BF5D-6816A6988D55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

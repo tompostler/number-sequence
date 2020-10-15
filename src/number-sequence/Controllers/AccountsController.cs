@@ -6,11 +6,11 @@ namespace number_sequence.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public sealed class AccountController : ControllerBase
+    public sealed class AccountsController : ControllerBase
     {
         private readonly AccountDataAccess accountDataAccess;
 
-        public AccountController(AccountDataAccess accountDataAccess)
+        public AccountsController(AccountDataAccess accountDataAccess)
         {
             this.accountDataAccess = accountDataAccess;
         }
