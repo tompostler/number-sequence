@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
 using number_sequence.Middleware;
 using System.Text.Json.Serialization;
@@ -23,6 +24,7 @@ namespace number_sequence
                 .AddJsonOptions(options =>
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
                 );
+            services.AddLogging(logging => logging.AddConsole());
             services.AddApplicationInsightsTelemetry();
             services.AddSingleton<AccountDataAccess>();
             services.Configure<Options.CosmosDB>(this.Configuration.GetSection(nameof(Options.CosmosDB)));

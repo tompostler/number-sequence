@@ -20,9 +20,17 @@ namespace number_sequence.Controllers
         public async Task<IActionResult> GetAsync(string name)
         {
             var account = await this.accountDataAccess.GetAsync(name);
-            return account == default
-                ? this.NotFound()
-                : (IActionResult)this.Ok(account);
+
+            if (account == default)
+            {
+                return this.NotFound();
+            }
+            else
+            {
+                account.CreatedFrom = default;
+                account.Key = default;
+                return this.Ok(account);
+            }
         }
 
         [HttpPost]
