@@ -16,7 +16,8 @@ namespace TcpWtf.NumberSequence.Client
         {
             options = new JsonSerializerOptions
             {
-                IgnoreNullValues = true
+                IgnoreNullValues = true,
+                PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new JsonStringEnumConverter());
         }
@@ -25,7 +26,8 @@ namespace TcpWtf.NumberSequence.Client
         {
             try
             {
-                return await JsonSerializer.DeserializeAsync<T>(await httpContent.ReadAsStreamAsync(), options, cancellationToken);
+                using var stream = await httpContent.ReadAsStreamAsync();
+                return await JsonSerializer.DeserializeAsync<T>(stream, options, cancellationToken);
             }
             catch (Exception ex)
             {

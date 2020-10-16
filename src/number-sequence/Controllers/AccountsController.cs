@@ -37,7 +37,9 @@ namespace number_sequence.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] Account account)
         {
             account.CreatedFrom = this.Request.HttpContext.Connection.RemoteIpAddress.ToString();
-            return this.Ok(await this.accountDataAccess.CreateAsync(account));
+            var createdAccount = await this.accountDataAccess.CreateAsync(account);
+            createdAccount.Key = default;
+            return this.Ok(createdAccount);
         }
     }
 }
