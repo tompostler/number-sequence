@@ -8,7 +8,7 @@
 
     <Authors>Tom Postler</Authors>
     <RepositoryUrl>https://dev.azure.com/tompostler/public/_git/number-sequence</RepositoryUrl>
-    <Description>Contracts and Contracts for the ns.tcp.wtf project.</Description>
+    <Description>Contracts for the ns.tcp.wtf project.</Description>
     <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 

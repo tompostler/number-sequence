@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace number_sequence.DataAccess
