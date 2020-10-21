@@ -18,15 +18,19 @@ namespace number_sequence.IntTests
             loggerFactory = LoggerFactory.Create(builder => builder.AddDebug());
         }
 
-        [AssemblyInitialize]
-        public static async Task AssemblyInitAsync(TestContext _)
+        internal static async Task ResetCosmosEmulatorAsync()
         {
             var cosmosClient = new CosmosClient("https://localhost:8081/", "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==");
             var database = (await cosmosClient.CreateDatabaseIfNotExistsAsync("shared", 400)).Database;
             var container = (await database.CreateContainerIfNotExistsAsync("nstcpwtf", "/PK")).Container;
             await container.DeleteContainerAsync();
             await database.CreateContainerIfNotExistsAsync("nstcpwtf", "/PK");
+        }
 
+        [AssemblyInitialize]
+        public static async Task AssemblyInitAsync(TestContext _)
+        {
+            await ResetCosmosEmulatorAsync();
             Client = new NsTcpWtfClient(loggerFactory.CreateLogger<NsTcpWtfClient>(), default, Stamp.LocalDev);
         }
     }

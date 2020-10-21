@@ -8,7 +8,7 @@ namespace TcpWtf.NumberSequence.Contracts
     public sealed class Account : IAccount
     {
         /// <inheritdoc/>
-        [Required, MaxLength(64)]
+        [Required, MinLength(3), MaxLength(64)]
         public string Name { get; set; }
 
         /// <inheritdoc/>
