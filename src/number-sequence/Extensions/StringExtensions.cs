@@ -6,7 +6,6 @@ namespace number_sequence.Extensions
 {
     public static class StringExtensions
     {
-
         public static string ComputeSHA256(this string value)
         {
             using var sha256 = SHA256.Create();
