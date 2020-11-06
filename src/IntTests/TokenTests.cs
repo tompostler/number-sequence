@@ -1,7 +1,9 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Net;
 using System.Threading.Tasks;
+using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.IntTests
@@ -18,7 +20,7 @@ namespace number_sequence.IntTests
         [TestInitialize]
         public async Task TestInitialize()
         {
-            if (accountCount++ > TierLimits.AccountsPerCreatedFrom[AccountTier.Small])
+            if (accountCount++ >= TierLimits.AccountsPerCreatedFrom[AccountTier.Small])
             {
                 await Assembly.ResetCosmosEmulatorAsync();
             }
@@ -100,6 +102,16 @@ namespace number_sequence.IntTests
             response.Key.Should().BeNull();
             response.Name.Should().Be(this.TestContext.TestName.ToLower());
             response.Value.Should().NotBeNullOrWhiteSpace();
+        }
+
+        [TestMethod]
+        public async Task Token_Creation_Fails_WithNull()
+        {
+            // Act
+            Func<Task> act = () => Assembly.Client.Token.CreateAsync(null);
+
+            // Assert
+            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
     }
 }
