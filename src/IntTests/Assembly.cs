@@ -12,10 +12,12 @@ namespace number_sequence.IntTests
         public static NsTcpWtfClient Client { get; private set; }
 
         private static readonly ILoggerFactory loggerFactory;
+        private static readonly ILogger assemblyLogger;
 
         static Assembly()
         {
             loggerFactory = LoggerFactory.Create(builder => builder.AddDebug());
+            assemblyLogger = loggerFactory.CreateLogger(typeof(Assembly));
         }
 
         internal static async Task ResetCosmosEmulatorAsync()
@@ -25,6 +27,7 @@ namespace number_sequence.IntTests
             var container = (await database.CreateContainerIfNotExistsAsync("nstcpwtf", "/PK")).Container;
             await container.DeleteContainerAsync();
             await database.CreateContainerIfNotExistsAsync("nstcpwtf", "/PK");
+            assemblyLogger.LogInformation(nameof(ResetCosmosEmulatorAsync));
         }
 
         [AssemblyInitialize]

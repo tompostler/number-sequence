@@ -51,6 +51,7 @@ namespace TcpWtf.NumberSequence.Client
 
             this.Account = new AccountOperations(this);
             this.Ping = new PingOperations(this);
+            this.Token = new TokenOperations(this);
         }
 
         /// <summary>
@@ -62,6 +63,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Ping operations.
         /// </summary>
         public PingOperations Ping { get; }
+
+        /// <summary>
+        /// Token operations.
+        /// </summary>
+        public TokenOperations Token { get; }
 
         /// <summary>
         /// Send a <see cref="HttpRequestMessage"/> with retries that are appropriate.

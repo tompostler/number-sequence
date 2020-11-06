@@ -102,8 +102,8 @@ namespace number_sequence.DataAccess
         public async Task ValidateAsync(string name, string key)
         {
             var account = await this.TryGetAsync(name);
-            if (account != default) throw new BadRequestException($"Account with name [{name}] does not exist.");
-            if (account.Key != account.Key.ComputeSHA256()) throw new UnauthorizedException($"Provided key did not match for account with name [{name}].");
+            if (account == default) throw new BadRequestException($"Account with name [{name}] does not exist.");
+            if (key?.ComputeSHA256() != account.Key) throw new UnauthorizedException($"Provided key did not match for account with name [{name}].");
         }
     }
 }

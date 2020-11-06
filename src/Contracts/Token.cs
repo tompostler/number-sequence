@@ -16,7 +16,7 @@ namespace TcpWtf.NumberSequence.Contracts
         public string Key { get; set; }
 
         /// <inheritdoc/>
-        [Required, MaxLength(32)]
+        [Required, MinLength(3), MaxLength(64)]
         public string Name { get; set; }
 
         /// <inheritdoc/>
@@ -35,7 +35,7 @@ namespace TcpWtf.NumberSequence.Contracts
     {
         public static ValidationResult ExpirationValidation(DateTimeOffset expiresAt, ValidationContext validationContext)
         {
-            if (expiresAt < DateTimeOffset.UtcNow)
+            if (expiresAt < DateTimeOffset.UtcNow.AddMinutes(1))
                 return new ValidationResult("ExpiresAt cannot be in the past.");
             else if (expiresAt.Year > 2050)
                 return new ValidationResult("ExpiresAt cannot be later than 2050.");

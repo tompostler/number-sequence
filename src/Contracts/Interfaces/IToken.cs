@@ -23,7 +23,7 @@ namespace TcpWtf.NumberSequence.Contracts.Interfaces
         /// <summary>
         /// The name you wish to be associated with the token. This allows you to have more than one token.
         /// </summary>
-        [Required, MaxLength(32)]
+        [Required, MinLength(3), MaxLength(64)]
         public string Name { get; set; }
 
         /// <summary>

@@ -37,6 +37,16 @@ namespace number_sequence.IntTests
         }
 
         [TestMethod]
+        public async Task Account_Creation_Fails_WithNull()
+        {
+            // Act
+            Func<Task> act = () => Assembly.Client.Account.CreateAsync(null);
+
+            // Assert
+            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [TestMethod]
         public async Task Account_Creation_Fails_WithKeyNull()
         {
             // Arrange
