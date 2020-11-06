@@ -103,7 +103,7 @@ namespace number_sequence.DataAccess
         {
             var account = await this.TryGetAsync(name);
             if (account != default) throw new BadRequestException($"Account with name [{name}] does not exist.");
-            if (account.Key != account.Key.ComputeSHA256()) throw new UnauthorizedException($"Provided key did not match for account with name [{name}].")
+            if (account.Key != account.Key.ComputeSHA256()) throw new UnauthorizedException($"Provided key did not match for account with name [{name}].");
         }
     }
 }
