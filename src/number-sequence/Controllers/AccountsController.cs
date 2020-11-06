@@ -19,7 +19,7 @@ namespace number_sequence.Controllers
         [HttpGet("{name}")]
         public async Task<IActionResult> GetAsync(string name)
         {
-            var account = await this.accountDataAccess.GetAsync(name);
+            var account = await this.accountDataAccess.TryGetAsync(name);
 
             if (account == default)
             {

@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace number_sequence.Extensions
@@ -10,6 +12,11 @@ namespace number_sequence.Extensions
         {
             options = new JsonSerializerOptions();
             options.Converters.Add(new JsonStringEnumConverter());
+        }
+
+        public static string ToBase64JsonString(this object value)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(value.ToJsonString()));
         }
 
         public static string ToJsonString(this object value)

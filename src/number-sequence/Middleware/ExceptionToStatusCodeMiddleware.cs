@@ -37,6 +37,14 @@ namespace number_sequence.Middleware
                     {
                         httpContext.Response.StatusCode = 400;
                     }
+                    else if (ex is UnauthorizedException)
+                    {
+                        httpContext.Response.StatusCode = 401;
+                    }
+                    else if (ex is NotFoundException)
+                    {
+                        httpContext.Response.StatusCode = 404;
+                    }
                     else if (ex is ConflictException)
                     {
                         httpContext.Response.StatusCode = 409;

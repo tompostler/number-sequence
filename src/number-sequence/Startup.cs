@@ -27,6 +27,7 @@ namespace number_sequence
             services.AddLogging(logging => logging.AddConsole());
             services.AddApplicationInsightsTelemetry();
             services.AddSingleton<AccountDataAccess>();
+            services.AddSingleton<TokenDataAccess>();
             services.Configure<Options.CosmosDB>(this.Configuration.GetSection(nameof(Options.CosmosDB)));
         }
 

@@ -18,5 +18,16 @@ namespace TcpWtf.NumberSequence.Contracts
             [AccountTier.Large] = 19,
             [AccountTier.Infinite] = int.MaxValue
         };
+
+        /// <summary>
+        /// Number of tokens allowed is based on the account tier.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<AccountTier, int> TokensPerAccount = new Dictionary<AccountTier, int>
+        {
+            [AccountTier.Small] = 3,
+            [AccountTier.Medium] = 7,
+            [AccountTier.Large] = 19,
+            [AccountTier.Infinite] = int.MaxValue
+        };
     }
 }
