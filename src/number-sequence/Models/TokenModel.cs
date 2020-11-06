@@ -19,7 +19,7 @@ namespace number_sequence.Models
         public DateTimeOffset ModifiedAt { get; set; }
         public DateTimeOffset ExpiresAt { get; set; }
 
-        public string PK => $"{nameof(Token)}|{this.Name}".ToLower();
+        public string PK => $"{nameof(Token)}|{this.Account}".ToLower();
 
         public static implicit operator Token(TokenModel t) => new Token
         {

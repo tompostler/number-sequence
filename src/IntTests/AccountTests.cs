@@ -168,6 +168,8 @@ namespace number_sequence.IntTests
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+            // Cleanup
             await Assembly.ResetCosmosEmulatorAsync();
         }
 
