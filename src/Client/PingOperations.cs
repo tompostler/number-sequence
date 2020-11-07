@@ -28,5 +28,17 @@ namespace TcpWtf.NumberSequence.Client
                 cancellationToken,
                 needsPreparation: false);
         }
+
+        /// <summary>
+        /// Ping the service, with auth.
+        /// </summary>
+        public async Task SendWithAuthAsync(CancellationToken cancellationToken = default)
+        {
+            _ = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "ping"),
+                cancellationToken);
+        }
     }
 }

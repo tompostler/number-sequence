@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
 using number_sequence.Extensions;
@@ -17,25 +18,16 @@ namespace number_sequence.Filters
 {
     public sealed class RequiresTokenAttribute : ActionFilterAttribute
     {
-        private readonly TokenDataAccess tokenDataAccess;
-        private readonly IMemoryCache memoryCache;
-        private readonly ILogger<RequiresTokenAttribute> logger;
-
-        public RequiresTokenAttribute(TokenDataAccess tokenDataAccess, IMemoryCache memoryCache, ILogger<RequiresTokenAttribute> logger)
-        {
-            this.tokenDataAccess = tokenDataAccess;
-            this.memoryCache = memoryCache;
-            this.logger = logger;
-        }
-
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            var logger = context.HttpContext.RequestServices.GetService<ILogger<RequiresTokenAttribute>>();
+
             // If a token url parameter is provided, that supersedes the check for the Authorization header
             string token = default;
             if (context.HttpContext.Request.Query.TryGetValue("token", out var tokenValues))
             {
                 token = tokenValues.First();
-                this.logger.LogInformation("Token found in URL.");
+                logger.LogInformation("Token found in URL.");
             }
 
 
@@ -45,21 +37,22 @@ namespace number_sequence.Filters
                 if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeaders))
                 {
                     token = authHeaders.FirstOrDefault(ah => ah.StartsWith("Token "))?.Split(' ').Last();
-                    this.logger.LogInformation("Token found in headers.");
+                    logger.LogInformation("Token found in headers.");
                 }
             }
 
             // No valid token
             if (string.IsNullOrWhiteSpace(token))
             {
-                this.logger.LogWarning("No token found.");
+                logger.LogWarning("No token found.");
                 context.Result = new UnauthorizedObjectResult("No token found.");
             }
 
             // See if it's in the cache. That would mean it's valid
-            if (this.memoryCache.TryGetValue(token, out TokenPrincipal principal))
+            var memoryCache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
+            if (memoryCache.TryGetValue(token, out TokenPrincipal principal))
             {
-                this.logger.LogInformation("Token found in cache.");
+                logger.LogInformation("Token found in cache.");
                 context.HttpContext.User = principal;
             }
             else
@@ -77,16 +70,17 @@ namespace number_sequence.Filters
                     if (!isValid)
                     {
                         var validationResultString = $"Token model not valid:\n{string.Join('\n', validationResults)}";
-                        this.logger.LogWarning(validationResultString);
+                        logger.LogWarning(validationResultString);
                         context.Result = new UnauthorizedObjectResult(validationResultString);
                     }
                     else
                     {
                         // See if a token by that name exists
-                        var tokenModel = await this.tokenDataAccess.TryGetAsync(tokenValue.Account, tokenValue.Name);
+                        var tokenDataAccess = context.HttpContext.RequestServices.GetService<TokenDataAccess>();
+                        var tokenModel = await tokenDataAccess.TryGetAsync(tokenValue.Account, tokenValue.Name);
                         if (tokenModel == default)
                         {
-                            this.logger.LogWarning("Token not found.");
+                            logger.LogWarning("Token not found.");
                             context.Result = new UnauthorizedObjectResult("Token not found.");
                         }
                         else
@@ -99,16 +93,16 @@ namespace number_sequence.Filters
                                 || tokenValue.Key != tokenModel.Key
                                 || tokenValue.Name != tokenModel.Name)
                             {
-                                this.logger.LogWarning("Token not valid.");
+                                logger.LogWarning("Token not valid.");
                                 context.Result = new UnauthorizedObjectResult("Token not valid.");
                             }
                             else
                             {
-                                this.logger.LogInformation($"Token is valid: {tokenValue.Account}/{tokenValue.Name}");
+                                logger.LogInformation($"Token is valid: {tokenValue.Account}/{tokenValue.Name}");
                                 principal = new TokenPrincipal(new GenericIdentity(tokenValue.Account)) { Token = tokenValue };
                                 context.HttpContext.User = principal;
 
-                                this.memoryCache.Set(
+                                memoryCache.Set(
                                     token,
                                     principal,
                                     new MemoryCacheEntryOptions
@@ -124,7 +118,7 @@ namespace number_sequence.Filters
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogWarning(ex, "Could not parse token.");
+                    logger.LogWarning(ex, "Could not parse token.");
                     context.Result = new UnauthorizedObjectResult("Token malformed.");
                 }
             }

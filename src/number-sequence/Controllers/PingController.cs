@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using number_sequence.Filters;
 
 namespace number_sequence.Controllers
 {
@@ -8,6 +9,12 @@ namespace number_sequence.Controllers
     {
         [HttpGet]
         public IActionResult Get()
+        {
+            return this.Ok();
+        }
+
+        [HttpGet("withauth"), RequiresToken]
+        public IActionResult GetWithAuth()
         {
             return this.Ok();
         }
