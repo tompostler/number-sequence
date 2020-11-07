@@ -63,10 +63,12 @@ namespace number_sequence.DataAccess
         {
             if (await this.TryGetAsync(token.Account, token.Name) != default) throw new ConflictException($"Token with name [{token.Name}] already exists.");
             if (await this.GetCountByAccountAsync(token.Account) >= TierLimits.TokensPerAccount[(await this.accountDataAccess.TryGetAsync(token.Account)).Tier]) throw new ConflictException($"Too many tokens already created for account with name [{token.Account}].");
+            var account = await this.accountDataAccess.TryGetAsync(token.Account);
 
             var tokenModel = new TokenModel
             {
                 Account = token.Account.ToLower(),
+                AccountTier = account.Tier,
                 CreatedAt = DateTimeOffset.UtcNow,
                 ExpiresAt = token.ExpiresAt.ToUniversalTime(),
                 ModifiedAt = DateTimeOffset.UtcNow,

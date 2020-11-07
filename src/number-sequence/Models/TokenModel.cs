@@ -9,6 +9,8 @@ namespace number_sequence.Models
     public sealed class TokenModel : IToken
     {
         public string Account { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public AccountTier AccountTier { get; set; }
         [JsonIgnore]
         public string Key { get; set; }
         [JsonProperty("id")]

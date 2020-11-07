@@ -23,5 +23,16 @@ namespace TcpWtf.NumberSequence.Contracts
         /// Number of tokens allowed is based on the account tier.
         /// </summary>
         public static readonly IReadOnlyDictionary<AccountTier, int> TokensPerAccount = AccountsPerCreatedFrom;
+
+        /// <summary>
+        /// Indicates how much priority cached items should have based on the account tier.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<AccountTier, int> CacheItemPriority = new Dictionary<AccountTier, int>
+        {
+            [AccountTier.Small] = 0,
+            [AccountTier.Medium] = 1,
+            [AccountTier.Large] = 2,
+            [AccountTier.Infinite] = 2
+        };
     }
 }

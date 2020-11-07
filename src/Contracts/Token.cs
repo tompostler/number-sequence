@@ -11,6 +11,8 @@ namespace TcpWtf.NumberSequence.Contracts
         [Required, MinLength(3), MaxLength(64)]
         public string Account { get; set; }
 
+        public AccountTier AccountTier { get; set; }
+
         /// <inheritdoc/>
         [Required, MinLength(32), MaxLength(128)]
         public string Key { get; set; }

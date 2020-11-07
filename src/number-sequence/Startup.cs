@@ -20,11 +20,16 @@ namespace number_sequence
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMemoryCache(options =>
+            {
+                options.CompactionPercentage = .25;
+                options.SizeLimit = 1024;
+            });
             services.AddControllers()
                 .AddJsonOptions(options =>
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
                 );
-            services.AddLogging(logging => logging.AddConsole());
+            services.AddLogging(options => options.AddConsole());
             services.AddApplicationInsightsTelemetry();
             services.AddSingleton<AccountDataAccess>();
             services.AddSingleton<TokenDataAccess>();

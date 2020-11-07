@@ -15,6 +15,11 @@ namespace TcpWtf.NumberSequence.Contracts.Interfaces
         public string Account { get; set; }
 
         /// <summary>
+        /// The tier of the account. Copied from the account at token creation time for convenience.
+        /// </summary>
+        public AccountTier AccountTier { get; set; }
+
+        /// <summary>
         /// The account's password. Used when creating a token to verify ownership.
         /// </summary>
         [Required, MinLength(32), MaxLength(128)]
