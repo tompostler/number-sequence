@@ -32,6 +32,7 @@ namespace number_sequence
             services.AddLogging(options => options.AddConsole());
             services.AddApplicationInsightsTelemetry();
             services.AddSingleton<AccountDataAccess>();
+            services.AddSingleton<CountDataAccess>();
             services.AddSingleton<TokenDataAccess>();
             services.Configure<Options.CosmosDB>(this.Configuration.GetSection(nameof(Options.CosmosDB)));
         }

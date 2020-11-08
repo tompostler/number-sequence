@@ -12,7 +12,7 @@ namespace number_sequence.IntTests
     [TestClass]
     public sealed class TokenTests
     {
-        private static int accountCount;
+        private static int tokenCount;
 
         public TestContext TestContext { get; set; }
 
@@ -22,7 +22,7 @@ namespace number_sequence.IntTests
         [TestInitialize]
         public async Task TestInitialize()
         {
-            if (accountCount++ % TierLimits.AccountsPerCreatedFrom[AccountTier.Small] == 0)
+            if (tokenCount++ % TierLimits.AccountsPerCreatedFrom[AccountTier.Small] == 0)
             {
                 await Assembly.ResetCosmosEmulatorAsync();
             }

@@ -50,6 +50,7 @@ namespace TcpWtf.NumberSequence.Client
             this.clientName = Environment.MachineName;
 
             this.Account = new AccountOperations(this);
+            this.Count = new CountOperations(this);
             this.Ping = new PingOperations(this);
             this.Token = new TokenOperations(this);
         }
@@ -58,6 +59,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Account operations.
         /// </summary>
         public AccountOperations Account { get; }
+
+        /// <summary>
+        /// Count operations.
+        /// </summary>
+        public CountOperations Count { get; }
 
         /// <summary>
         /// Ping operations.
