@@ -13,7 +13,7 @@ namespace number_sequence.Controllers
             return this.Ok();
         }
 
-        [HttpGet("withauth"), RequiresToken]
+        [HttpPost, RequiresToken]
         public IActionResult GetWithAuth()
         {
             return this.Ok();

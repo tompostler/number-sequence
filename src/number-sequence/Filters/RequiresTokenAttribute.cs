@@ -46,9 +46,11 @@ namespace number_sequence.Filters
             {
                 logger.LogWarning("No token found.");
                 context.Result = new UnauthorizedObjectResult("No token found.");
+                return;
             }
 
             // See if it's in the cache. That would mean it's valid
+            logger.LogInformation($"Token: {token}");
             var memoryCache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
             if (memoryCache.TryGetValue(token, out TokenPrincipal principal))
             {
@@ -62,64 +64,63 @@ namespace number_sequence.Filters
                 try
                 {
                     tokenValue = token.FromBase64JsonString<TokenValue>();
-
-                    // Ensure it is useful before bothering to see if it is valid
-                    var validationContext = new ValidationContext(tokenValue);
-                    var validationResults = new List<ValidationResult>();
-                    bool isValid = Validator.TryValidateObject(tokenValue, validationContext, validationResults, validateAllProperties: true);
-                    if (!isValid)
-                    {
-                        var validationResultString = $"Token model not valid:\n{string.Join('\n', validationResults)}";
-                        logger.LogWarning(validationResultString);
-                        context.Result = new UnauthorizedObjectResult(validationResultString);
-                    }
-                    else
-                    {
-                        // See if a token by that name exists
-                        var tokenDataAccess = context.HttpContext.RequestServices.GetService<TokenDataAccess>();
-                        var tokenModel = await tokenDataAccess.TryGetAsync(tokenValue.Account, tokenValue.Name);
-                        if (tokenModel == default)
-                        {
-                            logger.LogWarning("Token not found.");
-                            context.Result = new UnauthorizedObjectResult("Token not found.");
-                        }
-                        else
-                        {
-                            // Ensure it matches
-                            if (tokenValue.Account != tokenModel.Account
-                                || tokenValue.AccountTier != tokenModel.AccountTier
-                                || tokenValue.CreatedAt != tokenModel.CreatedAt
-                                || tokenValue.ExpiresAt != tokenModel.ExpiresAt
-                                || tokenValue.Key != tokenModel.Key
-                                || tokenValue.Name != tokenModel.Name)
-                            {
-                                logger.LogWarning("Token not valid.");
-                                context.Result = new UnauthorizedObjectResult("Token not valid.");
-                            }
-                            else
-                            {
-                                logger.LogInformation($"Token is valid: {tokenValue.Account}/{tokenValue.Name}");
-                                principal = new TokenPrincipal(new GenericIdentity(tokenValue.Account)) { Token = tokenValue };
-                                context.HttpContext.User = principal;
-
-                                memoryCache.Set(
-                                    token,
-                                    principal,
-                                    new MemoryCacheEntryOptions
-                                    {
-                                        AbsoluteExpiration = tokenValue.ExpiresAt,
-                                        Priority = (CacheItemPriority)TierLimits.CacheItemPriority[tokenValue.AccountTier],
-                                        Size = 1,
-                                        SlidingExpiration = TimeSpan.FromMinutes(5)
-                                    });
-                            }
-                        }
-                    }
                 }
                 catch (Exception ex)
                 {
                     logger.LogWarning(ex, "Could not parse token.");
                     context.Result = new UnauthorizedObjectResult("Token malformed.");
+                    return;
+                }
+
+                // Ensure it is useful before bothering to see if it is valid
+                var validationContext = new ValidationContext(tokenValue);
+                var validationResults = new List<ValidationResult>();
+                bool isValid = Validator.TryValidateObject(tokenValue, validationContext, validationResults, validateAllProperties: true);
+                if (!isValid)
+                {
+                    var validationResultString = $"Token model not valid:\n{string.Join('\n', validationResults)}";
+                    logger.LogWarning(validationResultString);
+                    context.Result = new UnauthorizedObjectResult(validationResultString);
+                    return;
+                }
+                else
+                {
+                    // See if a token by that name exists
+                    var tokenDataAccess = context.HttpContext.RequestServices.GetService<TokenDataAccess>();
+                    var tokenModel = await tokenDataAccess.TryGetAsync(tokenValue.Account, tokenValue.Name);
+                    if (tokenModel == default)
+                    {
+                        logger.LogWarning("Token not found.");
+                        context.Result = new UnauthorizedObjectResult("Token not found.");
+                        return;
+                    }
+                    else
+                    {
+                        // Ensure it matches
+                        if (token != tokenModel.Value)
+                        {
+                            logger.LogWarning("Token not valid.");
+                            context.Result = new UnauthorizedObjectResult("Token not valid.");
+                            return;
+                        }
+                        else
+                        {
+                            logger.LogInformation($"Token is valid: {tokenValue.Account}/{tokenValue.Name}");
+                            principal = new TokenPrincipal(new GenericIdentity(tokenValue.Account)) { Token = tokenValue };
+                            context.HttpContext.User = principal;
+
+                            memoryCache.Set(
+                                token,
+                                principal,
+                                new MemoryCacheEntryOptions
+                                {
+                                    AbsoluteExpiration = tokenValue.ExpiresAt,
+                                    Priority = (CacheItemPriority)TierLimits.CacheItemPriority[tokenValue.AccountTier],
+                                    Size = 1,
+                                    SlidingExpiration = TimeSpan.FromMinutes(5)
+                                });
+                        }
+                    }
                 }
             }
 

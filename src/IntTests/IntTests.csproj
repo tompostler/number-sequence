@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Client\Client.csproj" />
+    <ProjectReference Include="..\number-sequence\number-sequence.csproj" />
   </ItemGroup>
 
 </Project>

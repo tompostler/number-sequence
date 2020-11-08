@@ -36,7 +36,7 @@ namespace TcpWtf.NumberSequence.Client
         {
             _ = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
-                    HttpMethod.Get,
+                    HttpMethod.Post,
                     "ping"),
                 cancellationToken);
         }

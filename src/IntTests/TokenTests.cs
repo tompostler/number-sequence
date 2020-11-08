@@ -32,7 +32,7 @@ namespace number_sequence.IntTests
                 Name = this.TestContext.TestName,
                 Key = this.TestContext.TestName.ComputeMD5()
             };
-            _ = await Assembly.Client.Account.CreateAsync(this.account);
+            _ = await Assembly.UnauthedClient.Account.CreateAsync(this.account);
 
             this.token = new Token
             {
@@ -46,7 +46,7 @@ namespace number_sequence.IntTests
         public async Task Token_Creation_Succeeds()
         {
             // Act
-            var response = await Assembly.Client.Token.CreateAsync(this.token);
+            var response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             response.Account.Should().Be(this.TestContext.TestName.ToLower());
@@ -64,7 +64,7 @@ namespace number_sequence.IntTests
             this.token.ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(5);
 
             // Act
-            var response = await Assembly.Client.Token.CreateAsync(this.token);
+            var response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             response.Account.Should().Be(this.TestContext.TestName.ToLower());
@@ -82,7 +82,7 @@ namespace number_sequence.IntTests
             this.token.ExpiresAt = DateTimeOffset.UtcNow.AddYears(5);
 
             // Act
-            var response = await Assembly.Client.Token.CreateAsync(this.token);
+            var response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             response.Account.Should().Be(this.TestContext.TestName.ToLower());
@@ -97,7 +97,7 @@ namespace number_sequence.IntTests
         public async Task Token_Creation_Fails_WithNull()
         {
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(null);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(null);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -110,7 +110,7 @@ namespace number_sequence.IntTests
             this.token.Account = null;
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -123,7 +123,7 @@ namespace number_sequence.IntTests
             this.token.Account = this.token.Account.Substring(0, 2);
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -136,7 +136,7 @@ namespace number_sequence.IntTests
             this.token.Account = string.Concat(Enumerable.Repeat(this.token.Account, 2));
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -149,7 +149,7 @@ namespace number_sequence.IntTests
             this.token.Account += '1';
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -162,7 +162,7 @@ namespace number_sequence.IntTests
             this.token.Key = null;
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -175,7 +175,7 @@ namespace number_sequence.IntTests
             this.token.Key = this.token.Key.Substring(0, 10);
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -188,7 +188,7 @@ namespace number_sequence.IntTests
             this.token.Key = string.Concat(Enumerable.Repeat(this.token.Key, 5));
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -201,7 +201,7 @@ namespace number_sequence.IntTests
             this.token.Key += '1';
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -214,7 +214,7 @@ namespace number_sequence.IntTests
             this.token.Name = null;
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -227,7 +227,7 @@ namespace number_sequence.IntTests
             this.token.Name = this.token.Name.Substring(0, 2);
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -240,7 +240,7 @@ namespace number_sequence.IntTests
             this.token.Name = string.Concat(Enumerable.Repeat(this.token.Name, 2));
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -250,10 +250,10 @@ namespace number_sequence.IntTests
         public async Task Token_Creation_Fails_WitNameAlreadyTaken()
         {
             // Arrange
-            _ = await Assembly.Client.Token.CreateAsync(this.token);
+            _ = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
@@ -266,7 +266,7 @@ namespace number_sequence.IntTests
             this.token.ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(1);
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -279,7 +279,7 @@ namespace number_sequence.IntTests
             this.token.ExpiresAt = DateTimeOffset.UtcNow.AddYears(42);
 
             // Act
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -290,13 +290,13 @@ namespace number_sequence.IntTests
         {
             // Act
             this.token.Name = this.TestContext.TestName + '1';
-            await Assembly.Client.Token.CreateAsync(this.token);
+            await Assembly.UnauthedClient.Token.CreateAsync(this.token);
             this.token.Name = this.TestContext.TestName + '2';
-            await Assembly.Client.Token.CreateAsync(this.token);
+            await Assembly.UnauthedClient.Token.CreateAsync(this.token);
             this.token.Name = this.TestContext.TestName + '3';
-            await Assembly.Client.Token.CreateAsync(this.token);
+            await Assembly.UnauthedClient.Token.CreateAsync(this.token);
             this.token.Name = this.TestContext.TestName + '4';
-            Func<Task> act = () => Assembly.Client.Token.CreateAsync(this.token);
+            Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);

@@ -10,7 +10,14 @@ namespace number_sequence.IntTests
         public async Task Ping_ReturnsSuccess()
         {
             // Assert
-            await Assembly.Client.Ping.SendAsync();
+            await Assembly.UnauthedClient.Ping.SendAsync();
+        }
+
+        [TestMethod]
+        public async Task Ping_WithAuth_ReturnsSuccess()
+        {
+            // Assert
+            await Assembly.Client.Ping.SendWithAuthAsync();
         }
     }
 }
