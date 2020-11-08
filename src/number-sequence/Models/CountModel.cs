@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using number_sequence.Converters;
 using System;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Interfaces;
@@ -11,6 +12,7 @@ namespace number_sequence.Models
         public string Account { get; set; }
         [JsonProperty("id")]
         public string Name { get; set; }
+        [JsonConverter(typeof(UlongCosmosConverter))]
         public ulong Value { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         [JsonProperty("_ts"), JsonConverter(typeof(UnixDateTimeConverter))]
