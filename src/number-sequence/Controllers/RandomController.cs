@@ -8,15 +8,19 @@ namespace number_sequence.Controllers
     [Route("[controller]")]
     public sealed class RandomController : ControllerBase
     {
-        private static RNGCryptoServiceProvider _rngCsp = new RNGCryptoServiceProvider();
+        private static readonly RNGCryptoServiceProvider _rngCsp = new RNGCryptoServiceProvider();
 
         [HttpGet]
         public IActionResult Default(ulong min = 0, ulong max = 101)
         {
             // Standard inclusive lower bound, exclusive upper bound. Defaults to [0,100]
-            if (min >= max)
+            if (min > max)
             {
-                return BadRequest("max must be greater than min");
+                return this.BadRequest("max must be greater than min");
+            }
+            else if (min == max)
+            {
+                return this.Ok(min);
             }
 
             ulong val = Generate(64);
@@ -24,49 +28,49 @@ namespace number_sequence.Controllers
             val %= max - min;
             val += min;
 
-            return Ok(val);
+            return this.Ok(val);
         }
 
         [HttpGet("bit")]
         public IActionResult Bit()
         {
-            return Ok(Generate(1));
+            return this.Ok(Generate(1));
         }
 
         [HttpGet("crumb")]
         public IActionResult Crumb()
         {
-            return Ok(Generate(2));
+            return this.Ok(Generate(2));
         }
 
         [HttpGet("nibble")]
         public IActionResult Nibble()
         {
-            return Ok(Generate(4));
+            return this.Ok(Generate(4));
         }
 
         [HttpGet("byte")]
         public IActionResult Byte()
         {
-            return Ok(Generate(8));
+            return this.Ok(Generate(8));
         }
 
         [HttpGet("short")]
         public IActionResult Short()
         {
-            return Ok(Generate(16));
+            return this.Ok(Generate(16));
         }
 
         [HttpGet("int")]
         public IActionResult Int()
         {
-            return Ok(Generate(32));
+            return this.Ok(Generate(32));
         }
 
         [HttpGet("long")]
         public IActionResult Long()
         {
-            return Ok(Generate(64));
+            return this.Ok(Generate(64));
         }
 
         [HttpGet("bits/{num}")]
@@ -74,16 +78,16 @@ namespace number_sequence.Controllers
         {
             if (num <= 0 || num > 64)
             {
-                return BadRequest("num must be in (0,64]");
+                return this.BadRequest("num must be in (0,64]");
             }
 
-            return Ok(Generate(num));
+            return this.Ok(Generate(num));
         }
 
         [HttpGet("guid")]
         public IActionResult GuidMethod()
         {
-            return Ok(Guid.NewGuid().ToString("D"));
+            return this.Ok(Guid.NewGuid().ToString("D"));
         }
 
         private static readonly ulong[] bitmaps = new ulong[]

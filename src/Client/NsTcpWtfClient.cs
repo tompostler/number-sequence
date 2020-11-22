@@ -52,6 +52,7 @@ namespace TcpWtf.NumberSequence.Client
             this.Account = new AccountOperations(this);
             this.Count = new CountOperations(this);
             this.Ping = new PingOperations(this);
+            this.Random = new RandomOperations(this);
             this.Token = new TokenOperations(this);
         }
 
@@ -69,6 +70,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Ping operations.
         /// </summary>
         public PingOperations Ping { get; }
+
+        /// <summary>
+        /// Random operations.
+        /// </summary>
+        public RandomOperations Random { get; }
 
         /// <summary>
         /// Token operations.
