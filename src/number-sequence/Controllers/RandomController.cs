@@ -11,9 +11,9 @@ namespace number_sequence.Controllers
         private static readonly RNGCryptoServiceProvider _rngCsp = new RNGCryptoServiceProvider();
 
         [HttpGet]
-        public IActionResult Default(ulong min = 0, ulong max = 101)
+        public IActionResult Default(ulong min = 0, ulong max = 100)
         {
-            // Standard inclusive lower bound, exclusive upper bound. Defaults to [0,100]
+            // Standard inclusive lower and upper bounds. Defaults to [0,100]
             if (min > max)
             {
                 return this.BadRequest("max must be greater than min");
@@ -25,7 +25,7 @@ namespace number_sequence.Controllers
 
             ulong val = Generate(64);
 
-            val %= max - min;
+            val %= max - min + 1;
             val += min;
 
             return this.Ok(val);

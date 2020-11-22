@@ -64,7 +64,7 @@ namespace number_sequence.IntTests
                 var response = await Assembly.UnauthedClient.Random.GetULongAsync(max: 10);
 
                 // Assert
-                response.Should().BeInRange(0, 9);
+                response.Should().BeInRange(0, 10);
             }
         }
 
@@ -78,7 +78,7 @@ namespace number_sequence.IntTests
                 var response = await Assembly.UnauthedClient.Random.GetULongAsync(min: 1_000_000_000, max: 1_000_000_010);
 
                 // Assert
-                response.Should().BeInRange(1_000_000_000, 1_000_000_009);
+                response.Should().BeInRange(1_000_000_000, 1_000_000_010);
             }
         }
 

@@ -35,11 +35,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Gets a random long in the range [0,100]. Optionally adjust the max/min limits.
         /// </summary>
         /// <param name="min">Minimum ulong. Inclusive, and default is 0.</param>
-        /// <param name="max">Maximum ulong. Exclusive, and default is 101.</param>
+        /// <param name="max">Maximum ulong. Exclusive, and default is 100.</param>
         /// <param name="cancellationToken"></param>
         public async Task<ulong> GetULongAsync(
             ulong min = 0,
-            ulong max = 101,
+            ulong max = 100,
             CancellationToken cancellationToken = default)
         {
             var response = await this.nsTcpWtfClient.SendRequestAsync(
