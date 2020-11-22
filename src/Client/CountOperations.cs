@@ -58,5 +58,18 @@ namespace TcpWtf.NumberSequence.Client
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<Count>(cancellationToken);
         }
+
+        /// <summary>
+        /// Increment an existing count by a specific amount.
+        /// </summary>
+        public async Task<Count> IncrementByAmountAsync(string name, ulong amount, CancellationToken cancellationToken = default)
+        {
+            var response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Put,
+                    $"counts/{name}/{amount}"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<Count>(cancellationToken);
+        }
     }
 }

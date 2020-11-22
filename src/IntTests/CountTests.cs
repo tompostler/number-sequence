@@ -119,6 +119,59 @@ namespace number_sequence.IntTests
         }
 
         [TestMethod]
+        public async Task Count_Increment_Succeeds_AtMaxULong()
+        {
+            // Arrange
+            this.count.Value = ulong.MaxValue;
+            _ = await this.client.Count.CreateAsync(this.count);
+
+            // Act
+            var response = await this.client.Count.IncrementAsync(this.TestContext.TestName);
+
+            // Assert
+            response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            response.Value.Should().Be(0);
+        }
+
+        [TestMethod]
+        public async Task Count_IncrementByAmount_Succeeds()
+        {
+            // Arrange
+            _ = await this.client.Count.CreateAsync(this.count);
+
+            // Act
+            var response = await this.client.Count.IncrementByAmountAsync(this.TestContext.TestName, 3);
+
+            // Assert
+            response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            response.Value.Should().Be(3);
+        }
+
+        [TestMethod]
+        public async Task Count_IncrementByAmount_Succeeds_AtMaxULong()
+        {
+            // Arrange
+            this.count.Value = ulong.MaxValue;
+            _ = await this.client.Count.CreateAsync(this.count);
+
+            // Act
+            var response = await this.client.Count.IncrementByAmountAsync(this.TestContext.TestName, 3);
+
+            // Assert
+            response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            response.Value.Should().Be(2);
+        }
+
+        [TestMethod]
         public async Task Count_Creation_Fails_WithNameNull()
         {
             // Arrange

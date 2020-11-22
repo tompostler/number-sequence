@@ -30,14 +30,27 @@ namespace number_sequence.Controllers
             var count = await this.countDataAccess.TryGetAsync(this.User.Identity.Name, name);
             return count == default
                 ? (IActionResult)this.NotFound()
-                : this.Ok(count);
+                : this.Request.Query.ContainsKey("bare")
+                    ? this.Ok(count.Value)
+                    : this.Ok(count);
         }
 
         [HttpPut("{name}")]
         public async Task<IActionResult> IncrementAsync(string name)
         {
             var count = await this.countDataAccess.IncrementAsync(this.User.Identity.Name, name);
-            return this.Ok(count);
+            return this.Request.Query.ContainsKey("bare")
+                ? this.Ok(count.Value)
+                : this.Ok(count);
+        }
+
+        [HttpPut("{name}/{amount}")]
+        public async Task<IActionResult> IncrementByAmountAsync(string name, ulong amount)
+        {
+            var count = await this.countDataAccess.IncrementByAmountAsync(this.User.Identity.Name, name, amount);
+            return this.Request.Query.ContainsKey("bare")
+                ? this.Ok(count.Value)
+                : this.Ok(count);
         }
     }
 }

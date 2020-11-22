@@ -82,9 +82,30 @@ namespace number_sequence.DataAccess
         public async Task<Count> IncrementAsync(string account, string name)
         {
             var response = await this.Container.ReadItemAsync<CountModel>(name?.ToLower(), this.MakePK(account));
-            this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(CountDataAccess)}.{nameof(IncrementAsync)}.Get)");
+            this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(CountDataAccess)}.{nameof(IncrementAsync)}.IncrementAsync)");
             var count = response.Resource;
             count.Value += 1;
+            try
+            {
+                response = await this.Container.ReplaceItemAsync(
+                                                    count,
+                                                    count.Name,
+                                                    this.MakePK(account),
+                                                    new ItemRequestOptions { IfMatchEtag = response.ETag });
+                return response.Resource;
+            }
+            catch (CosmosException ce) when (ce.StatusCode == HttpStatusCode.PreconditionFailed)
+            {
+                throw new ConflictException($"Count [{name}] was updated elsewhere.");
+            }
+        }
+
+        public async Task<Count> IncrementByAmountAsync(string account, string name, ulong amount)
+        {
+            var response = await this.Container.ReadItemAsync<CountModel>(name?.ToLower(), this.MakePK(account));
+            this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(CountDataAccess)}.{nameof(IncrementAsync)}.IncrementByAmountAsync)");
+            var count = response.Resource;
+            count.Value += amount;
             try
             {
                 response = await this.Container.ReplaceItemAsync(
