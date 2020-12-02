@@ -25,7 +25,9 @@
         "name": "[parameters('sku')]"
       },
       "kind": "linux",
-      "properties": {}
+      "properties": {
+        "reserved": true
+      }
     }
   ]
 }
