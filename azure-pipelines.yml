@@ -14,20 +14,11 @@ steps:
     projects: src/number-sequence.sln
 
 - task: DotNetCoreCLI@2
-  displayName: Build and zip to the staging directory (win-x64)
-  inputs:
-    command: publish
-    projects: src/number-sequence.sln
-    arguments: '--no-restore --configuration Debug --runtime win-x64 --output $(Build.ArtifactStagingDirectory)/output'
-    zipAfterPublish: true
-    modifyOutputPath: true
-
-- task: DotNetCoreCLI@2
   displayName: Build and zip to the staging directory (linux-x64)
   inputs:
     command: publish
     projects: src/number-sequence.sln
-    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/output/linux-x64'
+    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/output'
     zipAfterPublish: true
     modifyOutputPath: true
 
