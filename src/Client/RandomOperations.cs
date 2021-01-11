@@ -18,6 +18,20 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Gets a random 8-ball response.
+        /// </summary>
+        public async Task<string> Get8BallAsync(CancellationToken cancellationToken = default)
+        {
+            var response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/8ball"),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        /// <summary>
         /// Gets a random guid.
         /// </summary>
         public async Task<Guid> GetGuidAsync(CancellationToken cancellationToken = default)

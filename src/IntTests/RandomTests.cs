@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using number_sequence.Controllers;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -10,6 +11,20 @@ namespace number_sequence.IntTests
     [TestClass]
     public sealed class RandomTests
     {
+        [TestMethod]
+        public async Task Random_8Ball_ReturnsSuccess()
+        {
+            // Run 100 times to make sure it's not a fluke
+            for (uint i = 0; i < 100; i++)
+            {
+                // Act
+                var response = await Assembly.UnauthedClient.Random.Get8BallAsync();
+
+                // Assert
+                RandomController.EightBallResponses.Should().Contain(response);
+            }
+        }
+
         [TestMethod]
         public async Task Random_Guid_ReturnsSuccess()
         {

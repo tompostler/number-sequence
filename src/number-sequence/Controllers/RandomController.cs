@@ -73,6 +73,21 @@ namespace number_sequence.Controllers
             return this.Ok(Generate(64));
         }
 
+        public static readonly string[] EightBallResponses = new[]
+        {
+            // A standard Magic 8 Ball is capable of 10 affirmative answers (✔), 5 non-committal answers (〰), and 5 negative answers (❌).
+            "✔ It is certain.",         "✔ As I see it, yes.",      "〰 Reply hazy, try again.",         "❌ Don't count on it.",
+            "✔ It is decidedly so.",    "✔ Most likely.",           "〰 Ask again later.",               "❌ My reply is no.",
+            "✔ Without a doubt.",       "✔ Outlook good.",          "〰 Better not tell you now.",       "❌ My sources say no.",
+            "✔ Yes - definitely.",      "✔ Yes.",                   "〰 Cannot predict now.",            "❌ Outlook not so good.",
+            "✔ You may rely on it.",    "✔ Signs point to yes.",    "〰 Concentrate and ask again.",     "❌ Very doubtful.",
+        };
+        [HttpGet("8ball")]
+        public IActionResult EightBall()
+        {
+            return this.Ok(EightBallResponses[(int)Generate(8) % EightBallResponses.Length]);
+        }
+
         [HttpGet("bits/{num}")]
         public IActionResult Bits(byte num)
         {
