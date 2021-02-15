@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>TcpWtf.NumberSequence.Contracts</RootNamespace>
     <AssemblyName>TcpWtf.NumberSequence.Contracts</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -11,9 +11,5 @@
     <Description>Contracts for the ns.tcp.wtf project.</Description>
     <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
-  </ItemGroup>
 
 </Project>

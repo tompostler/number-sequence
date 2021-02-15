@@ -7,17 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="C:\Users\thpos\.nuget\packages\microsoft.azure.cosmos\3.14.0\contentFiles\any\netstandard2.0\ThirdPartyNotice.txt" />
-    <Content Remove="C:\Users\tompo\.nuget\packages\microsoft.azure.cosmos\3.14.0\contentFiles\any\netstandard2.0\ThirdPartyNotice.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
-    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.14.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.9" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.9" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.9" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.16.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
   </ItemGroup>
