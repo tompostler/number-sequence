@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using System;
 using System.Threading.Tasks;
 
@@ -46,13 +47,6 @@ namespace number_sequence.Controllers
         {
             await Task.Delay(TimeSpan.FromSeconds(seconds));
             return this.Ok($"Waited {seconds} seconds.");
-        }
-
-        [HttpGet("robots933456.txt")]
-        public IActionResult AzureAppServiceRobotsTxt()
-        {
-            // https://github.com/MicrosoftDocs/azure-docs/blob/f71ba01af68bd4859cecce515e7eeeab2d8dd298/includes/app-service-web-configure-robots933456.md
-            return this.NoContent();
         }
     }
 }
