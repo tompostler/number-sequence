@@ -18,7 +18,7 @@ steps:
   inputs:
     command: publish
     projects: src/number-sequence.sln
-    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/output'
+    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/output /p:Version="$(Build.BuildVersion)" /p:InformationalVersion="$(Build.BuildVersion)+$(Build.SourceVersion)"'
     zipAfterPublish: true
     modifyOutputPath: true
 
