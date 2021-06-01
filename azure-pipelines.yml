@@ -7,11 +7,6 @@ pool:
 name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 steps:
-- task: DotNetCoreCLI@2
-  displayName: Restore nuget packages
-  inputs:
-    command: restore
-    projects: src/number-sequence.sln
 
 - task: Powershell@2
   displayName: Calculate MSBuild Versions
@@ -24,8 +19,14 @@ steps:
       Write-Host "Version:      $Version";
       Write-Host "InfoVersion:  $InfoVersion";
 
-      Write-Output "##vso[task.setvariable variable=Version;isOutput=true]$Version";
-      Write-Output "##vso[task.setvariable variable=InfoVersion;isOutput=true]$InfoVersion";
+      Write-Output "##vso[task.setvariable variable=Version]$Version";
+      Write-Output "##vso[task.setvariable variable=InfoVersion]$InfoVersion";
+
+- task: DotNetCoreCLI@2
+  displayName: Restore nuget packages
+  inputs:
+    command: restore
+    projects: src/number-sequence.sln
 
 - task: DotNetCoreCLI@2
   displayName: Build and zip to the staging directory (linux-x64)
