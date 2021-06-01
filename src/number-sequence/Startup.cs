@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
 using number_sequence.Middleware;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace number_sequence
@@ -45,6 +46,13 @@ namespace number_sequence
             app.UseRouting();
 
             app.UseMiddleware<ExceptionToStatusCodeMiddleware>();
+
+            var assemblyFileVersion = FileVersionInfo.GetVersionInfo(typeof(Startup).Assembly.Location).ProductVersion;
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Add("ns-tcp-wtf-server-version", assemblyFileVersion);
+                await next.Invoke();
+            });
 
             app.UseEndpoints(endpoints =>
             {
