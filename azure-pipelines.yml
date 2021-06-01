@@ -16,6 +16,7 @@ steps:
 - task: Powershell@2
   displayName: Calculate MSBuild Versions
   inputs:
+    targetType: 'inline'
     script: |
       $Version = "$(Build.BuildNumber)";
       $InfoVersion = $Version + '+' + "$(Build.SourceVersion)".Substring(0,7);
