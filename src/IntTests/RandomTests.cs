@@ -42,6 +42,22 @@ namespace number_sequence.IntTests
         }
 
         [TestMethod]
+        public async Task Random_Name_ReturnsSuccess()
+        {
+            // Run 100 times to make sure it's not a fluke
+            string previous = default;
+            for (uint i = 0; i < 100; i++)
+            {
+                // Act
+                var response = await Assembly.UnauthedClient.Random.GetNameAsync();
+
+                // Assert
+                response.Should().NotBe(previous);
+                previous = response;
+            }
+        }
+
+        [TestMethod]
         public async Task Random_ULong_ReturnsSuccess()
         {
             // Run 100 times to make sure it's not a fluke

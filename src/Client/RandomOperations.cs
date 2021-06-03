@@ -28,7 +28,7 @@ namespace TcpWtf.NumberSequence.Client
                     "random/8ball"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadAsStringAsync();
+            return await response.Content.ReadAsStringAsync(cancellationToken);
         }
 
         /// <summary>
@@ -42,7 +42,21 @@ namespace TcpWtf.NumberSequence.Client
                     "random/guid"),
                 cancellationToken,
                 needsPreparation: false);
-            return Guid.ParseExact(await response.Content.ReadAsStringAsync(), "D");
+            return Guid.ParseExact(await response.Content.ReadAsStringAsync(cancellationToken), "D");
+        }
+
+        /// <summary>
+        /// Gets a random name based on the docker container naming generator.
+        /// </summary>
+        public async Task<string> GetNameAsync(CancellationToken cancellationToken = default)
+        {
+            var response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/name"),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
         }
 
         /// <summary>
@@ -62,7 +76,7 @@ namespace TcpWtf.NumberSequence.Client
                     $"random?min={min}&max={max}"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<ulong>();
+            return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
 
         /// <summary>
@@ -76,7 +90,7 @@ namespace TcpWtf.NumberSequence.Client
                     "random/bit"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<ulong>();
+            return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
 
         /// <summary>
@@ -90,7 +104,7 @@ namespace TcpWtf.NumberSequence.Client
                     "random/crumb"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<ulong>();
+            return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
 
         /// <summary>
@@ -104,7 +118,7 @@ namespace TcpWtf.NumberSequence.Client
                     "random/nibble"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<ulong>();
+            return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
 
         /// <summary>
@@ -118,7 +132,7 @@ namespace TcpWtf.NumberSequence.Client
                     "random/byte"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<ulong>();
+            return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
 
         /// <summary>
@@ -132,7 +146,7 @@ namespace TcpWtf.NumberSequence.Client
                     "random/short"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<ulong>();
+            return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
 
         /// <summary>
@@ -146,7 +160,7 @@ namespace TcpWtf.NumberSequence.Client
                     "random/int"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<ulong>();
+            return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
 
         /// <summary>
@@ -160,7 +174,7 @@ namespace TcpWtf.NumberSequence.Client
                     "random/long"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<ulong>();
+            return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
 
         /// <summary>
@@ -174,7 +188,7 @@ namespace TcpWtf.NumberSequence.Client
                     $"random/bits/{numberOfBits}"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<ulong>();
+            return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
     }
 }

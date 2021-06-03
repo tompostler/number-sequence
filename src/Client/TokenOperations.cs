@@ -35,7 +35,7 @@ namespace TcpWtf.NumberSequence.Client
                 },
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<Token>();
+            return await response.Content.ReadJsonAsAsync<Token>(cancellationToken: cancellationToken);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace TcpWtf.NumberSequence.Client
                 },
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<Account>();
+            return await response.Content.ReadJsonAsAsync<Account>(cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace TcpWtf.NumberSequence.Client
                     HttpMethod.Get,
                     $"accounts/{name}"),
                 cancellationToken);
-            return await response.Content.ReadJsonAsAsync<Account>();
+            return await response.Content.ReadJsonAsAsync<Account>(cancellationToken: cancellationToken);
         }
     }
 }
