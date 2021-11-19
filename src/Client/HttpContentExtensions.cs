@@ -16,7 +16,7 @@ namespace TcpWtf.NumberSequence.Client
         {
             options = new JsonSerializerOptions
             {
-                IgnoreNullValues = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new JsonStringEnumConverter());

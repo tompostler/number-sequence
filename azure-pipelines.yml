@@ -2,25 +2,22 @@ trigger:
 - main
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: windows-2022
 
 name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 steps:
 
-- task: Powershell@2
-  displayName: Calculate MSBuild Versions
+- task: gitversion/setup@0
+  displayName: Install GitVersion
   inputs:
-    targetType: 'inline'
-    script: |
-      $Version = "$(Build.BuildNumber)";
-      $InfoVersion = $Version + '+' + "$(Build.SourceVersion)".Substring(0,7);
+    versionSpec: 5.8.x
 
-      Write-Host "Version:      $Version";
-      Write-Host "InfoVersion:  $InfoVersion";
-
-      Write-Output "##vso[task.setvariable variable=Version]$Version";
-      Write-Output "##vso[task.setvariable variable=InfoVersion]$InfoVersion";
+- task: gitversion/execute@0
+  displayName: Determine Version
+  inputs:
+    useConfigFile: true
+    configFilePath: GitVersion.yml
 
 - task: DotNetCoreCLI@2
   displayName: Restore nuget packages

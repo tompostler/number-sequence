@@ -8,7 +8,7 @@ namespace number_sequence.Controllers
     [Route("[controller]")]
     public sealed class RandomController : ControllerBase
     {
-        private static readonly RNGCryptoServiceProvider _rngCsp = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
         [HttpGet]
         public IActionResult Default(ulong min = 0, ulong max = 100)
@@ -129,7 +129,7 @@ namespace number_sequence.Controllers
         private static ulong Generate(byte bits)
         {
             var bytes = new byte[8];
-            _rngCsp.GetBytes(bytes);
+            _rng.GetBytes(bytes);
             ulong val = 0;
             for (int i = 0; i < 8; i++)
             {

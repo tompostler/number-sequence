@@ -7,7 +7,7 @@ namespace number_sequence.Utilities
     {
         public static string GetRandomAlphanumericString(byte length = 128)
         {
-            using (var rng = new RNGCryptoServiceProvider())
+            using (var rng = RandomNumberGenerator.Create())
             {
                 const string validCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 

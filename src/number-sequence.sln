@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30517.126
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "number-sequence", "number-sequence\number-sequence.csproj", "{030D6D09-E439-41FC-AA7F-5A49D4086709}"
 EndProject
@@ -19,7 +19,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "Contracts\Cont
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Client\Client.csproj", "{C9448C0C-3AF4-4623-BF5D-6816A6988D55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntTests", "IntTests\IntTests.csproj", "{0412061E-23FA-49A6-B059-C0AFEB67EA08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntTests", "IntTests\IntTests.csproj", "{0412061E-23FA-49A6-B059-C0AFEB67EA08}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0C4AD5D0-A0F5-4997-A9BD-E9FF5FD31347}"
+	ProjectSection(SolutionItems) = preProject
+		..\azure-pipelines.yml = ..\azure-pipelines.yml
+		..\Directory.Build.props = ..\Directory.Build.props
+		..\GitVersion.yml = ..\GitVersion.yml
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
