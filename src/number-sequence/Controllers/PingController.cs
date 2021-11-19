@@ -13,6 +13,27 @@ namespace number_sequence.Controllers
             return this.Ok();
         }
 
+        [HttpGet("debug")]
+        public IActionResult GetDebug([FromQuery] string type, [FromQuery] bool content = false)
+        {
+            if (content)
+            {
+                return type switch
+                {
+                    "accepted" => this.Accepted(new { Value = "Ok" }),
+                    _ => this.Ok(new { Value = "Ok" })
+                };
+            }
+            else
+            {
+                return type switch
+                {
+                    "accepted" => this.Accepted(),
+                    _ => this.Ok()
+                };
+            }
+        }
+
         [HttpPost, RequiresToken]
         public IActionResult GetWithAuth()
         {
