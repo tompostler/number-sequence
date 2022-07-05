@@ -1,2 +1,2 @@
 FROM ubuntu
-RUN apt update && apt-get install texlive texlive-latex-extra --yes
+RUN export DEBIAN_FRONTEND=noninteractive && apt update && apt-get install --yes texlive texlive-latex-extra
