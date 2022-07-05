@@ -1,3 +1,2 @@
 FROM ubuntu
-RUN apt update
-RUN apt-get install texlive texlive-latex-extra
+RUN apt update && apt-get install texlive texlive-latex-extra --yes
