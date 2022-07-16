@@ -15,7 +15,7 @@
     },
     "siteName": {
       "type": "string",
-      "defaultValue": "ns-tcp-wtf"
+      "defaultValue": "ns-tcpwtf"
     }
   },
   "variables": {
