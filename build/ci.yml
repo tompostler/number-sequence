@@ -56,10 +56,16 @@ jobs:
     vmImage: ubuntu-22.04
 
   steps:
-  
+
   - task: DownloadPipelineArtifact@2
     displayName: Download zipped application
     inputs:
       source: current
       artifact: drop
-      patterns: output/number-sequence.zip
+      patterns: '**/output/number-sequence.zip'
+      path: $(Agent.BuildDirectory)/ns/
+
+  - task: ExtractFiles@1
+    inputs:
+      archiveFilePatterns: $(Agent.BuildDirectory)/ns/*.zip
+      destinationFolder: $(Agent.BuildDirectory)/ns-extract/
