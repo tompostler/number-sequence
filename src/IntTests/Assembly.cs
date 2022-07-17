@@ -1,6 +1,8 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
@@ -23,11 +25,16 @@ namespace number_sequence.IntTests
 
         internal static async Task ResetCosmosEmulatorAsync()
         {
-            var cosmosClient = new CosmosClient("https://localhost:8081/", "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==");
-            var database = (await cosmosClient.CreateDatabaseIfNotExistsAsync("shared", 400)).Database;
-            var container = (await database.CreateContainerIfNotExistsAsync("nstcpwtf", "/PK")).Container;
-            await container.DeleteContainerAsync();
-            await database.CreateContainerIfNotExistsAsync("nstcpwtf", "/PK");
+            // Get the connection information for the local collection in Azure
+            using var sr = new StreamReader(typeof(Assembly).Assembly.GetManifestResourceStream(typeof(Assembly), "number_sequence.IntTests.appsettings.Development.json"));
+            string appSettingsLocal = sr.ReadToEnd();
+            Options.CosmosDB cosmosOptions = JToken.Parse(appSettingsLocal)[nameof(Options.CosmosDB)].ToObject<Options.CosmosDB>();
+
+            var cosmosClient = new CosmosClient(cosmosOptions.Endpoint, cosmosOptions.Key);
+            Database database = (await cosmosClient.CreateDatabaseIfNotExistsAsync(cosmosOptions.DatabaseId, 400)).Database;
+            Container container = (await database.CreateContainerIfNotExistsAsync(cosmosOptions.ContainerId, "/PK")).Container;
+            _ = await container.DeleteContainerAsync();
+            _ = await database.CreateContainerIfNotExistsAsync(cosmosOptions.ContainerId, "/PK");
             client = default;
             assemblyLogger.LogInformation(nameof(ResetCosmosEmulatorAsync));
         }
@@ -39,7 +46,7 @@ namespace number_sequence.IntTests
             await ResetCosmosEmulatorAsync();
         }
 
-        public static Account Account = new Account
+        public static Account Account = new()
         {
             Name = "IntegrationTests",
             Key = string.Empty.ComputeMD5()

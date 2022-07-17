@@ -20,7 +20,7 @@ namespace number_sequence.Models
 
         public string PK => $"{nameof(Count)}|{this.Account}".ToLower();
 
-        public static implicit operator Count(CountModel c) => new Count
+        public static implicit operator Count(CountModel c) => new()
         {
             Account = c.Account,
             Name = c.Name,
@@ -28,7 +28,7 @@ namespace number_sequence.Models
             CreatedAt = c.CreatedAt,
             ModifiedAt = c.ModifiedAt
         };
-        public static implicit operator CountModel(Count c) => new CountModel
+        public static implicit operator CountModel(Count c) => new()
         {
             Account = c.Account,
             Name = c.Name,

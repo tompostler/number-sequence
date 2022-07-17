@@ -23,7 +23,7 @@ namespace number_sequence.Models
 
         public string PK => $"{nameof(Token)}|{this.Account}".ToLower();
 
-        public static implicit operator Token(TokenModel t) => new Token
+        public static implicit operator Token(TokenModel t) => new()
         {
             Account = t.Account,
             Key = t.Key,
@@ -32,7 +32,7 @@ namespace number_sequence.Models
             CreatedAt = t.CreatedAt,
             ExpiresAt = t.ExpiresAt
         };
-        public static implicit operator TokenModel(Token t) => new TokenModel
+        public static implicit operator TokenModel(Token t) => new()
         {
             Account = t.Account,
             Key = t.Key,

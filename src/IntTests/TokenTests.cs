@@ -46,15 +46,15 @@ namespace number_sequence.IntTests
         public async Task Token_Creation_Succeeds()
         {
             // Act
-            var response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
+            Token response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            response.Account.Should().Be(this.TestContext.TestName.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(90), TimeSpan.FromMinutes(1));
-            response.Key.Should().BeNull();
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().NotBeNullOrWhiteSpace();
+            _ = response.Account.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(90), TimeSpan.FromMinutes(1));
+            _ = response.Key.Should().BeNull();
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().NotBeNullOrWhiteSpace();
         }
 
         [TestMethod]
@@ -64,15 +64,15 @@ namespace number_sequence.IntTests
             this.token.ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(5);
 
             // Act
-            var response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
+            Token response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            response.Account.Should().Be(this.TestContext.TestName.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(5), TimeSpan.FromMinutes(1));
-            response.Key.Should().BeNull();
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().NotBeNullOrWhiteSpace();
+            _ = response.Account.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(5), TimeSpan.FromMinutes(1));
+            _ = response.Key.Should().BeNull();
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().NotBeNullOrWhiteSpace();
         }
 
         [TestMethod]
@@ -82,15 +82,15 @@ namespace number_sequence.IntTests
             this.token.ExpiresAt = DateTimeOffset.UtcNow.AddYears(5);
 
             // Act
-            var response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
+            Token response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            response.Account.Should().Be(this.TestContext.TestName.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddYears(5), TimeSpan.FromMinutes(1));
-            response.Key.Should().BeNull();
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().NotBeNullOrWhiteSpace();
+            _ = response.Account.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddYears(5), TimeSpan.FromMinutes(1));
+            _ = response.Key.Should().BeNull();
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().NotBeNullOrWhiteSpace();
         }
 
         [TestMethod]
@@ -100,7 +100,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(null);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -113,7 +113,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -126,7 +126,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -139,7 +139,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -152,7 +152,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -165,7 +165,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -178,7 +178,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -191,7 +191,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -204,7 +204,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -217,7 +217,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -230,7 +230,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -243,7 +243,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -256,7 +256,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
         }
 
         [TestMethod]
@@ -269,7 +269,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -282,7 +282,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -290,16 +290,16 @@ namespace number_sequence.IntTests
         {
             // Act
             this.token.Name = this.TestContext.TestName + '1';
-            await Assembly.UnauthedClient.Token.CreateAsync(this.token);
+            _ = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
             this.token.Name = this.TestContext.TestName + '2';
-            await Assembly.UnauthedClient.Token.CreateAsync(this.token);
+            _ = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
             this.token.Name = this.TestContext.TestName + '3';
-            await Assembly.UnauthedClient.Token.CreateAsync(this.token);
+            _ = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
             this.token.Name = this.TestContext.TestName + '4';
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
             // Cleanup
             await Assembly.ResetCosmosEmulatorAsync();

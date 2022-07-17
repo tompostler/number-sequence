@@ -20,7 +20,7 @@ namespace number_sequence.Models
 
         public string PK { get; set; } = nameof(Account);
 
-        public static implicit operator Account(AccountModel a) => new Account
+        public static implicit operator Account(AccountModel a) => new()
         {
             Name = a.Name,
             Key = a.Key,
@@ -29,7 +29,7 @@ namespace number_sequence.Models
             CreatedFrom = a.CreatedFrom,
             ModifiedAt = a.ModifiedAt
         };
-        public static implicit operator AccountModel(Account a) => new AccountModel
+        public static implicit operator AccountModel(Account a) => new()
         {
             Name = a.Name,
             Key = a.Key,

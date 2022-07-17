@@ -38,7 +38,7 @@ namespace TcpWtf.NumberSequence.Client
             this.logger = logger;
             this.tokenCallback = tokenCallback;
 
-            var baseUri = stamp switch
+            Uri baseUri = stamp switch
             {
                 Stamp.LocalDev => new Uri("http://localhost:44320/"),
                 Stamp.Public => new Uri("https://ns.tcp.wtf/"),
@@ -117,13 +117,13 @@ namespace TcpWtf.NumberSequence.Client
 
                 // Log any information based on the response
                 string serverVersionInfo = string.Empty;
-                if (response.Headers.TryGetValues(HttpHeaderNames.ServerVersion, out var serverVersionHeaders))
+                if (response.Headers.TryGetValues(HttpHeaderNames.ServerVersion, out System.Collections.Generic.IEnumerable<string> serverVersionHeaders))
                 {
                     serverVersionInfo = $" (NS {serverVersionHeaders.FirstOrDefault()})";
                 }
                 this.logger.LogInformation("Received {0} from {1} {2}{3}", response.StatusCode, request.Method, request.RequestUri, serverVersionInfo);
-                if (response.Headers.TryGetValues(HttpHeaderNames.ApiDeprecated, out var apiDeprecatedHeaders)
-                    && DateTime.TryParseExact(apiDeprecatedHeaders.FirstOrDefault(), "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var apiDeprecatedAt))
+                if (response.Headers.TryGetValues(HttpHeaderNames.ApiDeprecated, out System.Collections.Generic.IEnumerable<string> apiDeprecatedHeaders)
+                    && DateTime.TryParseExact(apiDeprecatedHeaders.FirstOrDefault(), "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime apiDeprecatedAt))
                 {
                     if (apiDeprecatedAt < DateTime.UtcNow)
                     {
@@ -151,12 +151,12 @@ namespace TcpWtf.NumberSequence.Client
                 }
                 else if (!response.IsSuccessStatusCode)
                 {
-                    var msg = $"Operation returned an invalid status code [{response.StatusCode}]";
+                    string msg = $"Operation returned an invalid status code [{response.StatusCode}]";
 
                     // Attempt to read the body
                     try
                     {
-                        var body = await response.Content.ReadAsStringAsync();
+                        string body = await response.Content.ReadAsStringAsync();
                         if (!string.IsNullOrWhiteSpace(body))
                         {
                             msg += $"{Environment.NewLine}{body}";

@@ -26,7 +26,7 @@ namespace TcpWtf.NumberSequence.Client
         {
             try
             {
-                using var stream = await httpContent.ReadAsStreamAsync(cancellationToken);
+                using System.IO.Stream stream = await httpContent.ReadAsStreamAsync(cancellationToken);
                 return await JsonSerializer.DeserializeAsync<T>(stream, options, cancellationToken);
             }
             catch (Exception ex)

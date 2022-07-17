@@ -22,7 +22,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<string> Get8BallAsync(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/8ball"),
@@ -36,7 +36,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<Guid> GetGuidAsync(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/guid"),
@@ -50,7 +50,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<string> GetNameAsync(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/name"),
@@ -70,7 +70,7 @@ namespace TcpWtf.NumberSequence.Client
             ulong max = 100,
             CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     $"random?min={min}&max={max}"),
@@ -84,7 +84,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<ulong> GetULong01Async(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/bit"),
@@ -98,7 +98,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<ulong> GetULong02Async(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/crumb"),
@@ -112,7 +112,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<ulong> GetULong04Async(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/nibble"),
@@ -126,7 +126,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<ulong> GetULong08Async(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/byte"),
@@ -140,7 +140,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<ulong> GetULong16Async(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/short"),
@@ -154,7 +154,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<ulong> GetULong32Async(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/int"),
@@ -168,7 +168,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<ulong> GetULong64Async(CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/long"),
@@ -182,7 +182,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<ulong> GetULongBitsAsync(byte numberOfBits, CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     $"random/bits/{numberOfBits}"),

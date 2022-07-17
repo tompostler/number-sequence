@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
@@ -29,9 +31,19 @@ namespace number_sequence
 
             _ = services.AddNsConfig(this.Configuration);
 
+            _ = services.AddDbContext<DataAccess.NsContext>((provider, options) => options
+                  .UseSqlServer(
+                      provider.GetRequiredService<IOptions<Options.Sql>>().Value.ConnectionString,
+                      sqloptions => sqloptions
+                          .EnableRetryOnFailure()));
+
             _ = services.AddSingleton<DataAccess.AccountDataAccess>();
             _ = services.AddSingleton<DataAccess.CountDataAccess>();
             _ = services.AddSingleton<DataAccess.TokenDataAccess>();
+
+            _ = services.AddSingleton<Utilities.Sentinals>();
+
+            _ = services.AddHostedService<Services.MigrationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

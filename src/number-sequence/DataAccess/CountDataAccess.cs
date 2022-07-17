@@ -24,7 +24,7 @@ namespace number_sequence.DataAccess
             this.logger = logger;
         }
 
-        private PartitionKey MakePK(string account) => new PartitionKey($"{nameof(Count)}|{account}".ToLower());
+        private PartitionKey MakePK(string account) => new($"{nameof(Count)}|{account}".ToLower());
 
         public async Task<Count> TryGetAsync(string account, string name)
         {

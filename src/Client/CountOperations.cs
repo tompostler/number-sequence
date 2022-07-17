@@ -22,7 +22,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<Count> CreateAsync(Count count, CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Post,
                     "counts")
@@ -38,7 +38,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<Count> GetAsync(string name, CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     $"counts/{name}"),
@@ -51,7 +51,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<Count> IncrementAsync(string name, CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Put,
                     $"counts/{name}"),
@@ -64,7 +64,7 @@ namespace TcpWtf.NumberSequence.Client
         /// </summary>
         public async Task<Count> IncrementByAmountAsync(string name, ulong amount, CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Put,
                     $"counts/{name}/{amount}"),

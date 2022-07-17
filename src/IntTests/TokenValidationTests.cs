@@ -41,7 +41,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -54,7 +54,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -67,7 +67,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -80,7 +80,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -93,7 +93,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -106,7 +106,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -119,7 +119,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -132,7 +132,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -145,7 +145,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -158,7 +158,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -171,7 +171,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -184,7 +184,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -197,7 +197,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -210,7 +210,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]
@@ -223,7 +223,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace TcpWtf.NumberSequence.Client
             Account account,
             CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Post,
                     "accounts")
@@ -44,7 +44,7 @@ namespace TcpWtf.NumberSequence.Client
             string name,
             CancellationToken cancellationToken = default)
         {
-            var response = await this.nsTcpWtfClient.SendRequestAsync(
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     $"accounts/{name}"),

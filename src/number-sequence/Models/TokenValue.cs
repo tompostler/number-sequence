@@ -11,7 +11,7 @@ namespace number_sequence.Models
         public TokenValue() { }
 
         public static TokenValue CreateFrom(TokenModel tokenModel) =>
-            new TokenValue
+            new()
             {
                 Account = tokenModel.Account,
                 AccountTier = tokenModel.AccountTier,

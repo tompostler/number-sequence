@@ -38,14 +38,14 @@ namespace number_sequence.IntTests
         public async Task Count_Creation_Succeeds()
         {
             // Act
-            var response = await this.client.Count.CreateAsync(this.count);
+            Count response = await this.client.Count.CreateAsync(this.count);
 
             // Assert
-            response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().Be(0);
+            _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().Be(0);
         }
 
         [TestMethod]
@@ -55,14 +55,14 @@ namespace number_sequence.IntTests
             this.count.Value = 1;
 
             // Act
-            var response = await this.client.Count.CreateAsync(this.count);
+            Count response = await this.client.Count.CreateAsync(this.count);
 
             // Assert
-            response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().Be(1);
+            _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().Be(1);
         }
 
         [TestMethod]
@@ -72,14 +72,14 @@ namespace number_sequence.IntTests
             _ = await this.client.Count.CreateAsync(this.count);
 
             // Act
-            var response = await this.client.Count.IncrementAsync(this.TestContext.TestName);
+            Count response = await this.client.Count.IncrementAsync(this.TestContext.TestName);
 
             // Assert
-            response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().Be(1);
+            _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().Be(1);
         }
 
         [TestMethod]
@@ -90,14 +90,14 @@ namespace number_sequence.IntTests
             _ = await this.client.Count.CreateAsync(this.count);
 
             // Act
-            var response = await this.client.Count.IncrementAsync(this.TestContext.TestName);
+            Count response = await this.client.Count.IncrementAsync(this.TestContext.TestName);
 
             // Assert
-            response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().Be(2);
+            _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().Be(2);
         }
 
         [TestMethod]
@@ -108,14 +108,14 @@ namespace number_sequence.IntTests
             _ = await this.client.Count.CreateAsync(this.count);
 
             // Act
-            var response = await this.client.Count.IncrementAsync(this.TestContext.TestName);
+            Count response = await this.client.Count.IncrementAsync(this.TestContext.TestName);
 
             // Assert
-            response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().Be(9_007_199_254_740_993);
+            _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().Be(9_007_199_254_740_993);
         }
 
         [TestMethod]
@@ -126,14 +126,14 @@ namespace number_sequence.IntTests
             _ = await this.client.Count.CreateAsync(this.count);
 
             // Act
-            var response = await this.client.Count.IncrementAsync(this.TestContext.TestName);
+            Count response = await this.client.Count.IncrementAsync(this.TestContext.TestName);
 
             // Assert
-            response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().Be(0);
+            _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().Be(0);
         }
 
         [TestMethod]
@@ -143,14 +143,14 @@ namespace number_sequence.IntTests
             _ = await this.client.Count.CreateAsync(this.count);
 
             // Act
-            var response = await this.client.Count.IncrementByAmountAsync(this.TestContext.TestName, 3);
+            Count response = await this.client.Count.IncrementByAmountAsync(this.TestContext.TestName, 3);
 
             // Assert
-            response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().Be(3);
+            _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().Be(3);
         }
 
         [TestMethod]
@@ -161,14 +161,14 @@ namespace number_sequence.IntTests
             _ = await this.client.Count.CreateAsync(this.count);
 
             // Act
-            var response = await this.client.Count.IncrementByAmountAsync(this.TestContext.TestName, 3);
+            Count response = await this.client.Count.IncrementByAmountAsync(this.TestContext.TestName, 3);
 
             // Assert
-            response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            response.Name.Should().Be(this.TestContext.TestName.ToLower());
-            response.Value.Should().Be(2);
+            _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
+            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
+            _ = response.Value.Should().Be(2);
         }
 
         [TestMethod]
@@ -181,7 +181,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Count.CreateAsync(this.count);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -194,7 +194,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Count.CreateAsync(this.count);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -207,7 +207,7 @@ namespace number_sequence.IntTests
             Func<Task> act = () => this.client.Count.CreateAsync(this.count);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [TestMethod]
@@ -215,16 +215,16 @@ namespace number_sequence.IntTests
         {
             // Act
             this.count.Name = this.TestContext.TestName + '1';
-            await this.client.Count.CreateAsync(this.count);
+            _ = await this.client.Count.CreateAsync(this.count);
             this.count.Name = this.TestContext.TestName + '2';
-            await this.client.Count.CreateAsync(this.count);
+            _ = await this.client.Count.CreateAsync(this.count);
             this.count.Name = this.TestContext.TestName + '3';
-            await this.client.Count.CreateAsync(this.count);
+            _ = await this.client.Count.CreateAsync(this.count);
             this.count.Name = this.TestContext.TestName + '4';
             Func<Task> act = () => this.client.Count.CreateAsync(this.count);
 
             // Assert
-            (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
             // Cleanup
             await Assembly.ResetCosmosEmulatorAsync();
