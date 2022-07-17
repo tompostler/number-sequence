@@ -12,7 +12,7 @@ using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.DataAccess
 {
-    public sealed class AccountDataAccess : BaseDataAccess
+    public sealed class AccountDataAccess : BaseCosmosDataAccess
     {
         private readonly PartitionKey pk;
         private readonly ILogger<AccountDataAccess> logger;

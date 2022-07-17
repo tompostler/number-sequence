@@ -31,15 +31,20 @@ namespace number_sequence
 
             _ = services.AddNsConfig(this.Configuration);
 
+            // Data Access, Cosmos DB
+            _ = services.AddSingleton<DataAccess.AccountDataAccess>();
+            _ = services.AddSingleton<DataAccess.CountDataAccess>();
+            _ = services.AddSingleton<DataAccess.TokenDataAccess>();
+
+            // Data Access, Google
+            _ = services.AddSingleton<DataAccess.GoogleSheetDataAccess>();
+
+            // Data Access, SQL
             _ = services.AddDbContext<DataAccess.NsContext>((provider, options) => options
                   .UseSqlServer(
                       provider.GetRequiredService<IOptions<Options.Sql>>().Value.ConnectionString,
                       sqloptions => sqloptions
                           .EnableRetryOnFailure()));
-
-            _ = services.AddSingleton<DataAccess.AccountDataAccess>();
-            _ = services.AddSingleton<DataAccess.CountDataAccess>();
-            _ = services.AddSingleton<DataAccess.TokenDataAccess>();
 
             _ = services.AddSingleton<Utilities.Sentinals>();
 

@@ -9,6 +9,9 @@
         "name": "tompostler-free"
       }
     },
+    "googleCredentials": {
+      "type": "securestring"
+    },
     "planName": {
       "type": "string",
       "defaultValue": "[resourceGroup().name]"
@@ -52,6 +55,7 @@
         "DOCKER_REGISTRY_SERVER_PASSWORD": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', 'tomlatex'), '2019-05-01').passwords[0].value]",
         "DOCKER_REGISTRY_SERVER_URL": "https://tomlatex.azurecr.io",
         "DOCKER_REGISTRY_SERVER_USERNAME": "tomlatex",
+        "Google__Credentials": "[parameters('googleCredentials')]",
         "Sql__ConnectionString": "[variables('sqlConnectionString')]",
         "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "7",
         "WEBSITES_ENABLE_APP_SERVICE_STORAGE": "false"

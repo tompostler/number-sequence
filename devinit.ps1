@@ -13,10 +13,13 @@ Write-Host;
 Write-Host -ForegroundColor Cyan 'Generating local settings....';
 $localSettings = [PSCustomObject]@{
     CosmosDb = [PSCustomObject]@{
-        Endpoint = 'https://tompostler-free.documents.azure.com:443/';
-        Key = (Get-AzCosmosDBAccountKey -ResourceGroupName tompostler -Name tompostler-free).SecondaryMasterKey;
-        DatabaseId = 'shared';
+        Endpoint    = 'https://tompostler-free.documents.azure.com:443/';
+        Key         = (Get-AzCosmosDBAccountKey -ResourceGroupName tompostler -Name tompostler-free).SecondaryMasterKey;
+        DatabaseId  = 'shared';
         ContainerId = 'nstcpwtflocal';
+    };
+    Google   = [PSCustomObject]@{
+        Credentials = (Get-AzKeyVaultSecret -VaultName tompostler -Name google-dr-chiro-credentials -AsPlainText);
     };
     Sql      = [PSCustomObject]@{
         ConnectionString = (

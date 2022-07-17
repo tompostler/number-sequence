@@ -12,7 +12,7 @@ using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.DataAccess
 {
-    public sealed class CountDataAccess : BaseDataAccess
+    public sealed class CountDataAccess : BaseCosmosDataAccess
     {
         private readonly AccountDataAccess accountDataAccess;
         private readonly ILogger<CountDataAccess> logger;
