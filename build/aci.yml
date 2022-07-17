@@ -5,6 +5,7 @@ schedules:
   branches:
     include:
     - main
+    - refs/heads/main
   always: true
 
 resources:
