@@ -36,7 +36,7 @@ namespace TcpWtf.NumberSequence.Contracts
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class TokenValidation
     {
-        public static ValidationResult ExpirationValidation(DateTimeOffset expiresAt, ValidationContext validationContext)
+        public static ValidationResult ExpirationValidation(DateTimeOffset expiresAt, ValidationContext _)
         {
             if (expiresAt < DateTimeOffset.UtcNow.AddMinutes(1))
                 return new ValidationResult("ExpiresAt cannot be in the past.");
