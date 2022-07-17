@@ -34,7 +34,7 @@ steps:
 
 - task: ExtractFiles@1
   inputs:
-    archiveFilePatterns: $(Agent.BuildDirectory)/webappbuild/**.zip
+    archiveFilePatterns: $(Agent.BuildDirectory)/webappbuild/drop/output/number-sequence.zip
     destinationFolder: $(Agent.BuildDirectory)/ns-extract/
 
 - task: CopyFiles@1
