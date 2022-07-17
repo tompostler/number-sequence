@@ -15,7 +15,7 @@
     },
     "siteName": {
       "type": "string",
-      "defaultValue": "ns-tcpwtf"
+      "defaultValue": "ns-tcp-wtf"
     }
   },
   "variables": {
@@ -28,11 +28,17 @@
       "name": "[concat(parameters('siteName'), '/appsettings')]",
       "properties": {
         "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('Microsoft.Insights/components', parameters('planName')), '2020-02-02').ConnectionString]",
+        "ApplicationInsightsAgent_EXTENSION_VERSION": "~3",
         "CosmosDB__Endpoint": "[concat('https://', parameters('cosmosDb').name, '.documents.azure.com:443/')]",
         "CosmosDB__Key": "[listKeys(variables('cosmosDbId'), providers('Microsoft.DocumentDB','databaseAccounts').apiVersions[0]).primaryMasterKey]",
         "CosmosDB__DatabaseId": "shared",
         "CosmosDB__ContainerId": "nstcpwtf",
-        "WEBSITE_RUN_FROM_PACKAGE": "1"
+        "DOCKER_ENABLE_CI": "true",
+        "DOCKER_REGISTRY_SERVER_PASSWORD": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', 'tomlatex'), '2019-05-01').passwords[0].value]",
+        "DOCKER_REGISTRY_SERVER_URL": "https://tomlatex.azurecr.io",
+        "DOCKER_REGISTRY_SERVER_USERNAME": "tomlatex",
+        "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "7",
+        "WEBSITES_ENABLE_APP_SERVICE_STORAGE": "false"
       }
     }
   ]
