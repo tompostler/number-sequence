@@ -41,6 +41,9 @@ steps:
     contents: '**' 
     targetFolder: $(Build.ArtifactStagingDirectory)
 
+- powershell: '"$(Build.SourceVersionMessage)" > $(Build.ArtifactStagingDirectory)/commit-desc.txt'
+  displayName: Get build desc
+
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
   inputs:
