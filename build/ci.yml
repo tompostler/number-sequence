@@ -26,18 +26,18 @@ steps:
     projects: src/number-sequence.sln
 
 - task: DotNetCoreCLI@2
-  displayName: Build projects (linux-x64)
+  displayName: Build solution
   inputs:
     command: build
     projects: src/number-sequence.sln
-    arguments: '--no-restore --configuration Debug --runtime linux-x64 --no-self-contained --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
+    arguments: '--no-restore --configuration Debug --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
 
 - task: DotNetCoreCLI@2
-  displayName: Build and zip to the staging directory (linux-x64)
+  displayName: Publish zip to the staging directory (linux-x64)
   inputs:
     command: publish
     projects: src/number-sequence/number-sequence.csproj
-    arguments: '--no-build --no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained'
+    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained'
     zipAfterPublish: true
     modifyOutputPath: true
 
