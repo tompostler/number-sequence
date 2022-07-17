@@ -1,8 +1,8 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine
+# https://releases.ubuntu.com/22.04/ is Jammy Jellyfish
+# https://mcr.microsoft.com/en-us/product/dotnet/aspnet/tags
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-jammy
 
 # Install texlive components for pdflatex
-# (and wget for net60 install)
 RUN export DEBIAN_FRONTEND=noninteractive \
-    && apk update \
-    && apk upgrade \
-    && apk add texlive texlive-latex-extra
+    && apt update \
+    && apt-get install --yes texlive texlive-latex-extra
