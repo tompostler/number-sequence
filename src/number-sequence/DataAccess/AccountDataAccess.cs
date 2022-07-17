@@ -28,7 +28,7 @@ namespace number_sequence.DataAccess
         {
             try
             {
-                var response = await this.Container.ReadItemAsync<AccountModel>(name?.ToLower(), this.pk);
+                ItemResponse<AccountModel> response = await this.Container.ReadItemAsync<AccountModel>(name?.ToLower(), this.pk);
                 this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(AccountDataAccess)}.{nameof(TryGetAsync)})");
                 return response.Resource;
             }
@@ -40,9 +40,9 @@ namespace number_sequence.DataAccess
 
         private async Task<AccountTier?> GetMaxTierByCreatedFromAsync(string createdFrom)
         {
-            var query = new QueryDefinition("SELECT TOP 1 VALUE a.Tier FROM a WHERE a.CreatedFrom = @CreatedFrom ORDER BY a.Tier ASC")
+            QueryDefinition query = new QueryDefinition("SELECT TOP 1 VALUE a.Tier FROM a WHERE a.CreatedFrom = @CreatedFrom ORDER BY a.Tier ASC")
                         .WithParameter("@CreatedFrom", createdFrom?.ToLower());
-            using var streamResultSet = this.Container.GetItemQueryStreamIterator(
+            using FeedIterator streamResultSet = this.Container.GetItemQueryStreamIterator(
                                             query,
                                             requestOptions: new QueryRequestOptions
                                             {
@@ -50,7 +50,7 @@ namespace number_sequence.DataAccess
                                                 PartitionKey = this.pk
                                             });
 
-            var response = await streamResultSet.ReadNextAsync();
+            ResponseMessage response = await streamResultSet.ReadNextAsync();
             this.logger.LogInformation($"Cost: {response.Headers.RequestCharge} ({nameof(AccountDataAccess)}.{nameof(GetMaxTierByCreatedFromAsync)})");
 
             return response.IsSuccessStatusCode
@@ -60,9 +60,9 @@ namespace number_sequence.DataAccess
 
         private async Task<int> GetCountByCreatedFromAsync(string createdFrom)
         {
-            var query = new QueryDefinition("SELECT VALUE COUNT(1) FROM a WHERE a.CreatedFrom = @CreatedFrom")
+            QueryDefinition query = new QueryDefinition("SELECT VALUE COUNT(1) FROM a WHERE a.CreatedFrom = @CreatedFrom")
                         .WithParameter("@CreatedFrom", createdFrom?.ToLower());
-            using var streamResultSet = this.Container.GetItemQueryStreamIterator(
+            using FeedIterator streamResultSet = this.Container.GetItemQueryStreamIterator(
                                             query,
                                             requestOptions: new QueryRequestOptions
                                             {
@@ -70,7 +70,7 @@ namespace number_sequence.DataAccess
                                                 PartitionKey = this.pk
                                             });
 
-            var response = await streamResultSet.ReadNextAsync();
+            ResponseMessage response = await streamResultSet.ReadNextAsync();
             this.logger.LogInformation($"Cost: {response.Headers.RequestCharge} ({nameof(AccountDataAccess)}.{nameof(GetCountByCreatedFromAsync)})");
 
             return response.IsSuccessStatusCode
@@ -94,14 +94,14 @@ namespace number_sequence.DataAccess
             };
             this.logger.LogInformation($"Creating account: {accountModel.ToJsonString()}");
 
-            var response = await this.Container.CreateItemAsync(accountModel, this.pk);
+            ItemResponse<AccountModel> response = await this.Container.CreateItemAsync(accountModel, this.pk);
             this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(AccountDataAccess)}.{nameof(CreateAsync)})");
             return response.Resource;
         }
 
         public async Task ValidateAsync(string name, string key)
         {
-            var account = await this.TryGetAsync(name);
+            Account account = await this.TryGetAsync(name);
             if (account == default) throw new BadRequestException($"Account with name [{name}] does not exist.");
             if (key?.ComputeSHA256() != account.Key) throw new UnauthorizedException($"Provided key did not match for account with name [{name}].");
         }

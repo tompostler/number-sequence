@@ -11,13 +11,13 @@ namespace number_sequence.Utilities
             {
                 const string validCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-                var randomBytes = new byte[length];
+                byte[] randomBytes = new byte[length];
                 rng.GetBytes(randomBytes);
 
                 var stringBuilder = new StringBuilder();
-                foreach (var randomByte in randomBytes)
+                foreach (byte randomByte in randomBytes)
                 {
-                    stringBuilder.Append(validCharacters[randomByte % validCharacters.Length]);
+                    _ = stringBuilder.Append(validCharacters[randomByte % validCharacters.Length]);
                 }
 
                 return stringBuilder.ToString();

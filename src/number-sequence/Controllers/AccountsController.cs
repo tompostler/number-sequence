@@ -19,7 +19,7 @@ namespace number_sequence.Controllers
         [HttpGet("{name}")]
         public async Task<IActionResult> GetAsync(string name)
         {
-            var account = await this.accountDataAccess.TryGetAsync(name);
+            Account account = await this.accountDataAccess.TryGetAsync(name);
 
             if (account == default)
             {
@@ -37,7 +37,7 @@ namespace number_sequence.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] Account account)
         {
             account.CreatedFrom = this.Request.HttpContext.Connection.RemoteIpAddress.ToString();
-            var createdAccount = await this.accountDataAccess.CreateAsync(account);
+            Account createdAccount = await this.accountDataAccess.CreateAsync(account);
             createdAccount.Key = default;
             return this.Ok(createdAccount);
         }

@@ -128,7 +128,7 @@ namespace number_sequence.Controllers
 
         private static ulong Generate(byte bits)
         {
-            var bytes = new byte[8];
+            byte[] bytes = new byte[8];
             _rng.GetBytes(bytes);
             ulong val = 0;
             for (int i = 0; i < 8; i++)

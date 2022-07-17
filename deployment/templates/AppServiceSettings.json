@@ -16,10 +16,25 @@
     "siteName": {
       "type": "string",
       "defaultValue": "ns-tcp-wtf"
+    },
+    "sqlServerName": {
+      "type": "string"
+    },
+    "sqlDatabaseName": {
+      "type": "string",
+      "defaultValue": "ns"
+    },
+    "sqlAdminUsername": {
+      "type": "string",
+      "defaultValue": "sqladmin"
+    },
+    "sqlAdminPassword": {
+      "type": "securestring"
     }
   },
   "variables": {
-    "cosmosDbId": "[resourceId(parameters('cosmosDb').resourceGroupName, 'Microsoft.DocumentDB/databaseAccounts/', parameters('cosmosDb').name)]"
+    "cosmosDbId": "[resourceId(parameters('cosmosDb').resourceGroupName, 'Microsoft.DocumentDB/databaseAccounts/', parameters('cosmosDb').name)]",
+    "sqlConnectionString": "[concat('Server=tcp:', parameters('sqlServerName'), environment().suffixes.sqlServerHostname, ',1433;Initial Catalog=', parameters('sqlDatabaseName'), ';Persist Security Info=False;User ID=', parameters('sqlAdminUsername'), ';Password=', parameters('sqlAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
   },
   "resources": [
     {
@@ -37,6 +52,7 @@
         "DOCKER_REGISTRY_SERVER_PASSWORD": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', 'tomlatex'), '2019-05-01').passwords[0].value]",
         "DOCKER_REGISTRY_SERVER_URL": "https://tomlatex.azurecr.io",
         "DOCKER_REGISTRY_SERVER_USERNAME": "tomlatex",
+        "Sql__ConnectionString": "[variables('sqlConnectionString')]",
         "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "7",
         "WEBSITES_ENABLE_APP_SERVICE_STORAGE": "false"
       }

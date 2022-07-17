@@ -30,7 +30,7 @@ namespace number_sequence.DataAccess
         {
             try
             {
-                var response = await this.Container.ReadItemAsync<CountModel>(name?.ToLower(), this.MakePK(account));
+                ItemResponse<CountModel> response = await this.Container.ReadItemAsync<CountModel>(name?.ToLower(), this.MakePK(account));
                 this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(CountDataAccess)}.{nameof(TryGetAsync)})");
                 return response.Resource;
             }
@@ -43,7 +43,7 @@ namespace number_sequence.DataAccess
         private async Task<int> GetCountByAccountAsync(string account)
         {
             var query = new QueryDefinition("SELECT VALUE COUNT(1) FROM c");
-            using var streamResultSet = this.Container.GetItemQueryStreamIterator(
+            using FeedIterator streamResultSet = this.Container.GetItemQueryStreamIterator(
                                             query,
                                             requestOptions: new QueryRequestOptions
                                             {
@@ -51,7 +51,7 @@ namespace number_sequence.DataAccess
                                                 PartitionKey = this.MakePK(account)
                                             });
 
-            var response = await streamResultSet.ReadNextAsync();
+            ResponseMessage response = await streamResultSet.ReadNextAsync();
             this.logger.LogInformation($"Cost: {response.Headers.RequestCharge} ({nameof(CountDataAccess)}.{nameof(GetCountByAccountAsync)})");
 
             return response.IsSuccessStatusCode
@@ -74,16 +74,16 @@ namespace number_sequence.DataAccess
             };
             this.logger.LogInformation($"Creating count: {countModel.ToJsonString()}");
 
-            var response = await this.Container.CreateItemAsync(countModel, this.MakePK(count.Account));
+            ItemResponse<CountModel> response = await this.Container.CreateItemAsync(countModel, this.MakePK(count.Account));
             this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(CountDataAccess)}.{nameof(CreateAsync)})");
             return response.Resource;
         }
 
         public async Task<Count> IncrementAsync(string account, string name)
         {
-            var response = await this.Container.ReadItemAsync<CountModel>(name?.ToLower(), this.MakePK(account));
+            ItemResponse<CountModel> response = await this.Container.ReadItemAsync<CountModel>(name?.ToLower(), this.MakePK(account));
             this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(CountDataAccess)}.{nameof(IncrementAsync)}.IncrementAsync)");
-            var count = response.Resource;
+            CountModel count = response.Resource;
             count.Value += 1;
             try
             {
@@ -102,9 +102,9 @@ namespace number_sequence.DataAccess
 
         public async Task<Count> IncrementByAmountAsync(string account, string name, ulong amount)
         {
-            var response = await this.Container.ReadItemAsync<CountModel>(name?.ToLower(), this.MakePK(account));
+            ItemResponse<CountModel> response = await this.Container.ReadItemAsync<CountModel>(name?.ToLower(), this.MakePK(account));
             this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(CountDataAccess)}.{nameof(IncrementAsync)}.IncrementByAmountAsync)");
-            var count = response.Resource;
+            CountModel count = response.Resource;
             count.Value += amount;
             try
             {

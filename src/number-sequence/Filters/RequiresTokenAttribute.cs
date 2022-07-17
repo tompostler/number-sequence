@@ -20,11 +20,11 @@ namespace number_sequence.Filters
     {
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var logger = context.HttpContext.RequestServices.GetService<ILogger<RequiresTokenAttribute>>();
+            ILogger<RequiresTokenAttribute> logger = context.HttpContext.RequestServices.GetService<ILogger<RequiresTokenAttribute>>();
 
             // If a token url parameter is provided, that supersedes the check for the Authorization header
             string token = default;
-            if (context.HttpContext.Request.Query.TryGetValue("token", out var tokenValues))
+            if (context.HttpContext.Request.Query.TryGetValue("token", out Microsoft.Extensions.Primitives.StringValues tokenValues))
             {
                 token = tokenValues.First();
                 logger.LogInformation("Token found in URL.");
@@ -34,7 +34,7 @@ namespace number_sequence.Filters
             // So try to read it from the auth header
             if (string.IsNullOrWhiteSpace(token))
             {
-                if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeaders))
+                if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out Microsoft.Extensions.Primitives.StringValues authHeaders))
                 {
                     token = authHeaders.FirstOrDefault(ah => ah.StartsWith("Token "))?.Split(' ').Last();
                     logger.LogInformation("Token found in headers.");
@@ -51,7 +51,7 @@ namespace number_sequence.Filters
 
             // See if it's in the cache. That would mean it's valid
             logger.LogInformation($"Token: {token}");
-            var memoryCache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
+            IMemoryCache memoryCache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
             if (memoryCache.TryGetValue(token, out TokenPrincipal principal))
             {
                 logger.LogInformation("Token found in cache.");
@@ -78,7 +78,7 @@ namespace number_sequence.Filters
                 bool isValid = Validator.TryValidateObject(tokenValue, validationContext, validationResults, validateAllProperties: true);
                 if (!isValid)
                 {
-                    var validationResultString = $"Token model not valid:\n{string.Join('\n', validationResults)}";
+                    string validationResultString = $"Token model not valid:\n{string.Join('\n', validationResults)}";
                     logger.LogWarning(validationResultString);
                     context.Result = new UnauthorizedObjectResult(validationResultString);
                     return;
@@ -86,8 +86,8 @@ namespace number_sequence.Filters
                 else
                 {
                     // See if a token by that name exists
-                    var tokenDataAccess = context.HttpContext.RequestServices.GetService<TokenDataAccess>();
-                    var tokenModel = await tokenDataAccess.TryGetAsync(tokenValue.Account, tokenValue.Name);
+                    TokenDataAccess tokenDataAccess = context.HttpContext.RequestServices.GetService<TokenDataAccess>();
+                    Token tokenModel = await tokenDataAccess.TryGetAsync(tokenValue.Account, tokenValue.Name);
                     if (tokenModel == default)
                     {
                         logger.LogWarning("Token not found.");
@@ -109,7 +109,7 @@ namespace number_sequence.Filters
                             principal = new TokenPrincipal(new GenericIdentity(tokenValue.Account)) { Token = tokenValue };
                             context.HttpContext.User = principal;
 
-                            memoryCache.Set(
+                            _ = memoryCache.Set(
                                 token,
                                 principal,
                                 new MemoryCacheEntryOptions
@@ -124,7 +124,7 @@ namespace number_sequence.Filters
                 }
             }
 
-            await next();
+            _ = await next();
         }
 
         public sealed class TokenPrincipal : GenericPrincipal

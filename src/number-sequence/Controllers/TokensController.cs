@@ -22,7 +22,7 @@ namespace number_sequence.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] Token token)
         {
             await this.accountDataAccess.ValidateAsync(token?.Account, token?.Key);
-            var createdToken = await this.tokenDataAccess.CreateAsync(token);
+            Token createdToken = await this.tokenDataAccess.CreateAsync(token);
             return this.Ok(createdToken);
         }
     }

@@ -22,7 +22,7 @@ namespace number_sequence.Extensions
 
         public static async Task<List<T>> ReadResultsAsync<T>(this Stream stream)
         {
-            var queryResponse = await JsonSerializer.DeserializeAsync<CosmosResponse<T>>(stream, options);
+            CosmosResponse<T> queryResponse = await JsonSerializer.DeserializeAsync<CosmosResponse<T>>(stream, options);
             return queryResponse.Documents;
         }
     }

@@ -30,7 +30,7 @@ namespace number_sequence.DataAccess
         {
             try
             {
-                var response = await this.Container.ReadItemAsync<TokenModel>(name?.ToLower(), this.MakePK(account));
+                ItemResponse<TokenModel> response = await this.Container.ReadItemAsync<TokenModel>(name?.ToLower(), this.MakePK(account));
                 this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(TokenDataAccess)}.{nameof(TryGetAsync)})");
                 return response.Resource;
             }
@@ -43,7 +43,7 @@ namespace number_sequence.DataAccess
         private async Task<int> GetCountByAccountAsync(string account)
         {
             var query = new QueryDefinition("SELECT VALUE COUNT(1) FROM t");
-            using var streamResultSet = this.Container.GetItemQueryStreamIterator(
+            using FeedIterator streamResultSet = this.Container.GetItemQueryStreamIterator(
                                             query,
                                             requestOptions: new QueryRequestOptions
                                             {
@@ -51,7 +51,7 @@ namespace number_sequence.DataAccess
                                                 PartitionKey = this.MakePK(account)
                                             });
 
-            var response = await streamResultSet.ReadNextAsync();
+            ResponseMessage response = await streamResultSet.ReadNextAsync();
             this.logger.LogInformation($"Cost: {response.Headers.RequestCharge} ({nameof(TokenDataAccess)}.{nameof(GetCountByAccountAsync)})");
 
             return response.IsSuccessStatusCode
@@ -63,7 +63,7 @@ namespace number_sequence.DataAccess
         {
             if (await this.TryGetAsync(token.Account, token.Name) != default) throw new ConflictException($"Token with name [{token.Name}] already exists.");
             if (await this.GetCountByAccountAsync(token.Account) >= TierLimits.TokensPerAccount[(await this.accountDataAccess.TryGetAsync(token.Account)).Tier]) throw new ConflictException($"Too many tokens already created for account with name [{token.Account}].");
-            var account = await this.accountDataAccess.TryGetAsync(token.Account);
+            Account account = await this.accountDataAccess.TryGetAsync(token.Account);
 
             var tokenModel = new TokenModel
             {
@@ -78,7 +78,7 @@ namespace number_sequence.DataAccess
             this.logger.LogInformation($"Creating token: {tokenModel.ToJsonString()}");
             tokenModel.Value = TokenValue.CreateFrom(tokenModel).ToBase64JsonString();
 
-            var response = await this.Container.CreateItemAsync(tokenModel, this.MakePK(token.Account));
+            ItemResponse<TokenModel> response = await this.Container.CreateItemAsync(tokenModel, this.MakePK(token.Account));
             this.logger.LogInformation($"Cost: {response.RequestCharge} ({nameof(TokenDataAccess)}.{nameof(CreateAsync)})");
             return response.Resource;
         }
