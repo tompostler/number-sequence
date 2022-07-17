@@ -71,10 +71,12 @@ jobs:
     inputs:
       source: current
       artifact: drop
+      patterns: output/number-sequence.zip
+      path: $(Agent.BuildDirectory)/ns-drop/
 
   - task: ExtractFiles@1
     inputs:
-      archiveFilePatterns: $(Agent.BuildDirectory)/drop/output/number-sequence.zip
+      archiveFilePatterns: $(Agent.BuildDirectory)/ns-drop/output/number-sequence.zip
       destinationFolder: $(Agent.BuildDirectory)/ns-extract/content/
 
   - task: CopyFiles@1
