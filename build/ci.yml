@@ -27,6 +27,12 @@ jobs:
       command: restore
       projects: src/number-sequence.sln
 
+  - task: PowerShell@2
+    displayName: Create dummy file for IntTests
+    inputs:
+      targetType: inline
+      script: New-Item -Path $(Build.SourcesDirectory)/src/number-sequence/ -Name appsettings.Development.json -Type File
+
   - task: DotNetCoreCLI@2
     displayName: Build solution
     inputs:
