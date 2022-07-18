@@ -26,7 +26,7 @@ namespace number_sequence.IntTests
         internal static async Task ResetCosmosEmulatorAsync()
         {
             // Get the connection information for the local collection in Azure
-            using var sr = new StreamReader(typeof(Assembly).Assembly.GetManifestResourceStream(typeof(Assembly), "number_sequence.IntTests.appsettings.Development.json"));
+            using var sr = new StreamReader(typeof(Assembly).Assembly.GetManifestResourceStream("number_sequence.IntTests.appsettings.Development.json"));
             string appSettingsLocal = sr.ReadToEnd();
             Options.CosmosDB cosmosOptions = JToken.Parse(appSettingsLocal)[nameof(Options.CosmosDB)].ToObject<Options.CosmosDB>();
 

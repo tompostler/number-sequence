@@ -40,11 +40,18 @@ namespace TcpWtf.NumberSequence.Client
 
             Uri baseUri = stamp switch
             {
-                Stamp.LocalDev => new Uri("http://localhost:44320/"),
+                Stamp.LocalDev => new Uri("https://localhost:44321/"),
                 Stamp.Public => new Uri("https://ns.tcp.wtf/"),
                 _ => throw new ArgumentOutOfRangeException(nameof(stamp))
             };
-            this.httpClient = new HttpClient() { BaseAddress = baseUri };
+            if (stamp == Stamp.LocalDev)
+            {
+                this.httpClient = new HttpClient(new HttpClientHandler() { ServerCertificateCustomValidationCallback = (_, _, _, _) => true }) { BaseAddress = baseUri };
+            }
+            else
+            {
+                this.httpClient = new HttpClient() { BaseAddress = baseUri };
+            }
 
             this.clientVersion = Assembly.GetAssembly(typeof(NsTcpWtfClient)).GetName().Version.ToString(3);
             this.clientName = Environment.MachineName;
