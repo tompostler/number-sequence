@@ -19,7 +19,7 @@ $localSettings = [PSCustomObject]@{
         ContainerId = 'nstcpwtflocal';
     };
     Google   = [PSCustomObject]@{
-        Credentials = (Get-AzKeyVaultSecret -VaultName tompostler -Name google-dr-chiro-credentials -AsPlainText);
+        Credentials = (Get-AzKeyVaultSecret -VaultName tompostler -Name google-dr-chiro-credentials -AsPlainText).Replace('\\"', '"');
     };
     Sql      = [PSCustomObject]@{
         ConnectionString = (
