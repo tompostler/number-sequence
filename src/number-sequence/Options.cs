@@ -10,6 +10,7 @@ namespace number_sequence
             _ = services.Configure<CosmosDB>(configuration.GetSection(nameof(CosmosDB)));
             _ = services.Configure<Google>(configuration.GetSection(nameof(Google)));
             _ = services.Configure<Sql>(configuration.GetSection(nameof(Sql)));
+            _ = services.Configure<Storage>(configuration.GetSection(nameof(Storage)));
             return services;
         }
 
@@ -27,6 +28,11 @@ namespace number_sequence
         }
 
         public sealed class Sql
+        {
+            public string ConnectionString { get; set; }
+        }
+
+        public sealed class Storage
         {
             public string ConnectionString { get; set; }
         }

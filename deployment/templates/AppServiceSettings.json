@@ -37,7 +37,9 @@
   },
   "variables": {
     "cosmosDbId": "[resourceId(parameters('cosmosDb').resourceGroupName, 'Microsoft.DocumentDB/databaseAccounts/', parameters('cosmosDb').name)]",
-    "sqlConnectionString": "[concat('Server=tcp:', parameters('sqlServerName'), environment().suffixes.sqlServerHostname, ',1433;Initial Catalog=', parameters('sqlDatabaseName'), ';Persist Security Info=False;User ID=', parameters('sqlAdminUsername'), ';Password=', parameters('sqlAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+    "sqlConnectionString": "[concat('Server=tcp:', parameters('sqlServerName'), environment().suffixes.sqlServerHostname, ',1433;Initial Catalog=', parameters('sqlDatabaseName'), ';Persist Security Info=False;User ID=', parameters('sqlAdminUsername'), ';Password=', parameters('sqlAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+    "storageAccountName": "[replace(parameters('siteName'), '-', '')]",
+    "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
   },
   "resources": [
     {
@@ -57,6 +59,7 @@
         "DOCKER_REGISTRY_SERVER_USERNAME": "tomlatex",
         "Google__Credentials": "[parameters('googleCredentials')]",
         "Sql__ConnectionString": "[variables('sqlConnectionString')]",
+        "Storage__ConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
         "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "7",
         "WEBSITES_ENABLE_APP_SERVICE_STORAGE": "false"
       }

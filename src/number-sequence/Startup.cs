@@ -46,6 +46,9 @@ namespace number_sequence
                       sqloptions => sqloptions
                           .EnableRetryOnFailure()));
 
+            // Data Access, Storage Account
+            _ = services.AddSingleton<DataAccess.NsStorage>();
+
             _ = services.AddSingleton<Utilities.Sentinals>();
 
             _ = services.AddHostedService<Services.MigrationService>();

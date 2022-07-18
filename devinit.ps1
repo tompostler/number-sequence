@@ -28,6 +28,12 @@ $localSettings = [PSCustomObject]@{
                 + (Get-AzKeyVaultSecret -VaultName tompostler -Name tompostler-sqladmin-password -AsPlainText) `
                 + ';');
     };
+    Storage  = [PSCustomObject]@{
+        ConnectionString = (
+            'DefaultEndpointsProtocol=https;AccountName=nstcpwtf;AccountKey=' `
+                + ((Get-AzStorageAccountKey -ResourceGroupName tcp-wtf-hosting -Name nstcpwtf)[1].Value) `
+                + ';EndpointSuffix=core.windows.net');
+    };
 };
 $localSettingsPath = Join-Path ($PSScriptRoot) '.\src\number-sequence\appsettings.Development.json';
 # Create the item (including path!) if it doesn't exist
