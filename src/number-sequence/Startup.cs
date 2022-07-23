@@ -28,7 +28,7 @@ namespace number_sequence
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
                 );
 
-            _ = services.AddLogging(options => options.AddConsole().AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Debug);
+            _ = services.AddLogging(options => options.AddConsole().AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Debug));
             _ = services.AddApplicationInsightsTelemetry();
 
             _ = services.AddNsConfig(this.Configuration);
