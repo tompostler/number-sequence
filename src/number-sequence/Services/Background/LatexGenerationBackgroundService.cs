@@ -103,6 +103,14 @@ namespace number_sequence.Services.Background
                 }
 
                 this.logger.LogInformation($"Downloading {blob.Name}");
+
+                var blobFileInfo = new FileInfo(blob.Name);
+                if (!blobFileInfo.Directory.Exists)
+                {
+                    blobFileInfo.Directory.Create();
+                    this.logger.LogInformation($"Created {blobFileInfo.Directory.FullName}");
+                }
+
                 _ = await blob.DownloadToAsync(Path.Combine(workingDir.FullName, blob.Name), cancellationToken);
             }
             this.logger.LogInformation("Download complete.");
