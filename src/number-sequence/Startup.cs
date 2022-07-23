@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
@@ -27,7 +28,7 @@ namespace number_sequence
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
                 );
 
-            _ = services.AddLogging(options => options.AddConsole());
+            _ = services.AddLogging(options => options.AddConsole().AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Debug);
             _ = services.AddApplicationInsightsTelemetry();
 
             _ = services.AddNsConfig(this.Configuration);
