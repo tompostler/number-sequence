@@ -48,17 +48,19 @@ namespace number_sequence.Services.Background
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName);
-                try
+                using (IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName))
                 {
-                    await this.InnerExecuteAsync(stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    this.logger.LogError(ex, "Could not perform operation.");
-                }
+                    try
+                    {
+                        await this.InnerExecuteAsync(stoppingToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.logger.LogError(ex, "Could not perform operation.");
+                    }
 
-                this.logger.LogInformation($"Sleeping {this.delay} until the next iteration.");
+                    this.logger.LogInformation($"Sleeping {this.delay} until the next iteration.");
+                }
                 await Task.Delay(this.delay, stoppingToken);
             }
         }
