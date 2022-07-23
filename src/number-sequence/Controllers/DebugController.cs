@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using System;
-using System.Net;
-using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace number_sequence.Controllers

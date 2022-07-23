@@ -32,27 +32,42 @@ namespace number_sequence
 
             _ = services.AddNsConfig(this.Configuration);
 
-            // Data Access, Cosmos DB
+
+            //
+            // Data Access
+            //
+
+            // Cosmos DB
             _ = services.AddSingleton<DataAccess.AccountDataAccess>();
             _ = services.AddSingleton<DataAccess.CountDataAccess>();
             _ = services.AddSingleton<DataAccess.TokenDataAccess>();
-
-            // Data Access, Google
+            // Email
+            _ = services.AddSingleton<DataAccess.EmailDataAccess>();
+            // Google
             _ = services.AddSingleton<DataAccess.GoogleSheetDataAccess>();
-
-            // Data Access, SQL
+            // SQL
             _ = services.AddDbContext<DataAccess.NsContext>((provider, options) => options
                   .UseSqlServer(
                       provider.GetRequiredService<IOptions<Options.Sql>>().Value.ConnectionString,
                       sqloptions => sqloptions
                           .EnableRetryOnFailure()));
-
-            // Data Access, Storage Account
+            _ = services.AddHostedService<Services.MigrationService>();
+            // Storage Account
             _ = services.AddSingleton<DataAccess.NsStorage>();
+
+
+            //
+            // Utilities
+            //
 
             _ = services.AddSingleton<Utilities.Sentinals>();
 
-            _ = services.AddHostedService<Services.MigrationService>();
+
+            //
+            // Background services
+            //
+
+            _ = services.AddHostedService<Services.Background.LatexGenerationBackgroundService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

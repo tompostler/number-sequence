@@ -14,5 +14,6 @@ namespace number_sequence.Models
         public DateTimeOffset CreatedDate { get; set; }
 
         public DateTimeOffset? ProcessedAt { get; set; }
+        public bool? Successful { get; set; }
     }
 }
