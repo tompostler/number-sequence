@@ -104,9 +104,8 @@ namespace number_sequence.Services.Background
                     continue;
                 }
 
-                this.logger.LogInformation($"Downloading {blob.Name}");
-
                 var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name));
+                this.logger.LogInformation($"Downloading {blob.Name} to {blobFileInfo.FullName}");
                 if (!blobFileInfo.Directory.Exists)
                 {
                     blobFileInfo.Directory.Create();
