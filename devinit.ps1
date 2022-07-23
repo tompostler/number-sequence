@@ -18,6 +18,12 @@ $localSettings = [PSCustomObject]@{
         DatabaseId  = 'shared';
         ContainerId = 'nstcpwtflocal';
     };
+    Email    = [PSCustomObject]@{
+        Server   = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-server -AsPlainText);
+        Port     = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-port -AsPlainText);
+        Username = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-username -AsPlainText);
+        Password = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-password -AsPlainText);
+    };
     Google   = [PSCustomObject]@{
         Credentials = (Get-AzKeyVaultSecret -VaultName tompostler -Name google-dr-chiro-credentials -AsPlainText).Replace('\\"', '"');
     };

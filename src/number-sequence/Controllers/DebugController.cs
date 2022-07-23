@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using System;
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace number_sequence.Controllers
@@ -8,12 +12,12 @@ namespace number_sequence.Controllers
     [ApiController, Route("[controller]")]
     public sealed class DebugController : ControllerBase
     {
-        //private readonly IMemoryCache memoryCache;
+        private readonly IMemoryCache memoryCache;
 
-        //public DebugController(IMemoryCache memoryCache)
-        //{
-        //    this.memoryCache = memoryCache;
-        //}
+        public DebugController(IMemoryCache memoryCache)
+        {
+            this.memoryCache = memoryCache;
+        }
 
         //[HttpGet("dumpcache")]
         //public IActionResult DumpCache()
