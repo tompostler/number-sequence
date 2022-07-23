@@ -1,5 +1,4 @@
 ﻿using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -92,8 +91,6 @@ namespace number_sequence.Services.Background
                 this.logger.LogWarning($"Working dir already existed. Deleting it.");
                 workingDir.Delete(recursive: true);
             }
-            DirectoryInfo inputDir = workingDir.CreateSubdirectory("input");
-            DirectoryInfo outputDir = workingDir.CreateSubdirectory("output");
 
 
             // Download the input
@@ -109,12 +106,13 @@ namespace number_sequence.Services.Background
                 _ = await blob.DownloadToAsync(Path.Combine(workingDir.FullName, blob.Name), cancellationToken);
             }
             this.logger.LogInformation("Download complete.");
+            DateTimeOffset downloadCompleteTime = DateTimeOffset.UtcNow;
 
 
             // Set up the log files
-            FileInfo stderr = new(Path.Combine(outputDir.FullName, "std.err"));
+            FileInfo stderr = new(Path.Combine(workingDir.FullName, "std.err"));
             using StreamWriter stderrStream = new(stderr.OpenWrite());
-            FileInfo stdout = new(Path.Combine(outputDir.FullName, "std.out"));
+            FileInfo stdout = new(Path.Combine(workingDir.FullName, "std.out"));
             using StreamWriter stdoutStream = new(stderr.OpenWrite());
 
 
@@ -122,8 +120,8 @@ namespace number_sequence.Services.Background
             ProcessStartInfo processStartInfo = new()
             {
                 FileName = "/usr/bin/pdflatex",
-                Arguments = $"-interaction=nonstopmode {Path.Combine(inputDir.FullName, $"{latexDocument.Id}.tex")}",
-                WorkingDirectory = outputDir.FullName,
+                Arguments = $"-interaction=nonstopmode {Path.Combine(workingDir.FullName, $"{latexDocument.Id}.tex")}",
+                WorkingDirectory = workingDir.FullName,
 
                 WindowStyle = ProcessWindowStyle.Hidden,
                 CreateNoWindow = true,
@@ -154,7 +152,7 @@ namespace number_sequence.Services.Background
                 stderrStream.WriteLine(msg);
 
                 // Save
-                await this.UploadOutputDirAsync(latexDocument, workingDir, outputDir, cancellationToken);
+                await this.UploadOutputDirAsync(latexDocument, workingDir, downloadCompleteTime, cancellationToken);
                 latexDocument.ProcessedAt = DateTimeOffset.UtcNow;
                 latexDocument.Successful = false;
                 _ = await nsContext.SaveChangesAsync(cancellationToken);
@@ -199,17 +197,23 @@ namespace number_sequence.Services.Background
 
 
             // Save
-            await this.UploadOutputDirAsync(latexDocument, workingDir, outputDir, cancellationToken);
+            await this.UploadOutputDirAsync(latexDocument, workingDir, downloadCompleteTime, cancellationToken);
             latexDocument.ProcessedAt = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
         }
 
-        private async Task UploadOutputDirAsync(LatexDocument latexDocument, DirectoryInfo workingDir, DirectoryInfo outputDir, CancellationToken cancellationToken)
+        private async Task UploadOutputDirAsync(LatexDocument latexDocument, DirectoryInfo workingDir, DateTimeOffset downloadCompleteTime, CancellationToken cancellationToken)
         {
-            foreach (FileInfo fileInfo in outputDir.EnumerateFiles("*", SearchOption.AllDirectories))
+            foreach (FileInfo fileInfo in workingDir.EnumerateFiles("*", SearchOption.AllDirectories))
             {
+                if (fileInfo.LastWriteTimeUtc < downloadCompleteTime)
+                {
+                    this.logger.LogInformation($"Not uploading {fileInfo.FullName} as last write time was {fileInfo.LastWriteTimeUtc:u} and download complete time was {downloadCompleteTime:u} ({downloadCompleteTime - fileInfo.LastWriteTimeUtc} difference)");
+                    continue;
+                }
+
                 this.logger.LogInformation($"Uploading {fileInfo.FullName}");
-                BlobClient blobClient = this.nsStorage.GetBlobClient(latexDocument.Id, fileInfo.FullName.Substring(workingDir.FullName.Length));
+                BlobClient blobClient = this.nsStorage.GetBlobClient(latexDocument.Id, "output/" + fileInfo.FullName.Substring(workingDir.FullName.Length));
                 _ = await blobClient.UploadAsync(fileInfo.FullName, cancellationToken);
             }
             this.logger.LogInformation("Upload complete.");
