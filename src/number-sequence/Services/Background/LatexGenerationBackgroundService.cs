@@ -106,7 +106,7 @@ namespace number_sequence.Services.Background
 
                 this.logger.LogInformation($"Downloading {blob.Name}");
 
-                var blobFileInfo = new FileInfo(blob.Name);
+                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name));
                 if (!blobFileInfo.Directory.Exists)
                 {
                     blobFileInfo.Directory.Create();
