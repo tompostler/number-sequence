@@ -104,7 +104,7 @@ namespace number_sequence.Services.Background
                     continue;
                 }
 
-                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name.Substring(latexDocument.Id.Length + 1)));
+                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name.Substring((latexDocument.Id + "/input/").Length)));
                 this.logger.LogInformation($"Downloading {blob.Name} to {blobFileInfo.FullName}");
                 if (!blobFileInfo.Directory.Exists)
                 {
