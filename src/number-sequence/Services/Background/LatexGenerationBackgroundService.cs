@@ -160,6 +160,8 @@ namespace number_sequence.Services.Background
                 string msg = $"pdflatex ended with exit code {firstPassProcess.ExitCode}";
                 this.logger.LogError(msg);
                 stderrStream.WriteLine(msg);
+                await stderrStream.FlushAsync();
+                await stdoutStream.FlushAsync();
 
                 // Save
                 await this.UploadOutputDirAsync(latexDocument, workingDir, downloadCompleteTime, cancellationToken);
@@ -204,6 +206,8 @@ namespace number_sequence.Services.Background
             {
                 latexDocument.Successful = true;
             }
+            await stderrStream.FlushAsync();
+            await stdoutStream.FlushAsync();
 
 
             // Save
