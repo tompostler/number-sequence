@@ -227,7 +227,7 @@ namespace number_sequence.Services.Background
                 }
 
                 string targetPath = Path.Combine("output", fileInfo.FullName.Substring(workingDir.FullName.Length + 1));
-                this.logger.LogInformation($"Uploading {fileInfo.FullName} to {targetPath}");
+                this.logger.LogInformation($"Uploading {fileInfo.FullName} to {latexDocument.Id}/{targetPath}");
                 BlobClient blobClient = this.nsStorage.GetBlobClientForLatexJob(latexDocument.Id, targetPath);
                 _ = await blobClient.UploadAsync(fileInfo.FullName, cancellationToken);
             }
