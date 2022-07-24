@@ -112,7 +112,7 @@ namespace number_sequence.Services.Background
                     this.logger.LogInformation($"Created {blobFileInfo.Directory.FullName}");
                 }
 
-                _ = await blob.DownloadToAsync(Path.Combine(workingDir.FullName, blob.Name), cancellationToken);
+                _ = await blob.DownloadToAsync(blobFileInfo.FullName, cancellationToken);
             }
             this.logger.LogInformation("Download complete.");
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
