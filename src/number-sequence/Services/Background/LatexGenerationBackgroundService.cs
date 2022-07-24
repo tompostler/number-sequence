@@ -122,7 +122,7 @@ namespace number_sequence.Services.Background
             FileInfo stderr = new(Path.Combine(workingDir.FullName, "std.err"));
             using StreamWriter stderrStream = new(stderr.OpenWrite());
             FileInfo stdout = new(Path.Combine(workingDir.FullName, "std.out"));
-            using StreamWriter stdoutStream = new(stderr.OpenWrite());
+            using StreamWriter stdoutStream = new(stdout.OpenWrite());
 
 
             // Run pdflatex twice
