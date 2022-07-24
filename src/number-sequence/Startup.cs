@@ -68,6 +68,7 @@ namespace number_sequence
             // Background services
             //
 
+            _ = services.AddHostedService<Services.Background.EmailLatexDocumentBackgroundService>();
             _ = services.AddHostedService<Services.Background.LatexGenerationBackgroundService>();
         }
 
