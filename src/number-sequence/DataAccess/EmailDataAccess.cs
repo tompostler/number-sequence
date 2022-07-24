@@ -27,16 +27,17 @@ namespace number_sequence.DataAccess
             smtpClient.Credentials = new NetworkCredential(this.emailOptions.Username, this.emailOptions.Password);
 
             var sb = new StringBuilder();
-            sb.AppendLine("Sending message:");
-            sb.AppendLine($"TO:  {string.Join(';', message.To.Select(t => t.Address))}");
-            sb.AppendLine($"CC:  {string.Join(';', message.CC.Select(t => t.Address))}");
-            sb.AppendLine($"Bcc: {string.Join(';', message.Bcc.Select(t => t.Address))}");
-            sb.AppendLine($"Subject: {message.Subject}");
-            sb.AppendLine($"Attachments: {message.Attachments.Count}");
-            sb.AppendLine("Body:");
-            sb.AppendLine(message.Body);
+            _ = sb.AppendLine("Sending message:");
+            _ = sb.AppendLine($"TO:  {string.Join(';', message.To.Select(t => t.Address))}");
+            _ = sb.AppendLine($"CC:  {string.Join(';', message.CC.Select(t => t.Address))}");
+            _ = sb.AppendLine($"Bcc: {string.Join(';', message.Bcc.Select(t => t.Address))}");
+            _ = sb.AppendLine($"Subject: {message.Subject}");
+            _ = sb.AppendLine($"Attachments: {message.Attachments.Count}");
+            _ = sb.AppendLine("Body:");
+            _ = sb.AppendLine(message.Body);
             this.logger.LogInformation(sb.ToString());
 
+            message.From = new MailAddress(this.emailOptions.Username);
             await smtpClient.SendMailAsync(message, cancellationToken);
         }
     }
