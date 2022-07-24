@@ -148,7 +148,7 @@ namespace number_sequence.Services.Background
             firstPassProcess.ErrorDataReceived += (_, data) => { if (data.Data != null) { this.logger.LogError(data.Data); } };
             firstPassProcess.ErrorDataReceived += (_, data) => { if (data.Data != null) { stderrStream.WriteLine($"{DateTimeOffset.UtcNow:u}: {data.Data.Replace("\n", $"\n{DateTimeOffset.UtcNow:u}: ")}"); } };
             firstPassProcess.OutputDataReceived += (_, data) => { if (data.Data != null) { this.logger.LogInformation(data.Data); } };
-            firstPassProcess.ErrorDataReceived += (_, data) => { if (data.Data != null) { stdoutStream.WriteLine($"{DateTimeOffset.UtcNow:u}: {data.Data.Replace("\n", $"\n{DateTimeOffset.UtcNow:u}: ")}"); } };
+            firstPassProcess.OutputDataReceived += (_, data) => { if (data.Data != null) { stdoutStream.WriteLine($"{DateTimeOffset.UtcNow:u}: {data.Data.Replace("\n", $"\n{DateTimeOffset.UtcNow:u}: ")}"); } };
             _ = firstPassProcess.Start();
             firstPassProcess.BeginErrorReadLine();
             firstPassProcess.BeginOutputReadLine();
@@ -188,7 +188,7 @@ namespace number_sequence.Services.Background
             secondPassProcess.ErrorDataReceived += (_, data) => { if (data.Data != null) { this.logger.LogError(data.Data); } };
             secondPassProcess.ErrorDataReceived += (_, data) => { if (data.Data != null) { stderrStream.WriteLine($"{DateTimeOffset.UtcNow:u}: {data.Data.Replace("\n", $"\n{DateTimeOffset.UtcNow:u}: ")}"); } };
             secondPassProcess.OutputDataReceived += (_, data) => { if (data.Data != null) { this.logger.LogInformation(data.Data); } };
-            secondPassProcess.ErrorDataReceived += (_, data) => { if (data.Data != null) { stdoutStream.WriteLine($"{DateTimeOffset.UtcNow:u}: {data.Data.Replace("\n", $"\n{DateTimeOffset.UtcNow:u}: ")}"); } };
+            secondPassProcess.OutputDataReceived += (_, data) => { if (data.Data != null) { stdoutStream.WriteLine($"{DateTimeOffset.UtcNow:u}: {data.Data.Replace("\n", $"\n{DateTimeOffset.UtcNow:u}: ")}"); } };
             _ = secondPassProcess.Start();
             secondPassProcess.BeginErrorReadLine();
             secondPassProcess.BeginOutputReadLine();
