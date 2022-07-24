@@ -115,6 +115,7 @@ namespace number_sequence.Services.Background
                 _ = await blob.DownloadToAsync(Path.Combine(workingDir.FullName, blob.Name), cancellationToken);
             }
             this.logger.LogInformation("Download complete.");
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             DateTimeOffset downloadCompleteTime = DateTimeOffset.UtcNow;
 
 
