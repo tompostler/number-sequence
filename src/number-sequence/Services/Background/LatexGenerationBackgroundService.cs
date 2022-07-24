@@ -96,15 +96,15 @@ namespace number_sequence.Services.Background
 
 
             // Download the input
-            await foreach (BlobClient blob in this.nsStorage.EnumerateAllBlobsAsync(latexDocument.Id, cancellationToken))
+            await foreach (BlobClient blob in this.nsStorage.EnumerateAllBlobsForLatexJobAsync(latexDocument.Id, cancellationToken))
             {
-                if (!blob.Name.StartsWith("input/"))
+                if (!blob.Name.StartsWith($"{latexDocument.Id}/input/"))
                 {
                     this.logger.LogInformation($"Skipping {blob.Name} for input download.");
                     continue;
                 }
 
-                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name));
+                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name.Substring(latexDocument.Id.Length + 1)));
                 this.logger.LogInformation($"Downloading {blob.Name} to {blobFileInfo.FullName}");
                 if (!blobFileInfo.Directory.Exists)
                 {
@@ -224,7 +224,7 @@ namespace number_sequence.Services.Background
 
                 string targetPath = Path.Combine("output", fileInfo.FullName.Substring(workingDir.FullName.Length));
                 this.logger.LogInformation($"Uploading {fileInfo.FullName} to {targetPath}");
-                BlobClient blobClient = this.nsStorage.GetBlobClient(latexDocument.Id, targetPath);
+                BlobClient blobClient = this.nsStorage.GetBlobClientForLatexJob(latexDocument.Id, targetPath);
                 _ = await blobClient.UploadAsync(fileInfo.FullName, cancellationToken);
             }
             this.logger.LogInformation("Upload complete.");

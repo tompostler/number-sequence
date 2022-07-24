@@ -3,6 +3,7 @@ using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -21,22 +22,22 @@ namespace number_sequence.DataAccess
             this.logger = logger;
         }
 
-        public async IAsyncEnumerable<BlobClient> EnumerateAllBlobsAsync(string containerName, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<BlobClient> EnumerateAllBlobsForLatexJobAsync(string jobId, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             uint countBlobs = 0;
-            BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(containerName);
-            await foreach (BlobItem blob in blobContainerClient.GetBlobsAsync(cancellationToken: cancellationToken))
+            BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient("latex");
+            await foreach (BlobItem blob in blobContainerClient.GetBlobsAsync(prefix: jobId + '/', cancellationToken: cancellationToken))
             {
                 countBlobs++;
                 yield return blobContainerClient.GetBlobClient(blob.Name);
             }
-            this.logger.LogInformation($"Enumerated {countBlobs} blobs in {blobContainerClient.Uri}");
+            this.logger.LogInformation($"Enumerated {countBlobs} blobs in {blobContainerClient.Uri}/latex/{jobId}/");
         }
 
-        public BlobClient GetBlobClient(string containerName, string blobPath)
+        public BlobClient GetBlobClientForLatexJob(string jobId, string blobPath)
         {
-            BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(containerName);
-            return blobContainerClient.GetBlobClient(blobPath);
+            BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient("latex");
+            return blobContainerClient.GetBlobClient(Path.Combine("latex", jobId, blobPath));
         }
     }
 }
