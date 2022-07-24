@@ -160,10 +160,10 @@ namespace number_sequence.Services.Background
                 string msg = $"pdflatex ended with exit code {firstPassProcess.ExitCode}";
                 this.logger.LogError(msg);
                 stderrStream.WriteLine(msg);
-                await stderrStream.FlushAsync();
-                await stdoutStream.FlushAsync();
 
                 // Save
+                stderrStream.Close();
+                stdoutStream.Close();
                 await this.UploadOutputDirAsync(latexDocument, workingDir, downloadCompleteTime, cancellationToken);
                 latexDocument.ProcessedAt = DateTimeOffset.UtcNow;
                 latexDocument.Successful = false;
@@ -206,11 +206,11 @@ namespace number_sequence.Services.Background
             {
                 latexDocument.Successful = true;
             }
-            await stderrStream.FlushAsync();
-            await stdoutStream.FlushAsync();
 
 
             // Save
+            stderrStream.Close();
+            stdoutStream.Close();
             await this.UploadOutputDirAsync(latexDocument, workingDir, downloadCompleteTime, cancellationToken);
             latexDocument.ProcessedAt = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
