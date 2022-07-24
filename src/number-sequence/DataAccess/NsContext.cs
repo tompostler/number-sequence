@@ -8,6 +8,7 @@ namespace number_sequence.DataAccess
     {
         private readonly ILoggerFactory loggerFactory;
 
+        public DbSet<EmailLatexDocument> EmailLatexDocuments { get; set; }
         public DbSet<LatexDocument> LatexDocuments { get; set; }
         public DbSet<SynchronizedBackgroundService> SynchronizedBackgroundServices { get; set; }
 
@@ -27,8 +28,15 @@ namespace number_sequence.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            _ = modelBuilder.Entity<LatexDocument>()
+            _ = modelBuilder.Entity<EmailLatexDocument>()
                 .HasKey(x => x.Id);
+
+            _ = modelBuilder.Entity<EmailLatexDocument>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<LatexDocument>()
+            .HasKey(x => x.Id);
 
             _ = modelBuilder.Entity<LatexDocument>()
                 .Property(x => x.CreatedDate)
