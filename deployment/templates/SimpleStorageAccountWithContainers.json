@@ -16,8 +16,11 @@
       "type": "string"
     },
     "storageAccountContainerNames": {
-      "type": "array"
+      "type": "string"
     }
+  },
+  "variables": {
+    "storageAccountContainerNames": "[split(parameters('storageAccountContainerNames'), ',')]"
   },
   "resources": [
     {
@@ -57,7 +60,7 @@
     {
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
       "apiVersion": "2021-09-01",
-      "name": "[concat(parameters('storageAccountName'), '/default/', parameters('storageAccountContainerNames')[copyIndex()])]",
+      "name": "[concat(parameters('storageAccountName'), '/default/', variables('storageAccountContainerNames')[copyIndex()])]",
       "properties": {
         "publicAccess": "None"
       },
@@ -67,7 +70,7 @@
       ],
       "copy": {
         "name": "containers",
-        "count": "[length(parameters('storageAccountContainerNames'))]"
+        "count": "[length(variables('storageAccountContainerNames'))]"
       }
     }
   ]
