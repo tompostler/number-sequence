@@ -16,23 +16,23 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace number_sequence.Services.Background
+namespace number_sequence.Services.Background.Latex
 {
-    public sealed class LatexToPDFBackgroundService : BackgroundService
+    public sealed class GeneratePdfFromLatexBackgroundService : BackgroundService
     {
         private readonly IServiceProvider serviceProvider;
         private readonly Sentinals sentinals;
         private readonly NsStorage nsStorage;
-        private readonly ILogger<LatexToPDFBackgroundService> logger;
+        private readonly ILogger<GeneratePdfFromLatexBackgroundService> logger;
         private readonly TelemetryClient telemetryClient;
 
         private readonly TimeSpan delay = TimeSpan.FromMinutes(5);
 
-        public LatexToPDFBackgroundService(
+        public GeneratePdfFromLatexBackgroundService(
             IServiceProvider serviceProvider,
             Sentinals sentinals,
             NsStorage nsStorage,
-            ILogger<LatexToPDFBackgroundService> logger,
+            ILogger<GeneratePdfFromLatexBackgroundService> logger,
             TelemetryClient telemetryClient)
         {
             this.serviceProvider = serviceProvider;
@@ -104,7 +104,7 @@ namespace number_sequence.Services.Background
                     continue;
                 }
 
-                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name.Substring((latexDocument.Id + "/"+ NsStorage.C.LBP.Input + "/").Length)));
+                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name.Substring((latexDocument.Id + "/" + NsStorage.C.LBP.Input + "/").Length)));
                 this.logger.LogInformation($"Downloading {blob.Name} to {blobFileInfo.FullName}");
                 if (!blobFileInfo.Directory.Exists)
                 {

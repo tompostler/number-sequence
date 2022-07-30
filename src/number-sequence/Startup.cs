@@ -68,8 +68,8 @@ namespace number_sequence
             // Background services
             //
 
-            _ = services.AddHostedService<Services.Background.EmailLatexDocumentBackgroundService>();
-            _ = services.AddHostedService<Services.Background.LatexToPDFBackgroundService>();
+            _ = services.AddHostedService<Services.Background.Latex.EmailPdfForLatexBackgroundService>();
+            _ = services.AddHostedService<Services.Background.Latex.GeneratePdfFromLatexBackgroundService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

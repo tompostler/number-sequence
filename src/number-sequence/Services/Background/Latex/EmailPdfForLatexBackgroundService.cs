@@ -16,25 +16,25 @@ using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace number_sequence.Services.Background
+namespace number_sequence.Services.Background.Latex
 {
-    public sealed class EmailLatexDocumentBackgroundService : BackgroundService
+    public sealed class EmailPdfForLatexBackgroundService : BackgroundService
     {
         private readonly IServiceProvider serviceProvider;
         private readonly Sentinals sentinals;
         private readonly NsStorage nsStorage;
         private readonly EmailDataAccess emailDataAccess;
-        private readonly ILogger<EmailLatexDocumentBackgroundService> logger;
+        private readonly ILogger<EmailPdfForLatexBackgroundService> logger;
         private readonly TelemetryClient telemetryClient;
 
         private readonly TimeSpan delay = TimeSpan.FromMinutes(5);
 
-        public EmailLatexDocumentBackgroundService(
+        public EmailPdfForLatexBackgroundService(
             IServiceProvider serviceProvider,
             Sentinals sentinals,
             NsStorage nsStorage,
             EmailDataAccess emailDataAccess,
-            ILogger<EmailLatexDocumentBackgroundService> logger,
+            ILogger<EmailPdfForLatexBackgroundService> logger,
             TelemetryClient telemetryClient)
         {
             this.serviceProvider = serviceProvider;
