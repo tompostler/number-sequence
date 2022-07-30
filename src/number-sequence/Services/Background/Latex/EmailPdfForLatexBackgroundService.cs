@@ -1,10 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
 using number_sequence.Models;
@@ -18,57 +15,27 @@ using System.Threading.Tasks;
 
 namespace number_sequence.Services.Background.Latex
 {
-    public sealed class EmailPdfForLatexBackgroundService : BackgroundService
+    public sealed class EmailPdfForLatexBackgroundService : SqlSynchronizedBackgroundService
     {
-        private readonly IServiceProvider serviceProvider;
-        private readonly Sentinals sentinals;
-        private readonly NsStorage nsStorage;
         private readonly EmailDataAccess emailDataAccess;
-        private readonly ILogger<EmailPdfForLatexBackgroundService> logger;
-        private readonly TelemetryClient telemetryClient;
-
-        private readonly TimeSpan delay = TimeSpan.FromMinutes(5);
+        private readonly NsStorage nsStorage;
 
         public EmailPdfForLatexBackgroundService(
+            EmailDataAccess emailDataAccess,
+            NsStorage nsStorage,
             IServiceProvider serviceProvider,
             Sentinals sentinals,
-            NsStorage nsStorage,
-            EmailDataAccess emailDataAccess,
             ILogger<EmailPdfForLatexBackgroundService> logger,
             TelemetryClient telemetryClient)
+            : base(serviceProvider, sentinals, logger, telemetryClient)
         {
-            this.serviceProvider = serviceProvider;
-            this.sentinals = sentinals;
-            this.nsStorage = nsStorage;
             this.emailDataAccess = emailDataAccess;
-            this.logger = logger;
-            this.telemetryClient = telemetryClient;
+            this.nsStorage = nsStorage;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            await this.sentinals.DBMigration.WaitForCompletionAsync(stoppingToken);
+        protected override TimeSpan Interval => TimeSpan.FromMinutes(5);
 
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                using (IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName))
-                {
-                    try
-                    {
-                        await this.InnerExecuteAsync(stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        this.logger.LogError(ex, "Could not perform operation.");
-                    }
-
-                    this.logger.LogInformation($"Sleeping {this.delay} until the next iteration.");
-                }
-                await Task.Delay(this.delay, stoppingToken);
-            }
-        }
-
-        private async Task InnerExecuteAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();

@@ -68,8 +68,9 @@ namespace number_sequence.Services.Background
                 using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName);
                 try
                 {
-                    CancellationToken linkedToken = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, new CancellationTokenSource(this.Interval).Token).Token;
-                    await this.ExecuteOnceAsync(linkedToken);
+                    using CancellationTokenSource intervalTokenSource = new(this.Interval);
+                    using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, intervalTokenSource.Token);
+                    await this.ExecuteOnceAsync(linkedTokenSource.Token);
                 }
                 catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
                 {

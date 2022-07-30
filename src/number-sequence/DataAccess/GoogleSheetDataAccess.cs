@@ -4,6 +4,7 @@ using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -44,12 +45,14 @@ namespace number_sequence.DataAccess
             }
         }
 
-        public async Task GetAsync(string spreadsheetId, string range, CancellationToken cancellationToken)
+        public async Task<IList<IList<object>>> GetAsync(string spreadsheetId, string range, CancellationToken cancellationToken)
         {
             this.EnsureInit();
 
             SpreadsheetsResource.ValuesResource.GetRequest request = this.service.Spreadsheets.Values.Get(spreadsheetId, range);
             ValueRange response = await request.ExecuteAsync(cancellationToken);
+            this.logger.LogInformation($"Fetched {response.Values.Count} rows of data.");
+            return response.Values;
         }
     }
 }
