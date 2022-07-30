@@ -18,21 +18,21 @@ using System.Threading.Tasks;
 
 namespace number_sequence.Services.Background
 {
-    public sealed class LatexGenerationBackgroundService : BackgroundService
+    public sealed class LatexToPDFBackgroundService : BackgroundService
     {
         private readonly IServiceProvider serviceProvider;
         private readonly Sentinals sentinals;
         private readonly NsStorage nsStorage;
-        private readonly ILogger<LatexGenerationBackgroundService> logger;
+        private readonly ILogger<LatexToPDFBackgroundService> logger;
         private readonly TelemetryClient telemetryClient;
 
         private readonly TimeSpan delay = TimeSpan.FromMinutes(5);
 
-        public LatexGenerationBackgroundService(
+        public LatexToPDFBackgroundService(
             IServiceProvider serviceProvider,
             Sentinals sentinals,
             NsStorage nsStorage,
-            ILogger<LatexGenerationBackgroundService> logger,
+            ILogger<LatexToPDFBackgroundService> logger,
             TelemetryClient telemetryClient)
         {
             this.serviceProvider = serviceProvider;
@@ -98,13 +98,13 @@ namespace number_sequence.Services.Background
             // Download the input
             await foreach (BlobClient blob in this.nsStorage.EnumerateAllBlobsForLatexJobAsync(latexDocument.Id, cancellationToken))
             {
-                if (!blob.Name.StartsWith($"{latexDocument.Id}/input/"))
+                if (!blob.Name.StartsWith($"{latexDocument.Id}/{NsStorage.C.LBP.Input}/"))
                 {
                     this.logger.LogInformation($"Skipping {blob.Name} for input download.");
                     continue;
                 }
 
-                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name.Substring((latexDocument.Id + "/input/").Length)));
+                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name.Substring((latexDocument.Id + "/"+ NsStorage.C.LBP.Input + "/").Length)));
                 this.logger.LogInformation($"Downloading {blob.Name} to {blobFileInfo.FullName}");
                 if (!blobFileInfo.Directory.Exists)
                 {
@@ -226,7 +226,7 @@ namespace number_sequence.Services.Background
                     continue;
                 }
 
-                string targetPath = Path.Combine("output", fileInfo.FullName.Substring(workingDir.FullName.Length + 1));
+                string targetPath = Path.Combine(NsStorage.C.LBP.Output, fileInfo.FullName.Substring(workingDir.FullName.Length + 1));
                 this.logger.LogInformation($"Uploading {fileInfo.FullName} to {latexDocument.Id}/{targetPath}");
                 BlobClient blobClient = this.nsStorage.GetBlobClientForLatexJob(latexDocument.Id, targetPath);
                 _ = await blobClient.UploadAsync(fileInfo.FullName, cancellationToken);
