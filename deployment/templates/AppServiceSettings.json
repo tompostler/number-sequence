@@ -24,6 +24,9 @@
     "googleCredentials": {
       "type": "securestring"
     },
+    "googlesheetChiroequineEmail": {
+      "type": "securestring"
+    },
     "googlesheetChiroequineId": {
       "type": "securestring"
     },
@@ -80,6 +83,7 @@
         "DOCKER_REGISTRY_SERVER_URL": "https://tomlatex.azurecr.io",
         "DOCKER_REGISTRY_SERVER_USERNAME": "tomlatex",
         "Google__Credentials": "[parameters('googleCredentials')]",
+        "Google__SheetChiroEquineEmail": "[parameters('googlesheetChiroequineEmail')]",
         "Google__SheetChiroEquineId": "[parameters('googlesheetChiroequineId')]",
         "Google__SheetChiroEquineRange": "[parameters('googlesheetChiroequineRange')]",
         "Sql__ConnectionString": "[variables('sqlConnectionString')]",

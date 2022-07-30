@@ -35,6 +35,7 @@ namespace number_sequence
         {
             public string Credentials { get; set; }
 
+            public string SheetChiroEquineEmail { get; set; }
             public string SheetChiroEquineId { get; set; }
             public string SheetChiroEquineRange { get; set; }
         }
