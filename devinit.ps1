@@ -26,8 +26,8 @@ $localSettings = [PSCustomObject]@{
     };
     Google   = [PSCustomObject]@{
         Credentials           = (Get-AzKeyVaultSecret -VaultName tompostler -Name google-dr-chiro-credentials -AsPlainText).Replace('\"', '"');
-        ChiroEquineSheetId    = (Get-AzKeyVaultSecret -VaultName tompostler -Name googlesheet-chiroequine-id -AsPlainText);
-        ChiroEquineSheetRange = (Get-AzKeyVaultSecret -VaultName tompostler -Name googlesheet-chiroequine-range -AsPlainText);
+        SheetChiroEquineId    = (Get-AzKeyVaultSecret -VaultName tompostler -Name googlesheet-chiroequine-id -AsPlainText);
+        SheetChiroEquineRange = (Get-AzKeyVaultSecret -VaultName tompostler -Name googlesheet-chiroequine-range -AsPlainText);
     };
     Sql      = [PSCustomObject]@{
         ConnectionString = (
