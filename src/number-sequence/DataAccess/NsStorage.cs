@@ -34,6 +34,18 @@ namespace number_sequence.DataAccess
             this.logger.LogInformation($"Enumerated {countBlobs} blobs in {blobContainerClient.Uri}/latex/{jobId}/");
         }
 
+        public async IAsyncEnumerable<BlobClient> EnumerateAllBlobsForLatexTemplateAsync(string templateName, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            uint countBlobs = 0;
+            BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient("latex-templates");
+            await foreach (BlobItem blob in blobContainerClient.GetBlobsAsync(prefix: templateName + '/', cancellationToken: cancellationToken))
+            {
+                countBlobs++;
+                yield return blobContainerClient.GetBlobClient(blob.Name);
+            }
+            this.logger.LogInformation($"Enumerated {countBlobs} blobs in {blobContainerClient.Uri}/latex-templates/{templateName}/");
+        }
+
         public BlobClient GetBlobClientForLatexJob(string jobId, string blobPath)
         {
             BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient("latex");
