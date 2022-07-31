@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace number_sequence.Models
 {
-    public sealed class EmailLatexDocument
+    public sealed class LatexTemplate
     {
         [Required]
         [MaxLength(64)]
@@ -12,21 +12,23 @@ namespace number_sequence.Models
 
         [Required]
         [MaxLength(64)]
-        public string To { get; set; }
-
-        [MaxLength(128)]
-        public string CC { get; set; }
+        public string SpreadsheetId { get; set; }
 
         [Required]
-        [MaxLength(128)]
-        public string Subject { get; set; }
+        [MaxLength(16)]
+        public string SpreadsheetRange { get; set; }
+
+        [Required]
+        [MaxLength(64)]
+        public string EmailTo { get; set; }
 
         [MaxLength(128)]
-        public string AttachmentName { get; set; }
+        public string SubjectTemplate { get; set; }
+
+        [MaxLength(128)]
+        public string AttachmentNameTemplate { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
-
-        public DateTimeOffset? ProcessedAt { get; set; }
     }
 }

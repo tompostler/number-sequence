@@ -24,15 +24,6 @@
     "googleCredentials": {
       "type": "securestring"
     },
-    "googlesheetChiroequineEmail": {
-      "type": "securestring"
-    },
-    "googlesheetChiroequineId": {
-      "type": "securestring"
-    },
-    "googlesheetChiroequineRange": {
-      "type": "securestring"
-    },
     "planName": {
       "type": "string",
       "defaultValue": "[resourceGroup().name]"
@@ -83,9 +74,6 @@
         "DOCKER_REGISTRY_SERVER_URL": "https://tomlatex.azurecr.io",
         "DOCKER_REGISTRY_SERVER_USERNAME": "tomlatex",
         "Google__Credentials": "[parameters('googleCredentials')]",
-        "Google__SheetChiroEquineEmail": "[parameters('googlesheetChiroequineEmail')]",
-        "Google__SheetChiroEquineId": "[parameters('googlesheetChiroequineId')]",
-        "Google__SheetChiroEquineRange": "[parameters('googlesheetChiroequineRange')]",
         "Sql__ConnectionString": "[variables('sqlConnectionString')]",
         "Storage__ConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
         "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "7",

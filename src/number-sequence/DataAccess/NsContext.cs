@@ -10,6 +10,7 @@ namespace number_sequence.DataAccess
 
         public DbSet<EmailLatexDocument> EmailLatexDocuments { get; set; }
         public DbSet<LatexDocument> LatexDocuments { get; set; }
+        public DbSet<LatexTemplate> LatexTemplates { get; set; }
         public DbSet<SynchronizedBackgroundService> SynchronizedBackgroundServices { get; set; }
 
         public NsContext(DbContextOptions<NsContext> dbContextOptions, ILoggerFactory loggerFactory)
@@ -39,6 +40,13 @@ namespace number_sequence.DataAccess
             .HasKey(x => x.Id);
 
             _ = modelBuilder.Entity<LatexDocument>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<LatexTemplate>()
+            .HasKey(x => x.Id);
+
+            _ = modelBuilder.Entity<LatexTemplate>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 

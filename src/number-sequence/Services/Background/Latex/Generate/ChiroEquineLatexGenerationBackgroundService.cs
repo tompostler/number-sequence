@@ -21,10 +21,6 @@ namespace number_sequence.Services.Background.Latex.Generate
         private readonly GoogleSheetDataAccess googleSheetDataAccess;
         private readonly NsStorage nsStorage;
 
-        private readonly string googleSheetEmail;
-        private readonly string googleSheetId;
-        private readonly string googleSheetRange;
-
         public ChiroEquineLatexGenerationBackgroundService(
             GoogleSheetDataAccess googleSheetDataAccess,
             NsStorage nsStorage,
@@ -37,18 +33,25 @@ namespace number_sequence.Services.Background.Latex.Generate
         {
             this.googleSheetDataAccess = googleSheetDataAccess;
             this.nsStorage = nsStorage;
-
-            this.googleSheetEmail = googleOptions.Value.SheetChiroEquineEmail;
-            this.googleSheetId = googleOptions.Value.SheetChiroEquineId;
-            this.googleSheetRange = googleOptions.Value.SheetChiroEquineRange;
         }
 
         protected override TimeSpan Interval => TimeSpan.FromMinutes(5);
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            // Get the template information
+            LatexTemplate template = await nsContext.LatexTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.LTBP.ChiroEquine, cancellationToken);
+            if (template == default)
+            {
+                this.logger.LogInformation("No template defined.");
+                return;
+            }
+
             // Get the data from the spreadsheet. The first row is the headers
-            IList<IList<object>> data = await this.googleSheetDataAccess.GetAsync(this.googleSheetId, this.googleSheetRange, cancellationToken);
+            IList<IList<object>> data = await this.googleSheetDataAccess.GetAsync(template.SpreadsheetId, template.SpreadsheetRange, cancellationToken);
             IList<object> headers = data[0];
             data = data.Skip(1).ToList();
 
@@ -58,9 +61,6 @@ namespace number_sequence.Services.Background.Latex.Generate
                 this.logger.LogInformation("No rows of data.");
                 return;
             }
-
-            using IServiceScope scope = this.serviceProvider.CreateScope();
-            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             // Check each row of data to see if it's already been processed
             // Only process one additional row at a time
@@ -109,7 +109,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                 new EmailLatexDocument
                 {
                     Id = id,
-                    To = this.googleSheetEmail,
+                    To = template.EmailTo,
                     CC = default,
                     Subject = default,
                     AttachmentName = default

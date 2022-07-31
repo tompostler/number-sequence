@@ -34,10 +34,6 @@ namespace number_sequence
         public sealed class Google
         {
             public string Credentials { get; set; }
-
-            public string SheetChiroEquineEmail { get; set; }
-            public string SheetChiroEquineId { get; set; }
-            public string SheetChiroEquineRange { get; set; }
         }
 
         public sealed class Sql
