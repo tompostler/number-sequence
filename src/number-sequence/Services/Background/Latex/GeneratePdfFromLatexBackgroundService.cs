@@ -71,7 +71,7 @@ namespace number_sequence.Services.Background.Latex
                     continue;
                 }
 
-                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name.Substring((latexDocument.Id + "/" + NsStorage.C.LBP.Input + "/").Length)));
+                var blobFileInfo = new FileInfo(Path.Combine(workingDir.FullName, blob.Name.Substring($"{latexDocument.Id}/{NsStorage.C.LBP.Input}/".Length)));
                 this.logger.LogInformation($"Downloading {blob.Name} to {blobFileInfo.FullName}");
                 if (!blobFileInfo.Directory.Exists)
                 {

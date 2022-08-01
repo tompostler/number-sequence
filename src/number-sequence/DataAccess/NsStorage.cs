@@ -81,7 +81,7 @@ namespace number_sequence.DataAccess
         public BlobClient GetBlobClientForLatexJob(string jobId, string blobPath)
         {
             BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(C.CN.Latex);
-            return blobContainerClient.GetBlobClient(Path.Combine(jobId, blobPath));
+            return blobContainerClient.GetBlobClient($"{jobId}/{blobPath}");
         }
     }
 }

@@ -93,7 +93,7 @@ namespace number_sequence.Services.Background.Latex
             }
 
             // Download the pdf from the storage and attach it to the email
-            string pdfBlobPath = Path.Combine(NsStorage.C.LBP.Output, $"{emailLatexDocument.Id}.pdf");
+            string pdfBlobPath = $"{NsStorage.C.LBP.Output}/{emailLatexDocument.Id}.pdf";
             this.logger.LogInformation($"Downloading pdf from {pdfBlobPath}");
             BlobClient pdfBlobClient = this.nsStorage.GetBlobClientForLatexJob(emailLatexDocument.Id, pdfBlobPath);
             MemoryStream ms = new();
