@@ -133,7 +133,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             //  4  E CC email(s)
             string patientName = row[1];
             string ownerName = row[2];
-            string dateOfService = DateTimeOffset.Parse(row[3]).ToString("yyyy-MM-dd");
+            var dateOfService = DateTimeOffset.Parse(row[3]);
             string[] ccEmail = row[4].Split(new[] { ',', ';' }, StringSplitOptions.TrimEntries);
 
             // Head
@@ -352,7 +352,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             templateContents = templateContents
                 .Replace("((PatientName))", patientName)
                 .Replace("((OwnerName))", ownerName)
-                .Replace("((DateOfService))", dateOfService)
+                .Replace("((DateOfService))", dateOfService.ToString("MM/dd/yyyy"))
                 .Replace("((Head))", head)
                 .Replace("((Cervical))", cervical)
                 .Replace("((Thoracic))", thoracic)
@@ -380,7 +380,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             if (!string.IsNullOrWhiteSpace(template.SubjectTemplate))
             {
                 subject = template.SubjectTemplate
-                    .Replace("((DateOfService))", dateOfService)
+                    .Replace("((DateOfService))", dateOfService.ToString("yyyy-MM-dd"))
                     .Replace("((OwnerName))", ownerName)
                     .Replace("((PatientName))", patientName)
                     ;
@@ -389,7 +389,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             if (!string.IsNullOrWhiteSpace(template.AttachmentNameTemplate))
             {
                 attachmentName = template.AttachmentNameTemplate
-                    .Replace("((DateOfService))", dateOfService)
+                    .Replace("((DateOfService))", dateOfService.ToString("yyyy-MM-dd"))
                     .Replace("((OwnerName))", ownerName)
                     .Replace("((PatientName))", patientName)
                     .Replace(" ", "-")
