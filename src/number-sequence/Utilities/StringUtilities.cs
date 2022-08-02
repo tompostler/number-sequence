@@ -36,5 +36,42 @@ namespace number_sequence.Utilities
             // A SHA256 hash is 64 characters long
             return hashHex;
         }
+
+        /// <summary>
+        /// Converts a long input string (such as one from <see cref="GetSHA256(string)"/>) to 4 groups of 4.
+        /// If the string is null or empty, it is returned instead.
+        /// If it is shorter than 16 chars, dashes are added where possible.
+        /// Replaces spaces with empty string.
+        /// <br/>
+        /// E.g. 921f32914faedaea00b1c4b6577ffff7a1885c3b3e20ea35359339a741c0ede6 becomes 921f-3291-4fae-daea.
+        /// </summary>
+        public static string MakeHumanFriendly(this string @this)
+        {
+            if (string.IsNullOrEmpty(@this))
+            {
+                return @this;
+            }
+            @this = @this.Replace(" ", string.Empty);
+            if (@this.Length > 16)
+            {
+                return $"{@this.Substring(0, 4)}-{@this.Substring(4, 4)}-{@this.Substring(8, 4)}-{@this.Substring(12, 4)}";
+            }
+            else if (@this.Length > 12)
+            {
+                return $"{@this.Substring(0, 4)}-{@this.Substring(4, 4)}-{@this.Substring(8, 4)}-{@this.Substring(12)}";
+            }
+            else if (@this.Length > 8)
+            {
+                return $"{@this.Substring(0, 4)}-{@this.Substring(4, 4)}-{@this.Substring(8)}";
+            }
+            else if (@this.Length > 4)
+            {
+                return $"{@this.Substring(0, 4)}-{@this.Substring(4)}";
+            }
+            else // if (@this.Length > 0)
+            {
+                return @this;
+            }
+        }
     }
 }
