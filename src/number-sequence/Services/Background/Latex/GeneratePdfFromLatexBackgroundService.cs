@@ -196,7 +196,7 @@ namespace number_sequence.Services.Background.Latex
                 string targetPath = Path.Combine(NsStorage.C.LBP.Output, fileInfo.FullName.Substring(workingDir.FullName.Length + 1));
                 this.logger.LogInformation($"Uploading {fileInfo.FullName} to {latexDocument.Id}/{targetPath}");
                 BlobClient blobClient = this.nsStorage.GetBlobClientForLatexJob(latexDocument.Id, targetPath);
-                _ = await blobClient.UploadAsync(fileInfo.FullName, cancellationToken);
+                _ = await blobClient.UploadAsync(fileInfo.FullName, overwrite: true, cancellationToken);
             }
             this.logger.LogInformation("Upload complete.");
         }
