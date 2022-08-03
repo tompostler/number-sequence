@@ -105,7 +105,7 @@ namespace number_sequence.Services.Background.Latex.Generate
 
                 if (templateBlob.Name.EndsWith("template.tex"))
                 {
-                    templateLatexBlob = templateBlob;
+                    templateLatexBlob = targetBlob;
                 }
             }
 
