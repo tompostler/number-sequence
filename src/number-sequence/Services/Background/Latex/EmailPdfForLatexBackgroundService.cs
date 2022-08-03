@@ -67,7 +67,7 @@ namespace number_sequence.Services.Background.Latex
                 MailMessage failedMessage = new()
                 {
                     Subject = emailLatexDocument.Subject,
-                    Body = $"Generation of PDF (id: {emailLatexDocument.Id.MakeHumanFriendly()}) was not successful."
+                    Body = $"Generation of PDF (id: {emailLatexDocument.Id}) was not successful."
                 };
                 failedMessage.To.Add(emailLatexDocument.To);
 
@@ -81,7 +81,7 @@ namespace number_sequence.Services.Background.Latex
             MailMessage msg = new()
             {
                 Subject = emailLatexDocument.Subject,
-                Body = $"Generation of PDF (id: {emailLatexDocument.Id.MakeHumanFriendly()}) was successful."
+                Body = $"Generation of PDF (id: {emailLatexDocument.Id}) was successful."
             };
             msg.To.Add(emailLatexDocument.To);
             if (!string.IsNullOrWhiteSpace(emailLatexDocument.CC))
@@ -99,7 +99,7 @@ namespace number_sequence.Services.Background.Latex
             MemoryStream ms = new();
             _ = await pdfBlobClient.DownloadToAsync(ms, cancellationToken);
             ms.Position = 0;
-            msg.Attachments.Add(new Attachment(ms, emailLatexDocument.AttachmentName ?? $"{emailLatexDocument.Id.MakeHumanFriendly()}.pdf"));
+            msg.Attachments.Add(new Attachment(ms, emailLatexDocument.AttachmentName ?? $"{emailLatexDocument.Id}.pdf"));
 
             // Send it and mark as completed
             await this.emailDataAccess.SendEmailAsync(msg, cancellationToken);

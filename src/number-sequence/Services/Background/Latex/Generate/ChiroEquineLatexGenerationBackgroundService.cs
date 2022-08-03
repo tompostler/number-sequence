@@ -62,42 +62,53 @@ namespace number_sequence.Services.Background.Latex.Generate
                 return;
             }
 
+            // Temporary while data is backfilled
+            return;
+
             // Check each row of data to see if it's already been processed
             // Only process one additional row at a time
             string[] row = default;
-            string id = default;
-            LatexDocument latexDocument = default;
+            LatexTemplateSpreadsheetRow latexTemplateRow = default;
             for (int rowIndex = 0; rowIndex < data.Count; rowIndex++)
             {
                 row = data[rowIndex].Select(x => x as string).ToArray();
-                id = string.Join('|', row).GetSHA256();
-                latexDocument = await nsContext.LatexDocuments.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+                string id = string.Join('|', row).GetSHA256();
+                latexTemplateRow = await nsContext.LatexTemplateSpreadsheetRows
+                    .SingleOrDefaultAsync(x => x.SpreadsheetId == template.SpreadsheetId && x.RowId == id, cancellationToken);
 
-                if (latexDocument != default)
+                if (latexTemplateRow != default)
                 {
-                    this.logger.LogInformation($"Data row {id} ({rowIndex}) was inserted for processing at {latexDocument.CreatedDate:u} and processed {latexDocument.ProcessedAt:u}");
+                    this.logger.LogInformation($"Data row {id} ({rowIndex}) was inserted for processing at {latexTemplateRow.CreatedDate:u} and processed {latexTemplateRow.ProcessedAt:u}");
                     continue;
                 }
                 else
                 {
                     this.logger.LogInformation($"Data row {id} ({rowIndex}) is new. Setting up for processing.");
+                    latexTemplateRow = new()
+                    {
+                        SpreadsheetId = template.SpreadsheetId,
+                        RowId = id,
+                        LatexDocumentId = id.MakeHumanFriendly() + '_' + template.Id,
+                        ProcessedAt = DateTimeOffset.UtcNow
+                    };
+                    _ = nsContext.LatexTemplateSpreadsheetRows.Add(latexTemplateRow);
                     break;
                 }
             }
 
-            // Create the new record for generating the document
-            latexDocument = new()
+            // Create the new records for generating the document
+            LatexDocument latexDocument = new()
             {
-                Id = id
+                Id = latexTemplateRow.LatexDocumentId
             };
             _ = nsContext.LatexDocuments.Add(latexDocument);
 
             // Copy the template blob(s) to the working directory
             BlobClient templateLatexBlob = default;
-            await foreach (BlobClient templateBlob in this.nsStorage.EnumerateAllBlobsForLatexTemplateAsync(NsStorage.C.LTBP.ChiroEquine, cancellationToken))
+            await foreach (BlobClient templateBlob in this.nsStorage.EnumerateAllBlobsForLatexTemplateAsync(template.Id, cancellationToken))
             {
-                string targetPath = $"{NsStorage.C.LBP.Input}/{templateBlob.Name.Substring((NsStorage.C.LTBP.ChiroEquine + "/").Length).Replace("template", id)}";
-                BlobClient targetBlob = this.nsStorage.GetBlobClientForLatexJob(id, targetPath);
+                string targetPath = $"{NsStorage.C.LBP.Input}/{templateBlob.Name.Substring((template.Id + "/").Length).Replace("template", latexDocument.Id)}";
+                BlobClient targetBlob = this.nsStorage.GetBlobClientForLatexJob(latexDocument.Id, targetPath);
                 this.logger.LogInformation($"Copying {templateBlob.Uri} to {targetBlob.Uri}");
                 _ = await targetBlob.SyncCopyFromUriAsync(
                     templateBlob.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.Add(this.Interval * 3)),
@@ -402,7 +413,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             _ = nsContext.EmailLatexDocuments.Add(
                 new EmailLatexDocument
                 {
-                    Id = id,
+                    Id = latexDocument.Id,
                     To = template.EmailTo,
                     CC = string.Join(';', ccEmail),
                     Subject = subject,
