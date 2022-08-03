@@ -62,9 +62,6 @@ namespace number_sequence.Services.Background.Latex.Generate
                 return;
             }
 
-            // Temporary while data is backfilled
-            return;
-
             // Check each row of data to see if it's already been processed
             // Only process one additional row at a time
             string[] row = default;
@@ -88,13 +85,17 @@ namespace number_sequence.Services.Background.Latex.Generate
                     {
                         SpreadsheetId = template.SpreadsheetId,
                         RowId = id,
-                        LatexDocumentId = id.MakeHumanFriendly() + '_' + template.Id,
+                        LatexDocumentId = id,//.MakeHumanFriendly() + '_' + template.Id,
                         ProcessedAt = DateTimeOffset.UtcNow
                     };
                     _ = nsContext.LatexTemplateSpreadsheetRows.Add(latexTemplateRow);
                     break;
                 }
             }
+
+            // Temporary while data is backfilled
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+            return;
 
             // Create the new records for generating the document
             LatexDocument latexDocument = new()
