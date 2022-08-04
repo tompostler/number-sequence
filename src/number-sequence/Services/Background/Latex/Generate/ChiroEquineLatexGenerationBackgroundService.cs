@@ -85,17 +85,13 @@ namespace number_sequence.Services.Background.Latex.Generate
                     {
                         SpreadsheetId = template.SpreadsheetId,
                         RowId = id,
-                        LatexDocumentId = id,//.MakeHumanFriendly() + '_' + template.Id,
+                        LatexDocumentId = id.MakeHumanFriendly() + '_' + template.Id,
                         ProcessedAt = DateTimeOffset.UtcNow
                     };
                     _ = nsContext.LatexTemplateSpreadsheetRows.Add(latexTemplateRow);
                     break;
                 }
             }
-
-            // Temporary while data is backfilled
-            _ = await nsContext.SaveChangesAsync(cancellationToken);
-            return;
 
             // Create the new records for generating the document
             LatexDocument latexDocument = new()
