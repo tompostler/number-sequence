@@ -143,10 +143,10 @@ namespace number_sequence.Services.Background.Latex.Generate
             //  2  C Owner Name
             //  3  D Date of Service
             //  4  E CC email(s)
-            string patientName = row[1];
-            string ownerName = row[2];
+            string patientName = row[1]?.Trim();
+            string ownerName = row[2]?.Trim();
             var dateOfService = DateTimeOffset.Parse(row[3]);
-            string[] ccEmail = row[4].Split(new[] { ',', ';' }, StringSplitOptions.TrimEntries);
+            string[] ccEmail = row[4].Split(new[] { ',', ';' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
             // Head
             //  5  F Other notes
@@ -345,11 +345,11 @@ namespace number_sequence.Services.Background.Latex.Generate
 
             // Extended other notes
             // 87 CJ Raw response
-            string other = row.Length > 87 ? row[87] : string.Empty;
+            string other = row.Length > 87 ? row[87]?.Trim() : string.Empty;
 
             // Coccygeal
             // 88 CK Raw response
-            string coccygeal = row.Length > 88 ? row[88] : string.Empty;
+            string coccygeal = row.Length > 88 ? row[88]?.Trim() : string.Empty;
 
 
             // Download the template to memory to do the string replacement
