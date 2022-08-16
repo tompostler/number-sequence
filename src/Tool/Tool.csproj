@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>TcpWtf.NumberSequence.Tool</RootNamespace>
+    <AssemblyName>TcpWtf.NumberSequence.Tool</AssemblyName>
+    <OutputType>Exe</OutputType>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>ns</ToolCommandName>
+
+    <Description>dotnet tool for the ns.tcp.wtf project.</Description>
+    <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Client\Client.csproj" />
+  </ItemGroup>
+
+</Project>

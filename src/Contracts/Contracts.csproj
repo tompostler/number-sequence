@@ -5,8 +5,6 @@
     <AssemblyName>TcpWtf.NumberSequence.Contracts</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-    <Authors>Tom Postler</Authors>
-    <RepositoryUrl>https://dev.azure.com/tompostler/public/_git/number-sequence</RepositoryUrl>
     <Description>Contracts for the ns.tcp.wtf project.</Description>
     <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
