@@ -66,6 +66,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             // Only process one additional row at a time
             string[] row = default;
             LatexTemplateSpreadsheetRow latexTemplateRow = default;
+            bool newWork = false;
             for (int rowIndex = 0; rowIndex < data.Count; rowIndex++)
             {
                 row = data[rowIndex].Select(x => x as string).ToArray();
@@ -89,8 +90,14 @@ namespace number_sequence.Services.Background.Latex.Generate
                         ProcessedAt = DateTimeOffset.UtcNow
                     };
                     _ = nsContext.LatexTemplateSpreadsheetRows.Add(latexTemplateRow);
+                    newWork = true;
                     break;
                 }
+            }
+            if (!newWork)
+            {
+                this.logger.LogInformation("No new work.");
+                return;
             }
 
             // Create the new records for generating the document
