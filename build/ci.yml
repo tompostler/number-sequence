@@ -73,6 +73,12 @@ jobs:
       artifactName: drop
       publishLocation: Container
 
+  - task: PowerShell@2
+    displayName: Tag build with reason
+    inputs:
+      targetType: inline
+      script: Write-Host '##vso[build.addbuildtag]$(Build.Reason)'
+
 - job: ContainerBuild
   dependsOn: Build
   pool:

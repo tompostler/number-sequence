@@ -82,6 +82,7 @@ namespace number_sequence
 
             _ = app.UseMiddleware<Middleware.ExceptionToStatusCodeMiddleware>();
 
+            // Custom versioning middleware
             string assemblyFileVersion = FileVersionInfo.GetVersionInfo(typeof(Startup).Assembly.Location).ProductVersion;
             _ = app.Use(async (context, next) =>
             {
