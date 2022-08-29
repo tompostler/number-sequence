@@ -52,7 +52,7 @@ namespace TcpWtf.NumberSequence.Client
                 this.httpClient = new HttpClient(new HttpClientHandler() { ServerCertificateCustomValidationCallback = (_, _, _, _) => true }) { BaseAddress = baseUri };
             }
 
-            this.clientVersion = Assembly.GetAssembly(typeof(NsTcpWtfClient)).GetName().Version.ToString(3);
+            this.clientVersion = Assembly.GetAssembly(typeof(NsTcpWtfClient))?.GetName()?.Version?.ToString(fieldCount: 3) ?? "0.0.0";
             this.clientName = Environment.MachineName;
 
             this.Account = new AccountOperations(this);
@@ -126,6 +126,16 @@ namespace TcpWtf.NumberSequence.Client
                 if (response.Headers.TryGetValues(HttpHeaderNames.ServerVersion, out IEnumerable<string> serverVersionHeaders))
                 {
                     serverVersionInfo = $" (NS {serverVersionHeaders.FirstOrDefault()})";
+
+                    // In case there's a newer version of the server available (which would mean there's a newer client)
+                    if (serverVersionHeaders.Any())
+                    {
+                        string serverVersion = serverVersionHeaders.First();
+                        if (!string.Equals(serverVersion, this.clientVersion, StringComparison.OrdinalIgnoreCase))
+                        {
+                            this.logger.LogWarning($"Current client version is {this.clientVersion} but server version ({serverVersion}) indicates there's a newer version available.\nUpdate with 'dotnet tool update TcpWtf.NumberSequence.Tool --global'");
+                        }
+                    }
                 }
                 this.logger.LogInformation($"Received {response.StatusCode} from {request.Method} {request.RequestUri}{serverVersionInfo}");
                 if (response.Headers.TryGetValues(HttpHeaderNames.ApiDeprecated, out IEnumerable<string> apiDeprecatedHeaders)
