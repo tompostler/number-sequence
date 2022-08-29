@@ -11,10 +11,9 @@ namespace TcpWtf.NumberSequence.Tool
         public static async Task<int> Main(string[] args)
         {
             RootCommand rootCommand = new("A CLI for ns.tcp.wtf.");
-            Option<LogLevel> verbosityOption = new("--verbosity", () => LogLevel.Warning);
+            Option<LogLevel> verbosityOption = new("--verbosity", () => LogLevel.Warning, "Verbosity level for logging.");
             verbosityOption.AddAlias("-v");
             rootCommand.AddGlobalOption(verbosityOption);
-            rootCommand.SetHandler(() => Console.WriteLine("Hello world!"));
 
             Command pingCommand = new("ping", "Ping the service to verify configuration and availability.");
             Option<bool> pingAuthOption = new("--authed", "If requested, make the ping request with authentication.");
