@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using TcpWtf.NumberSequence.Contracts.Framework;
 
 namespace number_sequence
 {
@@ -86,7 +87,7 @@ namespace number_sequence
             string assemblyFileVersion = FileVersionInfo.GetVersionInfo(typeof(Startup).Assembly.Location).ProductVersion;
             _ = app.Use(async (context, next) =>
             {
-                context.Response.Headers.Add("ns-tcp-wtf-server-version", assemblyFileVersion);
+                context.Response.Headers.Add(HttpHeaderNames.ServerVersion, assemblyFileVersion);
                 await next.Invoke();
             });
 

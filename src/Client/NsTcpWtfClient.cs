@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -44,13 +45,11 @@ namespace TcpWtf.NumberSequence.Client
                 Stamp.Public => new Uri("https://ns.tcp.wtf/"),
                 _ => throw new ArgumentOutOfRangeException(nameof(stamp))
             };
+
+            this.httpClient = new HttpClient() { BaseAddress = baseUri };
             if (stamp == Stamp.LocalDev)
             {
                 this.httpClient = new HttpClient(new HttpClientHandler() { ServerCertificateCustomValidationCallback = (_, _, _, _) => true }) { BaseAddress = baseUri };
-            }
-            else
-            {
-                this.httpClient = new HttpClient() { BaseAddress = baseUri };
             }
 
             this.clientVersion = Assembly.GetAssembly(typeof(NsTcpWtfClient)).GetName().Version.ToString(3);
@@ -124,21 +123,21 @@ namespace TcpWtf.NumberSequence.Client
 
                 // Log any information based on the response
                 string serverVersionInfo = string.Empty;
-                if (response.Headers.TryGetValues(HttpHeaderNames.ServerVersion, out System.Collections.Generic.IEnumerable<string> serverVersionHeaders))
+                if (response.Headers.TryGetValues(HttpHeaderNames.ServerVersion, out IEnumerable<string> serverVersionHeaders))
                 {
                     serverVersionInfo = $" (NS {serverVersionHeaders.FirstOrDefault()})";
                 }
-                this.logger.LogInformation("Received {0} from {1} {2}{3}", response.StatusCode, request.Method, request.RequestUri, serverVersionInfo);
-                if (response.Headers.TryGetValues(HttpHeaderNames.ApiDeprecated, out System.Collections.Generic.IEnumerable<string> apiDeprecatedHeaders)
+                this.logger.LogInformation($"Received {response.StatusCode} from {request.Method} {request.RequestUri}{serverVersionInfo}");
+                if (response.Headers.TryGetValues(HttpHeaderNames.ApiDeprecated, out IEnumerable<string> apiDeprecatedHeaders)
                     && DateTime.TryParseExact(apiDeprecatedHeaders.FirstOrDefault(), "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime apiDeprecatedAt))
                 {
                     if (apiDeprecatedAt < DateTime.UtcNow)
                     {
-                        this.logger.LogError("This API was obsoleted {0:yyyy-MM}! Update your client!", apiDeprecatedAt);
+                        this.logger.LogError($"This API was obsoleted {apiDeprecatedAt:yyyy-MM}! Update your client!");
                     }
                     else
                     {
-                        this.logger.LogWarning("This API is deprecated with planned obsolescence {0:yyyy-MM}. Update your client to use the latest APIs.", apiDeprecatedAt);
+                        this.logger.LogWarning($"This API is deprecated with planned obsolescence {apiDeprecatedAt:yyyy-MM}. Update your client to use the latest APIs.");
                     }
                 }
 
@@ -152,7 +151,7 @@ namespace TcpWtf.NumberSequence.Client
                         // This will retry immediately, 3.4s delay, 5.8s delay, 9.8s delay, 16.7s delay
                         // For a total of 35.7s of delay (assuming instant response received)
                         var delay = TimeSpan.FromSeconds(Math.Pow(delayExponent, tryNum) * baseDelaySeconds);
-                        this.logger.LogWarning("Attempt {0} after a {1} delay due to {2} status code.", tryNum + 1, delay, response.StatusCode);
+                        this.logger.LogWarning($"Attempt {tryNum + 1} after a {delay} delay due to {response.StatusCode} status code.");
                         await Task.Delay(delay, cancellationToken);
                     }
                 }
