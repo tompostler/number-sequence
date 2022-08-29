@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -16,7 +17,7 @@ namespace TcpWtf.NumberSequence.Client
     /// <summary>
     /// Client for communciating with the REST APIs.
     /// </summary>
-    public sealed class NsTcpWtfClient
+    public sealed class NsTcpWtfClient : IDisposable
     {
         private readonly ILogger<NsTcpWtfClient> logger;
         private readonly Func<CancellationToken, Task<string>> tokenCallback;
@@ -89,7 +90,7 @@ namespace TcpWtf.NumberSequence.Client
 
         /// <summary>
         /// Send a <see cref="HttpRequestMessage"/> with retries that are appropriate.
-        /// Does not prepare the request.
+        /// Attempts to prepare the request by default.
         /// </summary>
         /// <remarks>
         /// We could evaluate using a framework, like Polly (which is netstandard available), but this works for now.
@@ -103,113 +104,164 @@ namespace TcpWtf.NumberSequence.Client
             bool needsPreparation = true)
         {
             const int maxTryNum = 5;
-            const int baseDelaySeconds = 2;
-            const double delayExponent = 1.7;
 
-            HttpRequestMessage request = null;
-            HttpResponseMessage response = null;
+            HttpRequestMessage requestMessage = null;
+            HttpResponseMessage responseMessage = null;
             var stopwatch = Stopwatch.StartNew();
-            for (int tryNum = 0; tryNum <= maxTryNum; tryNum++)
+            for (int tryNum = 1; tryNum <= maxTryNum; tryNum++)
             {
-                // Prepare and send the request
-                request = requestFactory();
-                if (needsPreparation && this.tokenCallback != default)
+                try
                 {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Token", await this.tokenCallback(cancellationToken));
-                }
-                request.Headers.Add(HttpHeaderNames.ClientVersion, this.clientVersion);
-                request.Headers.Add(HttpHeaderNames.ClientName, this.clientName);
-                response = await this.httpClient.SendAsync(request, cancellationToken);
-
-                // Log any information based on the response
-                string serverVersionInfo = string.Empty;
-                if (response.Headers.TryGetValues(HttpHeaderNames.ServerVersion, out IEnumerable<string> serverVersionHeaders))
-                {
-                    serverVersionInfo = $" (NS {serverVersionHeaders.FirstOrDefault()})";
-
-                    // In case there's a newer version of the server available (which would mean there's a newer client)
-                    if (serverVersionHeaders.Any())
+                    // Prepare and send the request
+                    requestMessage = requestFactory();
+                    if (needsPreparation && this.tokenCallback != default)
                     {
-                        string serverVersion = serverVersionHeaders.First();
-                        if (!string.Equals(serverVersion, this.clientVersion, StringComparison.OrdinalIgnoreCase))
+                        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Token", await this.tokenCallback(cancellationToken));
+                    }
+                    requestMessage.Headers.Add(HttpHeaderNames.ClientVersion, this.clientVersion);
+                    requestMessage.Headers.Add(HttpHeaderNames.ClientName, this.clientName);
+                    responseMessage = await this.httpClient.SendAsync(requestMessage, cancellationToken);
+
+                    // Log any information based on the response
+                    string serverVersionInfo = string.Empty;
+                    if (responseMessage.Headers.TryGetValues(HttpHeaderNames.ServerVersion, out IEnumerable<string> serverVersionHeaders))
+                    {
+                        serverVersionInfo = $" (NS {serverVersionHeaders.FirstOrDefault()})";
+
+                        // In case there's a newer version of the server available (which would mean there's a newer client)
+                        if (serverVersionHeaders.Any())
                         {
-                            this.logger.LogWarning($"Current client version is {this.clientVersion} but server version ({serverVersion}) indicates there's a newer version available.\nUpdate with 'dotnet tool update TcpWtf.NumberSequence.Tool --global'");
+                            const string localBuildVersion = "1.0.0";
+                            string serverVersion = serverVersionHeaders.First();
+                            if (!string.Equals(serverVersion, this.clientVersion, StringComparison.OrdinalIgnoreCase)
+                                && !string.Equals(serverVersion, localBuildVersion, StringComparison.OrdinalIgnoreCase))
+                            {
+                                this.logger.LogWarning($"Current client version is {this.clientVersion} but server version ({serverVersion}) indicates there's a newer version available.\nUpdate with 'dotnet tool update TcpWtf.NumberSequence.Tool --global'");
+                            }
+                        }
+                    }
+
+                    this.logger.LogInformation($"Received {responseMessage.StatusCode} from {requestMessage.Method} {requestMessage.RequestUri}{serverVersionInfo} after {stopwatch.ElapsedMilliseconds}ms");
+                    
+                    if (responseMessage.Headers.TryGetValues(HttpHeaderNames.ApiDeprecated, out IEnumerable<string> apiDeprecatedHeaders)
+                        && DateTime.TryParseExact(apiDeprecatedHeaders.FirstOrDefault(), "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime apiDeprecatedAt))
+                    {
+                        if (apiDeprecatedAt < DateTime.UtcNow)
+                        {
+                            this.logger.LogError($"This API was obsoleted {apiDeprecatedAt:yyyy-MM}! Update your client!");
+                        }
+                        else
+                        {
+                            this.logger.LogWarning($"This API is deprecated with planned obsolescence {apiDeprecatedAt:yyyy-MM}. Update your client to use the latest APIs.");
                         }
                     }
                 }
-                this.logger.LogInformation($"Received {response.StatusCode} from {request.Method} {request.RequestUri}{serverVersionInfo}");
-                if (response.Headers.TryGetValues(HttpHeaderNames.ApiDeprecated, out IEnumerable<string> apiDeprecatedHeaders)
-                    && DateTime.TryParseExact(apiDeprecatedHeaders.FirstOrDefault(), "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime apiDeprecatedAt))
+                catch (Exception ex) when (tryNum < maxTryNum && !cancellationToken.IsCancellationRequested)
                 {
-                    if (apiDeprecatedAt < DateTime.UtcNow)
-                    {
-                        this.logger.LogError($"This API was obsoleted {apiDeprecatedAt:yyyy-MM}! Update your client!");
-                    }
-                    else
-                    {
-                        this.logger.LogWarning($"This API is deprecated with planned obsolescence {apiDeprecatedAt:yyyy-MM}. Update your client to use the latest APIs.");
-                    }
+                    // If we've caught an unexpected exception when trying to call the service where there are still attempts remaining, then delay and try again
+                    this.logger.LogWarning(ex.ToString());
+                    await this.DelayBetweenAttemptsAsync(tryNum, "exception", cancellationToken);
+                    continue;
                 }
 
-                // Handle the response
-                if (!response.IsSuccessStatusCode && !((int)response.StatusCode >= 400 && (int)response.StatusCode < 500))
+                // If the response is retryable (5xx) and we haven't exceeded our attempt limit yet, then delay and try again
+                if ((int)responseMessage.StatusCode >= 500
+                    && (int)responseMessage.StatusCode <= 600
+                    && tryNum < maxTryNum)
                 {
-                    // We only want to delay if it's not the last try. Otherwise, fall out and throw.
-                    if (tryNum < maxTryNum)
-                    {
-                        // When deploying, it can take 15-30 seconds for the app service to fully recycle
-                        // This will retry immediately, 3.4s delay, 5.8s delay, 9.8s delay, 16.7s delay
-                        // For a total of 35.7s of delay (assuming instant response received)
-                        var delay = TimeSpan.FromSeconds(Math.Pow(delayExponent, tryNum) * baseDelaySeconds);
-                        this.logger.LogWarning($"Attempt {tryNum + 1} after a {delay} delay due to {response.StatusCode} status code.");
-                        await Task.Delay(delay, cancellationToken);
-                    }
+                    await this.DelayBetweenAttemptsAsync(tryNum, $"{responseMessage.StatusCode} status code", cancellationToken);
+                    continue;
                 }
-                else if (!response.IsSuccessStatusCode)
+
+                // If the response was successful then return it
+                if (responseMessage.IsSuccessStatusCode)
                 {
-                    string msg = $"Operation returned an invalid status code [{response.StatusCode}]";
+                    return responseMessage;
+                }
 
-                    // Attempt to read the body
-                    try
-                    {
-                        string body = await response.Content.ReadAsStringAsync();
-                        if (!string.IsNullOrWhiteSpace(body))
-                        {
-                            msg += $"{Environment.NewLine}{body}";
-                        }
-                    }
-                    catch (Exception)
-                    { }
+                // Else the response was not successful (and should not be retried). Default behavior is to throw a client-specific exception
+                string msg = $"Request returned an invalid status code '{responseMessage.StatusCode}'";
 
-                    // Only log 5xx as error so we don't pollute telemetry with potentially acceptable errors
-                    if ((int)response.StatusCode < 500)
+                // Attempt to read the body, but reset the stream position in case a subsequent user of the responseMessage wants to read it too
+                try
+                {
+                    await responseMessage.Content.LoadIntoBufferAsync();
+                    string body = await responseMessage.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrWhiteSpace(body))
                     {
-                        this.logger.LogWarning(msg);
-                    }
-                    else
-                    {
-                        this.logger.LogError(msg);
+                        msg += $" Body:{Environment.NewLine}{body}";
                     }
 
-                    throw new NsTcpWtfClientException(msg)
-                    {
-                        Request = request,
-                        Response = response
-                    };
+                    Stream contentStream = await responseMessage.Content.ReadAsStreamAsync();
+                    contentStream.Position = 0;
+                }
+                catch
+                { }
+
+                // Only log 5xx as error so we don't pollute telemetry with potentially acceptable errors
+                if ((int)responseMessage.StatusCode < 500)
+                {
+                    this.logger.LogWarning(msg);
                 }
                 else
                 {
-                    return response;
+                    this.logger.LogError(msg);
                 }
+
+                throw new NsTcpWtfClientException(msg)
+                {
+                    Request = requestMessage,
+                    Response = responseMessage
+                };
             }
 
-            // We're only down here if we exceeded our retries. This should be very rare.
+            // We're only down here if we left the retry loop which means we exceeded our retries
+            // Note that the responseMessage may be null if we were never able to reach the service
             throw new NsTcpWtfClientException($"Maximum retries when communicating exceeded after {stopwatch.Elapsed}")
             {
-                Request = request,
-                Response = response
+                Request = requestMessage,
+                Response = responseMessage
             };
         }
 
+        private async Task DelayBetweenAttemptsAsync(int tryCount, string failureReason, CancellationToken cancellationToken)
+        {
+            const int baseDelaySeconds = 2;
+            const double delayExponent = 1.8;
+
+            // This will retry 2s delay, 3.6s delay, 6.5s delay, 11.7s delay, 21s delay
+            // For a total of 44.8s of delay (assuming instant response received)
+            var delay = TimeSpan.FromSeconds(Math.Pow(delayExponent, tryCount - 1) * baseDelaySeconds);
+            this.logger.LogWarning($"Attempt {tryCount + 1} after a {delay} delay due to {failureReason}.");
+            await Task.Delay(delay, cancellationToken);
+        }
+
+        #region IDisposable Support
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        /// <inheritdoc/>
+        private void Dispose(bool disposeManagedResources)
+        {
+            if (!this.disposedValue)
+            {
+                if (disposeManagedResources)
+                {
+                    this.httpClient.Dispose();
+                }
+
+                this.disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposeManagedResources) above.
+            this.Dispose(true);
+        }
+
+        #endregion
     }
 }
