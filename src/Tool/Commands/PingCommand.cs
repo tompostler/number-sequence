@@ -18,14 +18,13 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         private static async Task HandleAsync(bool authed, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), (_) => Task.FromResult(string.Empty));
-
             if (authed)
             {
                 throw new NotImplementedException();
             }
             else
             {
+                NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetTokenAsync);
                 await client.Ping.SendAsync();
             }
         }
