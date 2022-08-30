@@ -133,8 +133,8 @@ namespace TcpWtf.NumberSequence.Client
                         {
                             const string localBuildVersion = "1.0.0";
                             string serverVersion = serverVersionHeaders.First();
-                            if (!string.Equals(serverVersion, this.clientVersion, StringComparison.OrdinalIgnoreCase)
-                                && !string.Equals(serverVersion, localBuildVersion, StringComparison.OrdinalIgnoreCase))
+                            if (!string.Equals(this.clientVersion, serverVersion, StringComparison.OrdinalIgnoreCase)
+                                && !string.Equals(this.clientVersion, localBuildVersion, StringComparison.OrdinalIgnoreCase))
                             {
                                 this.logger.LogWarning($"Current client version is {this.clientVersion} but server version ({serverVersion}) indicates there's a newer version available.\nUpdate with 'dotnet tool update TcpWtf.NumberSequence.Tool --global'");
                             }
