@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.CommandLine;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
@@ -8,7 +7,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static class RandomCommand
     {
-        public static Command Create(Option<LogLevel> verbosityOption)
+        public static Command Create(Option<Verbosity> verbosityOption)
         {
             Command command = new("random", "Get random data.");
             Argument<string> randomTypeArg = new Argument<string>("type", "The type of random to get. Pick from the supported values.")
@@ -29,10 +28,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             return command;
         }
 
-        private static async Task HandleAsync(string type, LogLevel logLevel)
+        private static async Task HandleAsync(string type, Verbosity verbosity)
         {
-            ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.SetMinimumLevel(logLevel).AddConsole());
-            NsTcpWtfClient client = new(loggerFactory.CreateLogger<NsTcpWtfClient>(), (_) => Task.FromResult(string.Empty));
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), (_) => Task.FromResult(string.Empty));
 
             object response = type switch
             {
