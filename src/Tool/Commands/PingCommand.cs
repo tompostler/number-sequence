@@ -1,5 +1,4 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
 
@@ -20,11 +19,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         {
             if (authed)
             {
-                throw new NotImplementedException();
+                NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync);
+                await client.Ping.SendWithAuthAsync();
             }
             else
             {
-                NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetTokenAsync);
+                NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync);
                 await client.Ping.SendAsync();
             }
         }

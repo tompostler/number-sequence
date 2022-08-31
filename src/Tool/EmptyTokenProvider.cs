@@ -5,6 +5,6 @@ namespace TcpWtf.NumberSequence.Tool
 {
     internal static class EmptyTokenProvider
     {
-        public static Task<string> GetTokenAsync(CancellationToken _) => Task.FromResult(string.Empty);
+        public static Task<string> GetAsync(CancellationToken _) => Task.FromResult(string.Empty);
     }
 }
