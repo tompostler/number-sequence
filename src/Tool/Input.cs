@@ -17,5 +17,21 @@ namespace TcpWtf.NumberSequence.Tool
             Console.Write(": ");
             return DateTimeOffset.Parse(Console.ReadLine());
         }
+
+        internal static ulong GetULong(string prompt, bool canDefault = true)
+        {
+            Console.Write(prompt);
+            Console.Write(" (default 0): ");
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input) && canDefault)
+            {
+                return 0;
+            }
+            else
+            {
+                return ulong.Parse(input);
+            }
+        }
     }
 }
