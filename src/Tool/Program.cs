@@ -13,6 +13,7 @@ namespace TcpWtf.NumberSequence.Tool
             verbosityOption.AddAlias("-v");
             rootCommand.AddGlobalOption(verbosityOption);
 
+            rootCommand.AddCommand(AccountCommand.Create(verbosityOption));
             rootCommand.AddCommand(PingCommand.Create(verbosityOption));
             rootCommand.AddCommand(RandomCommand.Create(verbosityOption));
             rootCommand.AddCommand(TokenCommand.Create(verbosityOption));
