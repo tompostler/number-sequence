@@ -10,7 +10,14 @@ namespace TcpWtf.NumberSequence.Tool
         Err
     }
 
-    internal sealed class Logger<T> : ILogger<T>
+    internal sealed class Logger<T> : Logger, ILogger<T>
+    {
+        public Logger(Verbosity verbosity)
+            : base(verbosity)
+        { }
+    }
+
+    internal class Logger : ILogger
     {
         private readonly LogLevel minimumLogLevel;
 

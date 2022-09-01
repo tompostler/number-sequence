@@ -15,6 +15,7 @@ namespace TcpWtf.NumberSequence.Tool
 
             rootCommand.AddCommand(PingCommand.Create(verbosityOption));
             rootCommand.AddCommand(RandomCommand.Create(verbosityOption));
+            rootCommand.AddCommand(TokenCommand.Create(verbosityOption));
 
             return await rootCommand.InvokeAsync(args);
         }

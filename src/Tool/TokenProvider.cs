@@ -23,20 +23,25 @@ namespace TcpWtf.NumberSequence.Tool
                 logger.LogInformation($"Token file {tokenFile.FullName} already exists with last modified {tokenFile.LastWriteTimeUtc:u}. Deleting it.");
                 tokenFile.Delete();
             }
+            else
+            {
+                tokenFile.Directory.Create();
+            }
 
-            using FileStream tokenFileStream = tokenFile.OpenWrite();
+            using FileStream tokenFileStream = tokenFile.Create();
             using StreamWriter tokenFileWriter = new(tokenFileStream);
             tokenFileWriter.Write(new TokenFileModel { Token = token }.ToJsonString());
             logger.LogInformation($"Wrote token value to file {tokenFile.FullName}");
         }
 
-        public static string Get()
+        public static string Get(ILogger logger = default)
         {
             if (!tokenFile.Exists)
             {
                 throw new FileNotFoundException("API requires auth and token file does not exist. Use 'ns token' to create/save one.", tokenFile.FullName);
             }
 
+            logger?.LogInformation($"Reading token value from file {tokenFile.FullName} with last modified {tokenFile.LastWriteTimeUtc:u}.");
             using FileStream tokenFileStream = tokenFile.OpenRead();
             using StreamReader tokenFileReader = new(tokenFileStream);
             return tokenFileReader.ReadToEnd().FromJsonString<TokenFileModel>().Token;

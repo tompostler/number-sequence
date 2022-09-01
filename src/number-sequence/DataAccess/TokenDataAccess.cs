@@ -61,8 +61,15 @@ namespace number_sequence.DataAccess
 
         public async Task<Token> CreateAsync(Token token)
         {
-            if (await this.TryGetAsync(token.Account, token.Name) != default) throw new ConflictException($"Token with name [{token.Name}] already exists.");
-            if (await this.GetCountByAccountAsync(token.Account) >= TierLimits.TokensPerAccount[(await this.accountDataAccess.TryGetAsync(token.Account)).Tier]) throw new ConflictException($"Too many tokens already created for account with name [{token.Account}].");
+            if (await this.TryGetAsync(token.Account, token.Name) != default)
+            {
+                throw new ConflictException($"Token with name [{token.Name}] already exists.");
+            }
+            if (await this.GetCountByAccountAsync(token.Account) >= TierLimits.TokensPerAccount[(await this.accountDataAccess.TryGetAsync(token.Account)).Tier])
+            {
+                throw new ConflictException($"Too many tokens already created for account with name [{token.Account}].");
+            }
+
             Account account = await this.accountDataAccess.TryGetAsync(token.Account);
 
             var tokenModel = new TokenModel
