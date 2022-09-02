@@ -31,17 +31,17 @@ namespace number_sequence.Controllers
 
             List<Models.LatexTemplateSpreadsheetRow> latexTemplateSpreadsheetRows = await nsContext.LatexTemplateSpreadsheetRows
                                                                                                     .Where(r => r.CreatedDate > monthAgo)
-                                                                                                    .OrderBy(r => r.CreatedDate)
+                                                                                                    .OrderByDescending(r => r.CreatedDate)
                                                                                                     .Take(10)
                                                                                                     .ToListAsync();
             List<Models.LatexDocument> latexDocuments = await nsContext.LatexDocuments
                                                                         .Where(r => r.CreatedDate > monthAgo)
-                                                                        .OrderBy(r => r.CreatedDate)
+                                                                        .OrderByDescending(r => r.CreatedDate)
                                                                         .Take(10)
                                                                         .ToListAsync();
             List<Models.EmailLatexDocument> emailLatexDocuments = await nsContext.EmailLatexDocuments
                                                                                     .Where(r => r.CreatedDate > monthAgo)
-                                                                                    .OrderBy(r => r.CreatedDate)
+                                                                                    .OrderByDescending(r => r.CreatedDate)
                                                                                     .Take(10)
                                                                                     .ToListAsync();
             LatexStatus latexStatus = new()
