@@ -24,15 +24,16 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             StringBuilder sb = new();
             _ = sb.AppendLine();
+            int col1Len, col2Len, col3Len, col4Len, col5Len, col6Len;
 
             _ = sb.AppendLine(nameof(latexStatus.LatexTemplateSpreadsheetRows));
-            int col1Len = Math.Max(
+            col1Len = Math.Max(
                 nameof(LatexStatus.LatexTemplateSpreadsheetRow.RowId).Length,
                 latexStatus.LatexTemplateSpreadsheetRows.Max(x => x.RowId?.Length ?? 0));
-            int col2Len = Math.Max(
+            col2Len = Math.Max(
                 nameof(LatexStatus.LatexTemplateSpreadsheetRow.LatexDocumentId).Length,
                 latexStatus.LatexTemplateSpreadsheetRows.Max(x => x.LatexDocumentId?.Length ?? 0));
-            int col3Len = Math.Max(
+            col3Len = Math.Max(
                 nameof(LatexStatus.LatexTemplateSpreadsheetRow.CreatedDate).Length,
                 latexStatus.LatexTemplateSpreadsheetRows.Max(x => x.CreatedDate?.Length ?? 0));
             _ = sb.Append(' ');
@@ -71,7 +72,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             col3Len = Math.Max(
                 nameof(LatexStatus.LatexDocument.ProcessedAt).Length,
                 latexStatus.LatexDocuments.Max(x => x.ProcessedAt?.Length ?? 0));
-            int col4Len = Math.Max(
+            col4Len = Math.Max(
+                nameof(LatexStatus.LatexDocument.Delay).Length,
+                latexStatus.LatexDocuments.Max(x => x.Delay?.Length ?? 0));
+            col5Len = Math.Max(
                 nameof(LatexStatus.LatexDocument.Successful).Length,
                 latexStatus.LatexDocuments.Max(x => x.Successful?.Length ?? 0));
             _ = sb.Append(' ');
@@ -81,7 +85,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             _ = sb.Append(' ');
             _ = sb.Append(nameof(LatexStatus.LatexDocument.ProcessedAt).PadRight(col3Len));
             _ = sb.Append(' ');
-            _ = sb.Append(nameof(LatexStatus.LatexDocument.Successful).PadRight(col4Len));
+            _ = sb.Append(nameof(LatexStatus.LatexDocument.Delay).PadRight(col4Len));
+            _ = sb.Append(' ');
+            _ = sb.Append(nameof(LatexStatus.LatexDocument.Successful).PadRight(col5Len));
             _ = sb.AppendLine();
             _ = sb.Append(' ');
             _ = sb.Append(new string('-', col1Len));
@@ -91,6 +97,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             _ = sb.Append(new string('-', col3Len));
             _ = sb.Append(' ');
             _ = sb.Append(new string('-', col4Len));
+            _ = sb.Append(' ');
+            _ = sb.Append(new string('-', col5Len));
             _ = sb.AppendLine();
             foreach (LatexStatus.LatexDocument row in latexStatus.LatexDocuments)
             {
@@ -101,7 +109,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 _ = sb.Append(' ');
                 _ = sb.Append((row.ProcessedAt ?? string.Empty).PadRight(col3Len));
                 _ = sb.Append(' ');
-                _ = sb.Append((row.Successful ?? string.Empty).PadRight(col4Len));
+                _ = sb.Append((row.Delay ?? string.Empty).PadRight(col4Len));
+                _ = sb.Append(' ');
+                _ = sb.Append((row.Successful ?? string.Empty).PadRight(col5Len));
                 _ = sb.AppendLine();
             }
             _ = sb.AppendLine();
@@ -119,9 +129,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             col4Len = Math.Max(
                 nameof(LatexStatus.EmailLatexDocument.CreatedDate).Length,
                 latexStatus.EmailLatexDocuments.Max(x => x.CreatedDate?.Length ?? 0));
-            int col5Len = Math.Max(
+            col5Len = Math.Max(
                 nameof(LatexStatus.EmailLatexDocument.ProcessedAt).Length,
                 latexStatus.EmailLatexDocuments.Max(x => x.ProcessedAt?.Length ?? 0));
+            col6Len = Math.Max(
+                nameof(LatexStatus.EmailLatexDocument.Delay).Length,
+                latexStatus.EmailLatexDocuments.Max(x => x.Delay?.Length ?? 0));
             _ = sb.Append(' ');
             _ = sb.Append(nameof(LatexStatus.EmailLatexDocument.Id).PadRight(col1Len));
             _ = sb.Append(' ');
@@ -132,6 +145,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             _ = sb.Append(nameof(LatexStatus.EmailLatexDocument.CreatedDate).PadRight(col4Len));
             _ = sb.Append(' ');
             _ = sb.Append(nameof(LatexStatus.EmailLatexDocument.ProcessedAt).PadRight(col5Len));
+            _ = sb.Append(' ');
+            _ = sb.Append(nameof(LatexStatus.EmailLatexDocument.Delay).PadRight(col6Len));
             _ = sb.AppendLine();
             _ = sb.Append(' ');
             _ = sb.Append(new string('-', col1Len));
@@ -143,6 +158,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             _ = sb.Append(new string('-', col4Len));
             _ = sb.Append(' ');
             _ = sb.Append(new string('-', col5Len));
+            _ = sb.Append(' ');
+            _ = sb.Append(new string('-', col6Len));
             _ = sb.AppendLine();
             foreach (LatexStatus.EmailLatexDocument row in latexStatus.EmailLatexDocuments)
             {
@@ -156,6 +173,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 _ = sb.Append((row.CreatedDate ?? string.Empty).PadRight(col4Len));
                 _ = sb.Append(' ');
                 _ = sb.Append((row.ProcessedAt ?? string.Empty).PadRight(col5Len));
+                _ = sb.Append(' ');
+                _ = sb.Append((row.Delay ?? string.Empty).PadRight(col6Len));
                 _ = sb.AppendLine();
             }
             _ = sb.AppendLine();

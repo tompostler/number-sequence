@@ -51,7 +51,7 @@ namespace number_sequence.Controllers
                     {
                         RowId = r.RowId,
                         LatexDocumentId = r.LatexDocumentId,
-                        CreatedDate = r.CreatedDate.ToString("u")
+                        CreatedDate = r.CreatedDate.ToString("u"),
                     })
                     .ToList(),
                 LatexDocuments = latexDocuments.Select(
@@ -60,7 +60,8 @@ namespace number_sequence.Controllers
                         Id = d.Id,
                         CreatedDate = d.CreatedDate.ToString("u"),
                         ProcessedAt = d.ProcessedAt?.ToString("u"),
-                        Successful = d.Successful?.ToString()
+                        Delay = (d.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(d.CreatedDate).ToString(),
+                        Successful = d.Successful?.ToString(),
                     })
                     .ToList(),
                 EmailLatexDocuments = emailLatexDocuments.Select(
@@ -70,7 +71,8 @@ namespace number_sequence.Controllers
                         Subject = e.Subject,
                         AttachmentName = e.AttachmentName,
                         CreatedDate = e.CreatedDate.ToString("u"),
-                        ProcessedAt = e.ProcessedAt?.ToString("u")
+                        ProcessedAt = e.ProcessedAt?.ToString("u"),
+                        Delay = (d.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(d.CreatedDate).ToString(),
                     })
                     .ToList()
             };

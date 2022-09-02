@@ -19,6 +19,7 @@ namespace TcpWtf.NumberSequence.Contracts
             public string Id { get; set; }
             public string CreatedDate { get; set; }
             public string ProcessedAt { get; set; }
+            public string Delay { get; set; }
             public string Successful { get; set; }
         }
         public sealed class EmailLatexDocument
@@ -28,6 +29,7 @@ namespace TcpWtf.NumberSequence.Contracts
             public string AttachmentName { get; set; }
             public string CreatedDate { get; set; }
             public string ProcessedAt { get; set; }
+            public string Delay { get; set; }
         }
 
         public List<LatexTemplateSpreadsheetRow> LatexTemplateSpreadsheetRows { get; set; }
