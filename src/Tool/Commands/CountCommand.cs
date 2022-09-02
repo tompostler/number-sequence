@@ -45,7 +45,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         private static async Task HandleCreateAsync(Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
 
             Contracts.Count count = new()
             {
@@ -59,7 +59,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         private static async Task HandleGetAsync(string name, bool bare, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Count count = await client.Count.GetAsync(name);
 
             if (bare)
@@ -74,7 +74,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         private static async Task HandleIncrementAsync(string name, bool bare, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Count count = await client.Count.IncrementAsync(name);
 
             if (bare)
@@ -89,7 +89,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         private static async Task HandleIncrementByAsync(string name, ulong amount, bool bare, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Count count = await client.Count.IncrementByAmountAsync(name, amount);
 
             if (bare)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace TcpWtf.NumberSequence.Contracts.Interfaces
@@ -26,6 +27,11 @@ namespace TcpWtf.NumberSequence.Contracts.Interfaces
         /// The tier for the account. Default is <see cref="AccountTier.Small"/>.
         /// </summary>
         public AccountTier Tier { get; set; }
+
+        /// <summary>
+        /// When an account should have access to more features, it will have additional roles. See <see cref="AccountRoles"/>.
+        /// </summary>
+        public HashSet<string> Roles { get; set; }
 
         /// <summary>
         /// When the account was created.

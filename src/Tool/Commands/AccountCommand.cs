@@ -27,7 +27,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         private static async Task HandleCreateAsync(Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, Program.Stamp);
 
             Contracts.Account account = new()
             {
@@ -41,7 +41,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         private static async Task HandleGetAsync(string name, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, Program.Stamp);
             Contracts.Account account = await client.Account.GetAsync(name);
             Console.WriteLine(account.ToJsonString());
         }

@@ -30,7 +30,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         private static async Task HandleAsync(string type, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, Program.Stamp);
 
             object response = type switch
             {

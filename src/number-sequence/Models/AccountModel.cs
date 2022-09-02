@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
+using System.Collections.Generic;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Interfaces;
 
@@ -14,6 +15,7 @@ namespace number_sequence.Models
         [JsonConverter(typeof(StringEnumConverter))]
         public AccountTier Tier { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
+        public HashSet<string> Roles { get; set; }
         public string CreatedFrom { get; set; }
         [JsonProperty("_ts"), JsonConverter(typeof(UnixDateTimeConverter))]
         public DateTimeOffset ModifiedAt { get; set; }
@@ -25,6 +27,7 @@ namespace number_sequence.Models
             Name = a.Name,
             Key = a.Key,
             Tier = a.Tier,
+            Roles = a.Roles ?? new(),
             CreatedAt = a.CreatedAt,
             CreatedFrom = a.CreatedFrom,
             ModifiedAt = a.ModifiedAt
@@ -34,6 +37,7 @@ namespace number_sequence.Models
             Name = a.Name,
             Key = a.Key,
             Tier = a.Tier,
+            Roles = a.Roles ?? new(),
             CreatedAt = a.CreatedAt,
             CreatedFrom = a.CreatedFrom,
             ModifiedAt = a.ModifiedAt

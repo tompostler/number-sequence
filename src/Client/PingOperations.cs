@@ -40,5 +40,17 @@ namespace TcpWtf.NumberSequence.Client
                     "ping"),
                 cancellationToken);
         }
+
+        /// <summary>
+        /// Ping the service, with auth, to the endpoint that requires a role.
+        /// </summary>
+        public async Task SendWithAuthToRoleAsync(CancellationToken cancellationToken = default)
+        {
+            _ = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Put,
+                    "ping"),
+                cancellationToken);
+        }
     }
 }

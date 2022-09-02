@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using number_sequence.Filters;
+using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.Controllers
 {
@@ -36,6 +37,12 @@ namespace number_sequence.Controllers
 
         [HttpPost, RequiresToken]
         public IActionResult GetWithAuth()
+        {
+            return this.Ok();
+        }
+
+        [HttpPut, RequiresToken(AccountRoles.Ping)]
+        public IActionResult GetWithAuthAndRole()
         {
             return this.Ok();
         }

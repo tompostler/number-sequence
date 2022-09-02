@@ -90,7 +90,8 @@ namespace number_sequence.DataAccess
                 ModifiedAt = DateTimeOffset.UtcNow,
                 Key = account.Key.ComputeSHA256(),
                 Name = account.Name.ToLower(),
-                Tier = AccountTier.Small
+                Tier = AccountTier.Small,
+                Roles = new()
             };
             this.logger.LogInformation($"Creating account: {accountModel.ToJsonString()}");
 

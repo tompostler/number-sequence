@@ -18,13 +18,16 @@ namespace number_sequence.Filters
 {
     public sealed class RequiresTokenFilter : IAsyncAuthorizationFilter
     {
+        private readonly string requiredRole;
         private readonly IMemoryCache memoryCache;
         private readonly ILogger<RequiresTokenFilter> logger;
 
         public RequiresTokenFilter(
+            string requiredRole,
             IMemoryCache memoryCache,
             ILogger<RequiresTokenFilter> logger)
         {
+            this.requiredRole = requiredRole;
             this.memoryCache = memoryCache;
             this.logger = logger;
         }
@@ -62,6 +65,14 @@ namespace number_sequence.Filters
             if (this.memoryCache.TryGetValue(token, out TokenPrincipal principal))
             {
                 this.logger.LogInformation("Token found in cache.");
+
+                if (!string.IsNullOrEmpty(this.requiredRole) && !principal.IsInRole(this.requiredRole))
+                {
+                    this.logger.LogWarning($"Account does not have the {this.requiredRole} role.");
+                    context.Result = new UnauthorizedObjectResult($"Account is missing the {this.requiredRole} role.");
+                    return;
+                }
+
                 context.HttpContext.User = principal;
             }
             else
@@ -113,7 +124,17 @@ namespace number_sequence.Filters
                         else
                         {
                             this.logger.LogInformation($"Token is valid: {tokenValue.Account}/{tokenValue.Name}");
-                            principal = new TokenPrincipal(new GenericIdentity(tokenValue.Account)) { Token = tokenValue };
+                            AccountDataAccess accountDataAccess = context.HttpContext.RequestServices.GetService<AccountDataAccess>();
+                            Account accountModel = await accountDataAccess.TryGetAsync(tokenValue.Account);
+                            principal = new TokenPrincipal(new GenericIdentity(tokenValue.Account), accountModel.Roles.ToArray()) { Token = tokenValue };
+
+                            if (!string.IsNullOrEmpty(this.requiredRole) && !principal.IsInRole(this.requiredRole))
+                            {
+                                this.logger.LogWarning($"Account does not have the {this.requiredRole} role.");
+                                context.Result = new UnauthorizedObjectResult($"Account is missing the {this.requiredRole} role.");
+                                return;
+                            }
+
                             context.HttpContext.User = principal;
 
                             _ = this.memoryCache.Set(
@@ -136,8 +157,8 @@ namespace number_sequence.Filters
 
         public sealed class TokenPrincipal : GenericPrincipal
         {
-            public TokenPrincipal(IIdentity identity)
-                : base(identity, default)
+            public TokenPrincipal(IIdentity identity, string[] roles)
+                : base(identity, roles)
             {
             }
 

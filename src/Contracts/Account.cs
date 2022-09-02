@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using TcpWtf.NumberSequence.Contracts.Interfaces;
 
@@ -17,6 +18,9 @@ namespace TcpWtf.NumberSequence.Contracts
 
         /// <inheritdoc/>
         public AccountTier Tier { get; set; }
+
+        /// <inheritdoc/>
+        public HashSet<string> Roles { get; set; }
 
         /// <inheritdoc/>
         public DateTimeOffset CreatedAt { get; set; }

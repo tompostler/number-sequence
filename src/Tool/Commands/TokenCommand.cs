@@ -38,7 +38,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         private static async Task HandleCreateAsync(Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, Program.Stamp);
 
             Contracts.Token token = new()
             {

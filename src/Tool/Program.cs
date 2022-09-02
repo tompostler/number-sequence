@@ -1,11 +1,14 @@
 ﻿using System.CommandLine;
 using System.Threading.Tasks;
+using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Tool.Commands;
 
 namespace TcpWtf.NumberSequence.Tool
 {
     internal static class Program
     {
+        internal static Stamp Stamp = Stamp.Public;
+
         public static async Task<int> Main(string[] args)
         {
             RootCommand rootCommand = new("A CLI for ns.tcp.wtf.");
