@@ -106,7 +106,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
             _ = sb.AppendLine();
 
-            _ = sb.AppendLine(nameof(latexStatus.LatexDocuments));
+            _ = sb.AppendLine(nameof(latexStatus.EmailLatexDocuments));
             col1Len = Math.Max(
                 nameof(LatexStatus.EmailLatexDocument.Id).Length,
                 latexStatus.EmailLatexDocuments.Max(x => x.Id?.Length ?? 0));
