@@ -72,7 +72,7 @@ namespace number_sequence.Controllers
                         AttachmentName = e.AttachmentName,
                         CreatedDate = e.CreatedDate.ToString("u"),
                         ProcessedAt = e.ProcessedAt?.ToString("u"),
-                        Delay = (d.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(d.CreatedDate).ToString(),
+                        Delay = (e.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(e.CreatedDate).ToString(),
                     })
                     .ToList()
             };
