@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using number_sequence.Models;
+using TcpWtf.NumberSequence.Contracts.Invoicing;
 
 namespace number_sequence.DataAccess
 {
@@ -9,6 +10,10 @@ namespace number_sequence.DataAccess
         private readonly ILoggerFactory loggerFactory;
 
         public DbSet<EmailLatexDocument> EmailLatexDocuments { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceBusiness> InvoiceBusinesses { get; set; }
+        public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
+        public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
         public DbSet<LatexDocument> LatexDocuments { get; set; }
         public DbSet<LatexTemplate> LatexTemplates { get; set; }
         public DbSet<LatexTemplateSpreadsheetRow> LatexTemplateSpreadsheetRows { get; set; }
@@ -60,6 +65,87 @@ namespace number_sequence.DataAccess
 
             _ = modelBuilder.Entity<SynchronizedBackgroundService>()
                 .HasKey(x => x.Name);
+
+            #region Invoicing
+
+            _ = modelBuilder.HasSequence<long>("InvoiceIds");
+            _ = modelBuilder.HasSequence<long>("InvoiceBusinessIds");
+            _ = modelBuilder.HasSequence<long>("InvoiceCustomerIds");
+            _ = modelBuilder.HasSequence<long>("InvoiceLineIds");
+            _ = modelBuilder.HasSequence<long>("InvoiceLineDefaultIds");
+
+            _ = modelBuilder.Entity<Invoice>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoiceIds");
+            _ = modelBuilder.Entity<Invoice>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<Invoice>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<InvoiceBusiness>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoiceBusinessIds");
+            _ = modelBuilder.Entity<InvoiceBusiness>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoiceBusiness>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<InvoiceCustomer>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoiceCustomerIds");
+            _ = modelBuilder.Entity<InvoiceCustomer>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoiceCustomer>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<InvoiceLine>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoiceLineIds");
+            _ = modelBuilder.Entity<InvoiceLine>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoiceLine>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoiceLine>()
+                .Property(x => x.Quantity)
+                .HasPrecision(10, 2);
+            _ = modelBuilder.Entity<InvoiceLine>()
+                .Property(x => x.Price)
+                .HasPrecision(18, 2);
+
+            _ = modelBuilder.Entity<InvoiceLineDefault>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoiceLineDefaultIds");
+            _ = modelBuilder.Entity<InvoiceLineDefault>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoiceLineDefault>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoiceLineDefault>()
+                .Property(x => x.Quantity)
+                .HasPrecision(10, 2);
+            _ = modelBuilder.Entity<InvoiceLineDefault>()
+                .Property(x => x.Price)
+                .HasPrecision(18, 2);
+
+            _ = modelBuilder.Entity<Invoice>()
+                .HasOne(x => x.Business)
+                .WithMany(x => x.Invoices)
+                .OnDelete(DeleteBehavior.Restrict);
+            _ = modelBuilder.Entity<Invoice>()
+                .HasOne(x => x.Customer)
+                .WithMany(x => x.Invoices)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            #endregion // Invoicing
 
             base.OnModelCreating(modelBuilder);
         }
