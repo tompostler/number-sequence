@@ -58,6 +58,7 @@ namespace TcpWtf.NumberSequence.Client
 
             this.Account = new AccountOperations(this);
             this.Count = new CountOperations(this);
+            this.Invoice = new InvoiceOperations(this);
             this.LatexStatus = new LatexStatusOperations(this);
             this.Ping = new PingOperations(this);
             this.Random = new RandomOperations(this);
@@ -73,6 +74,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Count operations.
         /// </summary>
         public CountOperations Count { get; }
+
+        /// <summary>
+        /// Invoice operations.
+        /// </summary>
+        public InvoiceOperations Invoice { get; }
 
         /// <summary>
         /// Latex status operations.

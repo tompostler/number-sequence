@@ -6,6 +6,11 @@
     public static class AccountRoles
     {
         /// <summary>
+        /// The account has access to the invoicing features.
+        /// </summary>
+        public const string Invoicing = nameof(Invoicing);
+
+        /// <summary>
         /// Ability to view the status of the latex document generation.
         /// </summary>
         public const string LatexStatus = nameof(LatexStatus);
