@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Contracts.Invoicing;
@@ -95,6 +96,19 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Get existing businesses.
+        /// </summary>
+        public async Task<List<InvoiceBusiness>> GetBusinessesAsync(CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "invoices/businesses"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<InvoiceBusiness>>(cancellationToken);
+        }
+
+        /// <summary>
         /// Get an existing customer.
         /// </summary>
         public async Task<InvoiceCustomer> GetCustomerAsync(long id, CancellationToken cancellationToken = default)
@@ -108,6 +122,19 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Get existing customers.
+        /// </summary>
+        public async Task<List<InvoiceCustomer>> GetCustomersAsync(CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "invoices/customers"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<InvoiceCustomer>>(cancellationToken);
+        }
+
+        /// <summary>
         /// Get an existing invoice.
         /// </summary>
         public async Task<Invoice> GetAsync(long id, CancellationToken cancellationToken = default)
@@ -118,6 +145,19 @@ namespace TcpWtf.NumberSequence.Client
                     $"invoices/{id}"),
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<Invoice>(cancellationToken);
+        }
+
+        /// <summary>
+        /// Get existing invoices.
+        /// </summary>
+        public async Task<List<Invoice>> GetAsync(CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "invoices"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<Invoice>>(cancellationToken);
         }
 
         /// <summary>

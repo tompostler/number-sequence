@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using number_sequence.DataAccess;
 using number_sequence.Filters;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Contracts;
@@ -34,6 +36,16 @@ namespace number_sequence.Controllers
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
             return this.Ok(business);
+        }
+
+        [HttpGet("businesses")]
+        public async Task<IActionResult> GetBusinessesAsync(CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            List<InvoiceBusiness> businesses = await nsContext.InvoiceBusinesses.Where(x => x.AccountName == this.User.Identity.Name).ToListAsync(cancellationToken);
+            return this.Ok(businesses);
         }
 
         [HttpGet("businesses/{id}")]
@@ -94,6 +106,16 @@ namespace number_sequence.Controllers
             return this.Ok(customer);
         }
 
+        [HttpGet("customers")]
+        public async Task<IActionResult> GetCustomersAsync(CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            List<InvoiceCustomer> customers = await nsContext.InvoiceCustomers.Where(x => x.AccountName == this.User.Identity.Name).ToListAsync(cancellationToken);
+            return this.Ok(customers);
+        }
+
         [HttpGet("customers/{id}")]
         public async Task<IActionResult> GetCustomerAsync(long id, CancellationToken cancellationToken)
         {
@@ -150,6 +172,21 @@ namespace number_sequence.Controllers
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
             return this.Ok(invoice);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetsAsync(CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            List<Invoice> invoices = await nsContext.Invoices
+                .Include(x => x.Business)
+                .Include(x => x.Customer)
+                .Include(x => x.Lines)
+                .Where(x => x.AccountName == this.User.Identity.Name)
+                .ToListAsync(cancellationToken);
+            return this.Ok(invoices);
         }
 
         [HttpGet("{id}")]
