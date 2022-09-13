@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Extensions.Options;
-using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using TcpWtf.NumberSequence.Contracts.Framework;

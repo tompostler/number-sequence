@@ -1,7 +1,6 @@
 ﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Invoicing;
 
 namespace TcpWtf.NumberSequence.Client
