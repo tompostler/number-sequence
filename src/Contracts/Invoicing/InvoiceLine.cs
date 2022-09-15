@@ -47,6 +47,12 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         public decimal Price { get; set; }
 
         /// <summary>
+        /// The total for this line item.
+        /// </summary>
+        [NotMapped]
+        public decimal Total => this.Quantity * this.Price;
+
+        /// <summary>
         /// The date the line was created.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

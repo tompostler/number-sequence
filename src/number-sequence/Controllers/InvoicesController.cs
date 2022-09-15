@@ -217,6 +217,7 @@ namespace number_sequence.Controllers
 
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
             Invoice invoiceRecord = await nsContext.Invoices
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
@@ -224,14 +225,28 @@ namespace number_sequence.Controllers
                 .SingleOrDefaultAsync(x => x.AccountName == invoice.AccountName && x.Id == invoice.Id, cancellationToken);
             if (invoiceRecord == default)
             {
-                return this.NotFound();
+                return this.NotFound("You must create an invoice before trying to update it.");
+            }
+
+            InvoiceBusiness invoiceBusiness = await nsContext.InvoiceBusinesses
+                .SingleOrDefaultAsync(x => x.AccountName == invoice.AccountName && x.Id == invoice.Business.Id, cancellationToken);
+            if (invoiceBusiness == default)
+            {
+                return this.NotFound($"Business id [{invoice.Business.Id}] not found.");
+            }
+
+            InvoiceCustomer invoiceCustomer = await nsContext.InvoiceCustomers
+                .SingleOrDefaultAsync(x => x.AccountName == invoice.AccountName && x.Id == invoice.Business.Id, cancellationToken);
+            if (invoiceCustomer == default)
+            {
+                return this.NotFound($"Customer id [{invoice.Customer.Id}] not found.");
             }
 
             invoiceRecord.Title = invoice.Title;
             invoiceRecord.Description = invoice.Description;
             invoiceRecord.DueDate = invoice.DueDate;
-            invoiceRecord.Business = invoice.Business;
-            invoiceRecord.Customer = invoice.Customer;
+            invoiceRecord.Business = invoiceBusiness;
+            invoiceRecord.Customer = invoiceCustomer;
             invoiceRecord.Lines = invoice.Lines;
             invoiceRecord.PaidDate = invoice.PaidDate;
             invoiceRecord.PaidDetails = invoice.PaidDetails;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace TcpWtf.NumberSequence.Contracts.Invoicing
 {
@@ -67,6 +68,12 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         /// </summary>
         [MaxLength(64)]
         public string PaidDetails { get; set; }
+
+        /// <summary>
+        /// The total amount due on the invoice.
+        /// </summary>
+        [NotMapped]
+        public decimal Total => this.Lines?.Sum(x => x.Total) ?? 0;
 
         /// <summary>
         /// The date the invoice was created.

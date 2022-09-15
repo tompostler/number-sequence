@@ -19,17 +19,18 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Command businessCreateCommand = new("create", "Create a new invoice business.");
             businessCreateCommand.SetHandler(HandleBusinessCreateAsync, verbosityOption);
 
-            Command businessGetCommand = new("get", "Get and existing invoice business.");
+            Command businessGetCommand = new("get", "Get an existing invoice business.");
             Argument<long> businessIdArgument = new("id", "The id of the business.");
             businessGetCommand.AddArgument(businessIdArgument);
             businessGetCommand.SetHandler(HandleBusinessGetAsync, businessIdArgument, verbosityOption);
 
-            Command businessListCommand = new("list", "Get and existing invoice business.");
+            Command businessListCommand = new("list", "Get existing invoice businesses.");
             businessListCommand.SetHandler(HandleBusinessListAsync, verbosityOption);
 
             businessCommand.AddCommand(businessCreateCommand);
             businessCommand.AddCommand(businessGetCommand);
             businessCommand.AddCommand(businessListCommand);
+            rootCommand.AddCommand(businessCommand);
 
 
             Command customerCommand = new("customer", "Manage invoice customers (location that receives invoices).");
@@ -37,17 +38,18 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Command customerCreateCommand = new("create", "Create a new invoice customer.");
             customerCreateCommand.SetHandler(HandleCustomerCreateAsync, verbosityOption);
 
-            Command customerGetCommand = new("get", "Get and existing invoice customer.");
+            Command customerGetCommand = new("get", "Get an existing invoice customer.");
             Argument<long> customerIdArgument = new("id", "The id of the customer.");
             customerGetCommand.AddArgument(customerIdArgument);
             customerGetCommand.SetHandler(HandleCustomerGetAsync, customerIdArgument, verbosityOption);
 
-            Command customerListCommand = new("list", "Get and existing invoice customer.");
+            Command customerListCommand = new("list", "Get existing invoice customers.");
             customerListCommand.SetHandler(HandleCustomerListAsync, verbosityOption);
 
             customerCommand.AddCommand(customerCreateCommand);
             customerCommand.AddCommand(customerGetCommand);
             customerCommand.AddCommand(customerListCommand);
+            rootCommand.AddCommand(customerCommand);
 
 
             Command lineDefaultCommand = new("line-default", "Manage invoice line defaults (line items that can be used as a reference for adding a line to an invoice).");
@@ -55,22 +57,32 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Command lineDefaultCreateCommand = new("create", "Create a new invoice line default.");
             lineDefaultCreateCommand.SetHandler(HandleLineDefaultCreateAsync, verbosityOption);
 
-            Command lineDefaultGetCommand = new("get", "Get and existing invoice line default.");
+            Command lineDefaultGetCommand = new("get", "Get an existing invoice line default.");
             Argument<long> lineDefaultIdArgument = new("id", "The id of the line default.");
             lineDefaultGetCommand.AddArgument(lineDefaultIdArgument);
             lineDefaultGetCommand.SetHandler(HandleLineDefaultGetAsync, lineDefaultIdArgument, verbosityOption);
 
-            Command lineDefaultListCommand = new("list", "Get and existing invoice line default.");
+            Command lineDefaultListCommand = new("list", "Get existing invoice line defaults.");
             lineDefaultListCommand.SetHandler(HandleLineDefaultListAsync, verbosityOption);
 
             lineDefaultCommand.AddCommand(lineDefaultCreateCommand);
             lineDefaultCommand.AddCommand(lineDefaultGetCommand);
             lineDefaultCommand.AddCommand(lineDefaultListCommand);
-
-
-            rootCommand.AddCommand(businessCommand);
-            rootCommand.AddCommand(customerCommand);
             rootCommand.AddCommand(lineDefaultCommand);
+
+
+            Command getCommand = new("get", "Get an existing invoice.");
+            Argument<long> idArgument = new("id", "The id of the invoice.");
+            getCommand.AddArgument(idArgument);
+            getCommand.SetHandler(HandleGetAsync, idArgument, verbosityOption);
+            rootCommand.AddCommand(getCommand);
+
+
+            Command listCommand = new("list", "Get existing invoices.");
+            listCommand.SetHandler(HandleListAsync, verbosityOption);
+            rootCommand.AddCommand(listCommand);
+
+
             return rootCommand;
         }
 
@@ -207,5 +219,32 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         }
 
         #endregion // Line Defaults
+
+        private static async Task HandleGetAsync(long id, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
+            Console.WriteLine(invoice.ToJsonString());
+        }
+
+        private static async Task HandleListAsync(Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            List<Contracts.Invoicing.Invoice> invoices = await client.Invoice.GetAsync();
+
+            Console.WriteLine();
+            Output.WriteTable(
+                invoices,
+                nameof(Contracts.Invoicing.Invoice.Id),
+                nameof(Contracts.Invoicing.Invoice.Title),
+                nameof(Contracts.Invoicing.Invoice.Business),
+                nameof(Contracts.Invoicing.Invoice.Customer),
+                nameof(Contracts.Invoicing.Invoice.DueDate),
+                nameof(Contracts.Invoicing.Invoice.PaidDate),
+                nameof(Contracts.Invoicing.Invoice.Total),
+                nameof(Contracts.Invoicing.Invoice.CreatedDate),
+                nameof(Contracts.Invoicing.Invoice.ModifiedDate),
+                nameof(Contracts.Invoicing.Invoice.ProcessedAt));
+        }
     }
 }
