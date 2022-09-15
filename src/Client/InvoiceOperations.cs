@@ -174,6 +174,19 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Get existing line defaults.
+        /// </summary>
+        public async Task<List<InvoiceLineDefault>> GetLineDefaultsAsync(CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "invoices/linedefaults"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<InvoiceLineDefault>>(cancellationToken);
+        }
+
+        /// <summary>
         /// Update an existing business.
         /// </summary>
         public async Task<InvoiceBusiness> UpdateBusinessAsync(InvoiceBusiness business, CancellationToken cancellationToken = default)

@@ -50,10 +50,31 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             customerCommand.AddCommand(customerListCommand);
 
 
+            Command lineDefaultCommand = new("line-default", "Manage invoice line defaults (line items that can be used as a reference for adding a line to an invoice).");
+
+            Command lineDefaultCreateCommand = new("create", "Create a new invoice line default.");
+            lineDefaultCreateCommand.SetHandler(HandleLineDefaultCreateAsync, verbosityOption);
+
+            Command lineDefaultGetCommand = new("get", "Get and existing invoice line default.");
+            Argument<long> lineDefaultIdArgument = new("id", "The id of the line default.");
+            lineDefaultGetCommand.AddArgument(lineDefaultIdArgument);
+            lineDefaultGetCommand.SetHandler(HandleLineDefaultGetAsync, lineDefaultIdArgument, verbosityOption);
+
+            Command lineDefaultListCommand = new("list", "Get and existing invoice line default.");
+            lineDefaultListCommand.SetHandler(HandleLineDefaultListAsync, verbosityOption);
+
+            lineDefaultCommand.AddCommand(lineDefaultCreateCommand);
+            lineDefaultCommand.AddCommand(lineDefaultGetCommand);
+            lineDefaultCommand.AddCommand(lineDefaultListCommand);
+
+
             rootCommand.AddCommand(businessCommand);
             rootCommand.AddCommand(customerCommand);
+            rootCommand.AddCommand(lineDefaultCommand);
             return rootCommand;
         }
+
+        #region Businesses
 
         private static async Task HandleBusinessCreateAsync(Verbosity verbosity)
         {
@@ -95,6 +116,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceBusiness.CreatedDate));
         }
 
+        #endregion // Businesses
+
+        #region Customers
+
         private static async Task HandleCustomerCreateAsync(Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
@@ -134,5 +159,53 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceCustomer.Contact),
                 nameof(Contracts.Invoicing.InvoiceCustomer.CreatedDate));
         }
+
+        #endregion // Customers
+
+        #region Line Defaults
+
+        private static async Task HandleLineDefaultCreateAsync(Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault = new()
+            {
+                AccountName = TokenProvider.GetAccount(),
+                Title = Input.GetString(nameof(invoiceLineDefault.Title)),
+                Description = Input.GetString(nameof(invoiceLineDefault.Description)),
+                Quantity = Input.GetDecimal(nameof(invoiceLineDefault.Quantity), defaultVal: 1),
+                Unit = Input.GetString(nameof(invoiceLineDefault.Unit)),
+                Price = Input.GetDecimal(nameof(invoiceLineDefault.Price)),
+            };
+
+            invoiceLineDefault = await client.Invoice.CreateLineDefaultAsync(invoiceLineDefault);
+            Console.WriteLine(invoiceLineDefault.ToJsonString());
+        }
+
+        private static async Task HandleLineDefaultGetAsync(long id, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault = await client.Invoice.GetLineDefaultAsync(id);
+            Console.WriteLine(invoiceLineDefault.ToJsonString());
+        }
+
+        private static async Task HandleLineDefaultListAsync(Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            List<Contracts.Invoicing.InvoiceLineDefault> invoiceLineDefaults = await client.Invoice.GetLineDefaultsAsync();
+
+            Console.WriteLine();
+            Output.WriteTable(
+                invoiceLineDefaults,
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Id),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Title),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Description),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Quantity),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Unit),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Price),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.CreatedDate));
+        }
+
+        #endregion // Line Defaults
     }
 }

@@ -261,6 +261,16 @@ namespace number_sequence.Controllers
             return this.Ok(lineDefault);
         }
 
+        [HttpGet("linedefaults")]
+        public async Task<IActionResult> GetLineDefaultsAsync(CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            List<InvoiceLineDefault> lineDefaults = await nsContext.InvoiceLineDefaults.Where(x => x.AccountName == this.User.Identity.Name).ToListAsync(cancellationToken);
+            return this.Ok(lineDefaults);
+        }
+
         [HttpGet("linedefaults/{id}")]
         public async Task<IActionResult> GetLineDefaultAsync(long id, CancellationToken cancellationToken)
         {

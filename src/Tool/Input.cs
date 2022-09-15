@@ -18,6 +18,22 @@ namespace TcpWtf.NumberSequence.Tool
             return DateTimeOffset.Parse(Console.ReadLine());
         }
 
+        internal static decimal GetDecimal(string prompt, bool canDefault = true, decimal defaultVal = 0)
+        {
+            Console.Write(prompt);
+            Console.Write($" (default {defaultVal}): ");
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input) && canDefault)
+            {
+                return defaultVal;
+            }
+            else
+            {
+                return decimal.Parse(input);
+            }
+        }
+
         internal static ulong GetULong(string prompt, bool canDefault = true)
         {
             Console.Write(prompt);
