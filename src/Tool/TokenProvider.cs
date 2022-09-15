@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Tool.Extensions;
@@ -45,6 +47,12 @@ namespace TcpWtf.NumberSequence.Tool
             using FileStream tokenFileStream = tokenFile.OpenRead();
             using StreamReader tokenFileReader = new(tokenFileStream);
             return tokenFileReader.ReadToEnd().FromJsonString<TokenFileModel>().Token;
+        }
+
+        public static string GetAccount(ILogger logger = default)
+        {
+            string token = Get(logger);
+            return token.FromBase64JsonString<JsonObject>()["a"].GetValue<string>();
         }
 
         public static Task<string> GetAsync(CancellationToken _) => Task.FromResult(Get());

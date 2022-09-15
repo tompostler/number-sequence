@@ -30,7 +30,7 @@ namespace TcpWtf.NumberSequence.Tool
                 T row = @this.ElementAt(i);
                 for (int j = 0; j < propertyNames.Length; j++)
                 {
-                    outputData[i, j] = propertyMap[propertyNames[j]].GetValue(row)?.ToString() ?? string.Empty;
+                    outputData[i, j] = ToNiceString(propertyMap[propertyNames[j]].GetValue(row));
                     columnLengths[j] = Math.Max(columnLengths[j], outputData[i, j].Length);
                 }
             }
@@ -65,6 +65,25 @@ namespace TcpWtf.NumberSequence.Tool
             }
 
             Console.WriteLine(sb.ToString());
+        }
+
+        private static string ToNiceString(object obj)
+        {
+            if (obj == null)
+            {
+                return string.Empty;
+            }
+
+            if (obj is DateTimeOffset objDto)
+            {
+                return objDto.ToString("u");
+            }
+            if (obj is DateTime objDt)
+            {
+                return objDt.ToString("u");
+            }
+
+            return obj?.ToString() ?? string.Empty;
         }
     }
 }
