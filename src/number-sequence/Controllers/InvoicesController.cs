@@ -260,12 +260,30 @@ namespace number_sequence.Controllers
                 return this.NotFound($"Customer id [{invoice.Customer.Id}] not found.");
             }
 
+            List<InvoiceLine> invoiceLines = new();
+            foreach (InvoiceLine invoiceLine in invoice.Lines)
+            {
+                InvoiceLine invoiceLineRecord = invoiceRecord.Lines.SingleOrDefault(x => x.Id == invoiceLine.Id);
+                if (invoiceLine.Id == default)
+                {
+                    invoiceLines.Add(invoiceLine);
+                }
+                else if (invoiceLineRecord == default)
+                {
+                    return this.NotFound($"Line id [{invoiceLine.Id}] not found.");
+                }
+                else
+                {
+                    invoiceLines.Add(invoiceLineRecord);
+                }
+            }
+
             invoiceRecord.Title = invoice.Title;
             invoiceRecord.Description = invoice.Description;
             invoiceRecord.DueDate = invoice.DueDate;
             invoiceRecord.Business = invoiceBusiness;
             invoiceRecord.Customer = invoiceCustomer;
-            invoiceRecord.Lines = invoice.Lines;
+            invoiceRecord.Lines = invoiceLines;
             invoiceRecord.PaidDate = invoice.PaidDate;
             invoiceRecord.PaidDetails = invoice.PaidDetails;
             invoiceRecord.ReadyForProcessing = invoice.ReadyForProcessing;
