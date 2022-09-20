@@ -168,6 +168,24 @@ namespace number_sequence.Controllers
 
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+
+            InvoiceBusiness invoiceBusiness = await nsContext.InvoiceBusinesses
+                .SingleOrDefaultAsync(x => x.AccountName == invoice.AccountName && x.Id == invoice.Business.Id, cancellationToken);
+            if (invoiceBusiness == default)
+            {
+                return this.NotFound($"Business id [{invoice.Business.Id}] not found.");
+            }
+            invoice.Business = invoiceBusiness;
+
+            InvoiceCustomer invoiceCustomer = await nsContext.InvoiceCustomers
+                .SingleOrDefaultAsync(x => x.AccountName == invoice.AccountName && x.Id == invoice.Business.Id, cancellationToken);
+            if (invoiceCustomer == default)
+            {
+                return this.NotFound($"Customer id [{invoice.Customer.Id}] not found.");
+            }
+            invoice.Customer = invoiceCustomer;
+
             _ = nsContext.Invoices.Add(invoice);
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 

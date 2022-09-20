@@ -34,6 +34,22 @@ namespace TcpWtf.NumberSequence.Tool
             }
         }
 
+        internal static long GetLong(string prompt, bool canDefault = true)
+        {
+            Console.Write(prompt);
+            Console.Write(" (default 0): ");
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input) && canDefault)
+            {
+                return 0;
+            }
+            else
+            {
+                return long.Parse(input);
+            }
+        }
+
         internal static ulong GetULong(string prompt, bool canDefault = true)
         {
             Console.Write(prompt);

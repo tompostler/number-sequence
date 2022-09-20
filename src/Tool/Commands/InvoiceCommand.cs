@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Linq;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Tool.Extensions;
@@ -69,6 +70,11 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             lineDefaultCommand.AddCommand(lineDefaultGetCommand);
             lineDefaultCommand.AddCommand(lineDefaultListCommand);
             rootCommand.AddCommand(lineDefaultCommand);
+
+
+            Command createCommand = new("create", "Create a new invoice.");
+            createCommand.SetHandler(HandleCreateAsync, verbosityOption);
+            rootCommand.AddCommand(createCommand);
 
 
             Command getCommand = new("get", "Get an existing invoice.");
@@ -219,6 +225,48 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         }
 
         #endregion // Line Defaults
+
+        private static async Task HandleCreateAsync(Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.Invoice invoice = new()
+            {
+                AccountName = TokenProvider.GetAccount(),
+                Title = Input.GetString(nameof(invoice.Title)),
+                Description = Input.GetString(nameof(invoice.Description)),
+                DueDate = Input.GetDateTime(nameof(invoice.DueDate))
+            };
+
+            List<Contracts.Invoicing.InvoiceBusiness> invoiceBusinesses = await client.Invoice.GetBusinessesAsync();
+            Console.WriteLine("Invoice businesses:");
+            Output.WriteTable(
+                invoiceBusinesses,
+                nameof(Contracts.Invoicing.InvoiceBusiness.Id),
+                nameof(Contracts.Invoicing.InvoiceBusiness.Name),
+                nameof(Contracts.Invoicing.InvoiceBusiness.AddressLine1),
+                nameof(Contracts.Invoicing.InvoiceBusiness.AddressLine2),
+                nameof(Contracts.Invoicing.InvoiceBusiness.Contact),
+                nameof(Contracts.Invoicing.InvoiceBusiness.CreatedDate));
+            long invoiceBusinessId = Input.GetLong("Business.Id", canDefault: false);
+            invoice.Business = invoiceBusinesses.Single(x => x.Id == invoiceBusinessId);
+
+            List<Contracts.Invoicing.InvoiceCustomer> invoiceCustomers = await client.Invoice.GetCustomersAsync();
+            Console.WriteLine("Invoice customers:");
+            Output.WriteTable(
+                invoiceCustomers,
+                nameof(Contracts.Invoicing.InvoiceCustomer.Id),
+                nameof(Contracts.Invoicing.InvoiceCustomer.Name),
+                nameof(Contracts.Invoicing.InvoiceCustomer.AddressLine1),
+                nameof(Contracts.Invoicing.InvoiceCustomer.AddressLine2),
+                nameof(Contracts.Invoicing.InvoiceCustomer.Contact),
+                nameof(Contracts.Invoicing.InvoiceCustomer.CreatedDate));
+            long invoiceCustomerId = Input.GetLong("Customer.Id", canDefault: false);
+            invoice.Customer = invoiceCustomers.Single(x => x.Id == invoiceCustomerId);
+
+            invoice = await client.Invoice.CreateAsync(invoice);
+            Console.WriteLine(invoice.ToJsonString());
+        }
 
         private static async Task HandleGetAsync(long id, Verbosity verbosity)
         {
