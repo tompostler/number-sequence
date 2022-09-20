@@ -274,6 +274,21 @@ namespace number_sequence.Controllers
                 }
                 else
                 {
+                    if (invoiceLineRecord.Title != invoiceLine.Title
+                        || invoiceLineRecord.Description != invoiceLine.Description
+                        || invoiceLineRecord.Quantity != invoiceLine.Quantity
+                        || invoiceLineRecord.Unit != invoiceLine.Unit
+                        || invoiceLineRecord.Price != invoiceLine.Price)
+                    {
+                        invoiceLineRecord.ModifiedDate = DateTimeOffset.UtcNow;
+                    }
+
+                    invoiceLineRecord.Title = invoiceLine.Title;
+                    invoiceLineRecord.Description = invoiceLine.Description;
+                    invoiceLineRecord.Quantity = invoiceLine.Quantity;
+                    invoiceLineRecord.Unit = invoiceLine.Unit;
+                    invoiceLineRecord.Price = invoiceLine.Price;
+
                     invoiceLines.Add(invoiceLineRecord);
                 }
             }
