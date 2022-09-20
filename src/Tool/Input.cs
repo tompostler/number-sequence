@@ -23,8 +23,9 @@ namespace TcpWtf.NumberSequence.Tool
             Console.Write(prompt);
             if (canDefault)
             {
-                Console.Write($" (default {defaultVal}): ");
+                Console.Write($" (default {defaultVal})");
             }
+            Console.Write(": ");
 
             string input = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(input) && canDefault)
@@ -42,8 +43,9 @@ namespace TcpWtf.NumberSequence.Tool
             Console.Write(prompt);
             if (canDefault)
             {
-                Console.Write(" (default 0): ");
+                Console.Write(" (default 0)");
             }
+            Console.Write(": ");
 
             string input = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(input) && canDefault)
@@ -61,8 +63,9 @@ namespace TcpWtf.NumberSequence.Tool
             Console.Write(prompt);
             if (canDefault)
             {
-                Console.Write(" (default 0): ");
+                Console.Write(" (default 0)");
             }
+            Console.Write(": ");
 
             string input = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(input) && canDefault)

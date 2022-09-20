@@ -282,11 +282,23 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Console.WriteLine();
             Output.WriteTable(
-                invoices,
+                invoices.Select(x => new
+                {
+                    x.Id,
+                    x.Title,
+                    BusinessName = x.Business.Name,
+                    CustomerName = x.Customer.Name,
+                    x.DueDate,
+                    x.PaidDate,
+                    x.Total,
+                    x.CreatedDate,
+                    x.ModifiedDate,
+                    x.ProcessedAt
+                }),
                 nameof(Contracts.Invoicing.Invoice.Id),
                 nameof(Contracts.Invoicing.Invoice.Title),
-                nameof(Contracts.Invoicing.Invoice.Business),
-                nameof(Contracts.Invoicing.Invoice.Customer),
+                nameof(Contracts.Invoicing.Invoice.Business)+nameof(Contracts.Invoicing.Invoice.Business.Name),
+                nameof(Contracts.Invoicing.Invoice.Customer)+nameof(Contracts.Invoicing.Invoice.Customer.Name),
                 nameof(Contracts.Invoicing.Invoice.DueDate),
                 nameof(Contracts.Invoicing.Invoice.PaidDate),
                 nameof(Contracts.Invoicing.Invoice.Total),
