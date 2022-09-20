@@ -21,7 +21,10 @@ namespace TcpWtf.NumberSequence.Tool
         internal static decimal GetDecimal(string prompt, bool canDefault = true, decimal defaultVal = 0)
         {
             Console.Write(prompt);
-            Console.Write($" (default {defaultVal}): ");
+            if (canDefault)
+            {
+                Console.Write($" (default {defaultVal}): ");
+            }
 
             string input = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(input) && canDefault)
@@ -37,7 +40,10 @@ namespace TcpWtf.NumberSequence.Tool
         internal static long GetLong(string prompt, bool canDefault = true)
         {
             Console.Write(prompt);
-            Console.Write(" (default 0): ");
+            if (canDefault)
+            {
+                Console.Write(" (default 0): ");
+            }
 
             string input = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(input) && canDefault)
@@ -53,7 +59,10 @@ namespace TcpWtf.NumberSequence.Tool
         internal static ulong GetULong(string prompt, bool canDefault = true)
         {
             Console.Write(prompt);
-            Console.Write(" (default 0): ");
+            if (canDefault)
+            {
+                Console.Write(" (default 0): ");
+            }
 
             string input = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(input) && canDefault)
