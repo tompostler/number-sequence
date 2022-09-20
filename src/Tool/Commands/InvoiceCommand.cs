@@ -72,13 +72,23 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             rootCommand.AddCommand(lineDefaultCommand);
 
 
+            Command lineCommand = new("line", "Manage invoice lines.");
+
+            Command lineCreateCommand = new("create", "Create a new invoice line.");
+            Argument<long> idArgument = new("id", "The id of the invoice.");
+            lineCreateCommand.AddArgument(idArgument);
+            lineCreateCommand.SetHandler(HandleLineCreateAsync, idArgument, verbosityOption);
+
+            lineCommand.AddCommand(lineCreateCommand);
+            rootCommand.AddCommand(lineCommand);
+
+
             Command createCommand = new("create", "Create a new invoice.");
             createCommand.SetHandler(HandleCreateAsync, verbosityOption);
             rootCommand.AddCommand(createCommand);
 
 
             Command getCommand = new("get", "Get an existing invoice.");
-            Argument<long> idArgument = new("id", "The id of the invoice.");
             getCommand.AddArgument(idArgument);
             getCommand.SetHandler(HandleGetAsync, idArgument, verbosityOption);
             rootCommand.AddCommand(getCommand);
@@ -226,6 +236,46 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         #endregion // Line Defaults
 
+        #region Lines
+
+        private static async Task HandleLineCreateAsync(long invoiceId, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
+
+            List<Contracts.Invoicing.InvoiceLineDefault> invoiceLineDefaults = await client.Invoice.GetLineDefaultsAsync();
+            invoiceLineDefaults.Insert(0, new() { Id = 0, Title = "Non-default entry" });
+            Console.WriteLine("Invoice line defaults:");
+            Output.WriteTable(
+                invoiceLineDefaults,
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Id),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Title),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Description),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Quantity),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Unit),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.Price),
+                nameof(Contracts.Invoicing.InvoiceLineDefault.CreatedDate));
+
+            long invoiceLineDefaultId = Input.GetLong("InvoiceLineDefault.Id");
+            Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault = invoiceLineDefaults.Skip(1).SingleOrDefault(x => x.Id == invoiceLineDefaultId);
+            Contracts.Invoicing.InvoiceLine invoiceLine;
+            invoiceLine = new()
+            {
+                Title = Input.GetString(nameof(invoiceLine.Title), invoiceLineDefault?.Title),
+                Description = Input.GetString(nameof(invoiceLine.Description), invoiceLineDefault?.Description),
+                Quantity = Input.GetDecimal(nameof(invoiceLine.Quantity), defaultVal: invoiceLineDefault?.Quantity ?? 1),
+                Unit = Input.GetString(nameof(invoiceLine.Unit), invoiceLineDefault?.Unit),
+                Price = Input.GetDecimal(nameof(invoiceLine.Price), defaultVal: invoiceLineDefault?.Price ?? 0),
+            };
+
+            invoice.Lines.Add(invoiceLine);
+            invoice = await client.Invoice.UpdateAsync(invoice);
+            Console.WriteLine(invoice.ToJsonString());
+        }
+
+        #endregion // Lines
+
         private static async Task HandleCreateAsync(Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
@@ -235,7 +285,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 AccountName = TokenProvider.GetAccount(),
                 Title = Input.GetString(nameof(invoice.Title)),
                 Description = Input.GetString(nameof(invoice.Description)),
-                DueDate = Input.GetDateTime(nameof(invoice.DueDate))
+                DueDate = Input.GetDateTime(nameof(invoice.DueDate)),
             };
 
             List<Contracts.Invoicing.InvoiceBusiness> invoiceBusinesses = await client.Invoice.GetBusinessesAsync();
@@ -297,8 +347,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 }),
                 nameof(Contracts.Invoicing.Invoice.Id),
                 nameof(Contracts.Invoicing.Invoice.Title),
-                nameof(Contracts.Invoicing.Invoice.Business)+nameof(Contracts.Invoicing.Invoice.Business.Name),
-                nameof(Contracts.Invoicing.Invoice.Customer)+nameof(Contracts.Invoicing.Invoice.Customer.Name),
+                nameof(Contracts.Invoicing.Invoice.Business) + nameof(Contracts.Invoicing.Invoice.Business.Name),
+                nameof(Contracts.Invoicing.Invoice.Customer) + nameof(Contracts.Invoicing.Invoice.Customer.Name),
                 nameof(Contracts.Invoicing.Invoice.DueDate),
                 nameof(Contracts.Invoicing.Invoice.PaidDate),
                 nameof(Contracts.Invoicing.Invoice.Total),

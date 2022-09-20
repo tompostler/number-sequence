@@ -4,11 +4,24 @@ namespace TcpWtf.NumberSequence.Tool
 {
     internal static class Input
     {
-        public static string GetString(string prompt)
+        public static string GetString(string prompt, string defaultVal = default)
         {
             Console.Write(prompt);
+            if (defaultVal != default)
+            {
+                Console.Write($" (default {defaultVal})");
+            }
             Console.Write(": ");
-            return Console.ReadLine();
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input) && defaultVal != default)
+            {
+                return defaultVal;
+            }
+            else
+            {
+                return input;
+            }
         }
 
         internal static DateTimeOffset GetDateTime(string prompt)
