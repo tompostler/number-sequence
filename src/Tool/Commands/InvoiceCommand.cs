@@ -117,6 +117,18 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             rootCommand.AddCommand(listCommand);
 
 
+            Command markPaidCommand = new("mark-paid", "Mark a specific invoice as paid.");
+            markPaidCommand.AddArgument(idArgument);
+            markPaidCommand.SetHandler(HandleMarkPaidAsync, idArgument, verbosityOption);
+            rootCommand.AddCommand(markPaidCommand);
+
+
+            Command processommand = new("process", "Mark a specific invoice for processing to pdf.");
+            processommand.AddArgument(idArgument);
+            processommand.SetHandler(HandleProcessAsync, idArgument, verbosityOption);
+            rootCommand.AddCommand(processommand);
+
+
             return rootCommand;
         }
 
@@ -417,6 +429,29 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.Invoice.CreatedDate),
                 nameof(Contracts.Invoicing.Invoice.ModifiedDate),
                 nameof(Contracts.Invoicing.Invoice.ProcessedAt));
+        }
+
+        private static async Task HandleMarkPaidAsync(long id, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
+
+            invoice.PaidDate = Input.GetDateTime(nameof(invoice.PaidDate));
+            invoice.PaidDetails = Input.GetString(nameof(invoice.PaidDetails));
+
+            invoice = await client.Invoice.UpdateAsync(invoice);
+            Console.WriteLine(invoice.ToJsonString());
+        }
+
+        private static async Task HandleProcessAsync(long id, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
+
+            invoice.ReadyForProcessing = true;
+
+            invoice = await client.Invoice.UpdateAsync(invoice);
+            Console.WriteLine(invoice.ToJsonString());
         }
     }
 }
