@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using number_sequence.Extensions;
 using number_sequence.Filters;
 using TcpWtf.NumberSequence.Contracts;
 
@@ -40,6 +39,6 @@ namespace number_sequence.Controllers
         public IActionResult GetWithAuthAndRole() => this.Ok();
 
         [HttpGet("ip")]
-        public IActionResult GetIp() => this.Ok(this.Request.HttpContext.Connection.ToJsonString());
+        public IActionResult GetIp() => this.Ok(this.Request.HttpContext.Connection.RemoteIpAddress.ToString());
     }
 }
