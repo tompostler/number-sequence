@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -83,15 +84,22 @@ namespace number_sequence
             _ = app.UseHttpsRedirection();
             _ = app.UseRouting();
 
+            _ = app.UseForwardedHeaders(
+                new ForwardedHeadersOptions
+                {
+                    ForwardedHeaders = ForwardedHeaders.All
+                });
+
             _ = app.UseMiddleware<Middleware.ExceptionToStatusCodeMiddleware>();
 
             // Custom versioning middleware
             string assemblyFileVersion = Assembly.GetAssembly(typeof(Startup))?.GetName()?.Version?.ToString(fieldCount: 3) ?? "0.0.0";
-            _ = app.Use(async (context, next) =>
-            {
-                context.Response.Headers.Add(HttpHeaderNames.ServerVersion, assemblyFileVersion);
-                await next.Invoke();
-            });
+            _ = app.Use(
+                async (context, next) =>
+                {
+                    context.Response.Headers.Add(HttpHeaderNames.ServerVersion, assemblyFileVersion);
+                    await next.Invoke();
+                });
 
             _ = app.UseEndpoints(endpoints => _ = endpoints.MapControllers());
         }
