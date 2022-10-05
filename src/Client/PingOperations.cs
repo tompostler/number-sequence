@@ -27,7 +27,7 @@ namespace TcpWtf.NumberSequence.Client
                     "ping/ip"),
                 cancellationToken,
                 needsPreparation: false);
-            return await response.Content.ReadJsonAsAsync<string>(cancellationToken);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
         }
 
         /// <summary>
