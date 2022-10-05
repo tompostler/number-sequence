@@ -19,6 +19,7 @@ namespace TcpWtf.NumberSequence.Tool
             rootCommand.AddCommand(AccountCommand.Create(verbosityOption));
             rootCommand.AddCommand(CountCommand.Create(verbosityOption));
             rootCommand.AddCommand(InvoiceCommand.Create(verbosityOption));
+            rootCommand.AddCommand(IpCommand.Create(verbosityOption));
             rootCommand.AddCommand(LatexStatusCommand.Create(verbosityOption));
             rootCommand.AddCommand(PingCommand.Create(verbosityOption));
             rootCommand.AddCommand(RandomCommand.Create(verbosityOption));

@@ -9,10 +9,7 @@ namespace number_sequence.Controllers
     public sealed class PingController : ControllerBase
     {
         [HttpGet]
-        public IActionResult Get()
-        {
-            return this.Ok();
-        }
+        public IActionResult Get() => this.Ok();
 
         [HttpGet("debug")]
         public IActionResult GetDebug([FromQuery] string type, [FromQuery] bool content = false)
@@ -36,15 +33,12 @@ namespace number_sequence.Controllers
         }
 
         [HttpPost, RequiresToken]
-        public IActionResult GetWithAuth()
-        {
-            return this.Ok();
-        }
+        public IActionResult GetWithAuth() => this.Ok();
 
         [HttpPut, RequiresToken(AccountRoles.Ping)]
-        public IActionResult GetWithAuthAndRole()
-        {
-            return this.Ok();
-        }
+        public IActionResult GetWithAuthAndRole() => this.Ok();
+
+        [HttpGet("ip")]
+        public IActionResult GetIp() => this.Ok(this.Request.HttpContext.Connection.RemoteIpAddress.ToString());
     }
 }

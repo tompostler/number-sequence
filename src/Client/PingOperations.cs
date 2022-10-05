@@ -17,6 +17,20 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Ping the service, and return the IP address as reported to the server.
+        /// </summary>
+        public async Task<string> GetPublicIpAsync(CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "ping/ip"),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadJsonAsAsync<string>(cancellationToken);
+        }
+
+        /// <summary>
         /// Ping the service.
         /// </summary>
         public async Task SendAsync(CancellationToken cancellationToken = default)
