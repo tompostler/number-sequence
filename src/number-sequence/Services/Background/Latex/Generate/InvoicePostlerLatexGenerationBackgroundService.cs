@@ -207,6 +207,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                     Subject = subject,
                     AttachmentName = attachmentName
                 });
+            invoice.ProcessedAt = DateTimeOffset.UtcNow;
 
             // And save it to enable processing
             _ = await nsContext.SaveChangesAsync(cancellationToken);
