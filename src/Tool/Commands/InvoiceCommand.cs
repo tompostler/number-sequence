@@ -94,10 +94,16 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             lineListCommand.AddArgument(idArgument);
             lineListCommand.SetHandler(HandleLineListAsync, idArgument, verbosityOption);
 
+            Command lineRemoveCommand = new("remove", "Remove an existing invoice line.");
+            lineRemoveCommand.AddArgument(idArgument);
+            lineRemoveCommand.AddArgument(lineIdArgument);
+            lineRemoveCommand.SetHandler(HandleLineRemoveAsync, idArgument, lineIdArgument, verbosityOption);
+
             lineCommand.AddCommand(lineCreateCommand);
             lineCommand.AddCommand(lineEditCommand);
             lineCommand.AddCommand(lineGetCommand);
             lineCommand.AddCommand(lineListCommand);
+            lineCommand.AddCommand(lineRemoveCommand);
             rootCommand.AddCommand(lineCommand);
 
 
@@ -359,6 +365,19 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceLine.Total),
                 nameof(Contracts.Invoicing.InvoiceLine.CreatedDate),
                 nameof(Contracts.Invoicing.InvoiceLine.ModifiedDate));
+        }
+
+        private static async Task HandleLineRemoveAsync(long invoiceId, long id, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
+            Contracts.Invoicing.InvoiceLine invoiceLine = invoice.Lines.Single(x => x.Id == id);
+            _ = invoice.Lines.Remove(invoiceLine);
+            Console.WriteLine(invoiceLine.ToJsonString());
+
+            invoice = await client.Invoice.UpdateAsync(invoice);
+            Console.WriteLine(invoice.ToJsonString());
         }
 
         #endregion // Lines
