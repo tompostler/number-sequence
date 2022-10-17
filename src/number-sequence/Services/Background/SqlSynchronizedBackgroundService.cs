@@ -38,6 +38,7 @@ namespace number_sequence.Services.Background
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                // Make sure there's only one instance of the service attempting to run at any time
                 using (IServiceScope scope = this.serviceProvider.CreateScope())
                 using (NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>())
                 {
@@ -46,8 +47,8 @@ namespace number_sequence.Services.Background
                     {
                         this.logger.LogInformation($"Last execution of {this.GetType().FullName} was {DateTimeOffset.UtcNow - lastExecution.LastExecuted} ago when the interval is {this.Interval}.");
                         DateTimeOffset nextExpectedExecution = lastExecution.LastExecuted.Add(this.Interval);
-                        TimeSpan ninetyPercentRemaining = nextExpectedExecution - DateTimeOffset.UtcNow;
-                        var durationToSleep = TimeSpan.FromMinutes(Math.Max(5, ninetyPercentRemaining.TotalMinutes));
+                        TimeSpan timeUntilNextExpectedExecution = nextExpectedExecution - DateTimeOffset.UtcNow;
+                        var durationToSleep = TimeSpan.FromMinutes(Math.Max(5, timeUntilNextExpectedExecution.TotalMinutes));
                         this.logger.LogInformation($"Determined we should sleep for {durationToSleep}");
                         await Task.Delay(durationToSleep, stoppingToken);
                         continue;

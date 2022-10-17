@@ -65,6 +65,7 @@ namespace number_sequence
             // Utilities
             //
 
+            _ = services.AddSingleton<Utilities.Delays>();
             _ = services.AddSingleton<Utilities.Sentinals>();
 
 
