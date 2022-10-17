@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace number_sequence.Utilities
@@ -30,8 +31,15 @@ namespace number_sequence.Utilities
             /// </summary>
             public async Task WaitForCompletionAsync(CancellationToken cancellationToken)
             {
-                using CancellationTokenRegistration _ = cancellationToken.Register(() => this.semaphore.Release(1));
-                await this.task;
+                // Since we can't await a cancellation token directly, this will allow us to create a task that cancels if the cancellation token cancels
+                TaskCompletionSource waitTaskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                _ = cancellationToken.Register(() => waitTaskCompletionSource.TrySetCanceled(cancellationToken));
+
+                if (waitTaskCompletionSource.Task == await Task.WhenAny(this.task, waitTaskCompletionSource.Task))
+                {
+                    // The cancellation token fired
+                    throw new OperationCanceledException(cancellationToken);
+                }
             }
         }
 
@@ -63,9 +71,19 @@ namespace number_sequence.Utilities
             /// </summary>
             public async Task<T> WaitForCompletionAsync(CancellationToken cancellationToken)
             {
-                using CancellationTokenRegistration _ = cancellationToken.Register(() => this.semaphore.Release(1));
-                await this.task;
-                return this.waitingFor;
+                // Since we can't await a cancellation token directly, this will allow us to create a task that cancels if the cancellation token cancels
+                TaskCompletionSource waitTaskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                _ = cancellationToken.Register(() => waitTaskCompletionSource.TrySetCanceled(cancellationToken));
+
+                if (this.task == await Task.WhenAny(this.task, waitTaskCompletionSource.Task))
+                {
+                    return this.waitingFor;
+                }
+                else
+                {
+                    // The cancellation token fired
+                    throw new OperationCanceledException(cancellationToken);
+                }
             }
         }
     }
