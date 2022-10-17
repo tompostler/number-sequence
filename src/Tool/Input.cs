@@ -24,11 +24,24 @@ namespace TcpWtf.NumberSequence.Tool
             }
         }
 
-        internal static DateTimeOffset GetDateTime(string prompt)
+        internal static DateTimeOffset GetDateTime(string prompt, DateTimeOffset defaultVal = default)
         {
             Console.Write(prompt);
+            if (defaultVal != default)
+            {
+                Console.Write($" (default {defaultVal:u})");
+            }
             Console.Write(": ");
-            return DateTimeOffset.Parse(Console.ReadLine());
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input) && defaultVal != default)
+            {
+                return defaultVal;
+            }
+            else
+            {
+                return DateTimeOffset.Parse(input);
+            }
         }
 
         internal static decimal GetDecimal(string prompt, bool canDefault = true, decimal defaultVal = 0)
@@ -51,19 +64,19 @@ namespace TcpWtf.NumberSequence.Tool
             }
         }
 
-        internal static long GetLong(string prompt, bool canDefault = true)
+        internal static long GetLong(string prompt, bool canDefault = true, long defaultVal = 0)
         {
             Console.Write(prompt);
             if (canDefault)
             {
-                Console.Write(" (default 0)");
+                Console.Write($" (default {defaultVal})");
             }
             Console.Write(": ");
 
             string input = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(input) && canDefault)
             {
-                return 0;
+                return defaultVal;
             }
             else
             {

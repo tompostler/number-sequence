@@ -254,7 +254,7 @@ namespace number_sequence.Controllers
             }
 
             InvoiceCustomer invoiceCustomer = await nsContext.InvoiceCustomers
-                .SingleOrDefaultAsync(x => x.AccountName == invoice.AccountName && x.Id == invoice.Business.Id, cancellationToken);
+                .SingleOrDefaultAsync(x => x.AccountName == invoice.AccountName && x.Id == invoice.Customer.Id, cancellationToken);
             if (invoiceCustomer == default)
             {
                 return this.NotFound($"Customer id [{invoice.Customer.Id}] not found.");

@@ -148,7 +148,7 @@ namespace TcpWtf.NumberSequence.Client
                             if (!string.Equals(this.clientVersion, serverVersion, StringComparison.OrdinalIgnoreCase)
                                 && !string.Equals(this.clientVersion, localBuildVersion, StringComparison.OrdinalIgnoreCase))
                             {
-                                this.logger.LogWarning($"Current client version is {this.clientVersion} but server version ({serverVersion}) indicates there's a newer version available.\nIf using as a tool, update with 'dotnet tool update TcpWtf.NumberSequence.Tool --global'");
+                                this.logger.LogWarning($"Current client version is {this.clientVersion} but server version ({serverVersion}) indicates there's a newer version available. If using as a tool, update with 'dotnet tool update TcpWtf.NumberSequence.Tool --global'");
                             }
                         }
                     }
