@@ -48,6 +48,13 @@ jobs:
       arguments: '--no-restore --configuration Debug --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
 
   - task: DotNetCoreCLI@2
+    displayName: Run unit tests
+    inputs:
+      command: test
+      projects: src/UnitTests/UnitTests.csproj
+      arguments: '--no-restore --configuration Debug --no-build --logger:"console;verbosity=normal"'
+
+  - task: DotNetCoreCLI@2
     displayName: Publish zip to the staging directory (linux-x64)
     inputs:
       command: publish
