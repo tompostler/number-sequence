@@ -63,6 +63,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             }
 
             // Create the new records for generating the document
+            invoice.ProccessAttempt += 1;
             string id = $"{invoice.Id:0000}-{invoice.ProccessAttempt:00}";
             LatexDocument latexDocument = new()
             {
@@ -232,7 +233,6 @@ namespace number_sequence.Services.Background.Latex.Generate
                     AdditionalBody = additionalBody.ToString()
                 });
             invoice.ProcessedAt = DateTimeOffset.UtcNow;
-            invoice.ProccessAttempt += 1;
 
             // And save it to enable processing
             _ = await nsContext.SaveChangesAsync(cancellationToken);
