@@ -51,7 +51,7 @@ namespace number_sequence.Utilities
             {
                 return @this;
             }
-            @this = @this.Replace(" ", string.Empty);
+            @this = @this.Replace(" ", string.Empty).ToLower();
             if (@this.Length > 16)
             {
                 return $"{@this.Substring(0, 4)}-{@this.Substring(4, 4)}-{@this.Substring(8, 4)}-{@this.Substring(12, 4)}";
@@ -71,6 +71,30 @@ namespace number_sequence.Utilities
             else // if (@this.Length > 0)
             {
                 return @this;
+            }
+        }
+
+        public static string EscapeForLatex(this string @this)
+        {
+            if (string.IsNullOrEmpty(@this))
+            {
+                return @this;
+            }
+            else
+            {
+                StringBuilder sb = new(@this.Length);
+                foreach (char letter in @this)
+                {
+                    _ = letter switch
+                    {
+                        '&' or '%' or '$' or '#' or '_' or '{' or '}' => sb.Append(@"\" + letter),
+                        '~' => sb.Append(@"{\textasciitilde}"),
+                        '^' => sb.Append(@"{\textasciicircum}"),
+                        '\\' => sb.Append(@"{\textbackslash}"),
+                        _ => sb.Append(letter),
+                    };
+                }
+                return sb.ToString();
             }
         }
     }

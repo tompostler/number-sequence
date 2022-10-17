@@ -39,6 +39,7 @@ namespace number_sequence.DataAccess
             public static class LTBP
             {
                 public const string ChiroEquine = "chiro-equine";
+                public const string InvoicePostler = "invoice-postler";
             }
         }
 

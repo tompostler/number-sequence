@@ -76,6 +76,7 @@ namespace number_sequence
             _ = services.AddHostedService<Services.Background.Latex.EmailPdfForLatexBackgroundService>();
             _ = services.AddHostedService<Services.Background.Latex.GeneratePdfFromLatexBackgroundService>();
             _ = services.AddHostedService<Services.Background.Latex.Generate.ChiroEquineLatexGenerationBackgroundService>();
+            _ = services.AddHostedService<Services.Background.Latex.Generate.InvoicePostlerLatexGenerationBackgroundService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

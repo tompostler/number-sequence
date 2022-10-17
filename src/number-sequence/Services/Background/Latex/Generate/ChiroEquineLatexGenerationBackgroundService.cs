@@ -133,7 +133,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                 else if (!string.IsNullOrWhiteSpace(row[index]))
                 {
                     return (string.IsNullOrWhiteSpace(existing) ? string.Empty : ", ")
-                        + $"{prefix} {row[index]}".Trim();
+                        + $"{prefix} {row[index]}".Trim().EscapeForLatex();
                 }
                 else
                 {
@@ -352,11 +352,11 @@ namespace number_sequence.Services.Background.Latex.Generate
 
             // Extended other notes
             // 87 CJ Raw response
-            string other = row.Length > 87 ? row[87]?.Trim() : string.Empty;
+            string other = row.Length > 87 ? row[87]?.Trim()?.EscapeForLatex() : string.Empty;
 
             // Coccygeal
             // 88 CK Raw response
-            string coccygeal = row.Length > 88 ? row[88]?.Trim() : string.Empty;
+            string coccygeal = row.Length > 88 ? row[88]?.Trim()?.EscapeForLatex() : string.Empty;
 
 
             // Download the template to memory to do the string replacement
@@ -369,8 +369,8 @@ namespace number_sequence.Services.Background.Latex.Generate
 
             // Do the string replacement
             templateContents = templateContents
-                .Replace("((PatientName))", patientName)
-                .Replace("((OwnerName))", ownerName)
+                .Replace("((PatientName))", patientName?.EscapeForLatex())
+                .Replace("((OwnerName))", ownerName?.EscapeForLatex())
                 .Replace("((DateOfService))", dateOfService.ToString("MM/dd/yyyy"))
                 .Replace("((Head))", head)
                 .Replace("((Cervical))", cervical)
