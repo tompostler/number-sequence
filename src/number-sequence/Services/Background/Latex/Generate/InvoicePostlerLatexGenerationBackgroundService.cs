@@ -63,9 +63,10 @@ namespace number_sequence.Services.Background.Latex.Generate
             }
 
             // Create the new records for generating the document
+            string id = $"{invoice.Id:0000}-{invoice.ProccessAttempt:00}";
             LatexDocument latexDocument = new()
             {
-                Id = invoice.Id.ToString().MakeHumanFriendly() + '_' + template.Id
+                Id = id + '_' + template.Id
             };
             _ = nsContext.LatexDocuments.Add(latexDocument);
 
@@ -88,7 +89,6 @@ namespace number_sequence.Services.Background.Latex.Generate
 
 
             // Convert the invoice into string components for the template
-            string id = invoice.Id.ToString("000000");
             string dueDate = invoice.DueDate.ToString("MMMM dd, yyyy");
 
             StringBuilder lines = new(invoice.Lines.Count * 20);
@@ -232,6 +232,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                     AdditionalBody = additionalBody.ToString()
                 });
             invoice.ProcessedAt = DateTimeOffset.UtcNow;
+            invoice.ProccessAttempt += 1;
 
             // And save it to enable processing
             _ = await nsContext.SaveChangesAsync(cancellationToken);

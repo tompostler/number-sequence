@@ -92,6 +92,10 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         /// </summary>
         public bool ReadyForProcessing { get; set; }
         /// <summary>
+        /// If the <see cref="ProcessedAt"/> is cleared, this will be used to indicate the number of times it has been processed.
+        /// </summary>
+        public long ProccessAttempt { get; set; }
+        /// <summary>
         /// When the invoice was processed for PDF generation.
         /// </summary>
         public DateTimeOffset? ProcessedAt { get; set; }

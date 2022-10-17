@@ -129,10 +129,16 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             rootCommand.AddCommand(markPaidCommand);
 
 
-            Command processommand = new("process", "Mark a specific invoice for processing to pdf.");
-            processommand.AddArgument(idArgument);
-            processommand.SetHandler(HandleProcessAsync, idArgument, verbosityOption);
-            rootCommand.AddCommand(processommand);
+            Command processCommand = new("process", "Mark a specific invoice for processing to pdf.");
+            processCommand.AddArgument(idArgument);
+            processCommand.SetHandler(HandleProcessAsync, idArgument, verbosityOption);
+            rootCommand.AddCommand(processCommand);
+
+
+            Command reprocessCommand = new("reprocess", "Mark a specific invoice for re-processing to pdf.");
+            reprocessCommand.AddArgument(idArgument);
+            reprocessCommand.SetHandler(HandleReprocessAsync, idArgument, verbosityOption);
+            rootCommand.AddCommand(reprocessCommand);
 
 
             return rootCommand;
@@ -477,6 +483,18 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(invoice.ToJsonString());
         }
 
+        private static async Task HandleReprocessAsync(long id, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
+
+            invoice.ReadyForProcessing = true;
+            invoice.ProcessedAt = default;
+
+            invoice = await client.Invoice.UpdateAsync(invoice);
+            Console.WriteLine(invoice.ToJsonString());
+        }
+
         private static void PrintInvoices(params Contracts.Invoicing.Invoice[] invoices)
         {
             Output.WriteTable(
@@ -491,7 +509,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     x.Total,
                     x.CreatedDate,
                     x.ModifiedDate,
-                    x.ProcessedAt
+                    x.ProcessedAt,
+                    x.ProccessAttempt,
                 }),
                 nameof(Contracts.Invoicing.Invoice.Id),
                 nameof(Contracts.Invoicing.Invoice.Title),
@@ -502,7 +521,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.Invoice.Total),
                 nameof(Contracts.Invoicing.Invoice.CreatedDate),
                 nameof(Contracts.Invoicing.Invoice.ModifiedDate),
-                nameof(Contracts.Invoicing.Invoice.ProcessedAt));
+                nameof(Contracts.Invoicing.Invoice.ProcessedAt),
+                nameof(Contracts.Invoicing.Invoice.ProccessAttempt)
+                );
         }
     }
 }
