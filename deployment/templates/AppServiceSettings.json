@@ -24,10 +24,6 @@
     "googleCredentials": {
       "type": "securestring"
     },
-    "planName": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().name]"
-    },
     "siteName": {
       "type": "string",
       "defaultValue": "ns-tcp-wtf"
@@ -59,7 +55,7 @@
       "apiVersion": "2020-06-01",
       "name": "[concat(parameters('siteName'), '/appsettings')]",
       "properties": {
-        "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('Microsoft.Insights/components', parameters('planName')), '2020-02-02').ConnectionString]",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('Microsoft.Insights/components', parameters('siteName')), '2020-02-02').ConnectionString]",
         "ApplicationInsightsAgent_EXTENSION_VERSION": "~3",
         "CosmosDB__Endpoint": "[concat('https://', parameters('cosmosDb').name, '.documents.azure.com:443/')]",
         "CosmosDB__Key": "[listKeys(variables('cosmosDbId'), providers('Microsoft.DocumentDB','databaseAccounts').apiVersions[0]).primaryMasterKey]",
