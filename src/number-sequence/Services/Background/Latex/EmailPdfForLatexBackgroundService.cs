@@ -83,6 +83,11 @@ namespace number_sequence.Services.Background.Latex
                 Subject = emailLatexDocument.Subject,
                 Body = $"Generation of PDF (id: {emailLatexDocument.Id}) was successful."
             };
+            if (!string.IsNullOrWhiteSpace(emailLatexDocument.AdditionalBody))
+            {
+                msg.Body += "\n\nAdditional information:\n";
+                msg.Body += emailLatexDocument.AdditionalBody;
+            }
             msg.To.Add(emailLatexDocument.To);
             if (!string.IsNullOrWhiteSpace(emailLatexDocument.CC))
             {

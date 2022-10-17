@@ -24,6 +24,9 @@ namespace number_sequence.Models
         [MaxLength(128)]
         public string AttachmentName { get; set; }
 
+        [MaxLength(512)]
+        public string AdditionalBody { get; set; }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
 

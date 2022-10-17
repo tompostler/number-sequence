@@ -89,6 +89,7 @@ namespace number_sequence.Services.Background.Latex.Generate
 
             // Convert the invoice into string components for the template
             string id = invoice.Id.ToString("000000");
+            string dueDate = invoice.DueDate.ToString("MMMM dd, yyyy");
 
             StringBuilder lines = new(invoice.Lines.Count * 20);
             foreach (InvoiceLine line in invoice.Lines)
@@ -123,7 +124,6 @@ namespace number_sequence.Services.Background.Latex.Generate
                 _ = lines.AppendLine();
 
                 // Price
-                _ = lines.Append(@"\$");
                 _ = lines.Append(line.Price.ToString("N2"));
                 if (!string.IsNullOrWhiteSpace(line.Unit))
                 {
@@ -135,8 +135,16 @@ namespace number_sequence.Services.Background.Latex.Generate
                 _ = lines.AppendLine();
 
                 // Amount
-                _ = lines.Append(@"\$");
-                _ = lines.Append((line.Quantity * line.Price).ToString("N2"));
+                _ = lines.Append(@"\$ ");
+                if (line.Price < 0)
+                {
+                    _ = lines.Append('(');
+                }
+                _ = lines.Append(Math.Abs(line.Quantity * line.Price).ToString("N2"));
+                if (line.Price < 0)
+                {
+                    _ = lines.Append(')');
+                }
                 _ = lines.AppendLine();
                 _ = lines.Append(@"\\");
                 _ = lines.AppendLine();
@@ -160,7 +168,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                 .Replace("((BusinessAddressLine2))", invoice.Business.AddressLine2?.EscapeForLatex())
                 .Replace("((BusinessContact))", invoice.Business.Contact?.EscapeForLatex())
                 .Replace("((Id))", id)
-                .Replace("((DueDate))", invoice.DueDate.ToString("MMMM dd, yyyy"))
+                .Replace("((DueDate))", dueDate)
                 .Replace("((Description))", invoice.Description?.EscapeForLatex())
                 .Replace("((CustomerName))", invoice.Customer.Name?.EscapeForLatex())
                 .Replace("((CustomerContact))", invoice.Customer.Contact?.EscapeForLatex())
@@ -184,10 +192,13 @@ namespace number_sequence.Services.Background.Latex.Generate
             {
                 subject = template.SubjectTemplate
                     .Replace("((Id))", id)
-                    .Replace("((BusinessName))", invoice.Business.Name)
                     .Replace("((CustomerName))", invoice.Customer.Name)
                     .Replace("((Title))", invoice.Title ?? $"Invoice #{id}")
                     ;
+                if (subject.Length > 128)
+                {
+                    subject = subject.Substring(0, 128);
+                }
             }
             string attachmentName = default;
             if (!string.IsNullOrWhiteSpace(template.AttachmentNameTemplate))
@@ -196,16 +207,29 @@ namespace number_sequence.Services.Background.Latex.Generate
                     .Replace("((Id))", id)
                     .Replace("((BusinessName))", invoice.Business.Name)
                     .Replace("((CustomerName))", invoice.Customer.Name)
+                    .Replace("((Title))", invoice.Title ?? $"Invoice {id}")
                     .Replace(" ", "-")
                     ;
+                if (attachmentName.Length > 128)
+                {
+                    attachmentName = string.Concat(attachmentName.AsSpan(0, 124), ".pdf");
+                }
             }
+            StringBuilder additionalBody = new();
+            _ = additionalBody.AppendLine($"Invoice id: {id}");
+            _ = additionalBody.AppendLine($"Business name: {invoice.Business.Name}");
+            _ = additionalBody.AppendLine($"Customer name: {invoice.Customer.Name}");
+            _ = additionalBody.AppendLine($"Due date: {dueDate}");
+            _ = additionalBody.AppendLine($"Total due: $ {invoice.Total:N2}");
+            _ = additionalBody.AppendLine($"Line count: {invoice.Lines.Count}");
             _ = nsContext.EmailLatexDocuments.Add(
                 new EmailLatexDocument
                 {
                     Id = latexDocument.Id,
                     To = template.EmailTo,
                     Subject = subject,
-                    AttachmentName = attachmentName
+                    AttachmentName = attachmentName,
+                    AdditionalBody = additionalBody.ToString()
                 });
             invoice.ProcessedAt = DateTimeOffset.UtcNow;
 
