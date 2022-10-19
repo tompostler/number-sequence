@@ -135,16 +135,11 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             rootCommand.AddCommand(markPaidCommand);
 
 
-            Command processCommand = new("process", "Mark a specific invoice for processing to pdf.");
+            Command processCommand = new("process", "Mark a specific invoice for [re-]processing to pdf.");
+            processCommand.AddAlias("reprocess");
             processCommand.AddArgument(idArgument);
             processCommand.SetHandler(HandleProcessAsync, idArgument, verbosityOption);
             rootCommand.AddCommand(processCommand);
-
-
-            Command reprocessCommand = new("reprocess", "Mark a specific invoice for re-processing to pdf.");
-            reprocessCommand.AddArgument(idArgument);
-            reprocessCommand.SetHandler(HandleReprocessAsync, idArgument, verbosityOption);
-            rootCommand.AddCommand(reprocessCommand);
 
 
             return rootCommand;
@@ -492,17 +487,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         }
 
         private static async Task HandleProcessAsync(long id, Verbosity verbosity)
-        {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
-            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
-
-            invoice.ReadyForProcessing = true;
-
-            invoice = await client.Invoice.UpdateAsync(invoice);
-            Console.WriteLine(invoice.ToJsonString());
-        }
-
-        private static async Task HandleReprocessAsync(long id, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
