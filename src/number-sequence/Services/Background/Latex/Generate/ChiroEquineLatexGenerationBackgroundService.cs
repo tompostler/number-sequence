@@ -203,6 +203,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             // 32 AG T16
             // 33 AH T17
             // 34 AI T18
+            // 89 CL Sternum
             string thoracic = string.Empty;
             thoracic += customAppend(thoracic, "T1", 17);
             thoracic += customAppend(thoracic, "T2", 18);
@@ -222,6 +223,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             thoracic += customAppend(thoracic, "T16", 32);
             thoracic += customAppend(thoracic, "T17", 33);
             thoracic += customAppend(thoracic, "T18", 34);
+            thoracic += customAppend(thoracic, "Sternum", 89);
             thoracic += customAppend(thoracic, string.Empty, 16);
 
             // Ribs
