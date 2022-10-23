@@ -128,7 +128,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             {
                 if (index > row.Length)
                 {
-                    return existing;
+                    return string.Empty;
                 }
                 else if (!string.IsNullOrWhiteSpace(row[index]))
                 {
@@ -137,7 +137,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                 }
                 else
                 {
-                    return existing;
+                    return string.Empty;
                 }
             }
 
