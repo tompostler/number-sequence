@@ -128,7 +128,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             {
                 if (index > row.Length)
                 {
-                    return string.Empty;
+                    return existing;
                 }
                 else if (!string.IsNullOrWhiteSpace(row[index]))
                 {
@@ -137,7 +137,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                 }
                 else
                 {
-                    return string.Empty;
+                    return existing;
                 }
             }
 
@@ -296,12 +296,14 @@ namespace number_sequence.Services.Background.Latex.Generate
             // 66 BO Other notes
             // 67 BP Left
             // 68 BQ Right
+            // 90 CM Traction
             string pelvicSacral = string.Empty;
             pelvicSacral += customAppend(pelvicSacral, "Base", 64);
             pelvicSacral += customAppend(pelvicSacral, "Apex", 65);
             pelvicSacral += customAppend(pelvicSacral, "Sacrum", 63);
             pelvicSacral += customAppend(pelvicSacral, "Left", 67);
             pelvicSacral += customAppend(pelvicSacral, "Right", 68);
+            pelvicSacral += customAppend(pelvicSacral, string.Empty, 90);
             pelvicSacral += customAppend(pelvicSacral, "Pelvis", 66);
 
             // Left forelimb
@@ -358,7 +360,10 @@ namespace number_sequence.Services.Background.Latex.Generate
 
             // Coccygeal
             // 88 CK Raw response
-            string coccygeal = row.Length > 88 ? row[88]?.Trim()?.EscapeForLatex() : string.Empty;
+            // 91 CN Coccygeal
+            string coccygeal = string.Empty;
+            coccygeal += customAppend(coccygeal, "Coccygeal", 91);
+            coccygeal += customAppend(coccygeal, string.Empty, 88);
 
 
             // Download the template to memory to do the string replacement
