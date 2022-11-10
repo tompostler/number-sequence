@@ -76,11 +76,11 @@ namespace number_sequence.Controllers
         public static readonly string[] EightBallResponses = new[]
         {
             // A standard Magic 8 Ball is capable of 10 affirmative answers (Y), 5 non-committal answers (~), and 5 negative answers (X).
-            "Y It is certain.",         "Y As I see it, yes.",      "~ Reply hazy, try again.",         "X Don't count on it.",
-            "Y It is decidedly so.",    "Y Most likely.",           "~ Ask again later.",               "X My reply is no.",
-            "Y Without a doubt.",       "Y Outlook good.",          "~ Better not tell you now.",       "X My sources say no.",
-            "Y Yes - definitely.",      "Y Yes.",                   "~ Cannot predict now.",            "X Outlook not so good.",
-            "Y You may rely on it.",    "Y Signs point to yes.",    "~ Concentrate and ask again.",     "X Very doubtful.",
+            "[Y] It is certain.",         "[Y] As I see it, yes.",      "[~] Reply hazy, try again.",         "[X] Don't count on it.",
+            "[Y] It is decidedly so.",    "[Y] Most likely.",           "[~] Ask again later.",               "[X] My reply is no.",
+            "[Y] Without a doubt.",       "[Y] Outlook good.",          "[~] Better not tell you now.",       "[X] My sources say no.",
+            "[Y] Yes - definitely.",      "[Y] Yes.",                   "[~] Cannot predict now.",            "[X] Outlook not so good.",
+            "[Y] You may rely on it.",    "[Y] Signs point to yes.",    "[~] Concentrate and ask again.",     "[X] Very doubtful.",
         };
         [HttpGet("8ball")]
         public IActionResult EightBall()
