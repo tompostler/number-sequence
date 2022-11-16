@@ -147,7 +147,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                 }
                 catch
                 {
-                    this.logger.LogInformation(new { existing, prefix, index }.ToJsonString());
+                    this.logger.LogInformation(new { existing, prefix, index, rowLength = row.Length, row = row.ToJsonString() }.ToJsonString());
                     throw;
                 }
             }
