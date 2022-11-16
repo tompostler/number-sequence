@@ -129,8 +129,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             {
                 try
                 {
-
-                    if (index > row.Length)
+                    if (index >= row.Length)
                     {
                         return string.Empty;
                     }

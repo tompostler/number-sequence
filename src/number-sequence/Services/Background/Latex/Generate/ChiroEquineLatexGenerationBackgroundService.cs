@@ -126,7 +126,7 @@ namespace number_sequence.Services.Background.Latex.Generate
 
             string customAppend(string existing, string prefix, int index)
             {
-                if (index > row.Length)
+                if (index >= row.Length)
                 {
                     return string.Empty;
                 }
