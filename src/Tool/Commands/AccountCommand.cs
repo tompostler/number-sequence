@@ -2,7 +2,8 @@
 using System.CommandLine;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
-using TcpWtf.NumberSequence.Tool.Extensions;
+using Unlimitedinf.Utilities;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.Tool.Commands
 {
@@ -36,14 +37,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             };
 
             account = await client.Account.CreateAsync(account);
-            Console.WriteLine(account.ToJsonString());
+            Console.WriteLine(account.ToJsonString(indented: true));
         }
 
         private static async Task HandleGetAsync(string name, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, Program.Stamp);
             Contracts.Account account = await client.Account.GetAsync(name);
-            Console.WriteLine(account.ToJsonString());
+            Console.WriteLine(account.ToJsonString(indented: true));
         }
     }
 }

@@ -3,6 +3,7 @@ using System.CommandLine;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
+using Unlimitedinf.Utilities;
 
 namespace TcpWtf.NumberSequence.Tool.Commands
 {

@@ -13,6 +13,7 @@ using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Contracts;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.Filters
 {

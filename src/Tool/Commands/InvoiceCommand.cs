@@ -4,7 +4,8 @@ using System.CommandLine;
 using System.Linq;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
-using TcpWtf.NumberSequence.Tool.Extensions;
+using Unlimitedinf.Utilities;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.Tool.Commands
 {
@@ -161,14 +162,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             };
 
             invoiceBusiness = await client.Invoice.CreateBusinessAsync(invoiceBusiness);
-            Console.WriteLine(invoiceBusiness.ToJsonString());
+            Console.WriteLine(invoiceBusiness.ToJsonString(indented: true));
         }
 
         private static async Task HandleBusinessGetAsync(long id, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Invoicing.InvoiceBusiness invoiceBusiness = await client.Invoice.GetBusinessAsync(id);
-            Console.WriteLine(invoiceBusiness.ToJsonString());
+            Console.WriteLine(invoiceBusiness.ToJsonString(indented: true));
         }
 
         private static async Task HandleBusinessListAsync(Verbosity verbosity)
@@ -205,14 +206,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             };
 
             invoiceCustomer = await client.Invoice.CreateCustomerAsync(invoiceCustomer);
-            Console.WriteLine(invoiceCustomer.ToJsonString());
+            Console.WriteLine(invoiceCustomer.ToJsonString(indented: true));
         }
 
         private static async Task HandleCustomerGetAsync(long id, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Invoicing.InvoiceCustomer invoiceCustomer = await client.Invoice.GetCustomerAsync(id);
-            Console.WriteLine(invoiceCustomer.ToJsonString());
+            Console.WriteLine(invoiceCustomer.ToJsonString(indented: true));
         }
 
         private static async Task HandleCustomerListAsync(Verbosity verbosity)
@@ -250,14 +251,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             };
 
             invoiceLineDefault = await client.Invoice.CreateLineDefaultAsync(invoiceLineDefault);
-            Console.WriteLine(invoiceLineDefault.ToJsonString());
+            Console.WriteLine(invoiceLineDefault.ToJsonString(indented: true));
         }
 
         private static async Task HandleLineDefaultGetAsync(long id, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault = await client.Invoice.GetLineDefaultAsync(id);
-            Console.WriteLine(invoiceLineDefault.ToJsonString());
+            Console.WriteLine(invoiceLineDefault.ToJsonString(indented: true));
         }
 
         private static async Task HandleLineDefaultListAsync(Verbosity verbosity)
@@ -315,7 +316,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             invoice.Lines.Add(invoiceLine);
             invoice = await client.Invoice.UpdateAsync(invoice);
-            Console.WriteLine(invoice.ToJsonString());
+            Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
         private static async Task HandleLineEditAsync(long invoiceId, long id, Verbosity verbosity)
@@ -332,7 +333,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             invoiceLine.Price = Input.GetDecimal(nameof(invoiceLine.Price), defaultVal: invoiceLine.Price);
 
             invoice = await client.Invoice.UpdateAsync(invoice);
-            Console.WriteLine(invoice.ToJsonString());
+            Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
         private static async Task HandleLineGetAsync(long invoiceId, long id, Verbosity verbosity)
@@ -340,7 +341,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
             Contracts.Invoicing.InvoiceLine invoiceLine = invoice.Lines.Single(x => x.Id == id);
-            Console.WriteLine(invoiceLine.ToJsonString());
+            Console.WriteLine(invoiceLine.ToJsonString(indented: true));
         }
 
         private static async Task HandleLineListAsync(long invoiceId, Verbosity verbosity)
@@ -369,10 +370,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
             Contracts.Invoicing.InvoiceLine invoiceLine = invoice.Lines.Single(x => x.Id == id);
             _ = invoice.Lines.Remove(invoiceLine);
-            Console.WriteLine(invoiceLine.ToJsonString());
+            Console.WriteLine(invoiceLine.ToJsonString(indented: true));
 
             invoice = await client.Invoice.UpdateAsync(invoice);
-            Console.WriteLine(invoice.ToJsonString());
+            Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
         #endregion // Lines
@@ -416,7 +417,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             invoice.Customer = invoiceCustomers.Single(x => x.Id == invoiceCustomerId);
 
             invoice = await client.Invoice.CreateAsync(invoice);
-            Console.WriteLine(invoice.ToJsonString());
+            Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
         private static async Task HandleEditAsync(long id, Verbosity verbosity)
@@ -455,14 +456,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             invoice.Customer = invoiceCustomers.Single(x => x.Id == invoiceCustomerId);
 
             invoice = await client.Invoice.UpdateAsync(invoice);
-            Console.WriteLine(invoice.ToJsonString());
+            Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
         private static async Task HandleGetAsync(long id, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
-            Console.WriteLine(invoice.ToJsonString());
+            Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
         private static async Task HandleListAsync(Verbosity verbosity)
@@ -483,7 +484,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             invoice.PaidDetails = Input.GetString(nameof(invoice.PaidDetails));
 
             invoice = await client.Invoice.UpdateAsync(invoice);
-            Console.WriteLine(invoice.ToJsonString());
+            Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
         private static async Task HandleProcessAsync(long id, Verbosity verbosity)
@@ -495,7 +496,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             invoice.ProcessedAt = default;
 
             invoice = await client.Invoice.UpdateAsync(invoice);
-            Console.WriteLine(invoice.ToJsonString());
+            Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
         private static void PrintInvoices(params Contracts.Invoicing.Invoice[] invoices)

@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using TcpWtf.NumberSequence.Tool.Extensions;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.Tool
 {
@@ -32,7 +31,7 @@ namespace TcpWtf.NumberSequence.Tool
 
             using FileStream tokenFileStream = tokenFile.Create();
             using StreamWriter tokenFileWriter = new(tokenFileStream);
-            tokenFileWriter.Write(new TokenFileModel { Token = token }.ToJsonString());
+            tokenFileWriter.Write(new TokenFileModel { Token = token }.ToJsonString(indented: true));
             logger.LogInformation($"Wrote token value to file {tokenFile.FullName}");
         }
 

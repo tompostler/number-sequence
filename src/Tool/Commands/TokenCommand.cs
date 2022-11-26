@@ -3,7 +3,8 @@ using System.CommandLine;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
-using TcpWtf.NumberSequence.Tool.Extensions;
+using Unlimitedinf.Utilities;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.Tool.Commands
 {
@@ -49,7 +50,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             };
 
             token = await client.Token.CreateAsync(token);
-            Console.WriteLine(token.ToJsonString());
+            Console.WriteLine(token.ToJsonString(indented: true));
         }
 
         private static void HandleInspect(string token) => Console.WriteLine(token.FromBase64JsonString<JsonObject>().ToString());

@@ -2,7 +2,8 @@
 using System.CommandLine;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
-using TcpWtf.NumberSequence.Tool.Extensions;
+using Unlimitedinf.Utilities;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.Tool.Commands
 {
@@ -54,7 +55,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             };
 
             count = await client.Count.CreateAsync(count);
-            Console.WriteLine(count.ToJsonString());
+            Console.WriteLine(count.ToJsonString(indented: true));
         }
 
         private static async Task HandleGetAsync(string name, bool bare, Verbosity verbosity)
@@ -68,7 +69,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
             else
             {
-                Console.WriteLine(count.ToJsonString());
+                Console.WriteLine(count.ToJsonString(indented: true));
             }
         }
 
@@ -83,7 +84,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
             else
             {
-                Console.WriteLine(count.ToJsonString());
+                Console.WriteLine(count.ToJsonString(indented: true));
             }
         }
 
@@ -98,7 +99,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
             else
             {
-                Console.WriteLine(count.ToJsonString());
+                Console.WriteLine(count.ToJsonString(indented: true));
             }
         }
     }

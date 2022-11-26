@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Contracts;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.DataAccess
 {
