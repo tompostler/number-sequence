@@ -193,7 +193,7 @@ namespace number_sequence.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetsAsync(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetsAsync(CancellationToken cancellationToken, [FromQuery]int skip = 0, [FromQuery]int take = 10)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
@@ -203,6 +203,9 @@ namespace number_sequence.Controllers
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
                 .Where(x => x.AccountName == this.User.Identity.Name)
+                .OrderByDescending(x => x.ModifiedDate)
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync(cancellationToken);
             return this.Ok(invoices);
         }
