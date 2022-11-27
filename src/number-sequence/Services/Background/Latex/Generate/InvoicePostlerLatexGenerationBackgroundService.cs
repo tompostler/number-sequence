@@ -1,20 +1,19 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.ApplicationInsights;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using number_sequence.DataAccess;
-using number_sequence.Utilities;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-using Microsoft.EntityFrameworkCore;
 using number_sequence.Models;
+using number_sequence.Utilities;
+using System;
+using System.IO;
 using System.Linq;
-using TcpWtf.NumberSequence.Contracts.Invoicing;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using TcpWtf.NumberSequence.Contracts.Invoicing;
 
 namespace number_sequence.Services.Background.Latex.Generate
 {
@@ -163,7 +162,7 @@ namespace number_sequence.Services.Background.Latex.Generate
 
             // Do the string replacement
             templateContents = templateContents
-                .Replace("((Title))", invoice.Title?.EscapeForLatex() ?? @"Invoice \#((Id))")
+                .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? @"Invoice \#((Id))" : invoice.Title?.EscapeForLatex())
                 .Replace("((BusinessName))", invoice.Business.Name?.EscapeForLatex())
                 .Replace("((BusinessAddressLine1))", invoice.Business.AddressLine1?.EscapeForLatex())
                 .Replace("((BusinessAddressLine2))", invoice.Business.AddressLine2?.EscapeForLatex())
@@ -194,7 +193,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                 subject = template.SubjectTemplate
                     .Replace("((Id))", id)
                     .Replace("((CustomerName))", invoice.Customer.Name)
-                    .Replace("((Title))", invoice.Title ?? $"Invoice #{id}")
+                    .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{id}" : invoice.Title)
                     ;
                 if (subject.Length > 128)
                 {
@@ -208,7 +207,7 @@ namespace number_sequence.Services.Background.Latex.Generate
                     .Replace("((Id))", id)
                     .Replace("((BusinessName))", invoice.Business.Name)
                     .Replace("((CustomerName))", invoice.Customer.Name)
-                    .Replace("((Title))", invoice.Title ?? $"Invoice {id}")
+                    .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{id}" : invoice.Title)
                     .Replace(" ", "-")
                     ;
                 if (attachmentName.Length > 128)
