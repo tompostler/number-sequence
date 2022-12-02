@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using number_sequence.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -36,6 +37,7 @@ namespace number_sequence.Services.Background
             SqlOrchestrationServiceSettings sqlOrchestrationServiceSettings = new(sqlOptions.Value.ConnectionString)
             {
                 LoggerFactory = loggerFactory,
+                MaxActiveOrchestrations = 1,
                 MaxConcurrentActivities = 1,
             };
             this.sqlOrchestrationService = new(sqlOrchestrationServiceSettings);
@@ -52,20 +54,27 @@ namespace number_sequence.Services.Background
 
         public async Task StartAsync(CancellationToken stoppingToken)
         {
-            using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName);
-            this.logger.LogInformation("Setting up durable orchestration background service.");
-            await this.sqlOrchestrationService.CreateIfNotExistsAsync();
+            try
+            {
+                using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName);
+                this.logger.LogInformation("Setting up durable orchestration background service.");
+                await this.sqlOrchestrationService.CreateIfNotExistsAsync();
 
-            this.worker = new(this.sqlOrchestrationService, this.loggerFactory);
-            this.worker.TaskOrchestrationDispatcher.IncludeDetails = true;
-            this.worker.TaskOrchestrationDispatcher.IncludeParameters = true;
-            this.worker.TaskActivityDispatcher.IncludeDetails = true;
-            _ = this.worker.AddTaskOrchestrations(this.orchestrators.Select(x => x.GetType()).ToArray());
-            _ = this.worker.AddTaskActivities(this.activities.ToArray());
-            _ = await this.worker.StartAsync();
+                this.worker = new(this.sqlOrchestrationService, this.loggerFactory);
+                this.worker.TaskOrchestrationDispatcher.IncludeDetails = true;
+                this.worker.TaskOrchestrationDispatcher.IncludeParameters = true;
+                this.worker.TaskActivityDispatcher.IncludeDetails = true;
+                _ = this.worker.AddTaskOrchestrations(this.orchestrators.Select(x => x.GetType()).ToArray());
+                _ = this.worker.AddTaskActivities(this.activities.ToArray());
+                _ = await this.worker.StartAsync();
 
-            TaskHubClient client = new(this.sqlOrchestrationService, default, this.loggerFactory);
-            this.sentinals.DurableOrchestrationClient.SignalCompletion(client);
+                TaskHubClient client = new(this.sqlOrchestrationService, default, this.loggerFactory);
+                this.sentinals.DurableOrchestrationClient.SignalCompletion(client);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Could not initialize durable orchestration worker.");
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => this.worker.StopAsync();
