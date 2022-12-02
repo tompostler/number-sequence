@@ -61,11 +61,14 @@ namespace number_sequence.Services.Background
                 await this.sqlOrchestrationService.CreateIfNotExistsAsync();
 
                 this.worker = new(this.sqlOrchestrationService, this.loggerFactory);
+
+                _ = this.worker.AddTaskOrchestrations(this.orchestrators.Select(x => x.GetType()).ToArray());
                 this.worker.TaskOrchestrationDispatcher.IncludeDetails = true;
                 this.worker.TaskOrchestrationDispatcher.IncludeParameters = true;
-                this.worker.TaskActivityDispatcher.IncludeDetails = true;
-                _ = this.worker.AddTaskOrchestrations(this.orchestrators.Select(x => x.GetType()).ToArray());
+
                 _ = this.worker.AddTaskActivities(this.activities.ToArray());
+                this.worker.TaskActivityDispatcher.IncludeDetails = true;
+
                 _ = await this.worker.StartAsync();
 
                 TaskHubClient client = new(this.sqlOrchestrationService, default, this.loggerFactory);
