@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DurableTask.Core;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,6 +8,7 @@ namespace number_sequence.Utilities
     public sealed class Sentinals
     {
         public SentinalImplementation DBMigration { get; } = new();
+        public SentinalImplementation<TaskHubClient> DurableOrchestrationClient { get; } = new();
 
         public sealed class SentinalImplementation
         {

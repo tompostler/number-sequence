@@ -78,6 +78,12 @@ namespace number_sequence
             _ = services.AddHostedService<Services.Background.Latex.Generate.ChiroCanineLatexGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.Latex.Generate.ChiroEquineLatexGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.Latex.Generate.InvoicePostlerLatexGenerationBackgroundService>();
+
+            //
+            // Durable orchestrations
+            //
+
+            _ = services.AddHostedService<Services.Background.DurableOrchestrationWorkerBackgroundService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
