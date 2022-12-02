@@ -27,7 +27,7 @@ namespace number_sequence.Services.Background
 
         public DurableOrchestrationWorkerBackgroundService(
             IOptions<Options.Sql> sqlOptions,
-            IEnumerable<Orchestrations.IOrchestrator> orchestrators,
+            IEnumerable<TaskOrchestration> orchestrators,
             IEnumerable<TaskActivity> activities,
             ILoggerFactory loggerFactory,
             Sentinals sentinals,
@@ -66,7 +66,7 @@ namespace number_sequence.Services.Background
                 this.logger.LogInformation("Created worker");
 
                 _ = this.worker.AddTaskOrchestrations(this.orchestratorTypes);
-                this.logger.LogInformation($"Added {this.orchestratorTypes.Count()} orchestrators: {string.Join(",", this.orchestratorTypes.Select(x => x.Name))}");
+                this.logger.LogInformation($"Added {this.orchestratorTypes.Length} orchestrators: {string.Join(",", this.orchestratorTypes.Select(x => x.Name))}");
                 if (this.worker.TaskOrchestrationDispatcher != null)
                 {
                     this.worker.TaskOrchestrationDispatcher.IncludeDetails = true;
