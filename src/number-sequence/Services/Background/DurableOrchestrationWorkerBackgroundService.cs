@@ -18,7 +18,7 @@ namespace number_sequence.Services.Background
     public sealed class DurableOrchestrationWorkerBackgroundService : IHostedService
     {
         private readonly SqlOrchestrationService sqlOrchestrationService;
-        private readonly IEnumerable<Orchestrations.IOrchestrator> orchestrators;
+        private readonly Type[] orchestratorTypes;
         private readonly IEnumerable<TaskActivity> activities;
         private readonly ILoggerFactory loggerFactory;
         private readonly Sentinals sentinals;
@@ -42,7 +42,7 @@ namespace number_sequence.Services.Background
             };
             this.sqlOrchestrationService = new(sqlOrchestrationServiceSettings);
 
-            this.orchestrators = orchestrators;
+            this.orchestratorTypes = orchestrators.Select(x => x.GetType()).ToArray();
             this.activities = activities;
             this.loggerFactory = loggerFactory;
             this.sentinals = sentinals;
@@ -58,18 +58,30 @@ namespace number_sequence.Services.Background
             {
                 using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName);
                 this.logger.LogInformation("Setting up durable orchestration background service.");
+
                 await this.sqlOrchestrationService.CreateIfNotExistsAsync();
+                this.logger.LogInformation("Created schema (if not exists)");
 
                 this.worker = new(this.sqlOrchestrationService, this.loggerFactory);
+                this.logger.LogInformation("Created worker");
 
-                _ = this.worker.AddTaskOrchestrations(this.orchestrators.Select(x => x.GetType()).ToArray());
-                this.worker.TaskOrchestrationDispatcher.IncludeDetails = true;
-                this.worker.TaskOrchestrationDispatcher.IncludeParameters = true;
+                _ = this.worker.AddTaskOrchestrations(this.orchestratorTypes);
+                this.logger.LogInformation($"Added {this.orchestratorTypes.Count()} orchestrators: {string.Join(",", this.orchestratorTypes.Select(x => x.Name))}");
+                if (this.worker.TaskOrchestrationDispatcher != null)
+                {
+                    this.worker.TaskOrchestrationDispatcher.IncludeDetails = true;
+                    this.worker.TaskOrchestrationDispatcher.IncludeParameters = true;
+                }
 
                 _ = this.worker.AddTaskActivities(this.activities.ToArray());
-                this.worker.TaskActivityDispatcher.IncludeDetails = true;
+                this.logger.LogInformation($"Added {this.activities.Count()} activities: {string.Join(",", this.activities.Select(x => x.GetType().Name))}");
+                if (this.worker.TaskActivityDispatcher != null)
+                {
+                    this.worker.TaskActivityDispatcher.IncludeDetails = true;
+                }
 
                 _ = await this.worker.StartAsync();
+                this.logger.LogInformation("Started worker");
 
                 TaskHubClient client = new(this.sqlOrchestrationService, default, this.loggerFactory);
                 this.sentinals.DurableOrchestrationClient.SignalCompletion(client);
