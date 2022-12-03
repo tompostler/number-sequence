@@ -17,7 +17,7 @@ namespace number_sequence.DurableTaskImpl.Orchestrators
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
                 input);
 
-            return string.Empty;
+            return default;
         }
     }
 }

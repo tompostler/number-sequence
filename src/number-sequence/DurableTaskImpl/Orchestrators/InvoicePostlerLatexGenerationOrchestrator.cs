@@ -17,7 +17,7 @@ namespace number_sequence.DurableTaskImpl.Orchestrators
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
                 context.OrchestrationInstance.InstanceId);
 
-            return string.Empty;
+            return default;
         }
     }
 }

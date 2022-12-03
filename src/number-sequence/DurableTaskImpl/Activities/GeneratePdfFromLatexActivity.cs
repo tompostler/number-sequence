@@ -147,7 +147,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 latexDocument.ProcessedAt = DateTimeOffset.UtcNow;
                 latexDocument.Successful = false;
                 _ = await nsContext.SaveChangesAsync(cancellationToken);
-                return string.Empty;
+                return default;
             }
             else
             {
@@ -193,7 +193,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             await this.UploadOutputDirAsync(latexDocument, workingDir, downloadCompleteTime, cancellationToken);
             latexDocument.ProcessedAt = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
-            return string.Empty;
+            return default;
         }
 
         private async Task UploadOutputDirAsync(LatexDocument latexDocument, DirectoryInfo workingDir, DateTimeOffset downloadCompleteTime, CancellationToken cancellationToken)

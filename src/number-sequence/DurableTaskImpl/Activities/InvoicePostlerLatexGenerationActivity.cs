@@ -245,7 +245,7 @@ namespace number_sequence.DurableTaskImpl.Activities
 
             // And save it to enable processing
             _ = await nsContext.SaveChangesAsync(cancellationToken);
-            return string.Empty;
+            return default;
         }
     }
 }

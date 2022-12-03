@@ -84,7 +84,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 await this.emailDataAccess.SendEmailAsync(failedMessage, cancellationToken);
                 emailLatexDocument.ProcessedAt = DateTimeOffset.UtcNow;
                 _ = await nsContext.SaveChangesAsync(cancellationToken);
-                return string.Empty;
+                return default;
             }
 
             // Build up the message to send
@@ -120,7 +120,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             await this.emailDataAccess.SendEmailAsync(msg, cancellationToken);
             emailLatexDocument.ProcessedAt = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
-            return string.Empty;
+            return default;
         }
     }
 }
