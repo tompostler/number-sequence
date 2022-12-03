@@ -47,7 +47,8 @@ namespace number_sequence.DurableTaskImpl.Activities
             // Basic setup
             using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(
                 this.GetType().FullName,
-                operationId: context.OrchestrationInstance.InstanceId);
+                operationId: context.OrchestrationInstance.ExecutionId,
+                parentOperationId: context.OrchestrationInstance.InstanceId);
             using CancellationTokenSource cts = new(TimeSpan.FromMinutes(5));
             CancellationToken cancellationToken = cts.Token;
             await this.sentinals.DBMigration.WaitForCompletionAsync(cancellationToken);
