@@ -63,7 +63,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             }
 
             // Create the new records for generating the document
-            string id = context.OrchestrationInstance.InstanceId;
+            string id = context.OrchestrationInstance.InstanceId.Split('_').First();
             LatexDocument latexDocument = new()
             {
                 Id = id
