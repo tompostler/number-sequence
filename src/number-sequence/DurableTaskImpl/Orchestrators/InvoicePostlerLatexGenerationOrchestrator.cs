@@ -14,8 +14,9 @@ namespace number_sequence.DurableTaskImpl.Orchestrators
 
             _ = await context.CreateSubOrchestrationInstanceWithRetry<string>(
                 typeof(LatexGenerationOrchestrator),
+                instanceId: context.OrchestrationInstance.InstanceId + ":1",
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
-                context.OrchestrationInstance.InstanceId);
+                input: context.OrchestrationInstance.InstanceId);
 
             return default;
         }
