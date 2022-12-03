@@ -53,7 +53,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             LatexDocument latexDocument = await nsContext.LatexDocuments
-                .FirstOrDefaultAsync(x => x.Id == context.OrchestrationInstance.InstanceId && x.ProcessedAt == default, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == input && x.ProcessedAt == default, cancellationToken);
             if (latexDocument == default)
             {
                 throw new InvalidOperationException("Work was requested, but the document was not found.");

@@ -7,22 +7,17 @@ namespace number_sequence.DurableTaskImpl.Orchestrators
     {
         public override async Task<string> RunTask(OrchestrationContext context, long input)
         {
-            string output = await context.ScheduleWithRetry<string>(
+            _ = await context.ScheduleWithRetry<string>(
                 typeof(Activities.InvoicePostlerLatexGenerationActivity),
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
                 input);
 
-            output = await context.ScheduleWithRetry<string>(
-                typeof(Activities.GeneratePdfFromLatexActivity),
+            _ = await context.CreateSubOrchestrationInstanceWithRetry<string>(
+                typeof(LatexGenerationOrchestrator),
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
-                output);
+                context.OrchestrationInstance.InstanceId);
 
-            output = await context.ScheduleWithRetry<string>(
-                typeof(Activities.EmailPdfForLatexActivity),
-                ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
-                output);
-
-            return output;
+            return string.Empty;
         }
     }
 }

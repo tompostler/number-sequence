@@ -57,7 +57,7 @@ namespace number_sequence.DurableTaskImpl.Activities
 
             // First see if there's work to do
             EmailLatexDocument emailLatexDocument = await nsContext.EmailLatexDocuments
-                .FirstOrDefaultAsync(x => x.Id == context.OrchestrationInstance.InstanceId && x.ProcessedAt == default, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == input && x.ProcessedAt == default, cancellationToken);
             if (emailLatexDocument == default)
             {
                 throw new InvalidOperationException("Work was requested, but the email record was not found.");
@@ -65,7 +65,7 @@ namespace number_sequence.DurableTaskImpl.Activities
 
             // Then see if the corresponding work is complete
             LatexDocument latexDocument = await nsContext.LatexDocuments
-                .FirstOrDefaultAsync(x => x.Id == context.OrchestrationInstance.InstanceId && x.ProcessedAt != default, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == input && x.ProcessedAt != default, cancellationToken);
             if (latexDocument == default)
             {
                 throw new InvalidOperationException("Work was requested, but the document was not found.");

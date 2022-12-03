@@ -12,6 +12,8 @@ namespace number_sequence.DurableTaskImpl
                 .AddSingleton<TaskOrchestration, Orchestrators.InvoicePostlerLatexGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.InvoicePostlerLatexGenerationActivity>()
 
+                .AddSingleton<TaskOrchestration, Orchestrators.LatexGenerationOrchestrator>()
+
                 // Shared activities
                 .AddSingleton<TaskActivity, Activities.GeneratePdfFromLatexActivity>()
                 .AddSingleton<TaskActivity, Activities.EmailPdfForLatexActivity>()
