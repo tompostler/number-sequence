@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using DurableTask.Core;
 using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,21 +14,22 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unlimitedinf.Utilities.Extensions;
 
-namespace number_sequence.Services.Background.Latex.Generate
+namespace number_sequence.Services.Background.LatexGeneration
 {
-    public sealed class ChiroEquineLatexGenerationBackgroundService : SqlSynchronizedBackgroundService
+    public sealed class ChiroCanineLatexGenerationBackgroundService : SqlSynchronizedBackgroundService
     {
         private readonly GoogleSheetDataAccess googleSheetDataAccess;
         private readonly NsStorage nsStorage;
 
-        public ChiroEquineLatexGenerationBackgroundService(
+        public ChiroCanineLatexGenerationBackgroundService(
             GoogleSheetDataAccess googleSheetDataAccess,
             NsStorage nsStorage,
             IOptions<Options.Google> googleOptions,
             IServiceProvider serviceProvider,
             Sentinals sentinals,
-            ILogger<ChiroEquineLatexGenerationBackgroundService> logger,
+            ILogger<ChiroCanineLatexGenerationBackgroundService> logger,
             TelemetryClient telemetryClient)
             : base(serviceProvider, sentinals, logger, telemetryClient)
         {
@@ -43,7 +45,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             // Get the template information
-            LatexTemplate template = await nsContext.LatexTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.LTBP.ChiroEquine, cancellationToken);
+            LatexTemplate template = await nsContext.LatexTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.LTBP.ChrioCanine, cancellationToken);
             if (template == default)
             {
                 this.logger.LogInformation("No template defined.");
@@ -126,18 +128,27 @@ namespace number_sequence.Services.Background.Latex.Generate
 
             string customAppend(string existing, string prefix, int index)
             {
-                if (index >= row.Length)
+                try
                 {
-                    return string.Empty;
+                    if (index >= row.Length)
+                    {
+                        return string.Empty;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(row[index]))
+                    {
+                        return (string.IsNullOrWhiteSpace(existing) ? string.Empty : ", ")
+                            + $"{prefix} {row[index]}".Trim().EscapeForLatex();
+                    }
+                    else
+                    {
+                        return string.Empty;
+
+                    }
                 }
-                else if (!string.IsNullOrWhiteSpace(row[index]))
+                catch
                 {
-                    return (string.IsNullOrWhiteSpace(existing) ? string.Empty : ", ")
-                        + $"{prefix} {row[index]}".Trim().EscapeForLatex();
-                }
-                else
-                {
-                    return string.Empty;
+                    this.logger.LogInformation(new { existing, prefix, index, rowLength = row.Length, row = row.ToJsonString() }.ToJsonString());
+                    throw;
                 }
             }
 
@@ -198,12 +209,7 @@ namespace number_sequence.Services.Background.Latex.Generate
             // 27 AB T11
             // 28 AC T12
             // 29 AD T13
-            // 30 AE T14
-            // 31 AF T15
-            // 32 AG T16
-            // 33 AH T17
-            // 34 AI T18
-            // 89 CL Sternum
+            // 43 AR Sternum
             string thoracic = string.Empty;
             thoracic += customAppend(thoracic, "T1", 17);
             thoracic += customAppend(thoracic, "T2", 18);
@@ -218,152 +224,133 @@ namespace number_sequence.Services.Background.Latex.Generate
             thoracic += customAppend(thoracic, "T11", 27);
             thoracic += customAppend(thoracic, "T12", 28);
             thoracic += customAppend(thoracic, "T13", 29);
-            thoracic += customAppend(thoracic, "T14", 30);
-            thoracic += customAppend(thoracic, "T15", 31);
-            thoracic += customAppend(thoracic, "T16", 32);
-            thoracic += customAppend(thoracic, "T17", 33);
-            thoracic += customAppend(thoracic, "T18", 34);
-            thoracic += customAppend(thoracic, "Sternum", 89);
+            thoracic += customAppend(thoracic, "Sternum", 43);
             thoracic += customAppend(thoracic, string.Empty, 16);
 
             // Ribs
-            // 35 AJ R1
-            // 36 AK R2
-            // 37 AL R3
-            // 38 AM R4
-            // 39 AN R5
-            // 40 AO R6
-            // 41 AP R7
-            // 42 AQ R8
-            // 43 AR R9
-            // 44 AS R10
-            // 45 AT R11
-            // 46 AU R12
-            // 47 AV R13
-            // 48 AW R14
-            // 49 AX R15
-            // 50 AY R16
-            // 51 AZ R17
-            // 52 BA R18
+            // 30 AE R1
+            // 31 AF R2
+            // 32 AG R3
+            // 33 AH R4
+            // 34 AI R5
+            // 35 AJ R6
+            // 36 AK R7
+            // 37 AL R8
+            // 38 AM R9
+            // 39 AN R10
+            // 40 AO R11
+            // 41 AP R12
+            // 42 AQ R13
             string ribs = string.Empty;
-            ribs += customAppend(ribs, "R1", 35);
-            ribs += customAppend(ribs, "R2", 36);
-            ribs += customAppend(ribs, "R3", 37);
-            ribs += customAppend(ribs, "R4", 38);
-            ribs += customAppend(ribs, "R5", 39);
-            ribs += customAppend(ribs, "R6", 40);
-            ribs += customAppend(ribs, "R7", 41);
-            ribs += customAppend(ribs, "R8", 42);
-            ribs += customAppend(ribs, "R9", 43);
-            ribs += customAppend(ribs, "R10", 44);
-            ribs += customAppend(ribs, "R11", 45);
-            ribs += customAppend(ribs, "R12", 46);
-            ribs += customAppend(ribs, "R13", 47);
-            ribs += customAppend(ribs, "R14", 48);
-            ribs += customAppend(ribs, "R15", 49);
-            ribs += customAppend(ribs, "R16", 50);
-            ribs += customAppend(ribs, "R17", 51);
-            ribs += customAppend(ribs, "R18", 52);
+            ribs += customAppend(ribs, "R1", 30);
+            ribs += customAppend(ribs, "R2", 31);
+            ribs += customAppend(ribs, "R3", 32);
+            ribs += customAppend(ribs, "R4", 33);
+            ribs += customAppend(ribs, "R5", 34);
+            ribs += customAppend(ribs, "R6", 35);
+            ribs += customAppend(ribs, "R7", 36);
+            ribs += customAppend(ribs, "R8", 37);
+            ribs += customAppend(ribs, "R9", 38);
+            ribs += customAppend(ribs, "R10", 39);
+            ribs += customAppend(ribs, "R11", 40);
+            ribs += customAppend(ribs, "R12", 41);
+            ribs += customAppend(ribs, "R13", 42);
 
             // Lumbar
-            // 53 BB Other notes
-            // 54 BC L1
-            // 55 BD L2
-            // 56 BE L3
-            // 57 BF L4
-            // 58 BG L5
-            // 59 BH L6
-            // 60 BI L3/L4 Intertransverse
-            // 61 BJ L4/L5 Intertransverse
-            // 62 BK L5/L6 Intertransverse
+            // 44 AS Other notes
+            // 45 AT L1
+            // 46 AU L2
+            // 47 AV L3
+            // 48 AW L4
+            // 49 AX L5
+            // 50 AY L6
+            // 51 AZ L7
             string lumbar = string.Empty;
-            lumbar += customAppend(lumbar, "L1", 54);
-            lumbar += customAppend(lumbar, "L2", 55);
-            lumbar += customAppend(lumbar, "L3", 56);
-            lumbar += customAppend(lumbar, "L4", 57);
-            lumbar += customAppend(lumbar, "L5", 58);
-            lumbar += customAppend(lumbar, "L6", 59);
-            lumbar += customAppend(lumbar, "L3/L4 Intertransverse", 60);
-            lumbar += customAppend(lumbar, "L4/L5 Intertransverse", 61);
-            lumbar += customAppend(lumbar, "L5/L6 Intertransverse", 62);
-            lumbar += customAppend(lumbar, string.Empty, 53);
+            lumbar += customAppend(lumbar, "L1", 45);
+            lumbar += customAppend(lumbar, "L2", 46);
+            lumbar += customAppend(lumbar, "L3", 47);
+            lumbar += customAppend(lumbar, "L4", 48);
+            lumbar += customAppend(lumbar, "L5", 49);
+            lumbar += customAppend(lumbar, "L6", 50);
+            lumbar += customAppend(lumbar, "L7", 51);
+            lumbar += customAppend(lumbar, string.Empty, 44);
 
             // Sacrum
-            // 63 BL Other notes
-            // 64 BM Base
-            // 65 BN Apex
+            // 52 BA Other notes
+            // 53 BB Base
+            // 54 BC Apex
             // Pelvic
-            // 66 BO Other notes
-            // 67 BP Left
-            // 68 BQ Right
-            // 90 CM Traction
+            // 55 BD Other notes
+            // 56 BE Left
+            // 57 BF Right
+            // 58 BG Traction
             string pelvicSacral = string.Empty;
-            pelvicSacral += customAppend(pelvicSacral, "Base", 64);
-            pelvicSacral += customAppend(pelvicSacral, "Apex", 65);
-            pelvicSacral += customAppend(pelvicSacral, "Sacrum", 63);
-            pelvicSacral += customAppend(pelvicSacral, "Left", 67);
-            pelvicSacral += customAppend(pelvicSacral, "Right", 68);
-            pelvicSacral += customAppend(pelvicSacral, string.Empty, 90);
-            pelvicSacral += customAppend(pelvicSacral, "Pelvis", 66);
+            pelvicSacral += customAppend(pelvicSacral, "Base", 53);
+            pelvicSacral += customAppend(pelvicSacral, "Apex", 54);
+            pelvicSacral += customAppend(pelvicSacral, "Sacrum", 52);
+            pelvicSacral += customAppend(pelvicSacral, "Left", 56);
+            pelvicSacral += customAppend(pelvicSacral, "Right", 57);
+            pelvicSacral += customAppend(pelvicSacral, string.Empty, 58);
+            pelvicSacral += customAppend(pelvicSacral, "Pelvis", 55);
 
             // Left forelimb
-            // 69 BR Other notes
-            // 70 BS Scapula
-            // 71 BT Humorous
-            // 72 BU Ulna
-            // 73 BV Radius
-            // 74 BW Carpus
-            // 75 BX Metatarsals/Phalanges
+            // 59 BH Other notes
+            // 60 BI Scapula
+            // 61 BJ Humorous
+            // 62 BK Ulna
+            // 63 BL Radius
+            // 64 BM Carpus
+            // 65 BN Metatarsals/Phalanges
             string leftForelimb = string.Empty;
-            leftForelimb += customAppend(leftForelimb, "Scapula", 70);
-            leftForelimb += customAppend(leftForelimb, "Humorous", 71);
-            leftForelimb += customAppend(leftForelimb, "Ulna", 72);
-            leftForelimb += customAppend(leftForelimb, "Radius", 73);
-            leftForelimb += customAppend(leftForelimb, "Carpus", 74);
-            leftForelimb += customAppend(leftForelimb, "Metatarsals/Phalanges", 75);
-            leftForelimb += customAppend(leftForelimb, string.Empty, 69);
+            leftForelimb += customAppend(leftForelimb, "Scapula", 60);
+            leftForelimb += customAppend(leftForelimb, "Humorous", 61);
+            leftForelimb += customAppend(leftForelimb, "Ulna", 62);
+            leftForelimb += customAppend(leftForelimb, "Radius", 63);
+            leftForelimb += customAppend(leftForelimb, "Carpus", 64);
+            leftForelimb += customAppend(leftForelimb, "Metatarsals/Phalanges", 65);
+            leftForelimb += customAppend(leftForelimb, string.Empty, 59);
 
             // Right forelimb
-            // 76 BY Other notes
-            // 77 BZ Scapula
-            // 78 CA Humorous
-            // 79 CB Ulna
-            // 80 CC Radius
-            // 81 CD Carpus
-            // 82 CE Metatarsals/Phalanges
+            // 66 BO Other notes
+            // 67 BP Scapula
+            // 68 BQ Humorous
+            // 69 BR Ulna
+            // 70 BS Radius
+            // 71 BT Carpus
+            // 72 BU Metatarsals/Phalanges
             string rightForelimb = string.Empty;
-            rightForelimb += customAppend(rightForelimb, "Scapula", 77);
-            rightForelimb += customAppend(rightForelimb, "Humorous", 78);
-            rightForelimb += customAppend(rightForelimb, "Ulna", 79);
-            rightForelimb += customAppend(rightForelimb, "Radius", 80);
-            rightForelimb += customAppend(rightForelimb, "Carpus", 81);
-            rightForelimb += customAppend(rightForelimb, "Metatarsals/Phalanges", 82);
-            rightForelimb += customAppend(rightForelimb, string.Empty, 76);
+            rightForelimb += customAppend(rightForelimb, "Scapula", 67);
+            rightForelimb += customAppend(rightForelimb, "Humorous", 68);
+            rightForelimb += customAppend(rightForelimb, "Ulna", 69);
+            rightForelimb += customAppend(rightForelimb, "Radius", 70);
+            rightForelimb += customAppend(rightForelimb, "Carpus", 71);
+            rightForelimb += customAppend(rightForelimb, "Metatarsals/Phalanges", 72);
+            rightForelimb += customAppend(rightForelimb, string.Empty, 66);
 
             // Left rear limb
-            // 83 CF Other notes
-            // 84 CG Raw response
+            // 73 BV Other notes
+            // 74 BW Raw response
             string leftRearLimb = string.Empty;
-            leftRearLimb += customAppend(leftRearLimb, string.Empty, 84);
-            leftRearLimb += customAppend(leftRearLimb, string.Empty, 83);
+            leftRearLimb += customAppend(leftRearLimb, string.Empty, 74);
+            leftRearLimb += customAppend(leftRearLimb, string.Empty, 73);
 
             // Right rear limb
-            // 85 CH Other notes
-            // 86 CI Raw response
+            // 75 BX Other notes
+            // 76 BY Raw response
             string rightRearLimb = string.Empty;
-            rightRearLimb += customAppend(rightRearLimb, string.Empty, 86);
-            rightRearLimb += customAppend(rightRearLimb, string.Empty, 85);
-
-            // Extended other notes
-            // 87 CJ Raw response
-            string other = row.Length > 87 ? row[87]?.Trim()?.EscapeForLatex() : string.Empty;
+            rightRearLimb += customAppend(rightRearLimb, string.Empty, 76);
+            rightRearLimb += customAppend(rightRearLimb, string.Empty, 75);
 
             // Coccygeal
-            // 88 CK Raw response
-            // 91 CN Coccygeal
+            // 77 BZ Other notes
+            // 78 CA Coccygeal
             string coccygeal = string.Empty;
-            coccygeal += customAppend(coccygeal, "Coccygeal", 91);
-            coccygeal += customAppend(coccygeal, string.Empty, 88);
+            coccygeal += customAppend(coccygeal, "Coccygeal", 78);
+            coccygeal += customAppend(coccygeal, string.Empty, 77);
+
+            // Extended other notes
+            // 79 CB Raw response
+            string other = row.Length > 79 ? row[79]?.Trim()?.EscapeForLatex() : string.Empty;
 
 
             // Download the template to memory to do the string replacement
@@ -433,6 +420,13 @@ namespace number_sequence.Services.Background.Latex.Generate
 
             // And save it to enable processing
             _ = await nsContext.SaveChangesAsync(cancellationToken);
+
+            // Kick off the pdf generation
+            TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
+            OrchestrationInstance orchestration = await taskHubClient.CreateOrchestrationInstanceAsync(
+                typeof(DurableTaskImpl.Orchestrators.LatexGenerationOrchestrator),
+                instanceId: this.op.Telemetry.Context.Operation.Id,
+                input: latexDocument.Id);
         }
     }
 }

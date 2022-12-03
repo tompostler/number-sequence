@@ -18,7 +18,9 @@ namespace number_sequence.Services.Background
         protected readonly IServiceProvider serviceProvider;
         protected readonly Sentinals sentinals;
         protected readonly ILogger logger;
+
         private readonly TelemetryClient telemetryClient;
+        protected IOperationHolder<RequestTelemetry> op;
 
         public SqlSynchronizedBackgroundService(
             IServiceProvider serviceProvider,
@@ -67,6 +69,7 @@ namespace number_sequence.Services.Background
 
                 // And then actually do the work
                 using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName);
+                this.op = op;
                 try
                 {
                     using CancellationTokenSource intervalTokenSource = new(this.Interval);

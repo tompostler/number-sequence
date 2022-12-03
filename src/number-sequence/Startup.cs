@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Extensions.Options;
+using number_sequence.Services.Background.LatexGeneration;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using TcpWtf.NumberSequence.Contracts.Framework;
@@ -73,10 +74,8 @@ namespace number_sequence
             // Background services
             //
 
-            _ = services.AddHostedService<Services.Background.Latex.EmailPdfForLatexBackgroundService>();
-            _ = services.AddHostedService<Services.Background.Latex.GeneratePdfFromLatexBackgroundService>();
-            _ = services.AddHostedService<Services.Background.Latex.Generate.ChiroCanineLatexGenerationBackgroundService>();
-            _ = services.AddHostedService<Services.Background.Latex.Generate.ChiroEquineLatexGenerationBackgroundService>();
+            _ = services.AddHostedService<ChiroCanineLatexGenerationBackgroundService>();
+            _ = services.AddHostedService<ChiroEquineLatexGenerationBackgroundService>();
 
 
             //
