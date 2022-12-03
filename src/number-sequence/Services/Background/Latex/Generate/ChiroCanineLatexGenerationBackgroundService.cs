@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using number_sequence.DataAccess;
-using number_sequence.Extensions;
 using number_sequence.Models;
 using number_sequence.Utilities;
 using System;

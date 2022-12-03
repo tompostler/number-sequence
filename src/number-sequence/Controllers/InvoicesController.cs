@@ -1,5 +1,4 @@
 ﻿using DurableTask.Core;
-using Google.Apis.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

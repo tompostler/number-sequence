@@ -4,7 +4,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
-using number_sequence.Extensions;
 using number_sequence.Models;
 using System;
 using System.Collections.Generic;

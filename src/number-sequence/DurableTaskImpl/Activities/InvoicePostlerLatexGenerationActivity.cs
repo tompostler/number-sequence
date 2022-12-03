@@ -1,18 +1,21 @@
 ﻿using Azure.Storage.Blobs;
 using DurableTask.Core;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
+using number_sequence.Models;
+using number_sequence.Utilities;
+using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
-using System;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Contracts.Invoicing;
-using Microsoft.Extensions.Logging;
-using number_sequence.Utilities;
-using number_sequence.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace number_sequence.DurableTaskImpl.Activities
 {
@@ -22,21 +25,29 @@ namespace number_sequence.DurableTaskImpl.Activities
         private readonly IServiceProvider serviceProvider;
         private readonly Sentinals sentinals;
         private readonly ILogger<InvoicePostlerLatexGenerationActivity> logger;
+        private readonly TelemetryClient telemetryClient;
 
         public InvoicePostlerLatexGenerationActivity(
             NsStorage nsStorage,
             IServiceProvider serviceProvider,
             Sentinals sentinals,
-            ILogger<InvoicePostlerLatexGenerationActivity> logger)
+            ILogger<InvoicePostlerLatexGenerationActivity> logger,
+            TelemetryClient telemetryClient)
         {
             this.nsStorage = nsStorage;
             this.serviceProvider = serviceProvider;
             this.sentinals = sentinals;
             this.logger = logger;
+            this.telemetryClient = telemetryClient;
         }
 
         protected override async Task<string> ExecuteAsync(TaskContext context, long input)
         {
+            // Basic setup
+            using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(
+                this.GetType().FullName,
+                operationId: context.OrchestrationInstance.ExecutionId,
+                parentOperationId: context.OrchestrationInstance.InstanceId);
             using CancellationTokenSource cts = new(TimeSpan.FromMinutes(5));
             CancellationToken cancellationToken = cts.Token;
             await this.sentinals.DBMigration.WaitForCompletionAsync(cancellationToken);

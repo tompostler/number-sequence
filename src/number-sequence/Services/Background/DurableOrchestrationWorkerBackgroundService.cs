@@ -1,8 +1,5 @@
 ﻿using DurableTask.Core;
 using DurableTask.SqlServer;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,7 +20,6 @@ namespace number_sequence.Services.Background
         private readonly ILoggerFactory loggerFactory;
         private readonly Sentinals sentinals;
         private readonly ILogger<DurableOrchestrationWorkerBackgroundService> logger;
-        private readonly TelemetryClient telemetryClient;
 
         public DurableOrchestrationWorkerBackgroundService(
             IOptions<Options.Sql> sqlOptions,
@@ -31,8 +27,7 @@ namespace number_sequence.Services.Background
             IEnumerable<TaskActivity> activities,
             ILoggerFactory loggerFactory,
             Sentinals sentinals,
-            ILogger<DurableOrchestrationWorkerBackgroundService> logger,
-            TelemetryClient telemetryClient)
+            ILogger<DurableOrchestrationWorkerBackgroundService> logger)
         {
             SqlOrchestrationServiceSettings sqlOrchestrationServiceSettings = new(sqlOptions.Value.ConnectionString)
             {
@@ -47,7 +42,6 @@ namespace number_sequence.Services.Background
             this.loggerFactory = loggerFactory;
             this.sentinals = sentinals;
             this.logger = logger;
-            this.telemetryClient = telemetryClient;
         }
 
         private TaskHubWorker worker;
@@ -56,7 +50,6 @@ namespace number_sequence.Services.Background
         {
             try
             {
-                //using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName);
                 this.logger.LogInformation("Setting up durable orchestration background service.");
 
                 await this.sqlOrchestrationService.CreateIfNotExistsAsync();

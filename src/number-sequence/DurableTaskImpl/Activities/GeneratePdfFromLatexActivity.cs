@@ -1,5 +1,8 @@
 ﻿using Azure.Storage.Blobs;
 using DurableTask.Core;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,21 +23,29 @@ namespace number_sequence.DurableTaskImpl.Activities
         private readonly IServiceProvider serviceProvider;
         private readonly Sentinals sentinals;
         private readonly ILogger<GeneratePdfFromLatexActivity> logger;
+        private readonly TelemetryClient telemetryClient;
 
         public GeneratePdfFromLatexActivity(
             NsStorage nsStorage,
             IServiceProvider serviceProvider,
             Sentinals sentinals,
-            ILogger<GeneratePdfFromLatexActivity> logger)
+            ILogger<GeneratePdfFromLatexActivity> logger,
+            TelemetryClient telemetryClient)
         {
             this.nsStorage = nsStorage;
             this.serviceProvider = serviceProvider;
             this.sentinals = sentinals;
             this.logger = logger;
+            this.telemetryClient = telemetryClient;
         }
 
         protected override async Task<string> ExecuteAsync(TaskContext context, string input)
         {
+            // Basic setup
+            using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(
+                this.GetType().FullName,
+                operationId: context.OrchestrationInstance.ExecutionId,
+                parentOperationId: context.OrchestrationInstance.InstanceId);
             using CancellationTokenSource cts = new(TimeSpan.FromMinutes(5));
             CancellationToken cancellationToken = cts.Token;
             await this.sentinals.DBMigration.WaitForCompletionAsync(cancellationToken);
