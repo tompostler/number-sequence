@@ -56,7 +56,7 @@ namespace number_sequence.Services.Background
         {
             try
             {
-                using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName);
+                //using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(this.GetType().FullName);
                 this.logger.LogInformation("Setting up durable orchestration background service.");
 
                 await this.sqlOrchestrationService.CreateIfNotExistsAsync();

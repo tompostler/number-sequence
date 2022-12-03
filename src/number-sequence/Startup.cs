@@ -77,7 +77,6 @@ namespace number_sequence
             _ = services.AddHostedService<Services.Background.Latex.GeneratePdfFromLatexBackgroundService>();
             _ = services.AddHostedService<Services.Background.Latex.Generate.ChiroCanineLatexGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.Latex.Generate.ChiroEquineLatexGenerationBackgroundService>();
-            //_ = services.AddHostedService<Services.Background.Latex.Generate.InvoicePostlerLatexGenerationBackgroundService>();
 
 
             //
