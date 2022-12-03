@@ -63,10 +63,10 @@ namespace number_sequence.DurableTaskImpl.Activities
             }
 
             // Create the new records for generating the document
-            string id = context.OrchestrationInstance.InstanceId.Split('_').First();
+            string invoiceId = context.OrchestrationInstance.InstanceId.Split('_').First();
             LatexDocument latexDocument = new()
             {
-                Id = id
+                Id = context.OrchestrationInstance.InstanceId
             };
             _ = nsContext.LatexDocuments.Add(latexDocument);
 
@@ -167,7 +167,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 .Replace("((BusinessAddressLine1))", invoice.Business.AddressLine1?.EscapeForLatex())
                 .Replace("((BusinessAddressLine2))", invoice.Business.AddressLine2?.EscapeForLatex())
                 .Replace("((BusinessContact))", invoice.Business.Contact?.EscapeForLatex())
-                .Replace("((Id))", id)
+                .Replace("((Id))", invoiceId)
                 .Replace("((DueDate))", dueDate)
                 .Replace("((Description))", invoice.Description?.EscapeForLatex())
                 .Replace("((CustomerName))", invoice.Customer.Name?.EscapeForLatex())
@@ -191,9 +191,9 @@ namespace number_sequence.DurableTaskImpl.Activities
             if (!string.IsNullOrWhiteSpace(template.SubjectTemplate))
             {
                 subject = template.SubjectTemplate
-                    .Replace("((Id))", id)
+                    .Replace("((Id))", invoiceId)
                     .Replace("((CustomerName))", invoice.Customer.Name)
-                    .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{id}" : invoice.Title)
+                    .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{invoiceId}" : invoice.Title)
                     ;
                 if (subject.Length > 128)
                 {
@@ -204,10 +204,10 @@ namespace number_sequence.DurableTaskImpl.Activities
             if (!string.IsNullOrWhiteSpace(template.AttachmentNameTemplate))
             {
                 attachmentName = template.AttachmentNameTemplate
-                    .Replace("((Id))", id)
+                    .Replace("((Id))", invoiceId)
                     .Replace("((BusinessName))", invoice.Business.Name)
                     .Replace("((CustomerName))", invoice.Customer.Name)
-                    .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{id}" : invoice.Title)
+                    .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{invoiceId}" : invoice.Title)
                     .Replace(" ", "-")
                     ;
                 if (attachmentName.Length > 128)
@@ -216,7 +216,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 }
             }
             StringBuilder additionalBody = new();
-            _ = additionalBody.AppendLine($"Invoice id: {id}");
+            _ = additionalBody.AppendLine($"Invoice id: {invoiceId}");
             _ = additionalBody.AppendLine($"Business name: {invoice.Business.Name}");
             _ = additionalBody.AppendLine($"Customer name: {invoice.Customer.Name}");
             _ = additionalBody.AppendLine($"Due date: {dueDate}");
