@@ -9,7 +9,7 @@ namespace number_sequence.DurableTaskImpl
         public static IServiceCollection AddDurableOrchestrations(IServiceCollection services)
             => services
                 // Orchestrators, and their specific activities
-                .AddSingleton<TaskOrchestration, Orchestrators.InvoicePostlerOrchestrator>()
+                .AddSingleton<TaskOrchestration, Orchestrators.InvoicePostlerLatexGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.InvoicePostlerLatexGenerationActivity>()
 
                 // Shared activities

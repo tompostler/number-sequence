@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace number_sequence.DurableTaskImpl.Orchestrators
 {
-    public sealed class InvoicePostlerOrchestrator : TaskOrchestration<string, long>
+    public sealed class InvoicePostlerLatexGenerationOrchestrator : TaskOrchestration<string, long>
     {
         public override async Task<string> RunTask(OrchestrationContext context, long input)
         {
