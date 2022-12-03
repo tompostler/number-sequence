@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace number_sequence.DurableTask
+namespace number_sequence.DurableTaskImpl
 {
     public static class ServiceProviderOrchestrationExtensions
     {
@@ -10,6 +10,7 @@ namespace number_sequence.DurableTask
             => services
                 // Orchestrators, and their specific activities
                 .AddSingleton<TaskOrchestration, Orchestrators.InvoicePostlerOrchestrator>()
+                .AddSingleton<TaskActivity, Activities.InvoicePostlerLatexGenerationActivity>()
 
                 // Shared activities
                 .AddSingleton<TaskActivity, Activities.GeneratePdfFromLatexActivity>()

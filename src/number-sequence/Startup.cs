@@ -77,14 +77,14 @@ namespace number_sequence
             _ = services.AddHostedService<Services.Background.Latex.GeneratePdfFromLatexBackgroundService>();
             _ = services.AddHostedService<Services.Background.Latex.Generate.ChiroCanineLatexGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.Latex.Generate.ChiroEquineLatexGenerationBackgroundService>();
-            _ = services.AddHostedService<Services.Background.Latex.Generate.InvoicePostlerLatexGenerationBackgroundService>();
+            //_ = services.AddHostedService<Services.Background.Latex.Generate.InvoicePostlerLatexGenerationBackgroundService>();
 
 
             //
             // Durable orchestrations
             //
 
-            _ = DurableTask.ServiceProviderOrchestrationExtensions.AddDurableOrchestrations(services);
+            _ = DurableTaskImpl.ServiceProviderOrchestrationExtensions.AddDurableOrchestrations(services);
             _ = services.AddHostedService<Services.Background.DurableOrchestrationWorkerBackgroundService>();
         }
 

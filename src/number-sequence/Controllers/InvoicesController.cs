@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DurableTask.Core;
+using Google.Apis.Logging;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
 using number_sequence.Filters;
+using number_sequence.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +21,17 @@ namespace number_sequence.Controllers
     public sealed class InvoicesController : ControllerBase
     {
         private readonly IServiceProvider serviceProvider;
+        private readonly Sentinals sentinals;
+        private readonly ILogger<InvoicesController> logger;
 
-        public InvoicesController(IServiceProvider serviceProvider)
+        public InvoicesController(
+            IServiceProvider serviceProvider,
+            Sentinals sentinals,
+            ILogger<InvoicesController> logger)
         {
             this.serviceProvider = serviceProvider;
+            this.sentinals = sentinals;
+            this.logger = logger;
         }
 
         #region Businesses
@@ -306,6 +317,18 @@ namespace number_sequence.Controllers
             invoiceRecord.PaidDetails = invoice.PaidDetails;
             invoiceRecord.ReadyForProcessing = invoice.ReadyForProcessing;
             invoiceRecord.ProcessedAt = invoice.ProcessedAt;
+
+            if (invoiceRecord.ReadyForProcessing && invoiceRecord.ProcessedAt == default)
+            {
+                invoiceRecord.ProccessAttempt += 1;
+
+                TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
+                OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
+                    typeof(DurableTaskImpl.Orchestrators.InvoicePostlerOrchestrator),
+                    instanceId: $"{invoiceRecord.Id:0000}-{invoiceRecord.ProccessAttempt:00}_{NsStorage.C.LTBP.InvoicePostler}",
+                    invoiceRecord.Id);
+                this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
+            }
 
             invoiceRecord.ModifiedDate = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);

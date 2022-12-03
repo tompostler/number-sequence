@@ -12,7 +12,7 @@ using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace number_sequence.DurableTask.Activities
+namespace number_sequence.DurableTaskImpl.Activities
 {
     public sealed class EmailPdfForLatexActivity : AsyncTaskActivity<string, string>
     {
