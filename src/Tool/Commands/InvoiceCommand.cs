@@ -77,8 +77,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Command lineCreateCommand = new("create", "Create a new invoice line.");
             Argument<long> idArgument = new("invoiceId", "The id of the invoice.");
+            Option<bool> rawOption = new("--raw", "Show raw json object(s) instead of the nicer summary format.");
             lineCreateCommand.AddArgument(idArgument);
-            lineCreateCommand.SetHandler(HandleLineCreateAsync, idArgument, verbosityOption);
+            lineCreateCommand.SetHandler(HandleLineCreateAsync, idArgument, rawOption, verbosityOption);
 
             Command lineEditCommand = new("edit", "Edit an existing invoice line.");
             Argument<long> lineIdArgument = new("lineId", "The id of the line.");
@@ -121,7 +122,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Command getCommand = new("get", "Get an existing invoice.");
             getCommand.AddArgument(idArgument);
-            getCommand.SetHandler(HandleGetAsync, idArgument, verbosityOption);
+            getCommand.AddOption(rawOption);
+            getCommand.SetHandler(HandleGetAsync, idArgument, rawOption, verbosityOption);
             rootCommand.AddCommand(getCommand);
 
 
@@ -282,12 +284,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         #region Lines
 
-        private static async Task HandleLineCreateAsync(long invoiceId, Verbosity verbosity)
+        private static async Task HandleLineCreateAsync(long invoiceId, bool raw, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
 
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
-            PrintInvoices(invoice);
+            PrintSingleInvoice(invoice, raw);
 
             List<Contracts.Invoicing.InvoiceLineDefault> invoiceLineDefaults = await client.Invoice.GetLineDefaultsAsync();
             invoiceLineDefaults.Insert(0, new() { Id = 0, Title = "Non-default entry" });
@@ -459,11 +461,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
-        private static async Task HandleGetAsync(long id, Verbosity verbosity)
+        private static async Task HandleGetAsync(long id, bool raw, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
-            Console.WriteLine(invoice.ToJsonString(indented: true));
+
+            PrintSingleInvoice(invoice, raw);
         }
 
         private static async Task HandleListAsync(Verbosity verbosity)
@@ -499,6 +502,36 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(invoice.ToJsonString(indented: true));
         }
 
+        private static void PrintSingleInvoice(Contracts.Invoicing.Invoice invoice, bool raw)
+        {
+            if (raw)
+            {
+                Console.WriteLine(invoice.ToJsonString(indented: true));
+            }
+            else
+            {
+                // When displaying an invoice by default, nicely output the data instead of dumping the json out
+                // Primarily for invoices with more lines (as it reduces the amount of scrolling necessary)
+                Console.WriteLine();
+
+                Console.WriteLine("Summary:");
+                PrintInvoices(invoice);
+
+                Console.WriteLine("Lines:");
+                Output.WriteTable(
+                    invoice.Lines,
+                    nameof(Contracts.Invoicing.InvoiceLine.Id),
+                    nameof(Contracts.Invoicing.InvoiceLine.Title),
+                    nameof(Contracts.Invoicing.InvoiceLine.Description),
+                    nameof(Contracts.Invoicing.InvoiceLine.Quantity),
+                    nameof(Contracts.Invoicing.InvoiceLine.Unit),
+                    nameof(Contracts.Invoicing.InvoiceLine.Price),
+                    nameof(Contracts.Invoicing.InvoiceLine.Total),
+                    nameof(Contracts.Invoicing.InvoiceLine.CreatedDate),
+                    nameof(Contracts.Invoicing.InvoiceLine.ModifiedDate));
+            }
+        }
+
         private static void PrintInvoices(params Contracts.Invoicing.Invoice[] invoices)
         {
             Output.WriteTable(
@@ -526,8 +559,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.Invoice.CreatedDate),
                 nameof(Contracts.Invoicing.Invoice.ModifiedDate),
                 nameof(Contracts.Invoicing.Invoice.ProcessedAt),
-                nameof(Contracts.Invoicing.Invoice.ProccessAttempt)
-                );
+                nameof(Contracts.Invoicing.Invoice.ProccessAttempt));
         }
     }
 }
