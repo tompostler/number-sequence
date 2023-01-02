@@ -357,6 +357,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 invoice.Lines,
                 nameof(Contracts.Invoicing.InvoiceLine.Id),
                 nameof(Contracts.Invoicing.InvoiceLine.Title),
+                nameof(Contracts.Invoicing.InvoiceLine.Description),
                 nameof(Contracts.Invoicing.InvoiceLine.Quantity),
                 nameof(Contracts.Invoicing.InvoiceLine.Unit),
                 nameof(Contracts.Invoicing.InvoiceLine.Price),
