@@ -32,6 +32,20 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Gets a random value from a user-provided list of values.
+        /// </summary>
+        public async Task<string> GetFromListAsync(CancellationToken cancellationToken = default, params string[] values)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/from?" + string.Join(';', values)),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a random guid.
         /// </summary>
         public async Task<Guid> GetGuidAsync(CancellationToken cancellationToken = default)

@@ -968,14 +968,28 @@ namespace number_sequence.Controllers
 
 			// Nikolay Yegorovich Zhukovsky (Russian: Никола́й Его́рович Жуко́вский, January 17 1847 – March 17, 1921) was a Russian scientist, mathematician and engineer, and a founding father of modern aero- and hydrodynamics. Whereas contemporary scientists scoffed at the idea of human flight, Zhukovsky was the first to undertake the study of airflow. He is often called the Father of Russian Aviation. https://en.wikipedia.org/wiki/Nikolay_Yegorovich_Zhukovsky
 			"zhukovsky",
-		};
+        };
 
-		#endregion Name constants
+        #endregion Name constants
 
-		[HttpGet("name")]
-		public IActionResult Name()
-		{
-			return this.Ok(nameAdjectives[(int)Generate(8) % nameAdjectives.Length] + '_' + nameNames[(int)Generate(8) % nameNames.Length]);
-		}
-	}
+        [HttpGet("name")]
+        public IActionResult Name()
+        {
+            return this.Ok(nameAdjectives[(int)Generate(8) % nameAdjectives.Length] + '_' + nameNames[(int)Generate(8) % nameNames.Length]);
+        }
+
+        [HttpGet("from")]
+        public IActionResult From()
+        {
+            string[] fromValues = this.HttpContext.Request.QueryString.Value?.Substring(1).Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+
+            // If there's no values provided, give it a docker name
+            if (fromValues.Length == 0)
+            {
+                return this.Name();
+            }
+
+            return this.Ok(fromValues[(int)Generate(16) % fromValues.Length]);
+        }
+    }
 }
