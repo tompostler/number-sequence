@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Security.Cryptography;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.Controllers
 {
@@ -981,7 +982,7 @@ namespace number_sequence.Controllers
         [HttpGet("from")]
         public IActionResult From()
         {
-            string[] fromValues = this.HttpContext.Request.QueryString.Value?.Substring(1).Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            string[] fromValues = this.HttpContext.Request.QueryString.Value?.TrimStart('?').Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
             // If there's no values provided, give it a docker name
             if (fromValues.Length == 0)
@@ -990,6 +991,14 @@ namespace number_sequence.Controllers
             }
 
             return this.Ok(fromValues[(int)Generate(16) % fromValues.Length]);
+        }
+
+        [HttpGet("fromlist")]
+        public IActionResult FromList()
+        {
+            string[] fromValues = this.HttpContext.Request.QueryString.Value?.TrimStart('?').Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            fromValues.Shuffle();
+            return this.Ok(fromValues);
         }
     }
 }
