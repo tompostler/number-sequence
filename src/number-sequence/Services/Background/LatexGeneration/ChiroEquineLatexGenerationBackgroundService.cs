@@ -373,7 +373,7 @@ namespace number_sequence.Services.Background.LatexGeneration
             _ = await templateLatexBlob.DownloadToAsync(templateLatexBlobContents, cancellationToken);
             templateLatexBlobContents.Position = 0;
             string templateContents = new StreamReader(templateLatexBlobContents).ReadToEnd();
-            templateLatexBlobContents.Position = 0;
+            templateLatexBlobContents = new();
 
             // Do the string replacement
             templateContents = templateContents
