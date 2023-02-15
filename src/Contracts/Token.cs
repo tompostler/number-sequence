@@ -39,9 +39,13 @@ namespace TcpWtf.NumberSequence.Contracts
         public static ValidationResult ExpirationValidation(DateTimeOffset expiresAt, ValidationContext _)
         {
             if (expiresAt < DateTimeOffset.UtcNow.AddMinutes(1))
+            {
                 return new ValidationResult("ExpiresAt cannot be in the past.");
+            }
             else if (expiresAt.Year > 2050)
+            {
                 return new ValidationResult("ExpiresAt cannot be later than 2050.");
+            }
 
             return default;
         }

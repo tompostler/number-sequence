@@ -81,8 +81,14 @@ namespace number_sequence.DataAccess
 
         public async Task<Account> CreateAsync(Account account)
         {
-            if (await this.TryGetAsync(account.Name) != default) throw new ConflictException($"Account with name [{account.Name}] already exists.");
-            if (await this.GetCountByCreatedFromAsync(account.CreatedFrom) >= TierLimits.AccountsPerCreatedFrom[await this.GetMaxTierByCreatedFromAsync(account.CreatedFrom) ?? AccountTier.Small]) throw new ConflictException($"Too many accounts already created from [{account.CreatedFrom}].");
+            if (await this.TryGetAsync(account.Name) != default)
+            {
+                throw new ConflictException($"Account with name [{account.Name}] already exists.");
+            }
+            if (await this.GetCountByCreatedFromAsync(account.CreatedFrom) >= TierLimits.AccountsPerCreatedFrom[await this.GetMaxTierByCreatedFromAsync(account.CreatedFrom) ?? AccountTier.Small])
+            {
+                throw new ConflictException($"Too many accounts already created from [{account.CreatedFrom}].");
+            }
 
             var accountModel = new AccountModel
             {
@@ -104,8 +110,14 @@ namespace number_sequence.DataAccess
         public async Task ValidateAsync(string name, string key)
         {
             Account account = await this.TryGetAsync(name);
-            if (account == default) throw new BadRequestException($"Account with name [{name}] does not exist.");
-            if (key?.ComputeSHA256() != account.Key) throw new UnauthorizedException($"Provided key did not match for account with name [{name}].");
+            if (account == default)
+            {
+                throw new BadRequestException($"Account with name [{name}] does not exist.");
+            }
+            if (key?.ComputeSHA256() != account.Key)
+            {
+                throw new UnauthorizedException($"Provided key did not match for account with name [{name}].");
+            }
         }
     }
 }

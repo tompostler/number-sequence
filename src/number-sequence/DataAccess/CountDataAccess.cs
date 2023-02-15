@@ -62,8 +62,14 @@ namespace number_sequence.DataAccess
 
         public async Task<Count> CreateAsync(Count count)
         {
-            if (await this.TryGetAsync(count.Account, count.Name) != default) throw new ConflictException($"Count with name [{count.Name}] already exists.");
-            if (await this.GetCountByAccountAsync(count.Account) >= TierLimits.CountsPerAccount[(await this.accountDataAccess.TryGetAsync(count.Account)).Tier]) throw new ConflictException($"Too many counts already created for account with name [{count.Account}].");
+            if (await this.TryGetAsync(count.Account, count.Name) != default)
+            {
+                throw new ConflictException($"Count with name [{count.Name}] already exists.");
+            }
+            if (await this.GetCountByAccountAsync(count.Account) >= TierLimits.CountsPerAccount[(await this.accountDataAccess.TryGetAsync(count.Account)).Tier])
+            {
+                throw new ConflictException($"Too many counts already created for account with name [{count.Account}].");
+            }
 
             var countModel = new CountModel
             {
