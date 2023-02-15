@@ -22,6 +22,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             businessCreateCommand.SetHandler(HandleBusinessCreateAsync, verbosityOption);
 
             Command businessGetCommand = new("get", "Get an existing invoice business.");
+            businessGetCommand.AddAlias("show");
             Argument<long> businessIdArgument = new("businessId", "The id of the business.");
             businessGetCommand.AddArgument(businessIdArgument);
             businessGetCommand.SetHandler(HandleBusinessGetAsync, businessIdArgument, verbosityOption);
@@ -41,6 +42,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             customerCreateCommand.SetHandler(HandleCustomerCreateAsync, verbosityOption);
 
             Command customerGetCommand = new("get", "Get an existing invoice customer.");
+            customerGetCommand.AddAlias("show");
             Argument<long> customerIdArgument = new("customerId", "The id of the customer.");
             customerGetCommand.AddArgument(customerIdArgument);
             customerGetCommand.SetHandler(HandleCustomerGetAsync, customerIdArgument, verbosityOption);
@@ -60,6 +62,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             lineDefaultCreateCommand.SetHandler(HandleLineDefaultCreateAsync, verbosityOption);
 
             Command lineDefaultGetCommand = new("get", "Get an existing invoice line default.");
+            lineDefaultGetCommand.AddAlias("show");
             Argument<long> lineDefaultIdArgument = new("lineDefaultId", "The id of the line default.");
             lineDefaultGetCommand.AddArgument(lineDefaultIdArgument);
             lineDefaultGetCommand.SetHandler(HandleLineDefaultGetAsync, lineDefaultIdArgument, verbosityOption);
@@ -88,6 +91,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             lineEditCommand.SetHandler(HandleLineEditAsync, idArgument, lineIdArgument, rawOption, verbosityOption);
 
             Command lineGetCommand = new("get", "Get an existing invoice line.");
+            lineGetCommand.AddAlias("show");
             lineGetCommand.AddArgument(idArgument);
             lineGetCommand.AddArgument(lineIdArgument);
             lineGetCommand.SetHandler(HandleLineGetAsync, idArgument, lineIdArgument, verbosityOption);
@@ -121,6 +125,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
 
             Command getCommand = new("get", "Get an existing invoice.");
+            getCommand.AddAlias("show");
             getCommand.AddArgument(idArgument);
             getCommand.AddOption(rawOption);
             getCommand.SetHandler(HandleGetAsync, idArgument, rawOption, verbosityOption);

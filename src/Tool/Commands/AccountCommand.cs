@@ -17,6 +17,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             createCommand.SetHandler(HandleCreateAsync, verbosityOption);
 
             Command getCommand = new("get", "Get an existing account to see its properties.");
+            getCommand.AddAlias("show");
             Argument<string> accountNameArgument = new("name", "The name of the account.");
             getCommand.AddArgument(accountNameArgument);
             getCommand.SetHandler(HandleGetAsync, accountNameArgument, verbosityOption);

@@ -24,6 +24,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             inspectCommand.SetHandler(HandleInspect, tokenArgument);
 
             Command readCommand = new("read", "Inspects the token on disk.");
+            readCommand.AddAlias("show");
             readCommand.SetHandler(HandleRead, verbosityOption);
 
             Command saveCommand = new("save", "Saves the token to disk for usage in authenticated commands.");

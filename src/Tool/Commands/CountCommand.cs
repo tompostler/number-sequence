@@ -20,6 +20,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Option<bool> bareOption = new("--bare", "When used, will only return the count instead of the full count json object.");
 
             Command getCommand = new("get", "Get an existing count to see its properties.");
+            getCommand.AddAlias("show");
             getCommand.AddArgument(countNameArgument);
             getCommand.AddOption(bareOption);
             getCommand.SetHandler(HandleGetAsync, countNameArgument, bareOption, verbosityOption);
