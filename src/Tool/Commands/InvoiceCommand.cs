@@ -28,6 +28,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             businessGetCommand.SetHandler(HandleBusinessGetAsync, businessIdArgument, verbosityOption);
 
             Command businessListCommand = new("list", "Get existing invoice businesses.");
+            businessListCommand.AddAlias("ls");
             businessListCommand.SetHandler(HandleBusinessListAsync, verbosityOption);
 
             businessCommand.AddCommand(businessCreateCommand);
@@ -48,6 +49,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             customerGetCommand.SetHandler(HandleCustomerGetAsync, customerIdArgument, verbosityOption);
 
             Command customerListCommand = new("list", "Get existing invoice customers.");
+            customerListCommand.AddAlias("ls");
             customerListCommand.SetHandler(HandleCustomerListAsync, verbosityOption);
 
             customerCommand.AddCommand(customerCreateCommand);
@@ -68,6 +70,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             lineDefaultGetCommand.SetHandler(HandleLineDefaultGetAsync, lineDefaultIdArgument, verbosityOption);
 
             Command lineDefaultListCommand = new("list", "Get existing invoice line defaults.");
+            lineDefaultListCommand.AddAlias("ls");
             lineDefaultListCommand.SetHandler(HandleLineDefaultListAsync, verbosityOption);
 
             lineDefaultCommand.AddCommand(lineDefaultCreateCommand);
@@ -97,6 +100,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             lineGetCommand.SetHandler(HandleLineGetAsync, idArgument, lineIdArgument, verbosityOption);
 
             Command lineListCommand = new("list", "Get existing invoice lines.");
+            lineListCommand.AddAlias("ls");
             lineListCommand.AddArgument(idArgument);
             lineListCommand.SetHandler(HandleLineListAsync, idArgument, verbosityOption);
 
@@ -133,6 +137,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
 
             Command listCommand = new("list", "Get existing invoices.");
+            listCommand.AddAlias("ls");
             listCommand.SetHandler(HandleListAsync, verbosityOption);
             rootCommand.AddCommand(listCommand);
 
