@@ -23,7 +23,7 @@ namespace number_sequence.UnitTests.UtilityTests
         public async Task DelayWithNoInterruptShouldDelay()
         {
             // Arrange
-            var delay = TimeSpan.FromSeconds(1);
+            var delay = TimeSpan.FromSeconds(2);
             var sw = Stopwatch.StartNew();
 
             // Act
@@ -37,7 +37,7 @@ namespace number_sequence.UnitTests.UtilityTests
         public async Task DelayWithInterruptShouldDelayUntilInterrupt()
         {
             // Arrange
-            var delay = TimeSpan.FromSeconds(1);
+            var delay = TimeSpan.FromSeconds(2);
             var sw = Stopwatch.StartNew();
 
             // Act
@@ -55,7 +55,7 @@ namespace number_sequence.UnitTests.UtilityTests
         public async Task DelayWithCancellationShouldThrow()
         {
             // Arrange
-            var delay = TimeSpan.FromSeconds(1);
+            var delay = TimeSpan.FromSeconds(2);
             var sw = Stopwatch.StartNew();
             var cts = new CancellationTokenSource(delay / 2);
 
