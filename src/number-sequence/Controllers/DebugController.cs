@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
+using number_sequence.Extensions;
 using System;
 using System.Threading.Tasks;
 
@@ -48,8 +49,9 @@ namespace number_sequence.Controllers
             => this.Ok(
                 new
                 {
+                    ManualRemoteIpAddress = this.HttpContext.Request.GetIPAddress()?.ToString(),
+                    RemoteIpAddress = this.HttpContext.Connection.RemoteIpAddress?.ToString(),
                     this.HttpContext.Request.Headers,
-                    RemoteIpAddress = this.HttpContext.Connection.RemoteIpAddress?.ToString()
                 });
 
         [HttpGet("slowrequest")]
