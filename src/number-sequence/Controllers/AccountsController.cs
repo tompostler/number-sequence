@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using number_sequence.DataAccess;
+using number_sequence.Extensions;
 using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Contracts;
 
@@ -36,7 +37,7 @@ namespace number_sequence.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] Account account)
         {
-            account.CreatedFrom = this.Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            account.CreatedFrom = this.Request.GetClientIPAddress();
             Account createdAccount = await this.accountDataAccess.CreateAsync(account);
             createdAccount.Key = default;
             return this.Ok(createdAccount);

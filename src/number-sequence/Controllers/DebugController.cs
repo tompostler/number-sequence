@@ -49,7 +49,7 @@ namespace number_sequence.Controllers
             => this.Ok(
                 new
                 {
-                    ManualRemoteIpAddress = this.HttpContext.Request.GetClientIPAddress(),
+                    ManualRemoteIpAddress = this.Request.GetClientIPAddress(),
                     RemoteIpAddress = this.HttpContext.Connection.RemoteIpAddress?.ToString(),
                     this.HttpContext.Request.Headers,
                 });
