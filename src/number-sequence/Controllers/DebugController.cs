@@ -43,13 +43,13 @@ namespace number_sequence.Controllers
         //    return this.Ok(values);
         //}
 
-        [HttpGet("headers")]
-        public IActionResult Headers()
+        [HttpGet("request")]
+        public IActionResult HttpGetRequest()
             => this.Ok(
                 new
                 {
                     this.HttpContext.Request.Headers,
-                    this.HttpContext.Connection.RemoteIpAddress
+                    RemoteIpAddress = this.HttpContext.Connection.RemoteIpAddress?.ToString()
                 });
 
         [HttpGet("slowrequest")]
