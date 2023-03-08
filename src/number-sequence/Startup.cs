@@ -89,15 +89,15 @@ namespace number_sequence
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
-            _ = app.UseDeveloperExceptionPage();
-            _ = app.UseHttpsRedirection();
-            _ = app.UseRouting();
-
             _ = app.UseForwardedHeaders(
                 new ForwardedHeadersOptions
                 {
                     ForwardedHeaders = ForwardedHeaders.All
                 });
+
+            _ = app.UseDeveloperExceptionPage();
+            _ = app.UseHttpsRedirection();
+            _ = app.UseRouting();
 
             _ = app.UseMiddleware<Middleware.ExceptionToStatusCodeMiddleware>();
 

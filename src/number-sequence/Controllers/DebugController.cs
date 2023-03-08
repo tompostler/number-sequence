@@ -43,6 +43,15 @@ namespace number_sequence.Controllers
         //    return this.Ok(values);
         //}
 
+        [HttpGet("headers")]
+        public IActionResult Headers()
+            => this.Ok(
+                new
+                {
+                    this.HttpContext.Request.Headers,
+                    this.HttpContext.Connection.RemoteIpAddress
+                });
+
         [HttpGet("slowrequest")]
         public async Task<IActionResult> SlowRequest([FromQuery] int seconds = 5)
         {
