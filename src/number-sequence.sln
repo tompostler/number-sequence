@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\.editorConfig = ..\.editorConfig
 		..\devinit.ps1 = ..\devinit.ps1
-		..\Directory.Build.props = ..\Directory.Build.props
+		Directory.Build.props = Directory.Build.props
 		..\GitVersion.yml = ..\GitVersion.yml
 		..\README.md = ..\README.md
 	EndProjectSection
@@ -26,7 +26,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "_build\_build.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tool", "Tool\Tool.csproj", "{691CFBD1-81B2-42B6-B2E3-D1FBD3CD4B55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{150DCD4F-BD80-40D0-8275-E2FAAC81BBD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{150DCD4F-BD80-40D0-8275-E2FAAC81BBD2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DurableTask.SqlServer", "..\subs\durabletask-mssql\src\DurableTask.SqlServer\DurableTask.SqlServer.csproj", "{72370947-8217-4A3A-8084-04F53B35E7F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +68,10 @@ Global
 		{150DCD4F-BD80-40D0-8275-E2FAAC81BBD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{150DCD4F-BD80-40D0-8275-E2FAAC81BBD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{150DCD4F-BD80-40D0-8275-E2FAAC81BBD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72370947-8217-4A3A-8084-04F53B35E7F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72370947-8217-4A3A-8084-04F53B35E7F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72370947-8217-4A3A-8084-04F53B35E7F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72370947-8217-4A3A-8084-04F53B35E7F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
