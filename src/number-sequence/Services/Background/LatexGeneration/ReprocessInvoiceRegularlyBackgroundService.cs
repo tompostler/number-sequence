@@ -34,7 +34,8 @@ namespace number_sequence.Services.Background.LatexGeneration
             DateTimeOffset thirtyDaysAgo = DateTimeOffset.UtcNow.AddDays(-30);
             List<Invoice> invoicesNeedingReprocessing = await nsContext.Invoices
                                                             .Where(x =>
-                                                                x.PaidDate.HasValue
+                                                                !x.PaidDate.HasValue
+                                                                && x.ReprocessRegularly
                                                                 && x.ModifiedDate < thirtyDaysAgo)
                                                             .ToListAsync(cancellationToken);
 
