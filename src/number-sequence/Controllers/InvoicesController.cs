@@ -316,6 +316,7 @@ namespace number_sequence.Controllers
             invoiceRecord.PaidDetails = invoice.PaidDetails;
             invoiceRecord.ReadyForProcessing = invoice.ReadyForProcessing;
             invoiceRecord.ProcessedAt = invoice.ProcessedAt;
+            invoiceRecord.ReprocessRegularly = invoice.ReprocessRegularly;
 
             if (invoiceRecord.ReadyForProcessing && invoiceRecord.ProcessedAt == default)
             {

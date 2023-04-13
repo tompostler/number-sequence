@@ -99,5 +99,9 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         /// When the invoice was processed for PDF generation.
         /// </summary>
         public DateTimeOffset? ProcessedAt { get; set; }
+        /// <summary>
+        /// Will automatically reprocess one the <see cref="ModifiedDate"/> is more than 30d ago.
+        /// </summary>
+        public bool ReprocessRegularly { get; set; }
     }
 }

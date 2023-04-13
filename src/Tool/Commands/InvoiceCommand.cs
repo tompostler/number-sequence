@@ -148,6 +148,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             rootCommand.AddCommand(markPaidCommand);
 
 
+            Command markReprocessRegularlyCommand = new("mark-reprocess-regularly", "Mark a specific invoice to be automatically reprocessed to pdf every 30d if not marked as paid.");
+            markReprocessRegularlyCommand.AddArgument(idArgument);
+            markReprocessRegularlyCommand.SetHandler(HandleMarkReprocessRegularlyAsync, idArgument, rawOption, verbosityOption);
+            rootCommand.AddCommand(markReprocessRegularlyCommand);
+
+
             Command processCommand = new("process", "Mark a specific invoice for [re-]processing to pdf.");
             processCommand.AddAlias("reprocess");
             processCommand.AddArgument(idArgument);
@@ -501,6 +507,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             PrintSingleInvoice(invoice, raw);
         }
 
+        private static async Task HandleMarkReprocessRegularlyAsync(long id, bool raw, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
+
+            invoice.ReprocessRegularly = true;
+
+            invoice = await client.Invoice.UpdateAsync(invoice);
+            PrintSingleInvoice(invoice, raw);
+        }
+
         private static async Task HandleProcessAsync(long id, bool raw, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
@@ -559,6 +576,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     x.ModifiedDate,
                     x.ProcessedAt,
                     x.ProccessAttempt,
+                    x.ReprocessRegularly,
                 }),
                 nameof(Contracts.Invoicing.Invoice.Id),
                 nameof(Contracts.Invoicing.Invoice.Title),
@@ -570,7 +588,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.Invoice.CreatedDate),
                 nameof(Contracts.Invoicing.Invoice.ModifiedDate),
                 nameof(Contracts.Invoicing.Invoice.ProcessedAt),
-                nameof(Contracts.Invoicing.Invoice.ProccessAttempt));
+                nameof(Contracts.Invoicing.Invoice.ProccessAttempt),
+                nameof(Contracts.Invoicing.Invoice.ReprocessRegularly));
         }
     }
 }

@@ -76,6 +76,7 @@ namespace number_sequence
 
             _ = services.AddHostedService<ChiroCanineLatexGenerationBackgroundService>();
             _ = services.AddHostedService<ChiroEquineLatexGenerationBackgroundService>();
+            _ = services.AddHostedService<ReprocessInvoiceRegularlyBackgroundService>();
 
 
             //
