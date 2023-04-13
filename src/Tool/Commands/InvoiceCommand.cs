@@ -148,7 +148,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             rootCommand.AddCommand(markPaidCommand);
 
 
-            Command markReprocessRegularlyCommand = new("mark-reprocess-regularly", "Mark a specific invoice to be automatically reprocessed to pdf every 30d if not marked as paid.");
+            Command markReprocessRegularlyCommand = new("mark-reprocess-regularly", "Mark a specific invoice to be automatically reprocessed to pdf every 14d if not marked as paid.");
             markReprocessRegularlyCommand.AddArgument(idArgument);
             markReprocessRegularlyCommand.SetHandler(HandleMarkReprocessRegularlyAsync, idArgument, rawOption, verbosityOption);
             rootCommand.AddCommand(markReprocessRegularlyCommand);

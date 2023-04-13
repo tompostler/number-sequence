@@ -36,7 +36,7 @@ namespace number_sequence.Services.Background.LatexGeneration
             this.nsStorage = nsStorage;
         }
 
-        protected override TimeSpan Interval => TimeSpan.FromMinutes(5);
+        protected override TimeSpan Interval => TimeSpan.FromMinutes(7);
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
