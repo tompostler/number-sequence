@@ -318,7 +318,7 @@ namespace number_sequence.Controllers
             invoiceRecord.ProcessedAt = invoice.ProcessedAt;
             invoiceRecord.ReprocessRegularly = invoice.ReprocessRegularly;
 
-            if (invoiceRecord.ReadyForProcessing && invoiceRecord.ProcessedAt == default)
+            if ((invoiceRecord.ReadyForProcessing || invoiceRecord.ReprocessRegularly) && invoiceRecord.ProcessedAt == default)
             {
                 invoiceRecord.ProccessAttempt += 1;
 

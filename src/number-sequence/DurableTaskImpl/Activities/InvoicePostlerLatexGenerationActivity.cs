@@ -67,7 +67,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
-                .FirstOrDefaultAsync(x => x.Id == input && x.ReadyForProcessing && x.ProcessedAt == default, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == input && (x.ReadyForProcessing || x.ReprocessRegularly) && x.ProcessedAt == default, cancellationToken);
             if (invoice == default)
             {
                 throw new InvalidOperationException("Could not find invoice that was ready for processing.");

@@ -31,29 +31,28 @@ namespace number_sequence.Services.Background.LatexGeneration
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            DateTimeOffset thirtyDaysAgo = DateTimeOffset.UtcNow.AddDays(-30);
+            DateTimeOffset fourteenDaysAgo = DateTimeOffset.UtcNow.AddDays(-14);
             List<Invoice> invoicesNeedingReprocessing = await nsContext.Invoices
                                                             .Where(x =>
                                                                 !x.PaidDate.HasValue
                                                                 && x.ReprocessRegularly
-                                                                && x.ModifiedDate < thirtyDaysAgo)
+                                                                && x.ModifiedDate < fourteenDaysAgo)
                                                             .ToListAsync(cancellationToken);
 
             foreach (Invoice invoiceNeedingReprocessing in invoicesNeedingReprocessing)
             {
-                this.logger.LogInformation($"Would reprocess {invoiceNeedingReprocessing.Id}");
+                invoiceNeedingReprocessing.ProccessAttempt += 1;
+                invoiceNeedingReprocessing.ProcessedAt = default;
 
-                //invoiceNeedingReprocessing.ProccessAttempt += 1;
+                TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
+                OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
+                    typeof(DurableTaskImpl.Orchestrators.InvoicePostlerLatexGenerationOrchestrator),
+                    instanceId: $"{invoiceNeedingReprocessing.Id:0000}-{invoiceNeedingReprocessing.ProccessAttempt:00}_{NsStorage.C.LTBP.InvoicePostler}",
+                    invoiceNeedingReprocessing.Id);
+                this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
 
-                //TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
-                //OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                //    typeof(DurableTaskImpl.Orchestrators.InvoicePostlerLatexGenerationOrchestrator),
-                //    instanceId: $"{invoiceNeedingReprocessing.Id:0000}-{invoiceNeedingReprocessing.ProccessAttempt:00}_{NsStorage.C.LTBP.InvoicePostler}",
-                //    invoiceNeedingReprocessing.Id);
-                //this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
-
-                //invoiceNeedingReprocessing.ModifiedDate = DateTimeOffset.UtcNow;
-                //_ = await nsContext.SaveChangesAsync(cancellationToken);
+                invoiceNeedingReprocessing.ModifiedDate = DateTimeOffset.UtcNow;
+                _ = await nsContext.SaveChangesAsync(cancellationToken);
             }
         }
     }

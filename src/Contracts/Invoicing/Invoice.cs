@@ -100,7 +100,8 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         /// </summary>
         public DateTimeOffset? ProcessedAt { get; set; }
         /// <summary>
-        /// Will automatically reprocess one the <see cref="ModifiedDate"/> is more than 30d ago.
+        /// Will automatically reprocess one the <see cref="ModifiedDate"/> is more than 14d ago.
+        /// Also will override the value of one-off processing determined by <see cref="ReadyForProcessing"/>.
         /// </summary>
         public bool ReprocessRegularly { get; set; }
     }
