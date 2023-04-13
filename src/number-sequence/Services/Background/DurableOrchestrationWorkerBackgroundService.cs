@@ -34,6 +34,9 @@ namespace number_sequence.Services.Background
                 LoggerFactory = loggerFactory,
                 MaxActiveOrchestrations = 1,
                 MaxConcurrentActivities = 1,
+
+                MaxActivityPollingInterval = TimeSpan.FromMinutes(5),
+                MaxOrchestrationPollingInterval = TimeSpan.FromMinutes(5),
             };
             this.sqlOrchestrationService = new(sqlOrchestrationServiceSettings);
 
