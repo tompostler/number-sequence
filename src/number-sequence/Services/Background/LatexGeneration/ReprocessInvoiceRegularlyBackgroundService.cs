@@ -40,17 +40,19 @@ namespace number_sequence.Services.Background.LatexGeneration
 
             foreach (Invoice invoiceNeedingReprocessing in invoicesNeedingReprocessing)
             {
-                invoiceNeedingReprocessing.ProccessAttempt += 1;
+                this.logger.LogInformation($"Would reprocess {invoiceNeedingReprocessing.Id}");
 
-                TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
-                OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                    typeof(DurableTaskImpl.Orchestrators.InvoicePostlerLatexGenerationOrchestrator),
-                    instanceId: $"{invoiceNeedingReprocessing.Id:0000}-{invoiceNeedingReprocessing.ProccessAttempt:00}_{NsStorage.C.LTBP.InvoicePostler}",
-                    invoiceNeedingReprocessing.Id);
-                this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
+                //invoiceNeedingReprocessing.ProccessAttempt += 1;
 
-                invoiceNeedingReprocessing.ModifiedDate = DateTimeOffset.UtcNow;
-                _ = await nsContext.SaveChangesAsync(cancellationToken);
+                //TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
+                //OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
+                //    typeof(DurableTaskImpl.Orchestrators.InvoicePostlerLatexGenerationOrchestrator),
+                //    instanceId: $"{invoiceNeedingReprocessing.Id:0000}-{invoiceNeedingReprocessing.ProccessAttempt:00}_{NsStorage.C.LTBP.InvoicePostler}",
+                //    invoiceNeedingReprocessing.Id);
+                //this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
+
+                //invoiceNeedingReprocessing.ModifiedDate = DateTimeOffset.UtcNow;
+                //_ = await nsContext.SaveChangesAsync(cancellationToken);
             }
         }
     }
