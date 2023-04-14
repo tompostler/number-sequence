@@ -37,7 +37,7 @@ namespace number_sequence.Services.Background.LatexGeneration
             this.nsStorage = nsStorage;
         }
 
-        protected override TimeSpan Interval => TimeSpan.FromMinutes(8);
+        protected override TimeSpan? Interval => TimeSpan.FromMinutes(8);
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
@@ -117,7 +117,7 @@ namespace number_sequence.Services.Background.LatexGeneration
                 BlobClient targetBlob = this.nsStorage.GetBlobClientForLatexJob(latexDocument.Id, targetPath);
                 this.logger.LogInformation($"Copying {templateBlob.Uri} to {targetBlob.Uri}");
                 _ = await targetBlob.SyncCopyFromUriAsync(
-                    templateBlob.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.Add(this.Interval * 3)),
+                    templateBlob.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1)),
                     cancellationToken: cancellationToken);
 
                 if (templateBlob.Name.EndsWith("template.tex"))
