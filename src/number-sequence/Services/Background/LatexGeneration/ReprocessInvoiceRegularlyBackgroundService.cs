@@ -24,7 +24,7 @@ namespace number_sequence.Services.Background.LatexGeneration
             : base(serviceProvider, sentinals, logger, telemetryClient)
         { }
 
-        protected override TimeSpan Interval => TimeSpan.FromDays(0.5);
+        protected override TimeSpan Interval => TimeSpan.FromHours(4);
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
