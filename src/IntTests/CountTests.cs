@@ -24,7 +24,7 @@ namespace number_sequence.IntTests
         {
             if (countCount++ % TierLimits.AccountsPerCreatedFrom[AccountTier.Small] == 0)
             {
-                await Assembly.ResetCosmosEmulatorAsync();
+                await Assembly.ResetDataStorageAsync();
             }
 
             this.client = Assembly.Client;
@@ -227,7 +227,7 @@ namespace number_sequence.IntTests
             _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
             // Cleanup
-            await Assembly.ResetCosmosEmulatorAsync();
+            await Assembly.ResetDataStorageAsync();
         }
     }
 }

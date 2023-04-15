@@ -1,4 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using number_sequence.Exceptions;
@@ -15,13 +17,16 @@ namespace number_sequence.DataAccess
 {
     public sealed class TokenDataAccess : BaseCosmosDataAccess
     {
-        private readonly AccountDataAccess accountDataAccess;
+        private readonly IServiceProvider serviceProvider;
         private readonly ILogger<TokenDataAccess> logger;
 
-        public TokenDataAccess(AccountDataAccess accountDataAccess, IOptions<Options.CosmosDB> cosmosOptions, ILogger<TokenDataAccess> logger)
+        public TokenDataAccess(
+            IServiceProvider serviceProvider,
+            IOptions<Options.CosmosDB> cosmosOptions,
+            ILogger<TokenDataAccess> logger)
             : base(cosmosOptions)
         {
-            this.accountDataAccess = accountDataAccess;
+            this.serviceProvider = serviceProvider;
             this.logger = logger;
         }
 
@@ -62,16 +67,19 @@ namespace number_sequence.DataAccess
 
         public async Task<Token> CreateAsync(Token token)
         {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
             if (await this.TryGetAsync(token.Account, token.Name) != default)
             {
                 throw new ConflictException($"Token with name [{token.Name}] already exists.");
             }
-            if (await this.GetCountByAccountAsync(token.Account) >= TierLimits.TokensPerAccount[(await this.accountDataAccess.TryGetAsync(token.Account)).Tier])
+
+            Account account = await nsContext.Accounts.SingleAsync(x => x.Name == token.Account);
+            if (await this.GetCountByAccountAsync(token.Account) >= TierLimits.TokensPerAccount[account.Tier])
             {
                 throw new ConflictException($"Too many tokens already created for account with name [{token.Account}].");
             }
-
-            Account account = await this.accountDataAccess.TryGetAsync(token.Account);
 
             var tokenModel = new TokenModel
             {

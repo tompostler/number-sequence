@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using number_sequence.Models;
+using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Invoicing;
 
 namespace number_sequence.DataAccess
@@ -9,14 +10,18 @@ namespace number_sequence.DataAccess
     {
         private readonly ILoggerFactory loggerFactory;
 
-        public DbSet<EmailLatexDocument> EmailLatexDocuments { get; set; }
+        public DbSet<Account> Accounts { get; set; }
+
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceBusiness> InvoiceBusinesses { get; set; }
         public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
         public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
+
+        public DbSet<EmailLatexDocument> EmailLatexDocuments { get; set; }
         public DbSet<LatexDocument> LatexDocuments { get; set; }
         public DbSet<LatexTemplate> LatexTemplates { get; set; }
         public DbSet<LatexTemplateSpreadsheetRow> LatexTemplateSpreadsheetRows { get; set; }
+        
         public DbSet<SynchronizedBackgroundService> SynchronizedBackgroundServices { get; set; }
 
         public NsContext(DbContextOptions<NsContext> dbContextOptions, ILoggerFactory loggerFactory)
@@ -35,36 +40,18 @@ namespace number_sequence.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            _ = modelBuilder.Entity<EmailLatexDocument>()
-                .HasKey(x => x.Id);
+            #region Accounts
 
-            _ = modelBuilder.Entity<EmailLatexDocument>()
-                .Property(x => x.CreatedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-            _ = modelBuilder.Entity<LatexDocument>()
-                .HasKey(x => x.Id);
-
-            _ = modelBuilder.Entity<LatexDocument>()
-                .Property(x => x.CreatedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-            _ = modelBuilder.Entity<LatexTemplate>()
-                .HasKey(x => x.Id);
-
-            _ = modelBuilder.Entity<LatexTemplate>()
-                .Property(x => x.CreatedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-            _ = modelBuilder.Entity<LatexTemplateSpreadsheetRow>()
-                .HasKey(x => x.LatexDocumentId);
-
-            _ = modelBuilder.Entity<LatexTemplateSpreadsheetRow>()
-                .Property(x => x.CreatedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-            _ = modelBuilder.Entity<SynchronizedBackgroundService>()
+            _ = modelBuilder.Entity<Account>()
                 .HasKey(x => x.Name);
+            _ = modelBuilder.Entity<Account>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<Account>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            #endregion // Accounts
 
             #region Invoicing
 
@@ -146,6 +133,41 @@ namespace number_sequence.DataAccess
                 .OnDelete(DeleteBehavior.Restrict);
 
             #endregion // Invoicing
+
+            #region Latex
+
+            _ = modelBuilder.Entity<EmailLatexDocument>()
+                .HasKey(x => x.Id);
+
+            _ = modelBuilder.Entity<EmailLatexDocument>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<LatexDocument>()
+                .HasKey(x => x.Id);
+
+            _ = modelBuilder.Entity<LatexDocument>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<LatexTemplate>()
+                .HasKey(x => x.Id);
+
+            _ = modelBuilder.Entity<LatexTemplate>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<LatexTemplateSpreadsheetRow>()
+                .HasKey(x => x.LatexDocumentId);
+
+            _ = modelBuilder.Entity<LatexTemplateSpreadsheetRow>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            #endregion // Latex
+
+            _ = modelBuilder.Entity<SynchronizedBackgroundService>()
+                .HasKey(x => x.Name);
 
             base.OnModelCreating(modelBuilder);
         }

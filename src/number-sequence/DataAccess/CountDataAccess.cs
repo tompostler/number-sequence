@@ -1,4 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using number_sequence.Exceptions;
@@ -15,13 +17,16 @@ namespace number_sequence.DataAccess
 {
     public sealed class CountDataAccess : BaseCosmosDataAccess
     {
-        private readonly AccountDataAccess accountDataAccess;
+        private readonly IServiceProvider serviceProvider;
         private readonly ILogger<CountDataAccess> logger;
 
-        public CountDataAccess(AccountDataAccess accountDataAccess, IOptions<Options.CosmosDB> cosmosOptions, ILogger<CountDataAccess> logger)
+        public CountDataAccess(
+            IServiceProvider serviceProvider,
+            IOptions<Options.CosmosDB> cosmosOptions,
+            ILogger<CountDataAccess> logger)
             : base(cosmosOptions)
         {
-            this.accountDataAccess = accountDataAccess;
+            this.serviceProvider = serviceProvider;
             this.logger = logger;
         }
 
@@ -62,11 +67,14 @@ namespace number_sequence.DataAccess
 
         public async Task<Count> CreateAsync(Count count)
         {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
             if (await this.TryGetAsync(count.Account, count.Name) != default)
             {
                 throw new ConflictException($"Count with name [{count.Name}] already exists.");
             }
-            if (await this.GetCountByAccountAsync(count.Account) >= TierLimits.CountsPerAccount[(await this.accountDataAccess.TryGetAsync(count.Account)).Tier])
+            if (await this.GetCountByAccountAsync(count.Account) >= TierLimits.CountsPerAccount[(await nsContext.Accounts.SingleAsync(x => x.Name == count.Account)).Tier])
             {
                 throw new ConflictException($"Too many counts already created for account with name [{count.Account}].");
             }

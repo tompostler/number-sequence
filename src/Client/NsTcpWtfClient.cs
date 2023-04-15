@@ -42,7 +42,7 @@ namespace TcpWtf.NumberSequence.Client
 
             Uri baseUri = stamp switch
             {
-                Stamp.LocalDev => new Uri("https://localhost:44321/"),
+                Stamp.LocalDev => new Uri("http://localhost:44320/"),
                 Stamp.Public => new Uri("https://ns.tcp.wtf/"),
                 _ => throw new ArgumentOutOfRangeException(nameof(stamp))
             };

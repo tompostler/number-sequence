@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -124,9 +125,12 @@ namespace number_sequence.Filters
                         else
                         {
                             this.logger.LogInformation($"Token is valid: {tokenValue.Account}/{tokenValue.Name}");
-                            AccountDataAccess accountDataAccess = context.HttpContext.RequestServices.GetService<AccountDataAccess>();
-                            Account accountModel = await accountDataAccess.TryGetAsync(tokenValue.Account);
-                            principal = new TokenPrincipal(new GenericIdentity(tokenValue.Account), accountModel.Roles.ToArray()) { Token = tokenValue };
+
+                            using IServiceScope scope = context.HttpContext.RequestServices.CreateScope();
+                            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+                            Account account = await nsContext.Accounts.SingleAsync(x => x.Name == tokenValue.Account);
+
+                            principal = new TokenPrincipal(new GenericIdentity(tokenValue.Account), (account.Roles ?? string.Empty).Split(';')) { Token = tokenValue };
 
                             if (!string.IsNullOrEmpty(this.requiredRole) && !principal.IsInRole(this.requiredRole))
                             {

@@ -28,10 +28,10 @@ namespace number_sequence.IntTests
             Account response = await Assembly.UnauthedClient.Account.CreateAsync(account);
 
             // Assert
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.CreatedFrom.Should().NotBeNullOrWhiteSpace();
             _ = response.Key.Should().BeNull();
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Tier.Should().Be(AccountTier.Small);
         }
@@ -150,7 +150,7 @@ namespace number_sequence.IntTests
         public async Task Account_Creation_GetsThrottled()
         {
             // Arrange
-            await Assembly.ResetCosmosEmulatorAsync();
+            await Assembly.ResetDataStorageAsync();
             var account = new Account
             {
                 Name = this.TestContext.TestName + '1',
@@ -170,7 +170,7 @@ namespace number_sequence.IntTests
             _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
             // Cleanup
-            await Assembly.ResetCosmosEmulatorAsync();
+            await Assembly.ResetDataStorageAsync();
         }
 
         [TestMethod]
@@ -188,10 +188,10 @@ namespace number_sequence.IntTests
             Account response = await Assembly.UnauthedClient.Account.GetAsync(account.Name);
 
             // Assert
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.CreatedFrom.Should().BeNull();
             _ = response.Key.Should().BeNull();
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Tier.Should().Be(AccountTier.Small);
         }

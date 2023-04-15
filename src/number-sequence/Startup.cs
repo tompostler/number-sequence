@@ -44,7 +44,6 @@ namespace number_sequence
             //
 
             // Cosmos DB
-            _ = services.AddSingleton<DataAccess.AccountDataAccess>();
             _ = services.AddSingleton<DataAccess.CountDataAccess>();
             _ = services.AddSingleton<DataAccess.TokenDataAccess>();
             // Email
