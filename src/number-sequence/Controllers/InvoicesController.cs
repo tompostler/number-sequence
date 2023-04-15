@@ -16,7 +16,7 @@ using TcpWtf.NumberSequence.Contracts.Invoicing;
 
 namespace number_sequence.Controllers
 {
-    [ApiController, Route("[controller]"), RequiresToken(AccountRoles.LatexStatus)]
+    [ApiController, Route("[controller]"), RequiresToken(AccountRoles.Invoicing)]
     public sealed class InvoicesController : ControllerBase
     {
         private readonly IServiceProvider serviceProvider;
