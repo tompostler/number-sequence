@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Cronos;
 using DurableTask.Core;
 using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +38,7 @@ namespace number_sequence.Services.Background.LatexGeneration
             this.nsStorage = nsStorage;
         }
 
-        protected override TimeSpan? Interval => TimeSpan.FromMinutes(8);
+        protected override CronExpression Cron => CronExpression.Parse("*/15 7-20,*/3 * * *");
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {

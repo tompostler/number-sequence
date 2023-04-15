@@ -1,4 +1,5 @@
-﻿using DurableTask.Core;
+﻿using Cronos;
+using DurableTask.Core;
 using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,7 @@ namespace number_sequence.Services.Background.LatexGeneration
             : base(serviceProvider, sentinals, logger, telemetryClient)
         { }
 
-        protected override TimeSpan? Interval => TimeSpan.FromHours(4);
+        protected override CronExpression Cron => CronExpression.Parse("3 8-20/4 * * MON-FRI");
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
