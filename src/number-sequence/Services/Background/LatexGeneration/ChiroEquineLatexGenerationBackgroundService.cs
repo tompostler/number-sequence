@@ -52,8 +52,14 @@ namespace number_sequence.Services.Background.LatexGeneration
                 return;
             }
 
+            // Skip the number of rows that we already know about
+            int numberOfKnownRows = await nsContext.LatexTemplateSpreadsheetRows
+                .CountAsync(x => x.SpreadsheetId == template.SpreadsheetId, cancellationToken);
+            string spreadsheetRange = template.SpreadsheetRange.Replace("1", Math.Max(1, numberOfKnownRows).ToString());
+            this.logger.LogInformation($"Skipping {numberOfKnownRows} known rows and querying range {spreadsheetRange}");
+
             // Get the data from the spreadsheet. The first row is the headers
-            IList<IList<object>> data = await this.googleSheetDataAccess.GetAsync(template.SpreadsheetId, template.SpreadsheetRange, cancellationToken);
+            IList<IList<object>> data = await this.googleSheetDataAccess.GetAsync(template.SpreadsheetId, spreadsheetRange, cancellationToken);
             IList<object> headers = data[0];
             data = data.Skip(1).ToList();
 
@@ -78,12 +84,12 @@ namespace number_sequence.Services.Background.LatexGeneration
 
                 if (latexTemplateRow != default)
                 {
-                    this.logger.LogInformation($"Data row {id} ({rowIndex}) was inserted for processing at {latexTemplateRow.CreatedDate:u} and processed {latexTemplateRow.ProcessedAt:u}");
+                    this.logger.LogInformation($"Data row {id} ({rowIndex + numberOfKnownRows + 1}) was inserted for processing at {latexTemplateRow.CreatedDate:u} and processed {latexTemplateRow.ProcessedAt:u}");
                     continue;
                 }
                 else
                 {
-                    this.logger.LogInformation($"Data row {id} ({rowIndex}) is new. Setting up for processing.");
+                    this.logger.LogInformation($"Data row {id} ({rowIndex + numberOfKnownRows + 1}) is new. Setting up for processing.");
                     latexTemplateRow = new()
                     {
                         SpreadsheetId = template.SpreadsheetId,
