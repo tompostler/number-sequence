@@ -37,7 +37,7 @@ namespace number_sequence.Services.Background.LatexGeneration
             this.nsStorage = nsStorage;
         }
 
-        protected override CronExpression Cron => CronExpression.Parse("*/12 7-20,*/3 * * *");
+        protected override CronExpression Cron => CronExpression.Parse("*/12 7-23 * * *");
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
