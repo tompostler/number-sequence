@@ -104,9 +104,11 @@ namespace number_sequence.Filters
                 }
                 else
                 {
+                    using IServiceScope scope = context.HttpContext.RequestServices.CreateScope();
+                    using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
                     // See if a token by that name exists
-                    TokenDataAccess tokenDataAccess = context.HttpContext.RequestServices.GetService<TokenDataAccess>();
-                    Token tokenModel = await tokenDataAccess.TryGetAsync(tokenValue.Account, tokenValue.Name);
+                    Token tokenModel = await nsContext.Tokens.SingleOrDefaultAsync(x => x.Account == tokenValue.Account && x.Name == tokenValue.Name);
                     if (tokenModel == default)
                     {
                         this.logger.LogWarning("Token not found.");
@@ -125,11 +127,7 @@ namespace number_sequence.Filters
                         else
                         {
                             this.logger.LogInformation($"Token is valid: {tokenValue.Account}/{tokenValue.Name}");
-
-                            using IServiceScope scope = context.HttpContext.RequestServices.CreateScope();
-                            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
                             Account account = await nsContext.Accounts.SingleAsync(x => x.Name == tokenValue.Account);
-
                             principal = new TokenPrincipal(new GenericIdentity(tokenValue.Account), (account.Roles ?? string.Empty).Split(';')) { Token = tokenValue };
 
                             if (!string.IsNullOrEmpty(this.requiredRole) && !principal.IsInRole(this.requiredRole))
@@ -146,7 +144,7 @@ namespace number_sequence.Filters
                                 principal,
                                 new MemoryCacheEntryOptions
                                 {
-                                    AbsoluteExpiration = tokenValue.ExpiresAt,
+                                    AbsoluteExpiration = tokenValue.ExpirationDate,
                                     Priority = (CacheItemPriority)TierLimits.CacheItemPriority[tokenValue.AccountTier],
                                     Size = 1,
                                     SlidingExpiration = TimeSpan.FromMinutes(5)

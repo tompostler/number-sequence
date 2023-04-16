@@ -47,7 +47,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 Account = Input.GetString(nameof(token.Account)),
                 Key = Input.GetString(nameof(token.Key)),
                 Name = Input.GetString(nameof(token.Name)),
-                ExpiresAt = Input.GetDateTime(nameof(token.ExpiresAt))
+                ExpirationDate = Input.GetDateTime(nameof(token.ExpirationDate))
             };
 
             token = await client.Token.CreateAsync(token);

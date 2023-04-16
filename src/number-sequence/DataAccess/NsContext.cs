@@ -11,6 +11,7 @@ namespace number_sequence.DataAccess
         private readonly ILoggerFactory loggerFactory;
 
         public DbSet<Account> Accounts { get; set; }
+        public DbSet<Token> Tokens { get; set; }
 
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceBusiness> InvoiceBusinesses { get; set; }
@@ -49,6 +50,12 @@ namespace number_sequence.DataAccess
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
             _ = modelBuilder.Entity<Account>()
                 .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<Token>()
+                .HasKey(x => new { x.Account, x.Name });
+            _ = modelBuilder.Entity<Token>()
+                .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
             #endregion // Accounts

@@ -50,8 +50,8 @@ namespace number_sequence.IntTests
 
             // Assert
             _ = response.Account.Should().Be(this.TestContext.TestName.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(90), TimeSpan.FromMinutes(1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ExpirationDate.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(90), TimeSpan.FromMinutes(1));
             _ = response.Key.Should().BeNull();
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().NotBeNullOrWhiteSpace();
@@ -61,15 +61,15 @@ namespace number_sequence.IntTests
         public async Task Token_Creation_Succeeds_ForShortExpiration()
         {
             // Arrange
-            this.token.ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(5);
+            this.token.ExpirationDate = DateTimeOffset.UtcNow.AddMinutes(5);
 
             // Act
             Token response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             _ = response.Account.Should().Be(this.TestContext.TestName.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(5), TimeSpan.FromMinutes(1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ExpirationDate.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(5), TimeSpan.FromMinutes(1));
             _ = response.Key.Should().BeNull();
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().NotBeNullOrWhiteSpace();
@@ -79,15 +79,15 @@ namespace number_sequence.IntTests
         public async Task Token_Creation_Succeeds_ForLongExpiration()
         {
             // Arrange
-            this.token.ExpiresAt = DateTimeOffset.UtcNow.AddYears(5);
+            this.token.ExpirationDate = DateTimeOffset.UtcNow.AddYears(5);
 
             // Act
             Token response = await Assembly.UnauthedClient.Token.CreateAsync(this.token);
 
             // Assert
             _ = response.Account.Should().Be(this.TestContext.TestName.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddYears(5), TimeSpan.FromMinutes(1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ExpirationDate.Should().BeCloseTo(DateTimeOffset.UtcNow.AddYears(5), TimeSpan.FromMinutes(1));
             _ = response.Key.Should().BeNull();
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().NotBeNullOrWhiteSpace();
@@ -263,7 +263,7 @@ namespace number_sequence.IntTests
         public async Task Token_Creation_Fails_WithExpiresAtTooSoon()
         {
             // Arrange
-            this.token.ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(1);
+            this.token.ExpirationDate = DateTimeOffset.UtcNow.AddMinutes(1);
 
             // Act
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);
@@ -276,7 +276,7 @@ namespace number_sequence.IntTests
         public async Task Token_Creation_Fails_WithExpiresAtTooFar()
         {
             // Arrange
-            this.token.ExpiresAt = DateTimeOffset.UtcNow.AddYears(42);
+            this.token.ExpirationDate = DateTimeOffset.UtcNow.AddYears(42);
 
             // Act
             Func<Task> act = () => Assembly.UnauthedClient.Token.CreateAsync(this.token);

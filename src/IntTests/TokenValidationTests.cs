@@ -100,7 +100,7 @@ namespace number_sequence.IntTests
         public async Task TokenValidation_FailsSuccessfully_WithCreatedAtWrong()
         {
             // Arrange
-            this.token.CreatedAt = DateTimeOffset.UtcNow;
+            this.token.CreatedDate = DateTimeOffset.UtcNow;
 
             // Act
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();
@@ -113,7 +113,7 @@ namespace number_sequence.IntTests
         public async Task TokenValidation_FailsSuccessfully_WithExpiresAtWrong()
         {
             // Arrange
-            this.token.ExpiresAt = DateTimeOffset.UtcNow;
+            this.token.ExpirationDate = DateTimeOffset.UtcNow;
 
             // Act
             Func<Task> act = () => this.client.Ping.SendWithAuthAsync();

@@ -10,14 +10,14 @@ namespace number_sequence.Models
     {
         public TokenValue() { }
 
-        public static TokenValue CreateFrom(TokenModel tokenModel) =>
+        public static TokenValue CreateFrom(Token token) =>
             new()
             {
-                Account = tokenModel.Account,
-                AccountTier = tokenModel.AccountTier,
-                Name = tokenModel.Name,
-                CreatedAt = tokenModel.CreatedAt,
-                ExpiresAt = tokenModel.ExpiresAt,
+                Account = token.Account,
+                AccountTier = token.AccountTier,
+                Name = token.Name,
+                CreatedDate = token.CreatedDate,
+                ExpirationDate = token.ExpirationDate,
                 Key = StringUtilities.GetRandomAlphanumericString(128)
             };
 
@@ -31,10 +31,10 @@ namespace number_sequence.Models
         public string Name { get; set; }
 
         [JsonPropertyName("c"), Required]
-        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
 
         [JsonPropertyName("e"), Required, CustomValidation(typeof(TokenValidation), nameof(TokenValidation.ExpirationValidation))]
-        public DateTimeOffset ExpiresAt { get; set; }
+        public DateTimeOffset ExpirationDate { get; set; }
 
         [JsonPropertyName("k"), Required, MinLength(128), MaxLength(128)]
         public string Key { get; set; }

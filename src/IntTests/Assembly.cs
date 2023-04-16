@@ -40,7 +40,7 @@ namespace number_sequence.IntTests
             Options.Sql sqlOptions = appSettingsLocal[nameof(Options.Sql)].ToObject<Options.Sql>();
             using SqlConnection sqlConnection = new(sqlOptions.ConnectionString);
             await sqlConnection.OpenAsync();
-            foreach (string tableToDeleteFrom in new[] { "Accounts" })
+            foreach (string tableToDeleteFrom in new[] { "Accounts", "Tokens" })
             {
                 assemblyLogger.LogInformation($"Deleting from {tableToDeleteFrom}");
                 using (SqlCommand sqlCommand = new($"DELETE FROM {tableToDeleteFrom}", sqlConnection))

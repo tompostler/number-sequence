@@ -1,50 +1,72 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using TcpWtf.NumberSequence.Contracts.Interfaces;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TcpWtf.NumberSequence.Contracts
 {
-    /// <inheritdoc/>
-    public sealed class Token : IToken
+    /// <summary>
+    /// A token is used for actual authentication.
+    /// </summary>
+    public sealed class Token
     {
-        /// <inheritdoc/>
+        /// <summary>
+        /// The name of the account the token is generated for.
+        /// </summary>
         [Required, MinLength(3), MaxLength(64)]
         public string Account { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// The tier of the account. Copied from the account at token creation time for convenience.
+        /// </summary>
+        [Required, Column(TypeName = "NVARCHAR(8)")]
         public AccountTier AccountTier { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// The account's password. Used when creating a token to verify ownership.
+        /// </summary>
+        /// <remarks>
+        /// When stored in the database, it'll be a random value.
+        /// </remarks>
         [Required, MinLength(32), MaxLength(128)]
         public string Key { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// The name you wish to be associated with the token. This allows you to have more than one token.
+        /// </summary>
         [Required, MinLength(3), MaxLength(64)]
         public string Name { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// The actual token value to be used on authentication calls.
+        /// </summary>
+        [MaxLength(512)]
         public string Value { get; set; }
 
-        /// <inheritdoc/>
-        public DateTimeOffset CreatedAt { get; set; }
+        /// <summary>
+        /// When the token was created.
+        /// </summary>
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTimeOffset CreatedDate { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// When the token expires. Default is 90 days.
+        /// </summary>
         [CustomValidation(typeof(TokenValidation), nameof(TokenValidation.ExpirationValidation))]
-        public DateTimeOffset ExpiresAt { get; set; } = DateTimeOffset.UtcNow.AddDays(90);
+        public DateTimeOffset ExpirationDate { get; set; } = DateTimeOffset.UtcNow.AddDays(90);
     }
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class TokenValidation
     {
-        public static ValidationResult ExpirationValidation(DateTimeOffset expiresAt, ValidationContext _)
+        public static ValidationResult ExpirationValidation(DateTimeOffset expirationDate, ValidationContext _)
         {
-            if (expiresAt < DateTimeOffset.UtcNow.AddMinutes(1))
+            if (expirationDate < DateTimeOffset.UtcNow.AddMinutes(1))
             {
-                return new ValidationResult("ExpiresAt cannot be in the past.");
+                return new ValidationResult("ExpirationDate cannot be in the past.");
             }
-            else if (expiresAt.Year > 2050)
+            else if (expirationDate.Year > DateTimeOffset.UtcNow.AddYears(10).Year)
             {
-                return new ValidationResult("ExpiresAt cannot be later than 2050.");
+                return new ValidationResult("ExpirationDate cannot be later than 10 years from now.");
             }
 
             return default;
