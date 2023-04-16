@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.Cosmos;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -30,17 +29,10 @@ namespace number_sequence.IntTests
             using var sr = new StreamReader(typeof(Assembly).Assembly.GetManifestResourceStream("number_sequence.IntTests.appsettings.Development.json"));
             var appSettingsLocal = JToken.Parse(sr.ReadToEnd());
 
-            Options.CosmosDB cosmosOptions = appSettingsLocal[nameof(Options.CosmosDB)].ToObject<Options.CosmosDB>();
-            var cosmosClient = new CosmosClient(cosmosOptions.Endpoint, cosmosOptions.Key);
-            Database database = (await cosmosClient.CreateDatabaseIfNotExistsAsync(cosmosOptions.DatabaseId, 400)).Database;
-            Container container = (await database.CreateContainerIfNotExistsAsync(cosmosOptions.ContainerId, "/PK")).Container;
-            _ = await container.DeleteContainerAsync();
-            _ = await database.CreateContainerIfNotExistsAsync(cosmosOptions.ContainerId, "/PK");
-
             Options.Sql sqlOptions = appSettingsLocal[nameof(Options.Sql)].ToObject<Options.Sql>();
             using SqlConnection sqlConnection = new(sqlOptions.ConnectionString);
             await sqlConnection.OpenAsync();
-            foreach (string tableToDeleteFrom in new[] { "Accounts", "Tokens" })
+            foreach (string tableToDeleteFrom in new[] { "Accounts", "Counts", "Tokens" })
             {
                 assemblyLogger.LogInformation($"Deleting from {tableToDeleteFrom}");
                 using (SqlCommand sqlCommand = new($"DELETE FROM {tableToDeleteFrom}", sqlConnection))

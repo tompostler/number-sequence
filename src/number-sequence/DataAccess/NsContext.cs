@@ -13,6 +13,8 @@ namespace number_sequence.DataAccess
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Token> Tokens { get; set; }
 
+        public DbSet<Count> Counts { get; set; }
+
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceBusiness> InvoiceBusinesses { get; set; }
         public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
@@ -172,6 +174,15 @@ namespace number_sequence.DataAccess
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
             #endregion // Latex
+
+            _ = modelBuilder.Entity<Count>()
+                .HasKey(x => new { x.Account, x.Name });
+            _ = modelBuilder.Entity<Count>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<Count>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
             _ = modelBuilder.Entity<SynchronizedBackgroundService>()
                 .HasKey(x => x.Name);

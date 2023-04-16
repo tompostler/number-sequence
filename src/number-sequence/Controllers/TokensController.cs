@@ -71,7 +71,7 @@ namespace number_sequence.Controllers
 
             Token createdToken = await nsContext.Tokens.SingleAsync(x => x.Account == account.Name && x.Name == toInsert.Name, cancellationToken);
             createdToken.Key = default;
-            this.logger.LogInformation($"Created account: {createdToken.ToJsonString()}");
+            this.logger.LogInformation($"Created token: {createdToken.ToJsonString()}");
             return this.Ok(createdToken);
         }
     }

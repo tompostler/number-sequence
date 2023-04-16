@@ -42,8 +42,8 @@ namespace number_sequence.IntTests
 
             // Assert
             _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().Be(0);
         }
@@ -59,8 +59,8 @@ namespace number_sequence.IntTests
 
             // Assert
             _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().Be(1);
         }
@@ -76,8 +76,8 @@ namespace number_sequence.IntTests
 
             // Assert
             _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().Be(1);
         }
@@ -94,8 +94,8 @@ namespace number_sequence.IntTests
 
             // Assert
             _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().Be(2);
         }
@@ -112,8 +112,8 @@ namespace number_sequence.IntTests
 
             // Assert
             _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().Be(9_007_199_254_740_993);
         }
@@ -130,8 +130,8 @@ namespace number_sequence.IntTests
 
             // Assert
             _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().Be(0);
         }
@@ -147,8 +147,8 @@ namespace number_sequence.IntTests
 
             // Assert
             _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().Be(3);
         }
@@ -165,8 +165,8 @@ namespace number_sequence.IntTests
 
             // Assert
             _ = response.Account.Should().Be(Assembly.Account.Name.ToLower());
-            _ = response.CreatedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
-            _ = response.ModifiedAt.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+            _ = response.ModifiedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
             _ = response.Name.Should().Be(this.TestContext.TestName.ToLower());
             _ = response.Value.Should().Be(2);
         }

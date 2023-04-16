@@ -43,8 +43,6 @@ namespace number_sequence
             // Data Access
             //
 
-            // Cosmos DB
-            _ = services.AddSingleton<DataAccess.CountDataAccess>();
             // Email
             _ = services.AddSingleton<DataAccess.EmailDataAccess>();
             // Google

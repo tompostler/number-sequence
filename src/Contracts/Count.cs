@@ -1,26 +1,41 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using TcpWtf.NumberSequence.Contracts.Interfaces;
 
 namespace TcpWtf.NumberSequence.Contracts
 {
-    /// <inheritdoc/>
-    public sealed class Count : ICount
+    /// <summary>
+    /// Keep track of a count, ulong.
+    /// </summary>
+    public sealed class Count
     {
-        /// <inheritdoc/>
-        public string Account { get; set; }
+        /// <summary>
+        /// The name of the account the count is for. Populated from the token used for authentication.
+        /// </summary>
+        /// <remarks>
+        /// Set to garbage for the model handling; overridden in the controller.
+        /// </remarks>
+        [Required, MinLength(3), MaxLength(64)]
+        public string Account { get; set; } = Guid.NewGuid().ToString();
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// The name you wish to be associated with the count. This allows you to have more than one count.
+        /// </summary>
         [Required, MinLength(3), MaxLength(64)]
         public string Name { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// The actual count value.
+        /// </summary>
         public ulong Value { get; set; }
 
-        /// <inheritdoc/>
-        public DateTimeOffset CreatedAt { get; set; }
+        /// <summary>
+        /// When the count was created.
+        /// </summary>
+        public DateTimeOffset CreatedDate { get; set; }
 
-        /// <inheritdoc/>
-        public DateTimeOffset ModifiedAt { get; set; }
+        /// <summary>
+        /// When the count was last modified.
+        /// </summary>
+        public DateTimeOffset ModifiedDate { get; set; }
     }
 }
