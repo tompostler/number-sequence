@@ -12,12 +12,6 @@ Write-Host;
 # Note: the following needs to be kept up-to-date with any necessary config changes
 Write-Host -ForegroundColor Cyan 'Generating local settings....';
 $localSettings = [PSCustomObject]@{
-    CosmosDB = [PSCustomObject]@{
-        Endpoint    = 'https://tompostler-free.documents.azure.com:443/';
-        Key         = (Get-AzCosmosDBAccountKey -ResourceGroupName tompostler -Name tompostler-free).SecondaryMasterKey;
-        DatabaseId  = 'shared';
-        ContainerId = 'nstcpwtflocal';
-    };
     Email    = [PSCustomObject]@{
         Server   = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-server -AsPlainText);
         Port     = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-port -AsPlainText);
