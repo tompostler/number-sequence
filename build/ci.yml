@@ -35,7 +35,7 @@ jobs:
   - task: Cache@2
     displayName: NuGet package caching
     inputs:
-      key: 'nuget | "$(Agent.OS)" | $(Build.SourcesDirectory)/**/*.csproj'
+      key: 'nuget | "$(Agent.OS)" | $(Build.SourcesDirectory)/src/**/*.csproj'
       restoreKeys: |
         nuget | "$(Agent.OS)"
         nuget
