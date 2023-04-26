@@ -1,6 +1,7 @@
 variables:
   NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
-  
+
+lockBehavior: sequential
 
 schedules:
 - cron: 0 0 * * Wed
