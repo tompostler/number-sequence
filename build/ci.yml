@@ -15,6 +15,24 @@ trigger:
 name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 stages:
+
 - stage: Build
   jobs:
   - template: jobs/build.yml
+
+- stage: Deploy_PreReq
+  dependsOn: Build
+  displayName: Deploy Prerequisites
+  jobs:
+  - deployment: Deploy_AppInsights
+    pool:
+      vmImage: windows-latest
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: PowerShell@2
+            displayName: Test
+            inputs:
+              targetType: inline
+              script: Write-Host 'Hello world!'
