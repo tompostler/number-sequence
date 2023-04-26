@@ -16,25 +16,23 @@ name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 stages:
 
+
 - stage: Build
   jobs:
   - template: jobs/build.yml
 
-- stage: Deploy_PreReq
+
+- stage: Deploy_PreReqs
   dependsOn: []
-  displayName: Deploy Prerequisites
+  pool:
+    vmImage: windows-latest
   jobs:
-  - deployment: Deploy_AppInsights
-    displayName: Deploy AppInsights
-    environment: ns-prod
-    pool:
-      vmImage: windows-latest
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: PowerShell@2
-            displayName: Test
-            inputs:
-              targetType: inline
-              script: Write-Host 'Hello world!'
+
+  - job: Deploy_AppInsights
+    steps:
+    - checkout: none
+    - task: PowerShell@2
+      displayName: Test
+      inputs:
+        targetType: inline
+        script: Write-Host 'Hello world!'
