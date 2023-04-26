@@ -30,9 +30,11 @@ stages:
 
   - job: Deploy_AppInsights
     steps:
-    - checkout: none
-    - task: PowerShell@2
-      displayName: Test
+    - task: AzureResourceManagerTemplateDeployment@3
       inputs:
-        targetType: inline
-        script: Write-Host 'Hello world!'
+        azureResourceManagerConnection: f54f1d6c-d346-41c4-a385-f3b9a579059f
+        subscriptionId: 78560c44-50bb-4840-9d59-84578a99032e
+        resourceGroupName: tcp-wtf-hosting
+        location: Central US
+        csmFile: $(Build.SourcesDirectory)/deployment/templates/AppInsights.json
+        csmParametersFile: $(Build.SourcesDirectory)/deployment/parameters/Empty.json
