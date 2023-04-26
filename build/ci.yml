@@ -1,8 +1,6 @@
 variables:
-- name: NUGET_PACKAGES
-  value: $(Pipeline.Workspace)/.nuget/packages
-- group: tompostler
-
+  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
+  
 
 schedules:
 - cron: 0 0 * * Wed
@@ -28,5 +26,7 @@ stages:
   displayName: Deploy PreReqs
   pool:
     vmImage: windows-latest
+  variables:
+  - group: tompostler
   jobs:
   - template: jobs/deploy-prereqs.yml
