@@ -61,16 +61,6 @@ jobs:
       zipAfterPublish: true
       modifyOutputPath: true
 
-  - task: CopyFiles@2
-    displayName: Copy deployment files to output
-    inputs:
-      sourceFolder: $(Build.SourcesDirectory)/deployment/
-      contents: '**' 
-      targetFolder: $(Build.ArtifactStagingDirectory)
-
-  - powershell: '"$(Build.SourceVersionMessage)" > $(Build.ArtifactStagingDirectory)/commit-desc.txt'
-    displayName: Get build desc
-
   - task: PublishBuildArtifacts@1
     displayName: Publish build artifacts
     inputs:
