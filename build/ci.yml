@@ -26,7 +26,7 @@ stages:
   jobs:
   - deployment: Deploy_AppInsights
     displayName: Deploy AppInsights
-    environment: prod
+    environment: ns-prod
     pool:
       vmImage: windows-latest
     strategy:
