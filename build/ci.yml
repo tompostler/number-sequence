@@ -16,11 +16,9 @@ name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 stages:
 
-
 - stage: Build
   jobs:
   - template: jobs/build.yml
-
 
 - stage: Deploy_PreReqs
   dependsOn: []
@@ -28,55 +26,4 @@ stages:
   pool:
     vmImage: windows-latest
   jobs:
-
-  - job: Deploy_AppInsights
-    dependsOn: []
-    displayName: AppInsights
-    steps:
-    - checkout: self
-      fetchDepth: 1
-      fetchTags: false
-    - task: AzureResourceManagerTemplateDeployment@3
-      displayName: ARM Template Deployment
-      inputs:
-        azureResourceManagerConnection: f54f1d6c-d346-41c4-a385-f3b9a579059f
-        subscriptionId: 78560c44-50bb-4840-9d59-84578a99032e
-        resourceGroupName: tcp-wtf-hosting
-        location: Central US
-        csmFile: $(Build.SourcesDirectory)/deployment/templates/AppInsights.json
-        csmParametersFile: $(Build.SourcesDirectory)/deployment/parameters/Empty.json
-
-  - job: Deploy_SharedAppServicePlan
-    dependsOn: []
-    displayName: SharedAppServicePlan
-    steps:
-    - checkout: self
-      fetchDepth: 1
-      fetchTags: false
-    - task: AzureResourceManagerTemplateDeployment@3
-      displayName: ARM Template Deployment
-      inputs:
-        azureResourceManagerConnection: f54f1d6c-d346-41c4-a385-f3b9a579059f
-        subscriptionId: 78560c44-50bb-4840-9d59-84578a99032e
-        resourceGroupName: tcp-wtf-hosting
-        location: Central US
-        csmFile: $(Build.SourcesDirectory)/deployment/templates/SharedAppServicePlan.json
-        csmParametersFile: $(Build.SourcesDirectory)/deployment/parameters/Empty.json
-
-  - job: Deploy_SimpleStorageAccountWithContainers
-    dependsOn: []
-    displayName: SimpleStorageAccountWithContainers
-    steps:
-    - checkout: self
-      fetchDepth: 1
-      fetchTags: false
-    - task: AzureResourceManagerTemplateDeployment@3
-      displayName: ARM Template Deployment
-      inputs:
-        azureResourceManagerConnection: f54f1d6c-d346-41c4-a385-f3b9a579059f
-        subscriptionId: 78560c44-50bb-4840-9d59-84578a99032e
-        resourceGroupName: tcp-wtf-hosting
-        location: Central US
-        csmFile: $(Build.SourcesDirectory)/deployment/templates/SimpleStorageAccountWithContainers.json
-        csmParametersFile: $(Build.SourcesDirectory)/deployment/parameters/Empty.json
-        overrideParameters: -storageAccountName nstcpwtf -storageAccountContainerNames "latex,latex-templates"
+  - template: jobs/deploy-prereqs.yml
