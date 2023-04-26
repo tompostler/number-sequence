@@ -1,0 +1,26 @@
+jobs:
+
+- deployment: NuGet_Push
+  dependsOn: []
+  displayName: NuGet Push
+  environment: nuget-ns
+
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            source: current
+            artifact: drop
+            patterns: drop/TcpWtf.*.nupkg
+            path: $(Agent.BuildDirectory)/ns-nupkgs/
+
+        - task: NuGetCommand@2
+          displayName: NuGet push
+          inputs:
+            command: push
+            packagesToPush: $(Agent.BuildDirectory)/ns-nupkgs/TcpWtf.*.nupkg
+            nuGetFeedType: external
+            publishFeedCredentials: 6e102607-a20d-4516-b9f5-aec98404ab4c
