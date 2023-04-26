@@ -1,5 +1,8 @@
 variables:
-  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
+- name: NUGET_PACKAGES
+  value: $(Pipeline.Workspace)/.nuget/packages
+- group: tompostler
+
 
 schedules:
 - cron: 0 0 * * Wed
