@@ -24,13 +24,19 @@ stages:
 
 - stage: Deploy_PreReqs
   dependsOn: []
+  displayName: Deploy PreReqs
   pool:
     vmImage: windows-latest
   jobs:
 
   - job: Deploy_AppInsights
+    displayName: Deploy AppInsights
     steps:
+    - checkout: self
+      fetchDepth: 1
+      fetchTags: false
     - task: AzureResourceManagerTemplateDeployment@3
+      displayName: ARM Template Deployment
       inputs:
         azureResourceManagerConnection: f54f1d6c-d346-41c4-a385-f3b9a579059f
         subscriptionId: 78560c44-50bb-4840-9d59-84578a99032e
