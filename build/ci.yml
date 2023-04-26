@@ -18,6 +18,7 @@ name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 stages:
 
 - stage: Build
+  dependsOn: []
   jobs:
   - template: jobs/build.yml
 
@@ -30,3 +31,14 @@ stages:
   - group: tompostler
   jobs:
   - template: jobs/deploy-prereqs.yml
+
+
+- stage: Deploy_Config
+  dependsOn: [ Build, Deploy_PreReqs ]
+  displayName: Deploy Config
+  pool:
+    vmImage: windows-latest
+  variables:
+  - group: tompostler
+  jobs:
+  - template: jobs/deploy-config.yml
