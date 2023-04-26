@@ -21,6 +21,7 @@ stages:
   - template: jobs/build.yml
 
 - stage: Deploy_PreReq
+  dependsOn: []
   displayName: Deploy Prerequisites
   jobs:
   - deployment: Deploy_AppInsights
