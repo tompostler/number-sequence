@@ -3,6 +3,7 @@ variables:
 
 lockBehavior: sequential
 
+
 schedules:
 - cron: 0 0 * * Wed
   displayName: Weekly build (patching)
