@@ -112,3 +112,22 @@ jobs:
       Dockerfile: $(Agent.BuildDirectory)/ns-extract/Dockerfile
       repository: latex
       tags: latest
+
+- job: TagSource
+  dependsOn: ContainerBuild
+  pool:
+    vmImage: windows-2022
+
+  steps:
+
+  - checkout: self
+    persistCredentials: true
+
+  - task: PowerShell@2
+    displayName: Tag source with build number
+    inputs:
+      targetType: inline
+      workingDirectory: $(Build.SourcesDirectory)
+      script: |
+        git tag $(Build.BuildNumber)
+        git push origin $(Build.BuildNumber)
