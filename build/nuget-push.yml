@@ -1,0 +1,37 @@
+schedules:
+- cron: 0 0 * * *
+  displayName: Nightly NuGet Rollup
+  branches:
+    include:
+    - main
+
+resources:
+  pipelines:
+  - pipeline: ci
+    source: 22
+    branch: main
+    tags: IndividualCI
+
+name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
+
+pool:
+  vmImage: windows-latest
+
+steps:
+
+- checkout: none
+
+- task: DownloadPipelineArtifact@2
+  inputs:
+    source: ci
+    artifact: drop
+    patterns: drop/TcpWtf.*.nupkg
+    path: $(Agent.BuildDirectory)/ns-nupkgs/
+
+- task: NuGetCommand@2
+  displayName: NuGet push
+  inputs:
+    command: push
+    packagesToPush: $(Agent.BuildDirectory)/ns-nupkgs/TcpWtf.*.nupkg
+    nuGetFeedType: external
+    publishFeedCredentials: 6e102607-a20d-4516-b9f5-aec98404ab4c

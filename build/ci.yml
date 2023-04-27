@@ -42,13 +42,3 @@ stages:
   - group: tompostler
   jobs:
   - template: jobs/deploy-config.yml
-
-- stage: NuGet_Push
-  dependsOn: [ Deploy_Config ]
-  displayName: NuGet Push
-  pool:
-    vmImage: windows-latest
-  lockBehavior: runLatest
-  jobs:
-  - template: jobs/nuget-push.yml
-
