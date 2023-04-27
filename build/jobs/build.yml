@@ -74,6 +74,7 @@ jobs:
       targetType: inline
       script: Write-Host '##vso[build.addbuildtag]$(Build.Reason)'
 
+
 - job: ContainerBuild
   dependsOn: DotnetBuild
   pool:
@@ -113,14 +114,16 @@ jobs:
       repository: latex
       tags: latest
 
+
 - job: TagSource
-  dependsOn: ContainerBuild
+  dependsOn: DotnetBuild
   pool:
-    vmImage: windows-2022
+    vmImage: windows-latest
 
   steps:
 
   - checkout: self
+    fetchTags: false
     persistCredentials: true
 
   - task: PowerShell@2
