@@ -10,7 +10,8 @@ resources:
   - pipeline: ci
     source: 22
     branch: main
-    tags: IndividualCI
+    tags:
+    - IndividualCI
 
 name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
