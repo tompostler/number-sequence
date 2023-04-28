@@ -134,7 +134,7 @@ jobs:
         # This is needed since VSTS "Tag build on success" is tagging ALL the builds. This, as a build task, can be conditionalized to only run on the master branches.
         # In order for this to work for a build/release phase, you MUST check the box to "Allow scripts to access OAuth token".
         # This script will succeed on Unauthorized, Duplicate Tag, and successful scenarios. This is by design.
-        $tagUrl = "{0}DefaultCollection/{1}/_apis/git/repositories/{2}/refs?api-version=1.0" -f $env:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI, $env:SYSTEM_TEAMPROJECT, $env:BUILD_REPOSITORY_NAME
+        $tagUrl = "{0}{1}/_apis/git/repositories/{2}/refs?api-version=1.0" -f $env:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI, $env:SYSTEM_TEAMPROJECT, $env:BUILD_REPOSITORY_NAME
         Write-Host "URL: $tagUrl"
         $newTag = @"
         [
