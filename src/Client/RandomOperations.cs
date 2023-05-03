@@ -76,12 +76,14 @@ namespace TcpWtf.NumberSequence.Client
         /// <summary>
         /// Gets a random name based on the docker container naming generator.
         /// </summary>
-        public async Task<string> GetNameAsync(CancellationToken cancellationToken = default)
+        public async Task<string> GetNameAsync(int? seed = default, CancellationToken cancellationToken = default)
         {
+            string queryString = seed.HasValue ? $"?seed={seed}" : string.Empty;
+
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
-                    "random/name"),
+                    "random/name"+ queryString),
                 cancellationToken,
                 needsPreparation: false);
             return await response.Content.ReadAsStringAsync(cancellationToken);

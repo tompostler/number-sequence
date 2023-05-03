@@ -974,9 +974,18 @@ namespace number_sequence.Controllers
         #endregion Name constants
 
         [HttpGet("name")]
-        public IActionResult Name()
+        public IActionResult Name([FromQuery] int? seed = default)
         {
-            return this.Ok(nameAdjectives[(int)Generate(8) % nameAdjectives.Length] + '_' + nameNames[(int)Generate(8) % nameNames.Length]);
+            if (seed < 0)
+            {
+                seed = Math.Abs(seed.Value);
+            }
+            else if (seed == default)
+            {
+                seed = (int)Generate(8);
+            }
+
+            return this.Ok(nameAdjectives[seed.Value % nameAdjectives.Length] + '_' + nameNames[seed.Value % nameNames.Length]);
         }
 
         [HttpGet("from")]
