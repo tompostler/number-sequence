@@ -37,7 +37,8 @@ namespace number_sequence.Services.Background.LatexGeneration
                                                             .Where(x =>
                                                                 !x.PaidDate.HasValue
                                                                 && x.ReprocessRegularly
-                                                                && x.ModifiedDate < fourteenDaysAgo)
+                                                                // It must have been processed at least once to be reprocessed regularly
+                                                                && x.ProcessedAt < fourteenDaysAgo)
                                                             .ToListAsync(cancellationToken);
 
             foreach (Invoice invoiceNeedingReprocessing in invoicesNeedingReprocessing)
@@ -52,7 +53,7 @@ namespace number_sequence.Services.Background.LatexGeneration
                     invoiceNeedingReprocessing.Id);
                 this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
 
-                invoiceNeedingReprocessing.ModifiedDate = DateTimeOffset.UtcNow;
+                // Explicitly not updating the last modified date, so as to keep the data cleaner on when it was last touched compared to last processed
                 _ = await nsContext.SaveChangesAsync(cancellationToken);
             }
         }
