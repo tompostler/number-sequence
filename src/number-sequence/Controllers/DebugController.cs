@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
 using number_sequence.Extensions;
-using System;
-using System.Threading.Tasks;
 
 namespace number_sequence.Controllers
 {

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace number_sequence.Extensions
+﻿namespace number_sequence.Extensions
 {
     public static class HttpRequestExtensions
     {

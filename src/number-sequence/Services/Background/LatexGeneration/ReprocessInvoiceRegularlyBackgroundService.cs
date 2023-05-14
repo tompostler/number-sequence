@@ -2,15 +2,8 @@
 using DurableTask.Core;
 using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
 using number_sequence.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Contracts.Invoicing;
 
 namespace number_sequence.Services.Background.LatexGeneration

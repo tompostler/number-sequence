@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using number_sequence.Models;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Invoicing;

@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using number_sequence.Exceptions;
-using System;
-using System.Threading.Tasks;
+﻿using number_sequence.Exceptions;
 
 namespace number_sequence.Middleware
 {

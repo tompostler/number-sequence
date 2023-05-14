@@ -3,18 +3,10 @@ using Cronos;
 using DurableTask.Core;
 using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using number_sequence.DataAccess;
 using number_sequence.Models;
 using number_sequence.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace number_sequence.Services.Background.LatexGeneration
 {

@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-
-namespace TcpWtf.NumberSequence.Tool
+﻿namespace TcpWtf.NumberSequence.Tool
 {
     internal static class EmptyTokenProvider
     {

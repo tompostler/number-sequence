@@ -1,8 +1,4 @@
-﻿using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace TcpWtf.NumberSequence.Client
+﻿namespace TcpWtf.NumberSequence.Client
 {
     /// <summary>
     /// Ping. Check if the service is online.

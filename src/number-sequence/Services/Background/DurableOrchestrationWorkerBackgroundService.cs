@@ -1,14 +1,7 @@
 ﻿using DurableTask.Core;
 using DurableTask.SqlServer;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using number_sequence.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace number_sequence.Services.Background
 {

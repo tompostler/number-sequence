@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace number_sequence
+﻿namespace number_sequence
 {
     public static class Options
     {

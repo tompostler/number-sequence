@@ -4,17 +4,10 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
 using number_sequence.Models;
 using number_sequence.Utilities;
-using System;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Contracts.Invoicing;
 
 namespace number_sequence.DurableTaskImpl.Activities

@@ -1,8 +1,4 @@
-﻿using System.Threading.Tasks;
-using System.Threading;
-using System;
-
-namespace number_sequence.Utilities
+﻿namespace number_sequence.Utilities
 {
     public sealed class Delays
     {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace number_sequence.Exceptions
+﻿namespace number_sequence.Exceptions
 {
     public sealed class ConflictException : Exception
     {

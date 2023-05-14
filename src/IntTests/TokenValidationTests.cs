@@ -2,10 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using number_sequence.Models;
-using System;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
 using Unlimitedinf.Utilities.Extensions;

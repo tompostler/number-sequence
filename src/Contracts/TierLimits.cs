@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace TcpWtf.NumberSequence.Contracts
+﻿namespace TcpWtf.NumberSequence.Contracts
 {
     /// <summary>
     /// Publicly-documented limits based on the tier for an account.

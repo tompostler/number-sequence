@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
 

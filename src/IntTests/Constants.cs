@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace number_sequence.IntTests
+﻿namespace number_sequence.IntTests
 {
     public static class Constants
     {

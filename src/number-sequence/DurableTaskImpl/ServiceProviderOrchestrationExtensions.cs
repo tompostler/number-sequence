@@ -1,6 +1,4 @@
 ﻿using DurableTask.Core;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace number_sequence.DurableTaskImpl
 {

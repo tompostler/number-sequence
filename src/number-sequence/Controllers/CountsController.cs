@@ -1,12 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using number_sequence.DataAccess;
 using number_sequence.Filters;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Contracts;
 using Unlimitedinf.Utilities.Extensions;
 

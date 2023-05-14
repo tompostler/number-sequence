@@ -1,9 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using number_sequence.Controllers;
-using System;
 using System.Net;
-using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
 
 namespace number_sequence.IntTests

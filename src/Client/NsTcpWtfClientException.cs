@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net.Http;
-
-namespace TcpWtf.NumberSequence.Client
+﻿namespace TcpWtf.NumberSequence.Client
 {
     /// <summary>
     /// Thrown when a failure occurs with the client.

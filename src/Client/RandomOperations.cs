@@ -1,9 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace TcpWtf.NumberSequence.Client
+﻿namespace TcpWtf.NumberSequence.Client
 {
     /// <summary>
     /// Random. Get random numbers or data.

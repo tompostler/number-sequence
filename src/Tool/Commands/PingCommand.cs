@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.Threading.Tasks;
 using TcpWtf.NumberSequence.Client;
 
 namespace TcpWtf.NumberSequence.Tool.Commands

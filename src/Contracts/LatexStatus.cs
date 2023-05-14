@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace TcpWtf.NumberSequence.Contracts
+﻿namespace TcpWtf.NumberSequence.Contracts
 {
     /// <summary>
     /// The status of the background services for latex generation.

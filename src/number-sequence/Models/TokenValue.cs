@@ -1,5 +1,4 @@
 ﻿using number_sequence.Utilities;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using TcpWtf.NumberSequence.Contracts;
