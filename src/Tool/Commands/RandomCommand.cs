@@ -1,4 +1,6 @@
 ﻿using System.CommandLine;
+using System.Security.Cryptography;
+using System.Text;
 using TcpWtf.NumberSequence.Client;
 
 namespace TcpWtf.NumberSequence.Tool.Commands
@@ -8,6 +10,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         public static Command Create(Option<Verbosity> verbosityOption)
         {
             Command command = new("random", "Get random data.");
+
             Argument<string> randomTypeArg = new Argument<string>("type", "The type of random to get. Pick from the supported values.")
                 .FromAmong(
                     "8ball",
@@ -22,19 +25,32 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     "long"
                 );
             command.AddArgument(randomTypeArg);
-            command.SetHandler(HandleAsync, randomTypeArg, verbosityOption);
+
+            Option<string> seedOpt = new("--seed", "If provided and the API supports it, the seed to use for the randomness.");
+            command.AddOption(seedOpt);
+
+            command.SetHandler(HandleAsync, randomTypeArg, seedOpt, verbosityOption);
             return command;
         }
 
-        private static async Task HandleAsync(string type, Verbosity verbosity)
+        private static async Task HandleAsync(string type, string seedStr, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, Program.Stamp);
+
+            // If there's a seed, convert it to an int by hashing it
+            int? seed = default;
+            if (!string.IsNullOrEmpty(seedStr))
+            {
+                using var alg = MD5.Create();
+                byte[] hash = alg.ComputeHash(Encoding.UTF8.GetBytes(seedStr));
+                seed = BitConverter.ToInt32(hash);
+            }
 
             object response = type switch
             {
                 "8ball" => await client.Random.Get8BallAsync(),
                 "guid" => await client.Random.GetGuidAsync(),
-                "name" => await client.Random.GetNameAsync(),
+                "name" => await client.Random.GetNameAsync(seed),
                 "bit" => await client.Random.GetULong01Async(),
                 "crumb" => await client.Random.GetULong02Async(),
                 "nibble" => await client.Random.GetULong04Async(),
