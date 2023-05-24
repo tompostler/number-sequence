@@ -59,9 +59,13 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Command lineDefaultCreateCommand = new("create", "Create a new invoice line default.");
             lineDefaultCreateCommand.SetHandler(HandleLineDefaultCreateAsync, verbosityOption);
 
+            Command lineDefaultEditCommand = new("edit", "Edit an existing invoice line.");
+            Argument<long> lineDefaultIdArgument = new("lineDefaultId", "The id of the line default.");
+            lineDefaultEditCommand.AddArgument(lineDefaultIdArgument);
+            lineDefaultEditCommand.SetHandler(HandleLineDefaultEditAsync, lineDefaultIdArgument, verbosityOption);
+
             Command lineDefaultGetCommand = new("get", "Get an existing invoice line default.");
             lineDefaultGetCommand.AddAlias("show");
-            Argument<long> lineDefaultIdArgument = new("lineDefaultId", "The id of the line default.");
             lineDefaultGetCommand.AddArgument(lineDefaultIdArgument);
             lineDefaultGetCommand.SetHandler(HandleLineDefaultGetAsync, lineDefaultIdArgument, verbosityOption);
 
@@ -70,6 +74,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             lineDefaultListCommand.SetHandler(HandleLineDefaultListAsync, verbosityOption);
 
             lineDefaultCommand.AddCommand(lineDefaultCreateCommand);
+            lineDefaultCommand.AddCommand(lineDefaultEditCommand);
             lineDefaultCommand.AddCommand(lineDefaultGetCommand);
             lineDefaultCommand.AddCommand(lineDefaultListCommand);
             rootCommand.AddCommand(lineDefaultCommand);
@@ -268,6 +273,22 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(invoiceLineDefault.ToJsonString(indented: true));
         }
 
+        private static async Task HandleLineDefaultEditAsync(long id, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault = await client.Invoice.GetLineDefaultAsync(id);
+
+            invoiceLineDefault.Title = Input.GetString(nameof(invoiceLineDefault.Title), invoiceLineDefault.Title);
+            invoiceLineDefault.Description = Input.GetString(nameof(invoiceLineDefault.Description), invoiceLineDefault.Description);
+            invoiceLineDefault.Quantity = Input.GetDecimal(nameof(invoiceLineDefault.Quantity), defaultVal: invoiceLineDefault.Quantity);
+            invoiceLineDefault.Unit = Input.GetString(nameof(invoiceLineDefault.Unit), invoiceLineDefault.Unit);
+            invoiceLineDefault.Price = Input.GetDecimal(nameof(invoiceLineDefault.Price), defaultVal: invoiceLineDefault.Price);
+
+            invoiceLineDefault = await client.Invoice.UpdateLineDefaultAsync(invoiceLineDefault);
+            Console.WriteLine(invoiceLineDefault.ToJsonString(indented: true));
+        }
+
         private static async Task HandleLineDefaultGetAsync(long id, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
@@ -289,7 +310,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceLineDefault.Quantity),
                 nameof(Contracts.Invoicing.InvoiceLineDefault.Unit),
                 nameof(Contracts.Invoicing.InvoiceLineDefault.Price),
-                nameof(Contracts.Invoicing.InvoiceLineDefault.CreatedDate));
+                nameof(Contracts.Invoicing.InvoiceLineDefault.ModifiedDate));
         }
 
         #endregion // Line Defaults
@@ -314,7 +335,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceLineDefault.Quantity),
                 nameof(Contracts.Invoicing.InvoiceLineDefault.Unit),
                 nameof(Contracts.Invoicing.InvoiceLineDefault.Price),
-                nameof(Contracts.Invoicing.InvoiceLineDefault.CreatedDate));
+                nameof(Contracts.Invoicing.InvoiceLineDefault.ModifiedDate));
 
             long invoiceLineDefaultId = Input.GetLong("InvoiceLineDefault.Id");
             Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault = invoiceLineDefaults.Skip(1).SingleOrDefault(x => x.Id == invoiceLineDefaultId);
