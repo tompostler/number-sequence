@@ -6,13 +6,17 @@ namespace number_sequence.DurableTaskImpl
     {
         public static IServiceCollection AddDurableOrchestrations(IServiceCollection services)
             => services
+
+                //
                 // Orchestrators, and their specific activities
+                //
+
+                // Invoice (postler) generation
                 .AddSingleton<TaskOrchestration, Orchestrators.InvoicePostlerLatexGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.InvoicePostlerLatexGenerationActivity>()
 
+                // Convert latex to a pdf and email it
                 .AddSingleton<TaskOrchestration, Orchestrators.LatexGenerationOrchestrator>()
-
-                // Shared activities
                 .AddSingleton<TaskActivity, Activities.GeneratePdfFromLatexActivity>()
                 .AddSingleton<TaskActivity, Activities.EmailPdfForLatexActivity>()
             ;
