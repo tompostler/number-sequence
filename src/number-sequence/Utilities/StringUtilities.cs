@@ -24,25 +24,13 @@ namespace number_sequence.Utilities
             }
         }
 
-        public static string GetSHA256(this string @this)
-        {
-            using var sha256 = SHA256.Create();
-            byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(@this));
-
-            // BitConverter averages 50% faster than using a StringBuilder with every byte.ToString("x2")
-            string hashHex = BitConverter.ToString(hash).Replace("-", "").ToLower();
-
-            // A SHA256 hash is 64 characters long
-            return hashHex;
-        }
-
         /// <summary>
-        /// Converts a long input string (such as one from <see cref="GetSHA256(string)"/>) to 4 groups of 4.
+        /// Converts a long input string (such as one from <see cref="Unlimitedinf.Utilities.Extensions.StringExtensions.ComputeSHA256(string)"/>) to 3 groups of 3.
         /// If the string is null or empty, it is returned instead.
-        /// If it is shorter than 16 chars, dashes are added where possible.
+        /// If it is shorter than 9 chars, dashes are added where possible.
         /// Replaces spaces with empty string.
         /// <br/>
-        /// E.g. 921f32914faedaea00b1c4b6577ffff7a1885c3b3e20ea35359339a741c0ede6 becomes 921f-3291-4fae-daea.
+        /// E.g. 921f32914faedaea00b1c4b6577ffff7a1885c3b3e20ea35359339a741c0ede6 becomes 921-f32-914.
         /// </summary>
         public static string MakeHumanFriendly(this string @this)
         {
@@ -51,21 +39,17 @@ namespace number_sequence.Utilities
                 return @this;
             }
             @this = @this.Replace(" ", string.Empty).ToLower();
-            if (@this.Length > 16)
+            if (@this.Length > 9)
             {
-                return $"{@this.Substring(0, 4)}-{@this.Substring(4, 4)}-{@this.Substring(8, 4)}-{@this.Substring(12, 4)}";
+                return $"{@this.Substring(0, 3)}-{@this.Substring(3, 3)}-{@this.Substring(6, 3)}";
             }
-            else if (@this.Length > 12)
+            else if (@this.Length > 6)
             {
-                return $"{@this.Substring(0, 4)}-{@this.Substring(4, 4)}-{@this.Substring(8, 4)}-{@this.Substring(12)}";
+                return $"{@this.Substring(0, 3)}-{@this.Substring(3, 3)}-{@this.Substring(6)}";
             }
-            else if (@this.Length > 8)
+            else if (@this.Length > 3)
             {
-                return $"{@this.Substring(0, 4)}-{@this.Substring(4, 4)}-{@this.Substring(8)}";
-            }
-            else if (@this.Length > 4)
-            {
-                return $"{@this.Substring(0, 4)}-{@this.Substring(4)}";
+                return $"{@this.Substring(0, 3)}-{@this.Substring(3)}";
             }
             else // if (@this.Length > 0)
             {

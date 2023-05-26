@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using number_sequence.DataAccess;
 using number_sequence.Models;
 using number_sequence.Utilities;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.Services.Background.LatexGeneration
 {
@@ -70,7 +71,7 @@ namespace number_sequence.Services.Background.LatexGeneration
             for (int rowIndex = 0; rowIndex < data.Count; rowIndex++)
             {
                 row = data[rowIndex].Select(x => x as string).ToArray();
-                string id = string.Join('|', row).GetSHA256();
+                string id = string.Join('|', row).ComputeSHA256();
                 latexTemplateRow = await nsContext.LatexTemplateSpreadsheetRows
                     .SingleOrDefaultAsync(x => x.SpreadsheetId == template.SpreadsheetId && x.RowId == id, cancellationToken);
 
