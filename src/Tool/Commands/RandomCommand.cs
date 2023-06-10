@@ -16,6 +16,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     "8ball",
                     "guid",
                     "name",
+                    "wot",
                     "bit",
                     "crumb",
                     "nibble",
@@ -26,14 +27,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 );
             command.AddArgument(randomTypeArg);
 
-            Option<string> seedOpt = new("--seed", "If provided and the API supports it, the seed to use for the randomness.");
+            Option<string> seedOpt = new("--seed", "If provided and the API supports it, the seed to use for the randomness. Hashed with MD5 to an int. (string)");
             command.AddOption(seedOpt);
 
-            command.SetHandler(HandleAsync, randomTypeArg, seedOpt, verbosityOption);
+            Option<int?> valueOpt = new("--value", "If provided and the API supports it, the value to use for the randomness. (int)");
+            command.AddOption(valueOpt);
+
+            command.SetHandler(HandleAsync, randomTypeArg, seedOpt, valueOpt, verbosityOption);
             return command;
         }
 
-        private static async Task HandleAsync(string type, string seedStr, Verbosity verbosity)
+        private static async Task HandleAsync(string type, string seedStr, int? value, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, Program.Stamp);
 
@@ -51,6 +55,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 "8ball" => await client.Random.Get8BallAsync(),
                 "guid" => await client.Random.GetGuidAsync(),
                 "name" => await client.Random.GetNameAsync(seed),
+                "wot" => await client.Random.GetWheelOfTimeIntroAsync(value),
                 "bit" => await client.Random.GetULong01Async(),
                 "crumb" => await client.Random.GetULong02Async(),
                 "nibble" => await client.Random.GetULong04Async(),

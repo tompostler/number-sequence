@@ -215,5 +215,21 @@
                 needsPreparation: false);
             return await response.Content.ReadJsonAsAsync<ulong>(cancellationToken);
         }
+
+        /// <summary>
+        /// Gets a random Wheel of Time book intro.
+        /// </summary>
+        public async Task<string> GetWheelOfTimeIntroAsync(int? book = default, CancellationToken cancellationToken = default)
+        {
+            string queryString = book.HasValue ? $"?book={book}" : string.Empty;
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/wot" + queryString),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
     }
 }
