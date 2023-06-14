@@ -1099,7 +1099,7 @@ namespace number_sequence.Controllers
                 book = ((int)Generate(16) % wotQuotes.Length) + 1;
             }
 
-            return this.Ok(wotQuotes[book.Value + 1]);
+            return this.Ok(wotQuotes[book.Value - 1]);
         }
     }
 }
