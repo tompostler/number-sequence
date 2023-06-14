@@ -1096,7 +1096,7 @@ namespace number_sequence.Controllers
             }
             else if (!book.HasValue)
             {
-                book = ((int)Generate(16) % wotQuotes.Length) - 1;
+                book = ((int)Generate(16) % wotQuotes.Length) + 1;
             }
 
             return this.Ok(wotQuotes[book.Value + 1]);
