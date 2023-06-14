@@ -1090,16 +1090,16 @@ namespace number_sequence.Controllers
         [HttpGet("wot")]
         public IActionResult Wot([FromQuery] int? book = default)
         {
-            if (book.HasValue && (book < 0 || book >= wotQuotes.Length))
+            if (book.HasValue && (book <= 0 || book > wotQuotes.Length))
             {
-                return this.BadRequest($"If supplying book number, it must be in [{0},{wotQuotes.Length}). You supplied '{book}'.");
+                return this.BadRequest($"If supplying book number, it must be in [1,{wotQuotes.Length}]. You supplied '{book}'.");
             }
             else if (!book.HasValue)
             {
-                book = (int)Generate(16) % wotQuotes.Length;
+                book = ((int)Generate(16) % wotQuotes.Length) - 1;
             }
 
-            return this.Ok(wotQuotes[book.Value]);
+            return this.Ok(wotQuotes[book.Value + 1]);
         }
     }
 }
