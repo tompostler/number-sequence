@@ -16,6 +16,11 @@
         public const string LatexStatus = nameof(LatexStatus);
 
         /// <summary>
+        /// The account has access to the loan features.
+        /// </summary>
+        public const string Loans = nameof(Loans);
+
+        /// <summary>
         /// Verify that roles are working by being granted this role and using the ping endpoint.
         /// </summary>
         public const string Ping = nameof(Ping);
