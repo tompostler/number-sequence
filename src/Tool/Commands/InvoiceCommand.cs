@@ -38,9 +38,13 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Command customerCreateCommand = new("create", "Create a new invoice customer.");
             customerCreateCommand.SetHandler(HandleCustomerCreateAsync, verbosityOption);
 
+            Command customerEditCommand = new("edit", "Edit an existing invoice customer.");
+            Argument<long> customerIdArgument = new("customerId", "The id of the customer.");
+            customerEditCommand.AddArgument(customerIdArgument);
+            customerEditCommand.SetHandler(HandleCustomerEditAsync, customerIdArgument, verbosityOption);
+
             Command customerGetCommand = new("get", "Get an existing invoice customer.");
             customerGetCommand.AddAlias("show");
-            Argument<long> customerIdArgument = new("customerId", "The id of the customer.");
             customerGetCommand.AddArgument(customerIdArgument);
             customerGetCommand.SetHandler(HandleCustomerGetAsync, customerIdArgument, verbosityOption);
 
@@ -49,6 +53,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             customerListCommand.SetHandler(HandleCustomerListAsync, verbosityOption);
 
             customerCommand.AddCommand(customerCreateCommand);
+            customerCommand.AddCommand(customerEditCommand);
             customerCommand.AddCommand(customerGetCommand);
             customerCommand.AddCommand(customerListCommand);
             rootCommand.AddCommand(customerCommand);
@@ -225,6 +230,21 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             };
 
             invoiceCustomer = await client.Invoice.CreateCustomerAsync(invoiceCustomer);
+            Console.WriteLine(invoiceCustomer.ToJsonString(indented: true));
+        }
+
+        private static async Task HandleCustomerEditAsync(long id, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.InvoiceCustomer invoiceCustomer = await client.Invoice.GetCustomerAsync(id);
+
+            invoiceCustomer.Name = Input.GetString(nameof(invoiceCustomer.Name), invoiceCustomer.Name);
+            invoiceCustomer.AddressLine1 = Input.GetString(nameof(invoiceCustomer.AddressLine1), invoiceCustomer.AddressLine1);
+            invoiceCustomer.AddressLine2 = Input.GetString(nameof(invoiceCustomer.AddressLine2), invoiceCustomer.AddressLine2);
+            invoiceCustomer.Contact = Input.GetString(nameof(invoiceCustomer.Contact), invoiceCustomer.Contact);
+
+            invoiceCustomer = await client.Invoice.UpdateCustomerAsync(invoiceCustomer);
             Console.WriteLine(invoiceCustomer.ToJsonString(indented: true));
         }
 
