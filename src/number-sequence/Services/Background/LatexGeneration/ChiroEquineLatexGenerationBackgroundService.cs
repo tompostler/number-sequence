@@ -101,30 +101,6 @@ namespace number_sequence.Services.Background.LatexGeneration
                 return;
             }
 
-            // Create the new records for generating the document
-            LatexDocument latexDocument = new()
-            {
-                Id = latexTemplateRow.LatexDocumentId
-            };
-            _ = nsContext.LatexDocuments.Add(latexDocument);
-
-            // Copy the template blob(s) to the working directory
-            BlobClient templateLatexBlob = default;
-            await foreach (BlobClient templateBlob in this.nsStorage.EnumerateAllBlobsForLatexTemplateAsync(template.Id, cancellationToken))
-            {
-                string targetPath = $"{NsStorage.C.LBP.Input}/{templateBlob.Name.Substring((template.Id + "/").Length).Replace("template", latexDocument.Id)}";
-                BlobClient targetBlob = this.nsStorage.GetBlobClientForLatexJob(latexDocument.Id, targetPath);
-                this.logger.LogInformation($"Copying {templateBlob.Uri} to {targetBlob.Uri}");
-                _ = await targetBlob.SyncCopyFromUriAsync(
-                    templateBlob.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1)),
-                    cancellationToken: cancellationToken);
-
-                if (templateBlob.Name.EndsWith("template.tex"))
-                {
-                    templateLatexBlob = targetBlob;
-                }
-            }
-
             string customAppend(string existing, string prefix, int index)
             {
                 if (index >= row.Length)
@@ -146,6 +122,23 @@ namespace number_sequence.Services.Background.LatexGeneration
             // Parse the data row into meaningful replacement values
             // Index, Column label in spreadsheet, Description
             //  0  A Submission timestamp
+            // 92 CO Email Address
+            string emailSubmitter = row.Length > 92 ? row[92]?.Trim() : string.Empty;
+            if (!string.IsNullOrWhiteSpace(emailSubmitter) && !string.IsNullOrWhiteSpace(template.AllowedSubmitterEmails))
+            {
+                // Historically, old rows did not have the email captured.
+                // So only check for allowed submitters if both have a value.
+                if (template.AllowedSubmitterEmails.Contains(emailSubmitter))
+                {
+                    this.logger.LogInformation($"{emailSubmitter} is allowed to use this form.");
+                }
+                else
+                {
+                    this.logger.LogWarning($"{emailSubmitter} is not allowed to use this form.");
+                    _ = await nsContext.SaveChangesAsync(cancellationToken);
+                    return;
+                }
+            }
 
             // Intake info
             //  1  B Patient Name
@@ -367,9 +360,30 @@ namespace number_sequence.Services.Background.LatexGeneration
             coccygeal += customAppend(coccygeal, "Coccygeal", 91);
             coccygeal += customAppend(coccygeal, string.Empty, 88);
 
-            // 92 CO Email Address
-            string emailSubmitter = row.Length > 92 ? row[92]?.Trim() : string.Empty;
 
+            // Create the new records for generating the document
+            LatexDocument latexDocument = new()
+            {
+                Id = latexTemplateRow.LatexDocumentId
+            };
+            _ = nsContext.LatexDocuments.Add(latexDocument);
+
+            // Copy the template blob(s) to the working directory
+            BlobClient templateLatexBlob = default;
+            await foreach (BlobClient templateBlob in this.nsStorage.EnumerateAllBlobsForLatexTemplateAsync(template.Id, cancellationToken))
+            {
+                string targetPath = $"{NsStorage.C.LBP.Input}/{templateBlob.Name.Substring((template.Id + "/").Length).Replace("template", latexDocument.Id)}";
+                BlobClient targetBlob = this.nsStorage.GetBlobClientForLatexJob(latexDocument.Id, targetPath);
+                this.logger.LogInformation($"Copying {templateBlob.Uri} to {targetBlob.Uri}");
+                _ = await targetBlob.SyncCopyFromUriAsync(
+                    templateBlob.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1)),
+                    cancellationToken: cancellationToken);
+
+                if (templateBlob.Name.EndsWith("template.tex"))
+                {
+                    templateLatexBlob = targetBlob;
+                }
+            }
 
             // Download the template to memory to do the string replacement
             this.logger.LogInformation($"Downloading {templateLatexBlob.Uri} to memory for template application.");
