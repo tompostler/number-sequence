@@ -19,6 +19,12 @@ namespace number_sequence.Models
         [MaxLength(64)]
         public string EmailTo { get; set; }
 
+        /// <summary>
+        /// Semicolon-delimited.
+        /// </summary>
+        [MaxLength(128)]
+        public string AllowedSubmitterEmails { get; set; }
+
         [MaxLength(128)]
         public string SubjectTemplate { get; set; }
 

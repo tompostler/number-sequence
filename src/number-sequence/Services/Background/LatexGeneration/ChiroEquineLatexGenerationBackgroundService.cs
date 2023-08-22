@@ -144,6 +144,7 @@ namespace number_sequence.Services.Background.LatexGeneration
 
 
             // Parse the data row into meaningful replacement values
+            // Index, Column label in spreadsheet, Description
             //  0  A Submission timestamp
 
             // Intake info
@@ -365,6 +366,9 @@ namespace number_sequence.Services.Background.LatexGeneration
             string coccygeal = string.Empty;
             coccygeal += customAppend(coccygeal, "Coccygeal", 91);
             coccygeal += customAppend(coccygeal, string.Empty, 88);
+
+            // 92 CO Email Address
+            string emailSubmitter = row.Length > 92 ? row[92]?.Trim() : string.Empty;
 
 
             // Download the template to memory to do the string replacement

@@ -153,6 +153,7 @@ namespace number_sequence.Services.Background.LatexGeneration
 
 
             // Parse the data row into meaningful replacement values
+            // Index, Column label in spreadsheet, Description
             //  0  A Submission timestamp
 
             // Intake info
@@ -350,6 +351,9 @@ namespace number_sequence.Services.Background.LatexGeneration
             // Extended other notes
             // 79 CB Raw response
             string other = row.Length > 79 ? row[79]?.Trim()?.EscapeForLatex() : string.Empty;
+
+            // 80 CC Email Address
+            string emailSubmitter = row.Length > 80 ? row[80]?.Trim() : string.Empty;
 
 
             // Download the template to memory to do the string replacement
