@@ -46,6 +46,8 @@ jobs:
       arguments: '--no-restore --configuration Debug --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
 
   - task: DotNetCoreCLI@2
+    # Only run the tests if it's a CI build instead of on the weekly scheduled builds
+    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
     displayName: Run unit tests
     inputs:
       command: test
