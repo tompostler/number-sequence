@@ -28,12 +28,7 @@ namespace number_sequence.Services.Background
                 MaxActiveOrchestrations = 1,
                 MaxConcurrentActivities = 1,
 
-                MinActivityPollingInterval = TimeSpan.FromSeconds(1),
-                DeltaBackoffActivityPollingInterval = TimeSpan.FromSeconds(3),
                 MaxActivityPollingInterval = TimeSpan.FromMinutes(5),
-
-                MinOrchestrationPollingInterval = TimeSpan.FromSeconds(1),
-                DeltaBackoffOrchestrationPollingInterval = TimeSpan.FromSeconds(3),
                 MaxOrchestrationPollingInterval = TimeSpan.FromMinutes(5),
             };
             this.sqlOrchestrationService = new(sqlOrchestrationServiceSettings);
