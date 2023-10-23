@@ -1,3 +1,0 @@
-[submodule "subs/durabletask-mssql"]
-	path = subs/durabletask-mssql
-	url = https://github.com/tompostler/durabletask-mssql.git
