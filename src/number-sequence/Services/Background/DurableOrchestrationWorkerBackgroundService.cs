@@ -48,8 +48,8 @@ namespace number_sequence.Services.Background
             {
                 this.logger.LogInformation("Setting up durable orchestration background service.");
 
-                await this.sqlOrchestrationService.CreateIfNotExistsAsync();
-                this.logger.LogInformation("Created schema (if not exists)");
+                await this.sqlOrchestrationService.CreateAsync(recreateInstanceStore: true);
+                this.logger.LogInformation("Recreated schema");
 
                 this.worker = new(this.sqlOrchestrationService, this.loggerFactory);
                 this.logger.LogInformation("Created worker");
