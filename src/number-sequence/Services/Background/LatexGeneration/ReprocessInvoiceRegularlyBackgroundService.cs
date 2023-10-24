@@ -18,7 +18,11 @@ namespace number_sequence.Services.Background.LatexGeneration
             : base(serviceProvider, sentinals, logger, telemetryClient)
         { }
 
-        protected override CronExpression Cron => CronExpression.Parse("3 8-20/4 * * MON-FRI");
+        protected override List<CronExpression> Crons => new()
+        {
+            // 3 minutes past the hour, every 4 hours from 8AM through 8PM, Monday through Friday
+            CronExpression.Parse("3 8-20/4 * * MON-FRI"),
+        };
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {

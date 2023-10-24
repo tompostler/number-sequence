@@ -34,11 +34,11 @@ namespace number_sequence.Services.Background
 
         protected override sealed async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (!this.Interval.HasValue && this.Cron == default)
+            if (!this.Interval.HasValue && this.Crons == default)
             {
                 throw new InvalidOperationException("An Interval or Cron must be set for the background service. Neither were set.");
             }
-            if (this.Interval.HasValue && this.Cron!= default)
+            if (this.Interval.HasValue && this.Crons != default)
             {
                 throw new InvalidOperationException("An Interval or Cron must be set for the background service. Both were set.");
             }
@@ -57,7 +57,7 @@ namespace number_sequence.Services.Background
                     // We have a previous record and we should wait before executing again
                     if (lastExecution != default && DateTimeOffset.UtcNow < nextExecution)
                     {
-                        this.logger.LogInformation($"Last execution of {this.GetType().FullName} was {DateTimeOffset.UtcNow - lastExecution.LastExecuted} ago when the interval is [{this.Interval}] and the cron is [{this.Cron}]. Next execution is expected at {nextExecution:u}");
+                        this.logger.LogInformation($"Last execution of {this.GetType().FullName} was {DateTimeOffset.UtcNow - lastExecution.LastExecuted} ago when the interval is [{this.Interval}] and the crons are [{string.Join("],[", this.Crons)}]. Next execution is expected at {nextExecution:u}");
                         TimeSpan timeUntilNextExpectedExecution = nextExecution - DateTimeOffset.UtcNow;
                         var durationToSleep = TimeSpan.FromMinutes(Math.Max(5, timeUntilNextExpectedExecution.TotalMinutes));
                         this.logger.LogInformation($"Determined we should sleep for {durationToSleep}");
@@ -108,9 +108,9 @@ namespace number_sequence.Services.Background
             {
                 return lastExecution.Value.Add(this.Interval.Value);
             }
-            else if (this.Cron != default)
+            else if (this.Crons != default)
             {
-                return this.Cron.GetNextOccurrence(lastExecution.Value, CentralUSTimeZone).Value;
+                return this.Crons.Min(x => x.GetNextOccurrence(lastExecution.Value, CentralUSTimeZone).Value);
             }
             else
             {
@@ -120,7 +120,7 @@ namespace number_sequence.Services.Background
 
         protected virtual TimeSpan? Interval { get; }
 
-        protected virtual CronExpression Cron { get; }
+        protected virtual List<CronExpression> Crons { get; }
 
         protected abstract Task ExecuteOnceAsync(CancellationToken cancellationToken);
     }

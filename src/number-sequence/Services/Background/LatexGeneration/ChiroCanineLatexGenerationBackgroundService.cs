@@ -30,7 +30,15 @@ namespace number_sequence.Services.Background.LatexGeneration
             this.nsStorage = nsStorage;
         }
 
-        protected override CronExpression Cron => CronExpression.Parse("45 */15 7-23 * * *", CronFormat.IncludeSeconds);
+        protected override List<CronExpression> Crons => new()
+        {
+            // 45 seconds into the minute, every 15 minutes, 9AM through 10PM, Monday through Friday
+            CronExpression.Parse("45 */15 9-22 * * MON-FRI", CronFormat.IncludeSeconds),
+            // 45 seconds into the minute, every hour, 12AM through 9AM and 10PM through 12AM, Monday through Friday
+            CronExpression.Parse("45 0 0-9,23 * * MON-FRI", CronFormat.IncludeSeconds),
+            // 45 seconds into the minute, every hour, Saturday through Sunday
+            CronExpression.Parse("45 0 * * * SAT-SUN", CronFormat.IncludeSeconds),
+        };
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
