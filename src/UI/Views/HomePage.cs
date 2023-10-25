@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Logging;
 using TcpWtf.NumberSequence.Client;
+using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Tool;
+using Unlimitedinf.Utilities;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.UI.Views;
 
@@ -8,23 +11,35 @@ public class HomePage : ContentPage
 {
     private readonly NsTcpWtfClient client;
 
+    private readonly Editor body;
+
     const int statusLineLimit = 10;
     private readonly List<string> statusTextLines = Enumerable.Repeat(string.Empty, statusLineLimit).ToList();
-    private readonly Label status;
+    private readonly Editor status;
 
+    /// <summary>
+    /// Consists of a grid with three rows:
+    /// 1. FlexLayout of all the primary button navigation.
+    /// 2. Body Entry for simple display data.
+    /// 3. Status logging Entry snapped to the bottom.
+    /// </summary>
     public HomePage()
     {
         this.Title = "Home";
+
+        // Overall page grid
         var gLayout = new Grid
         {
             RowDefinitions =
             {
+                new(GridLength.Auto),
                 new(GridLength.Star),
                 new(GridLength.Auto),
             }
         };
         this.Content = gLayout;
 
+        // First row of buttons
         var fLayout = new FlexLayout
         {
             AlignContent = Microsoft.Maui.Layouts.FlexAlignContent.Start,
@@ -47,7 +62,7 @@ public class HomePage : ContentPage
             fLayout.Add(button);
         }
 
-        addButton("Account");
+        addButton("Account (show)");
         addButton("Counts");
         addButton("Invoices");
         addButton("IP");
@@ -56,18 +71,28 @@ public class HomePage : ContentPage
         addButton("Ping (authed)");
         addButton("Ping (roled)");
         addButton("Random");
-        addButton("Tokens");
+        addButton("Token (show)");
 
-        this.status = new Label()
+        // Middle row of table
+        this.body = new()
+        {
+            BackgroundColor = Colors.LightGray,
+            FontFamily = "Hack",
+            IsReadOnly = true,
+        };
+        gLayout.Add(this.body, row: 1);
+
+        // Last row of status
+        this.status = new()
         {
             BackgroundColor = Colors.Black,
             TextColor = Colors.LightGray,
             FontFamily = "Hack",
-            Padding = new(10),
+            IsReadOnly = true,
         };
-        this.status.FontSize *= 0.6;
+        this.status.FontSize *= 0.75;
         this.UpdateStatus();
-        gLayout.Add(this.status, row: 1);
+        gLayout.Add(this.status, row: 2);
 
         this.client = new NsTcpWtfClient(new ClientListLogger(this.UpdateStatus), TokenProvider.GetAsync);
     }
@@ -91,11 +116,53 @@ public class HomePage : ContentPage
         string clicked = new((sender as Button).Text.ToLower().Where(x => char.IsLetter(x)).ToArray());
         this.UpdateStatus($"Clicked {clicked}");
 
+        // Wipe any data displayed in the body.
+        this.body.Text = null;
+
         switch (clicked)
         {
+            case "accountshow":
+                this.body.Text = (await this.client.Account.GetAsync(TokenProvider.GetAccount())).ToJsonString(indented: true);
+                break;
+
             case "ip":
-                string ip = await this.client.Ping.GetPublicIpAsync();
-                this.UpdateStatus(ip);
+                this.body.Text = await this.client.Ping.GetPublicIpAsync();
+                break;
+
+            case "latexstatus":
+                LatexStatus latexStatus = await this.client.LatexStatus.GetAsync();
+                int bufferWidth = (int)(this.Width / this.body.FontSize * 1.6);
+                this.body.Text = nameof(LatexStatus.LatexTemplateSpreadsheetRows);
+                this.body.Text += '\n';
+                this.body.Text += Output.WriteTable(
+                    latexStatus.LatexTemplateSpreadsheetRows,
+                    bufferWidth,
+                    nameof(LatexStatus.LatexTemplateSpreadsheetRow.RowId),
+                    nameof(LatexStatus.LatexTemplateSpreadsheetRow.LatexDocumentId),
+                    nameof(LatexStatus.LatexTemplateSpreadsheetRow.CreatedDate));
+                this.body.Text += '\n';
+                this.body.Text += nameof(LatexStatus.LatexDocuments);
+                this.body.Text += '\n';
+                this.body.Text += Output.WriteTable(
+                    latexStatus.LatexDocuments,
+                    bufferWidth,
+                    nameof(LatexStatus.LatexDocument.Id),
+                    nameof(LatexStatus.LatexDocument.CreatedDate),
+                    nameof(LatexStatus.LatexDocument.ProcessedAt),
+                    nameof(LatexStatus.LatexDocument.Delay),
+                    nameof(LatexStatus.LatexDocument.Successful));
+                this.body.Text += '\n';
+                this.body.Text += nameof(LatexStatus.EmailLatexDocuments);
+                this.body.Text += '\n';
+                this.body.Text += Output.WriteTable(
+                    latexStatus.EmailLatexDocuments,
+                    bufferWidth,
+                    nameof(LatexStatus.EmailLatexDocument.Id),
+                    nameof(LatexStatus.EmailLatexDocument.Subject),
+                    nameof(LatexStatus.EmailLatexDocument.AttachmentName),
+                    nameof(LatexStatus.EmailLatexDocument.CreatedDate),
+                    nameof(LatexStatus.EmailLatexDocument.ProcessedAt),
+                    nameof(LatexStatus.EmailLatexDocument.Delay));
                 break;
 
             case "ping":
@@ -108,6 +175,10 @@ public class HomePage : ContentPage
 
             case "pingroled":
                 await this.client.Ping.SendWithAuthToRoleAsync();
+                break;
+
+            case "tokenshow":
+                this.body.Text = TokenProvider.Get().ToJsonString(indented: true);
                 break;
 
             default:
