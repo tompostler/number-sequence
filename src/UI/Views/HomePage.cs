@@ -53,6 +53,8 @@ public class HomePage : ContentPage
         addButton("IP");
         addButton("LaTeX Status");
         addButton("Ping");
+        addButton("Ping (authed)");
+        addButton("Ping (roled)");
         addButton("Random");
         addButton("Tokens");
 
@@ -94,6 +96,18 @@ public class HomePage : ContentPage
             case "ip":
                 string ip = await this.client.Ping.GetPublicIpAsync();
                 this.UpdateStatus(ip);
+                break;
+
+            case "ping":
+                await this.client.Ping.SendAsync();
+                break;
+
+            case "pingauthed":
+                await this.client.Ping.SendWithAuthAsync();
+                break;
+
+            case "pingroled":
+                await this.client.Ping.SendWithAuthToRoleAsync();
                 break;
 
             default:

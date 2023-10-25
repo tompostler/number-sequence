@@ -63,14 +63,14 @@ jobs:
       zipAfterPublish: true
       modifyOutputPath: true
 
-  - task: DotNetCoreCLI@2
-    displayName: Publish ui zip to the staging directory (win10-x64)
-    inputs:
-      command: publish
-      projects: src/UI/UI.csproj
-      arguments: '--configuration Debug --runtime win10-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained'
-      zipAfterPublish: true
-      modifyOutputPath: true
+  # - task: DotNetCoreCLI@2
+  #   displayName: Publish ui zip to the staging directory (win10-x64)
+  #   inputs:
+  #     command: publish
+  #     projects: src/UI/UI.csproj
+  #     arguments: '--configuration Debug --runtime win10-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained /p:WindowsPackageType=None'
+  #     zipAfterPublish: true
+  #     modifyOutputPath: true
 
   - task: PublishBuildArtifacts@1
     displayName: Publish build artifacts
