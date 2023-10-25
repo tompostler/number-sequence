@@ -64,7 +64,7 @@ public class HomePage : ContentPage
 
         addButton("Account (show)");
         addButton("Count (list)");
-        addButton("Invoices");
+        addButton("Invoice (list)");
         addButton("IP");
         addButton("LaTeX Status");
         addButton("Ping");
@@ -141,6 +141,39 @@ public class HomePage : ContentPage
                 this.body.Text = await this.client.Ping.GetPublicIpAsync();
                 break;
 
+            case "invoicelist":
+                List<Contracts.Invoicing.Invoice> invoices = await this.client.Invoice.GetAsync();
+                this.body.Text = Output.WriteTable(
+                    invoices.Select(x => new
+                    {
+                        x.Id,
+                        x.Title,
+                        BusinessName = x.Business.Name,
+                        CustomerName = x.Customer.Name,
+                        x.DueDate,
+                        x.PaidDate,
+                        x.Total,
+                        x.CreatedDate,
+                        x.ModifiedDate,
+                        x.ProcessedAt,
+                        x.ProccessAttempt,
+                        x.ReprocessRegularly,
+                    }),
+                    bufferWidth,
+                    nameof(Contracts.Invoicing.Invoice.Id),
+                    nameof(Contracts.Invoicing.Invoice.Title),
+                    nameof(Contracts.Invoicing.Invoice.Business) + nameof(Contracts.Invoicing.Invoice.Business.Name),
+                    nameof(Contracts.Invoicing.Invoice.Customer) + nameof(Contracts.Invoicing.Invoice.Customer.Name),
+                    nameof(Contracts.Invoicing.Invoice.DueDate),
+                    nameof(Contracts.Invoicing.Invoice.PaidDate),
+                    nameof(Contracts.Invoicing.Invoice.Total),
+                    nameof(Contracts.Invoicing.Invoice.CreatedDate),
+                    nameof(Contracts.Invoicing.Invoice.ModifiedDate),
+                    nameof(Contracts.Invoicing.Invoice.ProcessedAt),
+                    nameof(Contracts.Invoicing.Invoice.ProccessAttempt),
+                    nameof(Contracts.Invoicing.Invoice.ReprocessRegularly));
+                break;
+
             case "latexstatus":
                 LatexStatus latexStatus = await this.client.LatexStatus.GetAsync();
                 this.body.Text = nameof(LatexStatus.LatexTemplateSpreadsheetRows);
@@ -189,7 +222,7 @@ public class HomePage : ContentPage
                 break;
 
             case "tokenshow":
-                this.body.Text = TokenProvider.Get().ToJsonString(indented: true);
+                this.body.Text = TokenProvider.GetValue().ToJsonString(indented: true);
                 break;
 
             default:

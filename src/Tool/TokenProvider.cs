@@ -44,9 +44,9 @@ namespace TcpWtf.NumberSequence.Tool
             return tokenFileReader.ReadToEnd().FromJsonString<TokenFileModel>().Token;
         }
 
-        public static TokenValue GetTokenValue(ILogger logger = default) => Get(logger).FromBase64JsonString<TokenValue>();
+        public static TokenValue GetValue(ILogger logger = default) => Get(logger).FromBase64JsonString<TokenValue>();
 
-        public static string GetAccount(ILogger logger = default) => GetTokenValue(logger).Account;
+        public static string GetAccount(ILogger logger = default) => GetValue(logger).Account;
 
         public static Task<string> GetAsync(CancellationToken _) => Task.FromResult(Get());
 

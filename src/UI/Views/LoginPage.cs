@@ -39,7 +39,7 @@ public class LoginPage : ContentPage
 
         try
         {
-            TokenProvider.TokenValue token = TokenProvider.GetTokenValue();
+            TokenProvider.TokenValue token = TokenProvider.GetValue();
             if (token.ExpirationDate < DateTimeOffset.Now)
             {
                 instructions.Text = $"Token expiration is in the past and a new one will need to be created (expired {token.ExpirationDate:u}).";
@@ -79,7 +79,7 @@ public class LoginPage : ContentPage
                     ExpirationDate = DateTimeOffset.Now.AddYears(1),
                 });
             TokenProvider.Upsert(token.Value);
-            TokenProvider.TokenValue savedToken = TokenProvider.GetTokenValue();
+            TokenProvider.TokenValue savedToken = TokenProvider.GetValue();
             this.status.Text += $"\n\nCreated:\n{savedToken.ToJsonString(indented: true)}\n";
         }
 

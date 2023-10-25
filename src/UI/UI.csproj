@@ -22,6 +22,14 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <ApplicationTitle>ns.tcp.wtf</ApplicationTitle>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <ApplicationTitle>ns.tcp.wtf</ApplicationTitle>
+	</PropertyGroup>
+
   <!-- Maui assets -->
 	<ItemGroup>
 		<MauiIcon Include="Resources\AppIcon\unlimitedinf.png" BaseSize="256,256" />
@@ -35,7 +43,7 @@
 	</ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Unlimitedinf.Utilities" Version="2.9.13" />
+    <PackageReference Include="Unlimitedinf.Utilities" Version="2.9.16" />
   </ItemGroup>
   
   <ItemGroup>
