@@ -63,7 +63,7 @@ public class HomePage : ContentPage
         }
 
         addButton("Account (show)");
-        addButton("Counts");
+        addButton("Count (list)");
         addButton("Invoices");
         addButton("IP");
         addButton("LaTeX Status");
@@ -118,11 +118,23 @@ public class HomePage : ContentPage
 
         // Wipe any data displayed in the body.
         this.body.Text = null;
+        int bufferWidth = (int)(this.Width / this.body.FontSize * 1.6);
 
         switch (clicked)
         {
             case "accountshow":
                 this.body.Text = (await this.client.Account.GetAsync(TokenProvider.GetAccount())).ToJsonString(indented: true);
+                break;
+
+            case "countlist":
+                List<Count> counts = await this.client.Count.ListAsync();
+                this.body.Text = Output.WriteTable(
+                    counts,
+                    bufferWidth,
+                    nameof(Count.Name),
+                    nameof(Count.Value),
+                    nameof(Count.CreatedDate),
+                    nameof(Count.ModifiedDate));
                 break;
 
             case "ip":
@@ -131,7 +143,6 @@ public class HomePage : ContentPage
 
             case "latexstatus":
                 LatexStatus latexStatus = await this.client.LatexStatus.GetAsync();
-                int bufferWidth = (int)(this.Width / this.body.FontSize * 1.6);
                 this.body.Text = nameof(LatexStatus.LatexTemplateSpreadsheetRows);
                 this.body.Text += '\n';
                 this.body.Text += Output.WriteTable(

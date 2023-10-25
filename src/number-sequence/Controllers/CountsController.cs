@@ -56,6 +56,16 @@ namespace number_sequence.Controllers
             return this.Ok(createdCount);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAsync(CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            List<Count> counts = await nsContext.Counts.Where(x => x.Account == this.User.Identity.Name).ToListAsync(cancellationToken);
+            return this.Ok(counts);
+        }
+
         [HttpGet("{name}")]
         public async Task<IActionResult> GetAsync(string name, CancellationToken cancellationToken)
         {

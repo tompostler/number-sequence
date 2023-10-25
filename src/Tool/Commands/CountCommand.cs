@@ -13,7 +13,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Command createCommand = new("create", "Create a new count.");
             createCommand.SetHandler(HandleCreateAsync, verbosityOption);
-            
+
             Argument<string> countNameArgument = new("name", "The name of the count.");
             Option<bool> bareOption = new("--bare", "When used, will only return the count instead of the full count json object.");
 
@@ -36,10 +36,15 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             incrementByCommand.AddOption(bareOption);
             incrementByCommand.SetHandler(HandleIncrementByAsync, countNameArgument, incrementByAmountArgument, bareOption, verbosityOption);
 
+            Command listCommand = new("list", "Get existing counts.");
+            listCommand.AddAlias("ls");
+            listCommand.SetHandler(HandleListAsync, verbosityOption);
+
             rootCommand.AddCommand(createCommand);
             rootCommand.AddCommand(getCommand);
             rootCommand.AddCommand(incrementCommand);
             rootCommand.AddCommand(incrementByCommand);
+            rootCommand.AddCommand(listCommand);
             return rootCommand;
         }
 
@@ -100,6 +105,19 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             {
                 Console.WriteLine(count.ToJsonString(indented: true));
             }
+        }
+
+        private static async Task HandleListAsync(Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            List<Contracts.Count> counts = await client.Count.ListAsync();
+
+            Output.WriteTable(
+                counts,
+                nameof(Contracts.Count.Name),
+                nameof(Contracts.Count.Value),
+                nameof(Contracts.Count.CreatedDate),
+                nameof(Contracts.Count.ModifiedDate));
         }
     }
 }

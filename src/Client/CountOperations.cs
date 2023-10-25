@@ -68,5 +68,18 @@ namespace TcpWtf.NumberSequence.Client
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<Count>(cancellationToken);
         }
+
+        /// <summary>
+        /// List all existing counts.
+        /// </summary>
+        public async Task<List<Count>> ListAsync(CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "counts"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<Count>>(cancellationToken);
+        }
     }
 }
