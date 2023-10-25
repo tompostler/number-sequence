@@ -154,6 +154,7 @@ jobs:
 
 
 - job: TagSourceAndPushNuget
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
   dependsOn: [DotnetBuildWeb, DotnetBuildUI]
   pool:
     vmImage: windows-latest
@@ -161,10 +162,6 @@ jobs:
   steps:
 
   - checkout: none
-
-  - powershell: |
-      Write-Host '##vso[build.addbuildtag]$(Build.Reason)'
-    displayName: Tag build with reason
 
   - powershell: |
       # .DESCRIPTION
@@ -185,7 +182,6 @@ jobs:
       $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes((":{0}" -f $env:SYSTEM_ACCESSTOKEN)))
       $result = Invoke-RestMethod $tagUrl -Method POST -Body $newTag -ContentType "application/json" -Headers @{ Authorization = ("Basic {0}" -f $auth) }
       $result | ConvertTo-Json -Depth 100 | Out-Host
-    condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
     displayName: Tag source with build number
     env:
       # Have to explicitly map through to grant access
