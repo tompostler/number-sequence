@@ -20,10 +20,9 @@ jobs:
   - task: Cache@2
     displayName: NuGet package caching
     inputs:
-      key: 'nuget | "$(Agent.OS)" | $(Build.SourcesDirectory)/src/**/*.csproj'
+      key: 'nugetweb | $(Build.SourcesDirectory)/src/**/*.csproj'
       restoreKeys: |
-        nuget | "$(Agent.OS)"
-        nuget
+        nugetweb
       path: $(NUGET_PACKAGES)
 
   - task: DotNetCoreCLI@2
@@ -140,24 +139,17 @@ jobs:
   - task: Cache@2
     displayName: NuGet package caching
     inputs:
-      key: 'nuget | "$(Agent.OS)" | $(Build.SourcesDirectory)/src/**/*.csproj'
+      key: 'nugetui | $(Build.SourcesDirectory)/src/**/*.csproj'
       restoreKeys: |
-        nuget | "$(Agent.OS)"
-        nuget
+        nugetui
       path: $(NUGET_PACKAGES)
-
-  - task: DotNetCoreCLI@2
-    displayName: Restore nuget packages
-    inputs:
-      command: restore
-      projects: src/UI/UI.csproj
 
   - task: DotNetCoreCLI@2
     displayName: Publish ui zip to the staging directory (win10-x64)
     inputs:
       command: publish
       projects: src/UI/UI.csproj
-      arguments: '--no-restore --configuration Debug --runtime win10-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained /p:WindowsPackageType=None'
+      arguments: '--configuration Debug --runtime win10-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained /p:WindowsPackageType=None'
       zipAfterPublish: true
       modifyOutputPath: true
 
