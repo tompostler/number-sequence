@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageReference Include="Unlimitedinf.Utilities" Version="2.9.9" />
+    <PackageReference Include="Unlimitedinf.Utilities" Version="2.9.12" />
   </ItemGroup>
 
   <ItemGroup>
