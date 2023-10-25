@@ -1,6 +1,6 @@
 jobs:
 
-- job: DotnetBuild
+- job: DotnetBuildWeb
   pool:
     vmImage: windows-2022
 
@@ -76,18 +76,12 @@ jobs:
     displayName: Publish build artifacts
     inputs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: drop
+      artifactName: webdrop
       publishLocation: Container
-
-  - task: PowerShell@2
-    displayName: Tag build with reason
-    inputs:
-      targetType: inline
-      script: Write-Host '##vso[build.addbuildtag]$(Build.Reason)'
 
 
 - job: ContainerBuild
-  dependsOn: DotnetBuild
+  dependsOn: DotnetBuildWeb
   pool:
     vmImage: ubuntu-22.04
 
@@ -96,8 +90,8 @@ jobs:
   - task: DownloadPipelineArtifact@2
     inputs:
       source: current
-      artifact: drop
-      patterns: drop/output/number-sequence.zip
+      artifact: webdrop
+      patterns: webdrop/output/number-sequence.zip
       path: $(Agent.BuildDirectory)/ns-drop/
 
   - task: ExtractFiles@1
@@ -126,14 +120,67 @@ jobs:
       tags: latest
 
 
+- job: DotnetBuildUI
+  pool:
+    vmImage: windows-2022
+
+  steps:
+
+  - task: gitversion/setup@0
+    displayName: Install GitVersion
+    inputs:
+      versionSpec: 5.8.x
+
+  - task: gitversion/execute@0
+    displayName: Determine Version
+    inputs:
+      useConfigFile: true
+      configFilePath: GitVersion.yml
+
+  - task: Cache@2
+    displayName: NuGet package caching
+    inputs:
+      key: 'nuget | "$(Agent.OS)" | $(Build.SourcesDirectory)/src/**/*.csproj'
+      restoreKeys: |
+        nuget | "$(Agent.OS)"
+        nuget
+      path: $(NUGET_PACKAGES)
+
+  - task: DotNetCoreCLI@2
+    displayName: Restore nuget packages
+    inputs:
+      command: restore
+      projects: src/UI/UI.csproj
+
+  - task: DotNetCoreCLI@2
+    displayName: Publish ui zip to the staging directory (win10-x64)
+    inputs:
+      command: publish
+      projects: src/UI/UI.csproj
+      arguments: '--no-restore --configuration Debug --runtime win10-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained /p:WindowsPackageType=None'
+      zipAfterPublish: true
+      modifyOutputPath: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish build artifacts
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: uidrop
+      publishLocation: Container
+
+
 - job: TagSource
-  dependsOn: DotnetBuild
+  dependsOn: [DotnetBuildWeb, DotnetBuildUI]
   pool:
     vmImage: windows-latest
 
   steps:
 
   - checkout: none
+
+  - powershell: |
+      Write-Host '##vso[build.addbuildtag]$(Build.Reason)'
+    displayName: Tag build with reason
 
   - powershell: |
       # .DESCRIPTION
