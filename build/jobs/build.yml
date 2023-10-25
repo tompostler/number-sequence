@@ -55,11 +55,20 @@ jobs:
       arguments: '--no-restore --configuration Debug --no-build --logger:"console;verbosity=normal"'
 
   - task: DotNetCoreCLI@2
-    displayName: Publish zip to the staging directory (linux-x64)
+    displayName: Publish web zip to the staging directory (linux-x64)
     inputs:
       command: publish
       projects: src/number-sequence/number-sequence.csproj
       arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained'
+      zipAfterPublish: true
+      modifyOutputPath: true
+
+  - task: DotNetCoreCLI@2
+    displayName: Publish ui zip to the staging directory (win10-x64)
+    inputs:
+      command: publish
+      projects: src/UI/UI.csproj
+      arguments: '--no-restore --configuration Debug --runtime win10-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained'
       zipAfterPublish: true
       modifyOutputPath: true
 
