@@ -68,7 +68,7 @@ jobs:
     inputs:
       command: publish
       projects: src/UI/UI.csproj
-      arguments: '--no-restore --configuration Debug --runtime win10-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained'
+      arguments: '--configuration Debug --runtime win10-x64 --output $(Build.ArtifactStagingDirectory)/output --no-self-contained'
       zipAfterPublish: true
       modifyOutputPath: true
 
