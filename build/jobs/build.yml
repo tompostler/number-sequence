@@ -31,11 +31,15 @@ jobs:
       command: restore
       projects: src/number-sequence.sln
 
-  - task: PowerShell@2
+  - powershell: |
+      New-Item -Path $(Build.SourcesDirectory)/src/number-sequence/ -Name appsettings.Development.json -Type File
     displayName: Create dummy file for IntTests
-    inputs:
-      targetType: inline
-      script: New-Item -Path $(Build.SourcesDirectory)/src/number-sequence/ -Name appsettings.Development.json -Type File
+
+  - powershell: |
+      $t = (git log --pretty='format:%h %d %s' -n 20);
+      $filepath = '$(Build.SourcesDirectory)/src/Tool/Program.cs';
+      (Get-Content $filepath -Verbose).Replace('HISTORY_PLACEHOLDER', $t) | Set-Content $filepath -Verbose;
+    displayName: Update commit history
 
   - task: DotNetCoreCLI@2
     displayName: Build solution
