@@ -24,7 +24,7 @@ namespace TcpWtf.NumberSequence.Tool
             rootCommand.AddCommand(RandomCommand.Create(verbosityOption));
             rootCommand.AddCommand(TokenCommand.Create(verbosityOption));
 
-            Option<bool> historyOption = new("--history", "Display version history of the last 20 commits.");
+            Option<bool> historyOption = new("--history", "Display version history of the last 25 commits.");
             rootCommand.AddOption(historyOption);
             rootCommand.SetHandler(Handle, historyOption, verbosityOption);
 

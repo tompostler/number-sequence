@@ -36,7 +36,7 @@ jobs:
     displayName: Create dummy file for IntTests
 
   - powershell: |
-      $t = (git log --pretty='format:%h %d %s' -n 20);
+      $t = (git log --pretty='format:%h %d %s' -n 25);
       $filepath = '$(Build.SourcesDirectory)/src/Tool/Program.cs';
       (Get-Content $filepath -Verbose).Replace('HISTORY_PLACEHOLDER', [string]::Join("`n", $t)) | Set-Content $filepath -Verbose;
     displayName: Update commit history
