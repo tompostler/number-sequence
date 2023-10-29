@@ -91,12 +91,23 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Argument<long> idArgument = new("invoiceId", "The id of the invoice.");
             Option<bool> rawOption = new("--raw", "Show raw json object(s) instead of the nicer summary format.");
             lineCreateCommand.AddArgument(idArgument);
+            lineCreateCommand.AddOption(rawOption);
             lineCreateCommand.SetHandler(HandleLineCreateAsync, idArgument, rawOption, verbosityOption);
 
-            Command lineEditCommand = new("edit", "Edit an existing invoice line.");
+            Command lineDuplicateCommand = new("duplicate", "Duplicate an invoice line, optionally to another invoice.");
+            lineDuplicateCommand.AddAlias("dupe");
             Argument<long> lineIdArgument = new("lineId", "The id of the line.");
+            Argument<long> targetIdArgument = new("target-invoice-id", () => -1, "If supplied, the target invoice id to create the duplicate line on.");
+            lineDuplicateCommand.AddArgument(idArgument);
+            lineDuplicateCommand.AddArgument(lineIdArgument);
+            lineDuplicateCommand.AddArgument(targetIdArgument);
+            lineDuplicateCommand.AddOption(rawOption);
+            lineDuplicateCommand.SetHandler(HandleLineDuplicateAsync, idArgument, lineIdArgument, targetIdArgument, rawOption, verbosityOption);
+
+            Command lineEditCommand = new("edit", "Edit an existing invoice line.");
             lineEditCommand.AddArgument(idArgument);
             lineEditCommand.AddArgument(lineIdArgument);
+            lineEditCommand.AddOption(rawOption);
             lineEditCommand.SetHandler(HandleLineEditAsync, idArgument, lineIdArgument, rawOption, verbosityOption);
 
             Command lineGetCommand = new("get", "Get an existing invoice line.");
@@ -113,9 +124,11 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Command lineRemoveCommand = new("remove", "Remove an existing invoice line.");
             lineRemoveCommand.AddArgument(idArgument);
             lineRemoveCommand.AddArgument(lineIdArgument);
+            lineRemoveCommand.AddOption(rawOption);
             lineRemoveCommand.SetHandler(HandleLineRemoveAsync, idArgument, lineIdArgument, rawOption, verbosityOption);
 
             lineCommand.AddCommand(lineCreateCommand);
+            lineCommand.AddCommand(lineDuplicateCommand);
             lineCommand.AddCommand(lineEditCommand);
             lineCommand.AddCommand(lineGetCommand);
             lineCommand.AddCommand(lineListCommand);
@@ -372,6 +385,29 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             invoice.Lines.Add(invoiceLine);
             invoice = await client.Invoice.UpdateAsync(invoice);
             PrintSingleInvoice(invoice, raw);
+        }
+
+        private static async Task HandleLineDuplicateAsync(long invoiceId, long id, long targetInvoiceId, bool raw, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.Invoice sourceInvoice = await client.Invoice.GetAsync(invoiceId);
+            Contracts.Invoicing.InvoiceLine sourceInvoiceLine = sourceInvoice.Lines.Single(x => x.Id == id);
+
+            Contracts.Invoicing.Invoice targetInvoice = targetInvoiceId == -1 ? sourceInvoice : await client.Invoice.GetAsync(targetInvoiceId);
+            Contracts.Invoicing.InvoiceLine targetInvoiceLine;
+            targetInvoiceLine = new()
+            {
+                Title = Input.GetString(nameof(sourceInvoiceLine.Title), sourceInvoiceLine.Title),
+                Description = Input.GetString(nameof(sourceInvoiceLine.Description), sourceInvoiceLine.Description),
+                Quantity = Input.GetDecimal(nameof(sourceInvoiceLine.Quantity), defaultVal: sourceInvoiceLine.Quantity),
+                Unit = Input.GetString(nameof(sourceInvoiceLine.Unit), sourceInvoiceLine.Unit),
+                Price = Input.GetDecimal(nameof(sourceInvoiceLine.Price), defaultVal: sourceInvoiceLine.Price),
+            };
+
+            targetInvoice.Lines.Add(targetInvoiceLine);
+            targetInvoice = await client.Invoice.UpdateAsync(targetInvoice);
+            PrintSingleInvoice(targetInvoice, raw);
         }
 
         private static async Task HandleLineEditAsync(long invoiceId, long id, bool raw, Verbosity verbosity)
