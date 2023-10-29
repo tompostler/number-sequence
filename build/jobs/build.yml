@@ -38,7 +38,7 @@ jobs:
   - powershell: |
       $t = (git log --pretty='format:%h %d %s' -n 20);
       $filepath = '$(Build.SourcesDirectory)/src/Tool/Program.cs';
-      (Get-Content $filepath -Verbose).Replace('HISTORY_PLACEHOLDER', $t) | Set-Content $filepath -Verbose;
+      (Get-Content $filepath -Verbose).Replace('HISTORY_PLACEHOLDER', [string]::Join("`n", $t)) | Set-Content $filepath -Verbose;
     displayName: Update commit history
 
   - task: DotNetCoreCLI@2
