@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
 		<OutputType>Exe</OutputType>
 		<RootNamespace>TcpWtf.NumberSequence.UI</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -43,6 +43,7 @@
 	</ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.3" />
     <PackageReference Include="Unlimitedinf.Utilities" Version="2.9.16" />
   </ItemGroup>
   

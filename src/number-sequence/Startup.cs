@@ -99,7 +99,7 @@ namespace number_sequence
             _ = app.Use(
                 async (context, next) =>
                 {
-                    context.Response.Headers.Add(HttpHeaderNames.ServerVersion, assemblyFileVersion);
+                    context.Response.Headers[HttpHeaderNames.ServerVersion] = assemblyFileVersion;
                     await next.Invoke();
                 });
 
