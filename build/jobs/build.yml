@@ -31,6 +31,13 @@ jobs:
       path: $(NUGET_PACKAGES)
 
   - task: DotNetCoreCLI@2
+    displayName: Restore dotnet workloads
+    inputs:
+      command: custom
+      custom: workload restore
+      projects: src/number-sequence.sln
+
+  - task: DotNetCoreCLI@2
     displayName: Restore nuget packages
     inputs:
       command: restore
@@ -148,6 +155,13 @@ jobs:
       restoreKeys: |
         nugetui
       path: $(NUGET_PACKAGES)
+
+  - task: DotNetCoreCLI@2
+    displayName: Restore dotnet workloads
+    inputs:
+      command: custom
+      custom: workload restore
+      projects: src/number-sequence.sln
 
   - task: DotNetCoreCLI@2
     displayName: Publish ui zip to the staging directory (win10-x64)
