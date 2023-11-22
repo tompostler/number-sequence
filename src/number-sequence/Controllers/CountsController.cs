@@ -57,7 +57,7 @@ namespace number_sequence.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAsync(CancellationToken cancellationToken)
+        public async Task<IActionResult> ListAsync(CancellationToken cancellationToken)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();

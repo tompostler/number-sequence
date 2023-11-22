@@ -24,6 +24,8 @@ namespace number_sequence.DataAccess
         public DbSet<LatexTemplate> LatexTemplates { get; set; }
         public DbSet<LatexTemplateSpreadsheetRow> LatexTemplateSpreadsheetRows { get; set; }
         
+        public DbSet<Redirect> Redirects { get; set; }
+
         public DbSet<SynchronizedBackgroundService> SynchronizedBackgroundServices { get; set; }
 
         public NsContext(DbContextOptions<NsContext> dbContextOptions, ILoggerFactory loggerFactory)
@@ -180,6 +182,15 @@ namespace number_sequence.DataAccess
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
             _ = modelBuilder.Entity<Count>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<Redirect>()
+                .HasKey(x => new { x.Id });
+            _ = modelBuilder.Entity<Redirect>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<Redirect>()
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 

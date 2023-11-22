@@ -55,6 +55,7 @@ namespace TcpWtf.NumberSequence.Client
             this.LatexStatus = new LatexStatusOperations(this);
             this.Ping = new PingOperations(this);
             this.Random = new RandomOperations(this);
+            this.Redirect = new RedirectOperations(this);
             this.Token = new TokenOperations(this);
         }
 
@@ -87,6 +88,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Random operations.
         /// </summary>
         public RandomOperations Random { get; }
+
+        /// <summary>
+        /// Redirect operations.
+        /// </summary>
+        public RedirectOperations Redirect { get; }
 
         /// <summary>
         /// Token operations.

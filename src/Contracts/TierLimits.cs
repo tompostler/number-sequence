@@ -28,6 +28,11 @@
         public static readonly IReadOnlyDictionary<AccountTier, int> CountsPerAccount = AccountsPerCreatedFrom;
 
         /// <summary>
+        /// Number of redirects allowed is based on the account tier.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<AccountTier, int> RedirectsPerAccount = AccountsPerCreatedFrom;
+
+        /// <summary>
         /// Indicates how much priority cached items should have based on the account tier.
         /// </summary>
         public static readonly IReadOnlyDictionary<AccountTier, int> CacheItemPriority = new Dictionary<AccountTier, int>
