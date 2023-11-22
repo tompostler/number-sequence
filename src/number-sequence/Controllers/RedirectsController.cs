@@ -46,7 +46,7 @@ namespace number_sequence.Controllers
             return this.Redirect(redirect.Value);
         }
 
-        [HttpPost]
+        [HttpPost, RequiresToken]
         public async Task<IActionResult> CreateAsync([FromBody] Redirect redirect, CancellationToken cancellationToken)
         {
             redirect.Id = redirect.Id.ToLowerInvariant();

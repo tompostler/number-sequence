@@ -240,13 +240,13 @@ namespace TcpWtf.NumberSequence.Client
             const int baseDelaySeconds = 3;
             const double delayExponent = 1.8;
 
-            // This will retry 3s delay, 5.4s delay, 9.7s delay, 17.5s delay, 31.5s delay.
-            // For a total of 67.1s of delay (assuming instant response received).
-            // Also adds up to +/- 5% jitter.
+            // This will retry 3s delay, 5.4s delay, 9.7s delay, 17.5s delay.
+            // For a total of 35.6s of delay (assuming instant response received).
+            // Also adds up to +/- 10% jitter.
             double delaySeconds = Math.Pow(delayExponent, tryCount - 1) * baseDelaySeconds;
-            double ninetyFiveToOneHundredFivePercent = System.Random.Shared.NextDouble() + 0.1;
+            double ninetyFiveToOneHundredFivePercent = (System.Random.Shared.NextDouble() * 0.2) + 0.9;
             var delay = TimeSpan.FromSeconds(delaySeconds * ninetyFiveToOneHundredFivePercent);
-            this.logger.LogWarning($"Attempt {tryCount + 1}/{maxTryCount} after a {delay} delay due to {failureReason}.");
+            this.logger.LogWarning($"Attempt {tryCount + 1}/{maxTryCount} after a {delay:ss\\.ff}s delay due to {failureReason}.");
             await Task.Delay(delay, cancellationToken);
         }
 
