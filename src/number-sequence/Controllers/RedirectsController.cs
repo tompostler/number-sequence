@@ -90,8 +90,8 @@ namespace number_sequence.Controllers
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            List<Count> counts = await nsContext.Counts.Where(x => x.Account == this.User.Identity.Name).ToListAsync(cancellationToken);
-            return this.Ok(counts);
+            List<Redirect> redirects = await nsContext.Redirects.Where(x => x.AccountName == this.User.Identity.Name).ToListAsync(cancellationToken);
+            return this.Ok(redirects);
         }
     }
 }
