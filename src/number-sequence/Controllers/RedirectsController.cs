@@ -43,7 +43,7 @@ namespace number_sequence.Controllers
             redirect.Hits++;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
-            return this.Redirect(redirect.Value.ToString());
+            return this.Redirect(redirect.Value);
         }
 
         [HttpPost]

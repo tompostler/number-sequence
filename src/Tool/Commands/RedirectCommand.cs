@@ -31,9 +31,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             {
                 Id = Input.GetString(nameof(redirect.Id), defaultVal: Guid.NewGuid().ToString().Split('-').First()),
                 Value = new(Input.GetString(nameof(redirect.Value))),
-                Expiration = Input.GetDateTime(nameof(redirect.Expiration), defaultVal: DateTimeOffset.MinValue),
+                Expiration = Input.GetDateTime(nameof(redirect.Expiration), defaultVal: DateTimeOffset.MinValue.AddSeconds(1)),
             };
-            if (redirect.Expiration == DateTimeOffset.MinValue)
+            if (redirect.Expiration == DateTimeOffset.MinValue.AddSeconds(1))
             {
                 redirect.Expiration = default;
             }

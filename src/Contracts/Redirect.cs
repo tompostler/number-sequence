@@ -23,7 +23,8 @@ namespace TcpWtf.NumberSequence.Contracts
         /// The target of the redirect.
         /// </summary>
         [Required, Length(12, 4096)]
-        public Uri Value { get; set; }
+        [CustomValidation(typeof(RedirectValidation), nameof(RedirectValidation.ValueValidation))]
+        public string Value { get; set; }
 
         /// <summary>
         /// If set, a point at which the redirect should stop being served.
@@ -50,6 +51,16 @@ namespace TcpWtf.NumberSequence.Contracts
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class RedirectValidation
     {
+        public static ValidationResult ValueValidation(string value, ValidationContext _)
+        {
+            if (Uri.TryCreate(value, UriKind.Absolute, out Uri _))
+            {
+                return new ValidationResult("Value needs to be a valid Absolute Uri.");
+            }
+
+            return default;
+        }
+
         public static ValidationResult ExpirationValidation(DateTimeOffset? expirationDate, ValidationContext _)
         {
             if (expirationDate < DateTimeOffset.UtcNow.AddMinutes(1))
