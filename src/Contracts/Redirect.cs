@@ -11,7 +11,7 @@ namespace TcpWtf.NumberSequence.Contracts
         /// See <see cref="Account.Name"/>.
         /// </summary>
         [Required, MaxLength(64)]
-        public string AccountName { get; set; }
+        public string AccountName { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The id of the redirect. Unique in the system. Case insensitive (normalized to lower case).
@@ -53,7 +53,7 @@ namespace TcpWtf.NumberSequence.Contracts
     {
         public static ValidationResult ValueValidation(string value, ValidationContext _)
         {
-            if (Uri.TryCreate(value, UriKind.Absolute, out Uri _))
+            if (!Uri.TryCreate(value, UriKind.Absolute, out Uri _))
             {
                 return new ValidationResult("Value needs to be a valid Absolute Uri.");
             }

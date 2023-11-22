@@ -123,7 +123,7 @@ namespace TcpWtf.NumberSequence.Client
             {
                 try
                 {
-                    // Prepare and send the request
+                    // Prepare and send the request.
                     requestMessage = requestFactory();
                     if (needsPreparation && this.tokenCallback != default)
                     {
@@ -139,7 +139,7 @@ namespace TcpWtf.NumberSequence.Client
                     {
                         serverVersionInfo = $" (NS {serverVersionHeaders.FirstOrDefault()})";
 
-                        // In case there's a newer version of the server available (which would mean there's a newer client)
+                        // In case there's a newer version of the server available (which would mean there's a newer client).
                         if (serverVersionHeaders.Any())
                         {
                             const string localBuildVersion = "1.0.0";
@@ -153,7 +153,7 @@ namespace TcpWtf.NumberSequence.Client
                     }
 
                     this.logger.LogInformation($"Received {responseMessage.StatusCode} from {requestMessage.Method} {requestMessage.RequestUri}{serverVersionInfo} after {stopwatch.ElapsedMilliseconds}ms");
-                    
+
                     if (responseMessage.Headers.TryGetValues(HttpHeaderNames.ApiDeprecated, out IEnumerable<string> apiDeprecatedHeaders)
                         && DateTime.TryParseExact(apiDeprecatedHeaders.FirstOrDefault(), "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime apiDeprecatedAt))
                     {
@@ -169,31 +169,31 @@ namespace TcpWtf.NumberSequence.Client
                 }
                 catch (Exception ex) when (tryNum < maxTryNum && !cancellationToken.IsCancellationRequested)
                 {
-                    // If we've caught an unexpected exception when trying to call the service where there are still attempts remaining, then delay and try again
+                    // If we've caught an unexpected exception when trying to call the service where there are still attempts remaining, then delay and try again.
                     this.logger.LogWarning(ex.ToString());
-                    await this.DelayBetweenAttemptsAsync(tryNum, "exception", cancellationToken);
+                    await this.DelayBetweenAttemptsAsync(tryNum, maxTryNum, "exception", cancellationToken);
                     continue;
                 }
 
-                // If the response is retryable (5xx) and we haven't exceeded our attempt limit yet, then delay and try again
+                // If the response is retryable (5xx) and we haven't exceeded our attempt limit yet, then delay and try again.
                 if ((int)responseMessage.StatusCode >= 500
                     && (int)responseMessage.StatusCode <= 600
                     && tryNum < maxTryNum)
                 {
-                    await this.DelayBetweenAttemptsAsync(tryNum, $"{responseMessage.StatusCode} status code", cancellationToken);
+                    await this.DelayBetweenAttemptsAsync(tryNum, maxTryNum, $"{responseMessage.StatusCode} status code", cancellationToken);
                     continue;
                 }
 
-                // If the response was successful then return it
+                // If the response was successful then return it.
                 if (responseMessage.IsSuccessStatusCode)
                 {
                     return responseMessage;
                 }
 
-                // Else the response was not successful (and should not be retried). Default behavior is to throw a client-specific exception
+                // Else the response was not successful (and should not be retried). Default behavior is to throw a client-specific exception.
                 string msg = $"Request returned an invalid status code '{responseMessage.StatusCode}'";
 
-                // Attempt to read the body, but reset the stream position in case a subsequent user of the responseMessage wants to read it too
+                // Attempt to read the body, but reset the stream position in case a subsequent user of the responseMessage wants to read it too.
                 try
                 {
                     await responseMessage.Content.LoadIntoBufferAsync();
@@ -209,7 +209,7 @@ namespace TcpWtf.NumberSequence.Client
                 catch
                 { }
 
-                // Only log 5xx as error so we don't pollute telemetry with potentially acceptable errors
+                // Only log 5xx as error so we don't pollute telemetry with potentially acceptable errors.
                 if ((int)responseMessage.StatusCode < 500)
                 {
                     this.logger.LogWarning(msg);
@@ -226,8 +226,8 @@ namespace TcpWtf.NumberSequence.Client
                 };
             }
 
-            // We're only down here if we left the retry loop which means we exceeded our retries
-            // Note that the responseMessage may be null if we were never able to reach the service
+            // We're only down here if we left the retry loop which means we exceeded our retries.
+            // Note that the responseMessage may be null if we were never able to reach the service.
             throw new NsTcpWtfClientException($"Maximum retries when communicating exceeded after {stopwatch.Elapsed}")
             {
                 Request = requestMessage,
@@ -235,15 +235,18 @@ namespace TcpWtf.NumberSequence.Client
             };
         }
 
-        private async Task DelayBetweenAttemptsAsync(int tryCount, string failureReason, CancellationToken cancellationToken)
+        private async Task DelayBetweenAttemptsAsync(int tryCount, int maxTryCount, string failureReason, CancellationToken cancellationToken)
         {
-            const int baseDelaySeconds = 2;
+            const int baseDelaySeconds = 3;
             const double delayExponent = 1.8;
 
-            // This will retry 2s delay, 3.6s delay, 6.5s delay, 11.7s delay, 21s delay
-            // For a total of 44.8s of delay (assuming instant response received)
-            var delay = TimeSpan.FromSeconds(Math.Pow(delayExponent, tryCount - 1) * baseDelaySeconds);
-            this.logger.LogWarning($"Attempt {tryCount + 1} after a {delay} delay due to {failureReason}.");
+            // This will retry 3s delay, 5.4s delay, 9.7s delay, 17.5s delay, 31.5s delay.
+            // For a total of 67.1s of delay (assuming instant response received).
+            // Also adds up to +/- 5% jitter.
+            double delaySeconds = Math.Pow(delayExponent, tryCount - 1) * baseDelaySeconds;
+            double ninetyFiveToOneHundredFivePercent = System.Random.Shared.NextDouble() + 0.1;
+            var delay = TimeSpan.FromSeconds(delaySeconds * ninetyFiveToOneHundredFivePercent);
+            this.logger.LogWarning($"Attempt {tryCount + 1}/{maxTryCount} after a {delay} delay due to {failureReason}.");
             await Task.Delay(delay, cancellationToken);
         }
 
