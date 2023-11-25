@@ -36,7 +36,7 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         /// The date the invoice is due.
         /// </summary>
         [Required]
-        public DateTimeOffset DueDate { get; set; }
+        public DateOnly DueDate { get; set; }
 
         /// <summary>
         /// See <see cref="InvoiceBusiness"/>.
@@ -58,7 +58,7 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         /// <summary>
         /// The date the invoice has been paid.
         /// </summary>
-        public DateTimeOffset? PaidDate { get; set; }
+        public DateOnly? PaidDate { get; set; }
 
         /// <summary>
         /// Additional payment information, if desired.

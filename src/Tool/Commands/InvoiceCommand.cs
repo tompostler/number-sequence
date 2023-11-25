@@ -479,7 +479,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 AccountName = TokenProvider.GetAccount(),
                 Title = Input.GetString(nameof(invoice.Title)),
                 Description = Input.GetString(nameof(invoice.Description)),
-                DueDate = Input.GetDateTime(nameof(invoice.DueDate)),
+                DueDate = Input.GetDateOnly(nameof(invoice.DueDate)),
             };
 
             List<Contracts.Invoicing.InvoiceBusiness> invoiceBusinesses = await client.Invoice.GetBusinessesAsync();
@@ -519,7 +519,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
             invoice.Title = Input.GetString(nameof(invoice.Title), invoice.Title);
             invoice.Description = Input.GetString(nameof(invoice.Description), invoice.Description);
-            invoice.DueDate = Input.GetDateTime(nameof(invoice.DueDate), invoice.DueDate);
+            invoice.DueDate = Input.GetDateOnly(nameof(invoice.DueDate), invoice.DueDate);
 
             List<Contracts.Invoicing.InvoiceBusiness> invoiceBusinesses = await client.Invoice.GetBusinessesAsync();
             Console.WriteLine("Invoice businesses:");
@@ -573,7 +573,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
 
-            invoice.PaidDate = Input.GetDateTime(nameof(invoice.PaidDate));
+            invoice.PaidDate = Input.GetDateOnly(nameof(invoice.PaidDate));
             invoice.PaidDetails = Input.GetString(nameof(invoice.PaidDetails));
 
             invoice = await client.Invoice.UpdateAsync(invoice);
