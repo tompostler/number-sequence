@@ -180,6 +180,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 .Replace("((CustomerAddressLine2))", invoice.Customer.AddressLine2?.EscapeForLatex())
                 .Replace("((Total))", invoice.Total.ToString("N2"))
                 .Replace("((Lines))", lines.ToString())
+                .Replace("((LineCount))", invoice.Lines.Count.ToString("N0"))
                 ;
 
             // Upload back to be processed
