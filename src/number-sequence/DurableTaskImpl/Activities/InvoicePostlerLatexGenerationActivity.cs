@@ -208,13 +208,13 @@ namespace number_sequence.DurableTaskImpl.Activities
             string attachmentName = default;
             if (!string.IsNullOrWhiteSpace(template.AttachmentNameTemplate))
             {
-                attachmentName = template.AttachmentNameTemplate
+                attachmentName = new(template.AttachmentNameTemplate
                     .Replace("((Id))", invoiceId)
                     .Replace("((BusinessName))", invoice.Business.Name)
                     .Replace("((CustomerName))", invoice.Customer.Name)
                     .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{invoiceId}" : invoice.Title)
-                    .Replace(" ", "-")
-                    ;
+                    .Select(x => char.IsAsciiLetterOrDigit(x) ? x : '-').ToArray()
+                    );
                 if (attachmentName.Length > 128)
                 {
                     attachmentName = string.Concat(attachmentName.AsSpan(0, 124), ".pdf");
