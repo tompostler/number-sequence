@@ -137,7 +137,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
 
             Command createCommand = new("create", "Create a new invoice.");
-            createCommand.SetHandler(HandleCreateAsync, rawOption, verbosityOption);
+            Option<long?> idFromOption = new(
+                "--from",
+                "The id of the invoice if creating from another invoice. " +
+                "The first two lines of the new invoice will be the total of the previous and the payment information.");
+            createCommand.AddOption(idFromOption);
+            createCommand.SetHandler(HandleCreateAsync, idFromOption, rawOption, verbosityOption);
             rootCommand.AddCommand(createCommand);
 
 
@@ -470,9 +475,19 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
         #endregion // Lines
 
-        private static async Task HandleCreateAsync(bool raw, Verbosity verbosity)
+        private static async Task HandleCreateAsync(long? fromId, bool raw, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.Invoice createFromInvoice = default;
+            if (fromId.HasValue)
+            {
+                createFromInvoice = await client.Invoice.GetAsync(fromId.Value);
+                if (!createFromInvoice.PaidDate.HasValue)
+                {
+                    throw new InvalidOperationException($"Create from invoice {createFromInvoice.Id} does not have a paid date. Creating invoices from another only supports invoices that are marked paid.");
+                }
+            }
 
             Contracts.Invoicing.Invoice invoice = new()
             {
@@ -492,7 +507,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceBusiness.AddressLine2),
                 nameof(Contracts.Invoicing.InvoiceBusiness.Contact),
                 nameof(Contracts.Invoicing.InvoiceBusiness.CreatedDate));
-            long invoiceBusinessId = Input.GetLong("Business.Id", canDefault: false);
+            long invoiceBusinessId = createFromInvoice == default
+                ? Input.GetLong("Business.Id", canDefault: false)
+                : Input.GetLong("Business.Id", canDefault: true, defaultVal: createFromInvoice.Business.Id);
             invoice.Business = invoiceBusinesses.Single(x => x.Id == invoiceBusinessId);
 
             List<Contracts.Invoicing.InvoiceCustomer> invoiceCustomers = await client.Invoice.GetCustomersAsync();
@@ -505,10 +522,33 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceCustomer.AddressLine2),
                 nameof(Contracts.Invoicing.InvoiceCustomer.Contact),
                 nameof(Contracts.Invoicing.InvoiceCustomer.CreatedDate));
-            long invoiceCustomerId = Input.GetLong("Customer.Id", canDefault: false);
+            long invoiceCustomerId = createFromInvoice == default
+                ? Input.GetLong("Customer.Id", canDefault: false)
+                : Input.GetLong("Customer.Id", canDefault: true, defaultVal: createFromInvoice.Customer.Id);
             invoice.Customer = invoiceCustomers.Single(x => x.Id == invoiceCustomerId);
 
             invoice = await client.Invoice.CreateAsync(invoice);
+
+            if (createFromInvoice != default)
+            {
+                invoice.Lines ??= new List<Contracts.Invoicing.InvoiceLine>();
+                invoice.Lines.Add(new()
+                {
+                    Title = $"Invoice \"{createFromInvoice.Title}\" (id {createFromInvoice.Id:0000}), due {createFromInvoice.DueDate:o}",
+                    Description = createFromInvoice.Description,
+                    Quantity = 1,
+                    Price = createFromInvoice.Total,
+                });
+                invoice.Lines.Add(new()
+                {
+                    Title = $"Payment received on {createFromInvoice.PaidDate:o}",
+                    Description = createFromInvoice.PaidDetails,
+                    Quantity = 1,
+                    Price = -createFromInvoice.Total,
+                });
+                invoice = await client.Invoice.UpdateAsync(invoice);
+            }
+
             PrintSingleInvoice(invoice, raw);
         }
 
