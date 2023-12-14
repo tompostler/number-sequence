@@ -109,7 +109,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             MemoryStream ms = new();
             _ = await pdfBlobClient.DownloadToAsync(ms, cancellationToken);
             ms.Position = 0;
-            msg.Attachments.Add(new Attachment(ms, emailLatexDocument.AttachmentName ?? $"{emailLatexDocument.Id}.pdf"));
+            msg.Attachments.Add(new Attachment(ms, EnsureEndsWithPdf(emailLatexDocument.AttachmentName ?? emailLatexDocument.Id)));
 
             // Send it and mark as completed
             await this.emailDataAccess.SendEmailAsync(msg, cancellationToken);
@@ -117,5 +117,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = await nsContext.SaveChangesAsync(cancellationToken);
             return default;
         }
+
+        private static string EnsureEndsWithPdf(string input) => input.EndsWith(".pdf") ? input : input + ".pdf";
     }
 }

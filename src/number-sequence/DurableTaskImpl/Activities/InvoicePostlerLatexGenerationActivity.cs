@@ -213,7 +213,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                     .Replace("((BusinessName))", invoice.Business.Name)
                     .Replace("((CustomerName))", invoice.Customer.Name)
                     .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{invoiceId}" : invoice.Title)
-                    .Select(x => char.IsAsciiLetterOrDigit(x) || x == '.' || x == '_' ? x : '-').ToArray()
+                    .Select(x => char.IsAsciiLetterOrDigit(x) || x == '_' ? x : '-').ToArray()
                     );
                 if (attachmentName.Length > 128)
                 {
