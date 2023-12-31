@@ -78,10 +78,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             lineDefaultListCommand.AddAlias("ls");
             lineDefaultListCommand.SetHandler(HandleLineDefaultListAsync, verbosityOption);
 
+            Command lineDefaultSwapCommand = new("swap", "Since line defaults are a CLI utility, swap two of them for more preferred sorting.");
+            Argument<long> lineDefaultOtherIdArgument = new("lineDefaultOtherId", "The id of the other line default.");
+            lineDefaultSwapCommand.AddArgument(lineDefaultIdArgument);
+            lineDefaultSwapCommand.AddArgument(lineDefaultOtherIdArgument);
+            lineDefaultSwapCommand.SetHandler(HandleLineDefaultSwapAsync, lineDefaultIdArgument, lineDefaultOtherIdArgument, verbosityOption);
+
             lineDefaultCommand.AddCommand(lineDefaultCreateCommand);
             lineDefaultCommand.AddCommand(lineDefaultEditCommand);
             lineDefaultCommand.AddCommand(lineDefaultGetCommand);
             lineDefaultCommand.AddCommand(lineDefaultListCommand);
+            lineDefaultCommand.AddCommand(lineDefaultSwapCommand);
             rootCommand.AddCommand(lineDefaultCommand);
 
 
@@ -349,6 +356,25 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceLineDefault.Unit),
                 nameof(Contracts.Invoicing.InvoiceLineDefault.Price),
                 nameof(Contracts.Invoicing.InvoiceLineDefault.ModifiedDate));
+        }
+
+        private static async Task HandleLineDefaultSwapAsync(long id, long otherId, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault1 = await client.Invoice.GetLineDefaultAsync(id);
+            Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault2 = await client.Invoice.GetLineDefaultAsync(otherId);
+
+            (invoiceLineDefault1.Title, invoiceLineDefault2.Title) = (invoiceLineDefault2.Title, invoiceLineDefault1.Title);
+            (invoiceLineDefault1.Description, invoiceLineDefault2.Description) = (invoiceLineDefault2.Description, invoiceLineDefault1.Description);
+            (invoiceLineDefault1.Quantity, invoiceLineDefault2.Quantity) = (invoiceLineDefault2.Quantity, invoiceLineDefault1.Quantity);
+            (invoiceLineDefault1.Unit, invoiceLineDefault2.Unit) = (invoiceLineDefault2.Unit, invoiceLineDefault1.Unit);
+            (invoiceLineDefault1.Price, invoiceLineDefault2.Price) = (invoiceLineDefault2.Price, invoiceLineDefault1.Price);
+
+            invoiceLineDefault1 = await client.Invoice.UpdateLineDefaultAsync(invoiceLineDefault1);
+            invoiceLineDefault2 = await client.Invoice.UpdateLineDefaultAsync(invoiceLineDefault2);
+            Console.WriteLine(invoiceLineDefault1.ToJsonString(indented: true));
+            Console.WriteLine(invoiceLineDefault2.ToJsonString(indented: true));
         }
 
         #endregion // Line Defaults
