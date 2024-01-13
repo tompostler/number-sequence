@@ -134,12 +134,21 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             lineRemoveCommand.AddOption(rawOption);
             lineRemoveCommand.SetHandler(HandleLineRemoveAsync, idArgument, lineIdArgument, rawOption, verbosityOption);
 
+            Command lineSwapCommand = new("swap", "Swap lines in an invoice to change their ordering to a more preferred sorting.");
+            Argument<long> lineOtherIdArgument = new("lineOtherId", "The id of the other line.");
+            lineSwapCommand.AddArgument(idArgument);
+            lineSwapCommand.AddArgument(lineIdArgument);
+            lineSwapCommand.AddArgument(lineOtherIdArgument);
+            lineRemoveCommand.AddOption(rawOption);
+            lineSwapCommand.SetHandler(HandleLineSwapAsync, idArgument, lineIdArgument, lineOtherIdArgument, rawOption, verbosityOption);
+
             lineCommand.AddCommand(lineCreateCommand);
             lineCommand.AddCommand(lineDuplicateCommand);
             lineCommand.AddCommand(lineEditCommand);
             lineCommand.AddCommand(lineGetCommand);
             lineCommand.AddCommand(lineListCommand);
             lineCommand.AddCommand(lineRemoveCommand);
+            lineCommand.AddCommand(lineSwapCommand);
             rootCommand.AddCommand(lineCommand);
 
 
@@ -494,6 +503,24 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Contracts.Invoicing.InvoiceLine invoiceLine = invoice.Lines.Single(x => x.Id == id);
             _ = invoice.Lines.Remove(invoiceLine);
             Console.WriteLine(invoiceLine.ToJsonString(indented: true));
+
+            invoice = await client.Invoice.UpdateAsync(invoice);
+            PrintSingleInvoice(invoice, raw);
+        }
+
+        private static async Task HandleLineSwapAsync(long invoiceId, long id, long otherId, bool raw, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+
+            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
+            Contracts.Invoicing.InvoiceLine invoiceLine1 = invoice.Lines.Single(x => x.Id == id);
+            Contracts.Invoicing.InvoiceLine invoiceLine2 = invoice.Lines.Single(x => x.Id == otherId);
+
+            (invoiceLine1.Title, invoiceLine2.Title) = (invoiceLine2.Title, invoiceLine1.Title);
+            (invoiceLine1.Description, invoiceLine2.Description) = (invoiceLine2.Description, invoiceLine1.Description);
+            (invoiceLine1.Quantity, invoiceLine2.Quantity) = (invoiceLine2.Quantity, invoiceLine1.Quantity);
+            (invoiceLine1.Unit, invoiceLine2.Unit) = (invoiceLine2.Unit, invoiceLine1.Unit);
+            (invoiceLine1.Price, invoiceLine2.Price) = (invoiceLine2.Price, invoiceLine1.Price);
 
             invoice = await client.Invoice.UpdateAsync(invoice);
             PrintSingleInvoice(invoice, raw);
