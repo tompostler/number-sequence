@@ -241,6 +241,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 invoiceBusinesses,
                 nameof(Contracts.Invoicing.InvoiceBusiness.Id),
                 nameof(Contracts.Invoicing.InvoiceBusiness.Name),
+                nameof(Contracts.Invoicing.InvoiceBusiness.PayableName),
                 nameof(Contracts.Invoicing.InvoiceBusiness.AddressLine1),
                 nameof(Contracts.Invoicing.InvoiceBusiness.AddressLine2),
                 nameof(Contracts.Invoicing.InvoiceBusiness.Contact),
