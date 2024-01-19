@@ -29,7 +29,7 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         /// <summary>
         /// The business unit display name to put in the invoice for checks and cash.
         /// </summary>
-        [MaxLength(64)]
+        [Required, MaxLength(64)]
         public string PayableName { get; set; }
 
         /// <summary>
