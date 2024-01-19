@@ -168,6 +168,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             templateContents = templateContents
                 .Replace("((Title))", string.IsNullOrEmpty(invoice.Title) ? @"Invoice \#((Id))" : invoice.Title?.EscapeForLatex())
                 .Replace("((BusinessName))", invoice.Business.Name?.EscapeForLatex())
+                .Replace("((BusinessPayableName))", invoice.Business.PayableName?.EscapeForLatex())
                 .Replace("((BusinessAddressLine1))", invoice.Business.AddressLine1?.EscapeForLatex())
                 .Replace("((BusinessAddressLine2))", invoice.Business.AddressLine2?.EscapeForLatex())
                 .Replace("((BusinessContact))", invoice.Business.Contact?.EscapeForLatex())
@@ -231,7 +232,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 new EmailLatexDocument
                 {
                     Id = latexDocument.Id,
-                    To = template.EmailTo,
+                    To = invoice.Business.Contact.Contains('@') ? invoice.Business.Contact : template.EmailTo,
                     Subject = subject,
                     AttachmentName = attachmentName,
                     AdditionalBody = additionalBody.ToString()

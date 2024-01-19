@@ -214,6 +214,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             {
                 AccountName = TokenProvider.GetAccount(),
                 Name = Input.GetString(nameof(invoiceBusiness.Name)),
+                PayableName = Input.GetString(nameof(invoiceBusiness.PayableName)),
                 AddressLine1 = Input.GetString(nameof(invoiceBusiness.AddressLine1)),
                 AddressLine2 = Input.GetString(nameof(invoiceBusiness.AddressLine2)),
                 Contact = Input.GetString(nameof(invoiceBusiness.Contact)),
