@@ -123,61 +123,9 @@ jobs:
       tags: latest
 
 
-- job: DotnetBuildUI
-  pool:
-    vmImage: windows-2022
-
-  steps:
-
-  - task: UseDotNet@2
-    displayName: Use net8
-    inputs:
-      version: 8.x
-
-  - task: gitversion/setup@0
-    displayName: Install GitVersion
-    inputs:
-      versionSpec: 5.8.x
-
-  - task: gitversion/execute@0
-    displayName: Determine Version
-    inputs:
-      useConfigFile: true
-      configFilePath: GitVersion.yml
-
-  - task: Cache@2
-    displayName: NuGet package caching
-    inputs:
-      key: 'nugetui | $(Build.SourcesDirectory)/src/**/*.csproj'
-      restoreKeys: |
-        nugetui
-      path: $(NUGET_PACKAGES)
-
-  - powershell: |
-      dotnet workload restore src/number-sequence.sln;
-    displayName: Restore dotnet workloads
-
-  - task: DotNetCoreCLI@2
-    displayName: Publish ui zip to the staging directory (win10-x64)
-    inputs:
-      command: publish
-      projects: src/UI/UI.csproj
-      publishWebProjects: false # Otherwise publish ignores projects and just does web projects
-      arguments: '--configuration Debug --runtime win10-x64 --output $(Build.ArtifactStagingDirectory) --no-self-contained /p:WindowsPackageType=None'
-      zipAfterPublish: true
-      modifyOutputPath: true
-
-  - task: PublishBuildArtifacts@1
-    displayName: Publish build artifacts
-    inputs:
-      pathToPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: uidrop
-      publishLocation: Container
-
-
 - job: TagSourceAndPushNuget
   condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
-  dependsOn: [DotnetBuildWeb, DotnetBuildUI]
+  dependsOn: DotnetBuildWeb
   pool:
     vmImage: windows-latest
 

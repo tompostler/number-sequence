@@ -28,8 +28,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tool", "Tool\Tool.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{150DCD4F-BD80-40D0-8275-E2FAAC81BBD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI", "UI\UI.csproj", "{94B6D7F0-4866-41D5-8ED5-A2B570F9361B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,9 +49,6 @@ Global
 		{691CFBD1-81B2-42B6-B2E3-D1FBD3CD4B55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{150DCD4F-BD80-40D0-8275-E2FAAC81BBD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{150DCD4F-BD80-40D0-8275-E2FAAC81BBD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{94B6D7F0-4866-41D5-8ED5-A2B570F9361B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{94B6D7F0-4866-41D5-8ED5-A2B570F9361B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{94B6D7F0-4866-41D5-8ED5-A2B570F9361B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
