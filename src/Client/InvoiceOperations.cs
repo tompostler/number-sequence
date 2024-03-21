@@ -146,7 +146,7 @@ namespace TcpWtf.NumberSequence.Client
         /// <summary>
         /// Get existing invoices.
         /// </summary>
-        public async Task<List<Invoice>> GetAsync(int skip = 0, int take = 10, CancellationToken cancellationToken = default)
+        public async Task<List<Invoice>> GetAsync(int skip = 0, int take = 20, CancellationToken cancellationToken = default)
         {
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
