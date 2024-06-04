@@ -55,7 +55,7 @@ namespace number_sequence.Controllers
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             // Check if the redirect already exists.
-            if (await nsContext.Redirects.AnyAsync(x => x.AccountName == this.User.Identity.Name && x.Id == redirect.Id, cancellationToken))
+            if (await nsContext.Redirects.AnyAsync(x => x.Id == redirect.Id, cancellationToken))
             {
                 return this.Conflict($"Redirect with name [{redirect.Id}] already exists.");
             }
