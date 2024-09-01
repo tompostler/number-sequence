@@ -16,8 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.editorConfig = ..\.editorConfig
 		..\devinit.ps1 = ..\devinit.ps1
 		Directory.Build.props = Directory.Build.props
-		..\GitVersion.yml = ..\GitVersion.yml
 		..\README.md = ..\README.md
+		..\version.json = ..\version.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_deployment", "_deployment\_deployment.csproj", "{B3498151-D4C2-4491-AAC8-67B11D3FB3E3}"

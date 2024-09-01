@@ -10,16 +10,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
-    <PackageReference Include="Cronos" Version="0.8.0" />
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.64.0.3148" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.21.2" />
+    <PackageReference Include="Cronos" Version="0.8.4" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.68.0.3498" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-    <PackageReference Include="Microsoft.DurableTask.SqlServer" Version="1.2.2" />
+    <PackageReference Include="Microsoft.DurableTask.SqlServer" Version="1.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EFCoreVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(EFCoreVersion)" />
-    <PackageReference Include="Unlimitedinf.Utilities" Version="3.0.7" />
+    <PackageReference Include="Unlimitedinf.Utilities" Version="3.1.2" />
   </ItemGroup>
 
   <ItemGroup>
