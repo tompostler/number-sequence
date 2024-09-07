@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http.Headers;
-using System.Reflection;
 using TcpWtf.NumberSequence.Contracts.Framework;
 
 namespace TcpWtf.NumberSequence.Client
@@ -46,7 +45,7 @@ namespace TcpWtf.NumberSequence.Client
                 this.httpClient = new HttpClient(new HttpClientHandler() { ServerCertificateCustomValidationCallback = (_, _, _, _) => true }) { BaseAddress = baseUri };
             }
 
-            this.clientVersion = Assembly.GetAssembly(typeof(NsTcpWtfClient))?.GetName()?.Version?.ToString(fieldCount: 3) ?? "0.0.0";
+            this.clientVersion = ThisAssembly.AssemblyInformationalVersion;
             this.clientName = Environment.MachineName;
 
             this.Account = new AccountOperations(this);
@@ -142,10 +141,8 @@ namespace TcpWtf.NumberSequence.Client
                         // In case there's a newer version of the server available (which would mean there's a newer client).
                         if (serverVersionHeaders.Any())
                         {
-                            const string localBuildVersion = "1.0.0";
                             string serverVersion = serverVersionHeaders.First();
-                            if (!string.Equals(this.clientVersion, serverVersion, StringComparison.OrdinalIgnoreCase)
-                                && !string.Equals(this.clientVersion, localBuildVersion, StringComparison.OrdinalIgnoreCase))
+                            if (!string.Equals(this.clientVersion, serverVersion, StringComparison.OrdinalIgnoreCase))
                             {
                                 this.logger.LogWarning($"Current client version is {this.clientVersion} but server version ({serverVersion}) indicates there's a newer version available. If using as a tool, update with 'dotnet tool update TcpWtf.NumberSequence.Tool --global'");
                             }

@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Extensions.Options;
 using number_sequence.Services.Background.LatexGeneration;
-using System.Reflection;
 using System.Text.Json.Serialization;
 using TcpWtf.NumberSequence.Contracts.Framework;
 
@@ -95,7 +94,7 @@ namespace number_sequence
             _ = app.UseMiddleware<Middleware.ExceptionToStatusCodeMiddleware>();
 
             // Custom versioning middleware
-            string assemblyFileVersion = Assembly.GetAssembly(typeof(Startup))?.GetName()?.Version?.ToString(fieldCount: 3) ?? "0.0.0";
+            string assemblyFileVersion = ThisAssembly.AssemblyInformationalVersion;
             _ = app.Use(
                 async (context, next) =>
                 {
