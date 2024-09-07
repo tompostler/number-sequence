@@ -1,6 +1,6 @@
-# https://releases.ubuntu.com/22.04/ is Jammy Jellyfish
+# https://releases.ubuntu.com/24.04/ is Noble Numbat
 # https://mcr.microsoft.com/en-us/product/dotnet/aspnet/tags
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-noble
 
 # Install texlive components for pdflatex
 RUN export DEBIAN_FRONTEND=noninteractive \

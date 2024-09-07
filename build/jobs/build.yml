@@ -26,7 +26,7 @@ jobs:
   - task: Cache@2
     displayName: NuGet package caching
     inputs:
-      key: 'nugetweb | $(Build.SourcesDirectory)/src/**/*.csproj'
+      key: 'nugetweb | $(Build.SourcesDirectory)/src/**/*.csproj | $(Build.SourcesDirectory)/src/Directory.Build.props'
       restoreKeys: |
         nugetweb
       path: $(NUGET_PACKAGES)
