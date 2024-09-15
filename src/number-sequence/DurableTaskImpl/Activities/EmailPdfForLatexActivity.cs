@@ -51,9 +51,9 @@ namespace number_sequence.DurableTaskImpl.Activities
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             // First see if there's work to do
-            EmailLatexDocument emailLatexDocument = await nsContext.EmailLatexDocuments
+            EmailDocument emailDocument = await nsContext.EmailDocuments
                 .FirstOrDefaultAsync(x => x.Id == input && x.ProcessedAt == default, cancellationToken);
-            if (emailLatexDocument == default)
+            if (emailDocument == default)
             {
                 throw new InvalidOperationException("Work was requested, but the email record was not found.");
             }
@@ -71,13 +71,13 @@ namespace number_sequence.DurableTaskImpl.Activities
             {
                 MailMessage failedMessage = new()
                 {
-                    Subject = emailLatexDocument.Subject,
-                    Body = $"Generation of PDF (id: {emailLatexDocument.Id}) was not successful."
+                    Subject = emailDocument.Subject,
+                    Body = $"Generation of PDF (id: {emailDocument.Id}) was not successful."
                 };
-                failedMessage.To.Add(emailLatexDocument.To);
+                failedMessage.To.Add(emailDocument.To);
 
                 await this.emailDataAccess.SendEmailAsync(failedMessage, cancellationToken);
-                emailLatexDocument.ProcessedAt = DateTimeOffset.UtcNow;
+                emailDocument.ProcessedAt = DateTimeOffset.UtcNow;
                 _ = await nsContext.SaveChangesAsync(cancellationToken);
                 return default;
             }
@@ -85,35 +85,35 @@ namespace number_sequence.DurableTaskImpl.Activities
             // Build up the message to send
             MailMessage msg = new()
             {
-                Subject = emailLatexDocument.Subject,
-                Body = $"Generation of PDF (id: {emailLatexDocument.Id}) was successful."
+                Subject = emailDocument.Subject,
+                Body = $"Generation of PDF (id: {emailDocument.Id}) was successful."
             };
-            if (!string.IsNullOrWhiteSpace(emailLatexDocument.AdditionalBody))
+            if (!string.IsNullOrWhiteSpace(emailDocument.AdditionalBody))
             {
                 msg.Body += "\n\nAdditional information:\n";
-                msg.Body += emailLatexDocument.AdditionalBody;
+                msg.Body += emailDocument.AdditionalBody;
             }
-            msg.To.Add(emailLatexDocument.To);
-            if (!string.IsNullOrWhiteSpace(emailLatexDocument.CC))
+            msg.To.Add(emailDocument.To);
+            if (!string.IsNullOrWhiteSpace(emailDocument.CC))
             {
-                foreach (string emailAddress in emailLatexDocument.CC.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                foreach (string emailAddress in emailDocument.CC.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
                     msg.CC.Add(new MailAddress(emailAddress));
                 }
             }
 
             // Download the pdf from the storage and attach it to the email
-            string pdfBlobPath = $"{NsStorage.C.LBP.Output}/{emailLatexDocument.Id}.pdf";
+            string pdfBlobPath = $"{NsStorage.C.LBP.Output}/{emailDocument.Id}.pdf";
             this.logger.LogInformation($"Downloading pdf from {pdfBlobPath}");
-            BlobClient pdfBlobClient = this.nsStorage.GetBlobClientForLatexJob(emailLatexDocument.Id, pdfBlobPath);
+            BlobClient pdfBlobClient = this.nsStorage.GetBlobClientForLatexJob(emailDocument.Id, pdfBlobPath);
             MemoryStream ms = new();
             _ = await pdfBlobClient.DownloadToAsync(ms, cancellationToken);
             ms.Position = 0;
-            msg.Attachments.Add(new Attachment(ms, EnsureEndsWithPdf(emailLatexDocument.AttachmentName ?? emailLatexDocument.Id)));
+            msg.Attachments.Add(new Attachment(ms, EnsureEndsWithPdf(emailDocument.AttachmentName ?? emailDocument.Id)));
 
             // Send it and mark as completed
             await this.emailDataAccess.SendEmailAsync(msg, cancellationToken);
-            emailLatexDocument.ProcessedAt = DateTimeOffset.UtcNow;
+            emailDocument.ProcessedAt = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
             return default;
         }

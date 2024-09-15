@@ -228,8 +228,8 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = additionalBody.AppendLine($"Due date: {dueDate}");
             _ = additionalBody.AppendLine($"Total due: $ {invoice.Total:N2}");
             _ = additionalBody.AppendLine($"Line count: {invoice.Lines.Count}");
-            _ = nsContext.EmailLatexDocuments.Add(
-                new EmailLatexDocument
+            _ = nsContext.EmailDocuments.Add(
+                new EmailDocument
                 {
                     Id = latexDocument.Id,
                     To = invoice.Business.Contact.Contains('@') ? invoice.Business.Contact : template.EmailTo,

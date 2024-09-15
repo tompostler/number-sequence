@@ -37,15 +37,15 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(LatexStatus.LatexDocument.Delay),
                 nameof(LatexStatus.LatexDocument.Successful));
 
-            Console.WriteLine(nameof(LatexStatus.EmailLatexDocuments));
+            Console.WriteLine(nameof(LatexStatus.EmailDocuments));
             Output.WriteTable(
-                latexStatus.EmailLatexDocuments,
-                nameof(LatexStatus.EmailLatexDocument.Id),
-                nameof(LatexStatus.EmailLatexDocument.Subject),
-                nameof(LatexStatus.EmailLatexDocument.AttachmentName),
-                nameof(LatexStatus.EmailLatexDocument.CreatedDate),
-                nameof(LatexStatus.EmailLatexDocument.ProcessedAt),
-                nameof(LatexStatus.EmailLatexDocument.Delay));
+                latexStatus.EmailDocuments,
+                nameof(LatexStatus.EmailDocument.Id),
+                nameof(LatexStatus.EmailDocument.Subject),
+                nameof(LatexStatus.EmailDocument.AttachmentName),
+                nameof(LatexStatus.EmailDocument.CreatedDate),
+                nameof(LatexStatus.EmailDocument.ProcessedAt),
+                nameof(LatexStatus.EmailDocument.Delay));
 
         }
     }

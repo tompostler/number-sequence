@@ -20,7 +20,7 @@
             public string Delay { get; set; }
             public string Successful { get; set; }
         }
-        public sealed class EmailLatexDocument
+        public sealed class EmailDocument
         {
             public string Id { get; set; }
             public string Subject { get; set; }
@@ -32,7 +32,7 @@
 
         public List<LatexTemplateSpreadsheetRow> LatexTemplateSpreadsheetRows { get; set; }
         public List<LatexDocument> LatexDocuments { get; set; }
-        public List<EmailLatexDocument> EmailLatexDocuments { get; set; }
+        public List<EmailDocument> EmailDocuments { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

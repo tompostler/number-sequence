@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace number_sequence.Models
 {
-    public sealed class EmailLatexDocument
+    public sealed class EmailDocument
     {
         [Required]
         [MaxLength(64)]

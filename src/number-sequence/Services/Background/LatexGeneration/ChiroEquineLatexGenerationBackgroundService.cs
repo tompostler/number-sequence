@@ -449,8 +449,8 @@ namespace number_sequence.Services.Background.LatexGeneration
                     .Replace(" ", "-")
                     ;
             }
-            _ = nsContext.EmailLatexDocuments.Add(
-                new EmailLatexDocument
+            _ = nsContext.EmailDocuments.Add(
+                new EmailDocument
                 {
                     Id = latexDocument.Id,
                     To = template.EmailTo,

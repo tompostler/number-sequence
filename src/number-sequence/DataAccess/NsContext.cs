@@ -19,7 +19,7 @@ namespace number_sequence.DataAccess
         public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
         public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
 
-        public DbSet<EmailLatexDocument> EmailLatexDocuments { get; set; }
+        public DbSet<EmailDocument> EmailDocuments { get; set; }
         public DbSet<LatexDocument> LatexDocuments { get; set; }
         public DbSet<LatexTemplate> LatexTemplates { get; set; }
         public DbSet<LatexTemplateSpreadsheetRow> LatexTemplateSpreadsheetRows { get; set; }
@@ -146,10 +146,10 @@ namespace number_sequence.DataAccess
 
             #region Latex
 
-            _ = modelBuilder.Entity<EmailLatexDocument>()
+            _ = modelBuilder.Entity<EmailDocument>()
                 .HasKey(x => x.Id);
 
-            _ = modelBuilder.Entity<EmailLatexDocument>()
+            _ = modelBuilder.Entity<EmailDocument>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 

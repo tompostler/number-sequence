@@ -34,11 +34,11 @@ namespace number_sequence.Controllers
                                                                         .OrderByDescending(r => r.CreatedDate)
                                                                         .Take(10)
                                                                         .ToListAsync();
-            List<Models.EmailLatexDocument> emailLatexDocuments = await nsContext.EmailLatexDocuments
-                                                                                    .Where(r => r.CreatedDate > monthAgo)
-                                                                                    .OrderByDescending(r => r.CreatedDate)
-                                                                                    .Take(10)
-                                                                                    .ToListAsync();
+            List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
+                                                                        .Where(r => r.CreatedDate > monthAgo)
+                                                                        .OrderByDescending(r => r.CreatedDate)
+                                                                        .Take(10)
+                                                                        .ToListAsync();
             LatexStatus latexStatus = new()
             {
                 LatexTemplateSpreadsheetRows = latexTemplateSpreadsheetRows.Select(
@@ -59,8 +59,8 @@ namespace number_sequence.Controllers
                         Successful = d.Successful?.ToString(),
                     })
                     .ToList(),
-                EmailLatexDocuments = emailLatexDocuments.Select(
-                    e => new LatexStatus.EmailLatexDocument
+                EmailDocuments = emailDocuments.Select(
+                    e => new LatexStatus.EmailDocument
                     {
                         Id = e.Id,
                         Subject = e.Subject,

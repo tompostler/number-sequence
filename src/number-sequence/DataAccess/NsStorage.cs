@@ -19,6 +19,7 @@ namespace number_sequence.DataAccess
             {
                 public const string Latex = "latex";
                 public const string LatexTemplates = "latex-templates";
+                public const string Pdf = "pdf";
             }
 
             /// <summary>
