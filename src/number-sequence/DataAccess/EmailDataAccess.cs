@@ -33,6 +33,15 @@ namespace number_sequence.DataAccess
             _ = sb.AppendLine(message.Body);
             this.logger.LogInformation(sb.ToString());
 
+            if (!string.IsNullOrEmpty(this.emailOptions.LocalDevToOverride))
+            {
+                this.logger.LogInformation("Overriding email To, Cc, and Subject due to localdev settings.");
+                message.To.Clear();
+                message.To.Add(this.emailOptions.LocalDevToOverride);
+                message.CC.Clear();
+                message.Subject = "[LOCALDEV] " + message.Subject;
+            }
+
             // Set the from (and Bcc to self as that's the easiest way to track sent)
             message.From = new MailAddress(this.emailOptions.Username);
             message.Bcc.Add(new MailAddress(this.emailOptions.Username));

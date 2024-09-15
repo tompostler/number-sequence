@@ -1,4 +1,8 @@
-Write-Host -ForegroundColor Cyan 'Logging in to subscription....';
+function Write-Cyan([string]$statement) {
+    Write-Host -ForegroundColor Cyan "[$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss.ff'))] $statement";
+}
+
+Write-Cyan 'Logging in to subscription....';
 $subscriptionId = '78560c44-50bb-4840-9d59-84578a99032e';
 $context = Get-AzContext;
 if ($null -eq $context) {
@@ -10,28 +14,29 @@ elseif ($context.Subscription.Id -ne $subscriptionId) {
 Write-Host;
 
 # Note: the following needs to be kept up-to-date with any necessary config changes
-Write-Host -ForegroundColor Cyan 'Generating local settings....';
+Write-Cyan 'Generating local settings....';
 $localSettings = [PSCustomObject]@{
-    Email    = [PSCustomObject]@{
-        Server   = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-server -AsPlainText);
-        Port     = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-port -AsPlainText);
-        Username = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-username -AsPlainText);
-        Password = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-password -AsPlainText);
+    Email   = [PSCustomObject]@{
+        Server             = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-server -AsPlainText);
+        Port               = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-port -AsPlainText);
+        Username           = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-username -AsPlainText);
+        Password           = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-password -AsPlainText);
+        LocalDevToOverride = (git config --get user.email);
     };
-    Google   = [PSCustomObject]@{
+    Google  = [PSCustomObject]@{
         Credentials = (Get-AzKeyVaultSecret -VaultName tompostler -Name google-dr-chiro-credentials -AsPlainText).Replace('\"', '"');
     };
-    Sql      = [PSCustomObject]@{
+    Sql     = [PSCustomObject]@{
         ConnectionString = (
             'Server=tcp:tompostler.database.windows.net,1433;Initial Catalog=nslocal;Persist Security Info=False;' `
                 + 'User ID=sqladmin;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Password=' `
                 + (Get-AzKeyVaultSecret -VaultName tompostler -Name tompostler-sqladmin-password -AsPlainText) `
                 + ';');
     };
-    Storage  = [PSCustomObject]@{
+    Storage = [PSCustomObject]@{
         ConnectionString = (
-            'DefaultEndpointsProtocol=https;AccountName=nstcpwtf;AccountKey=' `
-                + ((Get-AzStorageAccountKey -ResourceGroupName tcp-wtf-hosting -Name nstcpwtf)[1].Value) `
+            'DefaultEndpointsProtocol=https;AccountName=nstcpwtflocal;AccountKey=' `
+                + ((Get-AzStorageAccountKey -ResourceGroupName tcp-wtf-hosting -Name nstcpwtflocal)[1].Value) `
                 + ';EndpointSuffix=core.windows.net');
     };
 };
@@ -39,6 +44,30 @@ $localSettingsPath = Join-Path ($PSScriptRoot) '.\src\number-sequence\appsetting
 # Create the item (including path!) if it doesn't exist
 New-Item -Path $localSettingsPath -ItemType File -Force | Out-Null;
 $localSettings | ConvertTo-Json | Set-Content -Path $localSettingsPath;
-Write-Host
+Write-Host;
 
-Write-Host -ForegroundColor Green 'Done!'
+$confirm = Read-Host 'Do you wish to also replace the nslocal sql database from prod? Note, this may take several minutes. [yN]';
+if ($confirm -eq 'y') {
+    Write-Cyan 'Copying and cleaning sql database from prod to localdev.';
+    Write-Host;
+
+    if (Get-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal -ErrorAction SilentlyContinue) {
+        Write-Cyan 'Deleting existing nslocal sql database....';
+        Remove-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal;
+    }
+    Write-Host;
+
+    Write-Cyan 'Creating copy of production sql database to nslocal....';
+    New-AzSqlDatabaseCopy -ResourceGroupName tompostler -ServerName tompostler -DatabaseName ns -CopyResourceGroupName tompostler -CopyServerName tompostler -CopyDatabaseName nslocal;
+    Write-Host;
+
+    Write-Cyan 'Resizing nslocal sql database to GP_S_Gen5_1....';
+    Set-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal -RequestedServiceObjectiveName GP_S_Gen5_1;
+}
+else {
+    Write-Cyan 'Not copying and cleaning sql database from prod to localdev.';
+
+}
+Write-Host;
+
+Write-Host -ForegroundColor Green 'Done!';
