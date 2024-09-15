@@ -12,7 +12,12 @@ namespace number_sequence.DurableTaskImpl.Orchestrators
                 input ?? context.OrchestrationInstance.InstanceId);
 
             _ = await context.ScheduleWithRetry<string>(
-                typeof(Activities.EmailPdfForLatexActivity),
+                typeof(Activities.CopyPdfForLatexForEmailingActivity),
+                ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
+                input ?? context.OrchestrationInstance.InstanceId);
+
+            _ = await context.ScheduleWithRetry<string>(
+                typeof(Activities.EmailPdfActivity),
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
                 input ?? context.OrchestrationInstance.InstanceId);
 

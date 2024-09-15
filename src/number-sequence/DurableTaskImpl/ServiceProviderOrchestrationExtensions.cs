@@ -18,7 +18,8 @@ namespace number_sequence.DurableTaskImpl
                 // Convert latex to a pdf and email it
                 .AddSingleton<TaskOrchestration, Orchestrators.LatexGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.GeneratePdfFromLatexActivity>()
-                .AddSingleton<TaskActivity, Activities.EmailPdfForLatexActivity>()
+                .AddSingleton<TaskActivity, Activities.CopyPdfForLatexForEmailingActivity>()
+                .AddSingleton<TaskActivity, Activities.EmailPdfActivity>()
             ;
 
         public static RetryOptions DefaultLightExponentialRetryOptions => new(TimeSpan.FromSeconds(5), 3) { BackoffCoefficient = 1.7 };

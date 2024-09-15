@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
+using number_sequence.Models;
 using System.Runtime.CompilerServices;
 
 namespace number_sequence.DataAccess
@@ -82,5 +83,13 @@ namespace number_sequence.DataAccess
             BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(C.CN.Latex);
             return blobContainerClient.GetBlobClient($"{jobId}/{blobPath}");
         }
+
+        public BlobClient GetBlobClient(EmailDocument emailDocument)
+        {
+            BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(C.CN.Pdf);
+            return blobContainerClient.GetBlobClient($"{emailDocument.CreatedDate.Year}/{EnsureEndsWithPdf(emailDocument.AttachmentName ?? emailDocument.Id)}");
+        }
+
+        private static string EnsureEndsWithPdf(string input) => input.EndsWith(".pdf") ? input : input + ".pdf";
     }
 }
