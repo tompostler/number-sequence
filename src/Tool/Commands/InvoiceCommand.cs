@@ -191,13 +191,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             rootCommand.AddCommand(markReprocessRegularlyCommand);
 
 
-            Command pdfCommand = new("pdf", "Get an existing invoice and render it as a pdf locally. Drops it into the local dir.");
-            pdfCommand.AddArgument(idArgument);
-            pdfCommand.AddOption(rawOption);
-            pdfCommand.SetHandler(HandlePdfAsync, idArgument, rawOption, verbosityOption);
-            rootCommand.AddCommand(pdfCommand);
-
-
             Command processCommand = new("process", "Mark a specific invoice for [re-]processing to pdf.");
             processCommand.AddAlias("reprocess");
             processCommand.AddArgument(idArgument);

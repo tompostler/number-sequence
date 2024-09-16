@@ -2,20 +2,19 @@
 
 namespace number_sequence.DurableTaskImpl.Orchestrators
 {
-    public sealed class InvoicePostlerLatexGenerationOrchestrator : TaskOrchestration<string, long>
+    public sealed class InvoicePostlerGenerationOrchestrator : TaskOrchestration<string, long>
     {
         public override async Task<string> RunTask(OrchestrationContext context, long input)
         {
             _ = await context.ScheduleWithRetry<string>(
-                typeof(Activities.InvoicePostlerLatexGenerationActivity),
+                typeof(Activities.InvoicePostlerPdfGenerationActivity),
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
                 input);
 
-            _ = await context.CreateSubOrchestrationInstanceWithRetry<string>(
-                typeof(LatexGenerationOrchestrator),
-                instanceId: context.OrchestrationInstance.InstanceId + ":1",
+            _ = await context.ScheduleWithRetry<string>(
+                typeof(Activities.EmailPdfActivity),
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
-                input: context.OrchestrationInstance.InstanceId);
+                context.OrchestrationInstance.InstanceId);
 
             return default;
         }

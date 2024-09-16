@@ -1,27 +1,125 @@
-﻿using QuestPDF;
+﻿using DurableTask.Core;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.EntityFrameworkCore;
+using number_sequence.DataAccess;
+using number_sequence.Models;
+using number_sequence.Utilities;
+using QuestPDF;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using TcpWtf.NumberSequence.Client;
+using System.Text;
+using TcpWtf.NumberSequence.Contracts.Invoicing;
+using Unlimitedinf.Utilities.Extensions;
 
-namespace TcpWtf.NumberSequence.Tool.Commands
+namespace number_sequence.DurableTaskImpl.Activities
 {
-    internal static partial class InvoiceCommand
+    public sealed class InvoicePostlerPdfGenerationActivity : AsyncTaskActivity<long, string>
     {
-        private static async Task HandlePdfAsync(long id, bool raw, Verbosity verbosity)
-        {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
-            Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(id);
+        private readonly NsStorage nsStorage;
+        private readonly IServiceProvider serviceProvider;
+        private readonly Sentinals sentinals;
+        private readonly ILogger<InvoicePostlerPdfGenerationActivity> logger;
+        private readonly TelemetryClient telemetryClient;
 
-            Settings.License = LicenseType.Community;
-            InvoicePdfDocument pdfDocument = new(invoice);
-            pdfDocument.GeneratePdfAndShow();
+        public InvoicePostlerPdfGenerationActivity(
+            NsStorage nsStorage,
+            IServiceProvider serviceProvider,
+            Sentinals sentinals,
+            ILogger<InvoicePostlerPdfGenerationActivity> logger,
+            TelemetryClient telemetryClient)
+        {
+            this.nsStorage = nsStorage;
+            this.serviceProvider = serviceProvider;
+            this.sentinals = sentinals;
+            this.logger = logger;
+            this.telemetryClient = telemetryClient;
         }
+
+        protected override async Task<string> ExecuteAsync(TaskContext context, long input)
+        {
+            // Basic setup
+            using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(
+                this.GetType().FullName,
+                operationId: context.OrchestrationInstance.ExecutionId,
+                parentOperationId: context.OrchestrationInstance.InstanceId);
+            using CancellationTokenSource cts = new(TimeSpan.FromMinutes(5));
+            CancellationToken cancellationToken = cts.Token;
+            await this.sentinals.DBMigration.WaitForCompletionAsync(cancellationToken);
+
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            // Check if there's any invoices ready to be processed
+            Invoice invoice = await nsContext.Invoices
+                .Include(x => x.Business)
+                .Include(x => x.Customer)
+                .Include(x => x.Lines)
+                .FirstOrDefaultAsync(x => x.Id == input && (x.ReadyForProcessing || x.ReprocessRegularly) && x.ProcessedAt == default, cancellationToken);
+            if (invoice == default)
+            {
+                throw new InvalidOperationException("Could not find invoice that was ready for processing.");
+            }
+
+            // Add the email request
+            string invoiceId = context.OrchestrationInstance.InstanceId.Split('_').First();
+            string title = string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{invoiceId}" : invoice.Title;
+            string subject = $"[Invoice {invoiceId}] {invoice.Customer.Name} - {title}";
+            if (subject.Length > 128)
+            {
+                subject = subject.Substring(0, 128);
+            }
+            string attachmentName = new($"{invoiceId}_{invoice.Business.Name}_{invoice.Customer.Name}_{title}".Select(x => char.IsAsciiLetterOrDigit(x) || x == '_' ? x : '-').ToArray());
+            if (attachmentName.Length > 128)
+            {
+                attachmentName = string.Concat(attachmentName.AsSpan(0, 124), ".pdf");
+            }
+            StringBuilder additionalBody = new();
+            _ = additionalBody.AppendLine($"Invoice id: {invoiceId}");
+            _ = additionalBody.AppendLine($"Business name: {invoice.Business.Name}");
+            _ = additionalBody.AppendLine($"Customer name: {invoice.Customer.Name}");
+            _ = additionalBody.AppendLine($"Due date: {invoice.DueDate:MMMM dd, yyyy}");
+            _ = additionalBody.AppendLine($"Total due: $ {invoice.Total:N2}");
+            _ = additionalBody.AppendLine($"Line count: {invoice.Lines.Count}");
+            EmailDocument emailDocument = new()
+            {
+                Id = context.OrchestrationInstance.InstanceId,
+                To = invoice.Business.Contact,
+                Subject = subject,
+                AttachmentName = attachmentName,
+                AdditionalBody = additionalBody.ToString()
+            };
+            _ = nsContext.EmailDocuments.Add(emailDocument);
+            this.logger.LogInformation($"Created email record: {emailDocument.ToJsonString()}");
+
+            // Generate the PDF
+            MemoryStream ms = new();
+            using (IDisposable disposable = this.logger.BeginScope("Generating PDF"))
+            {
+                Settings.License = LicenseType.Community;
+                InvoicePdfDocument pdfDocument = new(invoice);
+                pdfDocument.GeneratePdf(ms);
+                ms.Position = 0;
+            }
+
+            // Put it in storage
+            Azure.Storage.Blobs.BlobClient pdfBlobClient = this.nsStorage.GetBlobClient(emailDocument);
+            this.logger.LogInformation($"Uploading to {pdfBlobClient.Uri.AbsoluteUri.Split('?').First()}");
+            _ = await pdfBlobClient.UploadAsync(ms, cancellationToken);
+
+            // And save it to enable processing
+            invoice.ProcessedAt = DateTimeOffset.UtcNow;
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+            return default;
+        }
+
         private sealed class InvoicePdfDocument : IDocument
         {
-            private readonly Contracts.Invoicing.Invoice invoice;
+            private readonly Invoice invoice;
 
-            public InvoicePdfDocument(Contracts.Invoicing.Invoice invoice)
+            public InvoicePdfDocument(Invoice invoice)
             {
                 this.invoice = invoice;
             }
@@ -223,7 +321,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                                 });
 
                                 // Individual lines. Make sure to get correct width every 'row', else table will misalign.
-                                foreach (Contracts.Invoicing.InvoiceLine line in this.invoice.Lines)
+                                foreach (InvoiceLine line in this.invoice.Lines)
                                 {
                                     static IContainer CellStyle(IContainer container)
                                         => container.PaddingVertical(7);
@@ -359,5 +457,4 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
         }
     }
-
 }

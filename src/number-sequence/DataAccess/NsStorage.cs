@@ -87,7 +87,7 @@ namespace number_sequence.DataAccess
         public BlobClient GetBlobClient(EmailDocument emailDocument)
         {
             BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(C.CN.Pdf);
-            return blobContainerClient.GetBlobClient($"{emailDocument.CreatedDate.Year}/{EnsureEndsWithPdf(emailDocument.AttachmentName ?? emailDocument.Id)}");
+            return blobContainerClient.GetBlobClient($"{(emailDocument.CreatedDate == default ? DateTimeOffset.UtcNow : emailDocument.CreatedDate).Year}/{EnsureEndsWithPdf(emailDocument.AttachmentName ?? emailDocument.Id)}");
         }
 
         private static string EnsureEndsWithPdf(string input) => input.EndsWith(".pdf") ? input : input + ".pdf";

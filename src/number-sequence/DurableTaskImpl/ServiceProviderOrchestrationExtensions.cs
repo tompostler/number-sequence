@@ -12,13 +12,15 @@ namespace number_sequence.DurableTaskImpl
                 //
 
                 // Invoice (postler) generation
-                .AddSingleton<TaskOrchestration, Orchestrators.InvoicePostlerLatexGenerationOrchestrator>()
-                .AddSingleton<TaskActivity, Activities.InvoicePostlerLatexGenerationActivity>()
+                .AddSingleton<TaskOrchestration, Orchestrators.InvoicePostlerGenerationOrchestrator>()
+                .AddSingleton<TaskActivity, Activities.InvoicePostlerPdfGenerationActivity>()
 
                 // Convert latex to a pdf and email it
                 .AddSingleton<TaskOrchestration, Orchestrators.LatexGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.GeneratePdfFromLatexActivity>()
                 .AddSingleton<TaskActivity, Activities.CopyPdfForLatexForEmailingActivity>()
+
+                // Shared activities
                 .AddSingleton<TaskActivity, Activities.EmailPdfActivity>()
             ;
 
