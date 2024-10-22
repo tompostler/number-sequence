@@ -20,33 +20,62 @@ namespace number_sequence.Formatters
         {
             var responseObject = context.Object as IList<DaysSinceEvent>;
 
-            StringBuilder sb = new();
-            _ = sb.AppendLine("<!DOCTYPE HTML>");
-            _ = sb.AppendLine("<html>");
-            _ = sb.AppendLine("<body>");
-            _ = sb.AppendLine("");
+            string title = responseObject.Any()
+                ? $"{(int)(DateTime.UtcNow - responseObject.First().EventDate.ToDateTime(new TimeOnly(), DateTimeKind.Utc)).TotalDays} Days Since {HttpUtility.UrlEncode(responseObject.First().DaysSince.Id)}: {responseObject.Count} events"
+                : "No Days Since events";
 
-            _ = sb.AppendLine("<table>");
-            _ = sb.AppendLine("  <tr>");
-            _ = sb.AppendLine("    <th>Id</th>");
-            _ = sb.AppendLine("    <th>Event Date</th>");
-            _ = sb.AppendLine("    <th>Days Ago</th>");
-            _ = sb.AppendLine("    <th>Description</th>");
-            _ = sb.AppendLine("  </tr>");
+            StringBuilder sb = new();
+            _ = sb.AppendLine($$"""
+                <!DOCTYPE HTML>
+                <html>
+
+                <head>
+                  <title>{{title}}</title>
+                  <meta http-equiv="refresh" content="33333">
+                  <style>
+                    table,
+                    th,
+                    td {
+                      padding: 0.3rem;
+                      text-align: left;
+                      border: 1px solid lightgray;
+                      border-collapse: collapse;
+                    }
+                  </style>
+                </head>
+
+                <body>
+
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Id</th>
+                        <th>Event Date</th>
+                        <th>Days Ago</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                """);
+
             foreach (DaysSinceEvent daysSinceEvent in responseObject.OrderByDescending(x => x.EventDate).ThenBy(x => x.Id))
             {
-                _ = sb.AppendLine("  <tr>");
-                _ = sb.AppendLine($"    <td>{daysSinceEvent.Id}</td>");
-                _ = sb.AppendLine($"    <td>{daysSinceEvent.EventDate:yyyy-MM-dd}</td>");
-                _ = sb.AppendLine($"    <td>{DateTime.UtcNow.Subtract(daysSinceEvent.EventDate.ToDateTime(new(), DateTimeKind.Utc)).TotalDays:0}</td>");
-                _ = sb.AppendLine($"    <td>{HttpUtility.HtmlEncode(daysSinceEvent.Description)}</td>");
-                _ = sb.AppendLine("  </tr>");
+                _ = sb.AppendLine("      <tr>");
+                _ = sb.AppendLine($"        <td>{daysSinceEvent.Id}</td>");
+                _ = sb.AppendLine($"        <td>{daysSinceEvent.EventDate:yyyy-MM-dd}</td>");
+                _ = sb.AppendLine($"        <td>{DateTime.UtcNow.Subtract(daysSinceEvent.EventDate.ToDateTime(new(), DateTimeKind.Utc)).TotalDays:0}</td>");
+                _ = sb.AppendLine($"        <td>{HttpUtility.HtmlEncode(daysSinceEvent.Description)}</td>");
+                _ = sb.AppendLine("      </tr>");
             }
-            _ = sb.AppendLine("</table>");
 
-            _ = sb.AppendLine("");
-            _ = sb.AppendLine("</body>");
-            _ = sb.AppendLine("</html>");
+            _ = sb.AppendLine("""
+                    </tbody>
+                  </table>
+
+                </body>
+
+                </html>
+                """);
 
             await context.HttpContext.Response.WriteAsync(sb.ToString(), selectedEncoding, context.HttpContext.RequestAborted);
         }
