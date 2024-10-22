@@ -29,7 +29,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Contracts.Redirect redirect = new()
             {
-                Id = Input.GetString(nameof(redirect.Id), defaultVal: Guid.NewGuid().ToString().Split('-').First()),
+                Id = Input.GetString(nameof(redirect.Id), defaultVal: Guid.NewGuid().ToString().Split('-').Last()),
                 Value = new(Input.GetString(nameof(redirect.Value))),
                 Expiration = Input.GetDateTime(nameof(redirect.Expiration), defaultVal: DateTimeOffset.MinValue.AddSeconds(1)),
             };

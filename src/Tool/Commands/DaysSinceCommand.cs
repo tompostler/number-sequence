@@ -67,7 +67,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Contracts.DaysSince daysSince = new()
             {
                 AccountName = TokenProvider.GetAccount(),
-                Id = Input.GetString(nameof(daysSince.Id), Guid.NewGuid().ToString().Split('-').First()),
+                Id = Input.GetString(nameof(daysSince.Id), Guid.NewGuid().ToString().Split('-').Last()),
                 FriendlyName = Input.GetString(nameof(daysSince.FriendlyName)),
                 Value = Input.GetString(nameof(daysSince.Value)),
             };
