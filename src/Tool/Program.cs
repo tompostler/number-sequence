@@ -6,7 +6,7 @@ namespace TcpWtf.NumberSequence.Tool
 {
     internal static class Program
     {
-        internal static Stamp Stamp = Stamp.Public;
+        internal static Stamp Stamp = Stamp.LocalDev;
 
         public static async Task<int> Main(string[] args)
         {
@@ -17,6 +17,7 @@ namespace TcpWtf.NumberSequence.Tool
 
             rootCommand.AddCommand(AccountCommand.Create(verbosityOption));
             rootCommand.AddCommand(CountCommand.Create(verbosityOption));
+            rootCommand.AddCommand(DaysSinceCommand.Create(verbosityOption));
             rootCommand.AddCommand(InvoiceCommand.Create(verbosityOption));
             rootCommand.AddCommand(IpCommand.Create(verbosityOption));
             rootCommand.AddCommand(LatexStatusCommand.Create(verbosityOption));

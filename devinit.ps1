@@ -1,6 +1,9 @@
 function Write-Cyan([string]$statement) {
     Write-Host -ForegroundColor Cyan "[$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss.ff'))] $statement";
 }
+function Write-Yellow([string]$statement) {
+    Write-Host -ForegroundColor Yellow "[$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss.ff'))] $statement";
+}
 
 Write-Cyan 'Logging in to subscription....';
 $subscriptionId = '78560c44-50bb-4840-9d59-84578a99032e';
@@ -48,7 +51,7 @@ Write-Host;
 
 $confirm = Read-Host 'Do you wish to also replace the nslocal sql database from prod? Note, this may take several minutes. [yN]';
 if ($confirm -eq 'y') {
-    Write-Cyan 'Copying and cleaning sql database from prod to localdev.';
+    Write-Cyan 'Copying sql database from prod to localdev.';
     Write-Host;
 
     if (Get-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal -ErrorAction SilentlyContinue) {
@@ -63,10 +66,13 @@ if ($confirm -eq 'y') {
 
     Write-Cyan 'Resizing nslocal sql database to GP_S_Gen5_1....';
     Set-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal -RequestedServiceObjectiveName GP_S_Gen5_1;
+
+    Write-Yellow 'You will need to perform manual cleaning of the database! Use the following to make sure production options are not executed:';
+    Write-Yellow "DELETE FROM [LatexTemplates] WHERE [Id] LIKE 'chiro-%';";
+    Write-Yellow "UPDATE [LatexTemplates] SET [SubjectTemplate] = '[LOCALDEV] ' + [SubjectTemplate];";
 }
 else {
-    Write-Cyan 'Not copying and cleaning sql database from prod to localdev.';
-
+    Write-Cyan 'Not copying sql database from prod to localdev.';
 }
 Write-Host;
 

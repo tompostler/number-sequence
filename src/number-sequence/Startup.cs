@@ -21,7 +21,13 @@ namespace number_sequence
         public void ConfigureServices(IServiceCollection services)
         {
             _ = services.AddMemoryCache();
-            _ = services.AddControllers()
+            _ = services
+                .AddControllers(options =>
+                {
+                    options.RespectBrowserAcceptHeader = true;
+                    options.OutputFormatters.Add(new Formatters.DaysSinceEventsTextHtmlOutputFormatter());
+                    options.OutputFormatters.Add(new Formatters.DaysSinceTextHtmlOutputFormatter());
+                })
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;

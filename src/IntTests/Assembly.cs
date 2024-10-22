@@ -65,7 +65,7 @@ namespace number_sequence.IntTests
                 {
                     UnauthedClient.Account.CreateAsync(Account).Wait();
                     Token = UnauthedClient.Token.CreateAsync(new Token { Account = Account.Name, Key = Account.Key, Name = Account.Name }).Result;
-                    client = new NsTcpWtfClient(LoggerFactory.CreateLogger<NsTcpWtfClient>(), (_) => Task.FromResult(Token.Value), Stamp.LocalDev);
+                    client = new NsTcpWtfClient(LoggerFactory.CreateLogger<NsTcpWtfClient>(), (_, _) => Task.FromResult(Token.Value), Stamp.LocalDev);
                 }
                 return client;
             }

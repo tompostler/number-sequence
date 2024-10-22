@@ -1,7 +1,9 @@
-﻿namespace TcpWtf.NumberSequence.Tool
+﻿using Microsoft.Extensions.Logging;
+
+namespace TcpWtf.NumberSequence.Tool
 {
     internal static class EmptyTokenProvider
     {
-        public static Task<string> GetAsync(CancellationToken _) => Task.FromResult(string.Empty);
+        public static Task<string> GetAsync(ILogger logger, CancellationToken cancellationToken) => Task.FromResult(string.Empty);
     }
 }

@@ -41,7 +41,7 @@ namespace number_sequence.Controllers
             // Check if the account already exists
             if (await nsContext.Tokens.AnyAsync(x => x.Account == account.Name && x.Name == token.Name.ToLower(), cancellationToken))
             {
-                return this.Conflict($"Token with name [{account.Name}] already exists.");
+                return this.Conflict($"Token with name [{token.Name}] already exists.");
             }
 
             // Check if we shouldn't make another token for this account

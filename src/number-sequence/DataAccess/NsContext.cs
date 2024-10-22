@@ -14,6 +14,8 @@ namespace number_sequence.DataAccess
 
         public DbSet<Count> Counts { get; set; }
 
+        public DbSet<DaysSince> DaysSinces { get; set; }
+
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceBusiness> InvoiceBusinesses { get; set; }
         public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
@@ -185,8 +187,24 @@ namespace number_sequence.DataAccess
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-            _ = modelBuilder.Entity<Redirect>()
-                .HasKey(x => new { x.Id });
+            _ = modelBuilder.Entity<DaysSince>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<DaysSince>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.HasSequence<long>("DaysSinceEventIds");
+            _ = modelBuilder.Entity<DaysSinceEvent>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.DaysSinceEventIds");
+            _ = modelBuilder.Entity<DaysSinceEvent>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<DaysSinceEvent>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
             _ = modelBuilder.Entity<Redirect>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");

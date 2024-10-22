@@ -48,7 +48,7 @@ namespace TcpWtf.NumberSequence.Tool
 
         public static string GetAccount(ILogger logger = default) => GetValue(logger).Account;
 
-        public static Task<string> GetAsync(CancellationToken _) => Task.FromResult(Get());
+        public static Task<string> GetAsync(ILogger logger, CancellationToken _) => Task.FromResult(Get(logger));
 
         internal sealed class TokenFileModel
         {

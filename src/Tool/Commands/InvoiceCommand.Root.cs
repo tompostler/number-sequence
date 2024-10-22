@@ -183,8 +183,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
             else
             {
-                // When displaying an invoice by default, nicely output the data instead of dumping the json out
-                // Primarily for invoices with more lines (as it reduces the amount of scrolling necessary)
+                // When displaying an invoice by default, nicely output the data instead of dumping the json out.
+                // Primarily for invoices with more lines (as it reduces the amount of scrolling necessary).
                 Console.WriteLine();
 
                 Console.WriteLine("Summary:");

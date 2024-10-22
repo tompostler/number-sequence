@@ -24,7 +24,7 @@ namespace number_sequence.IntTests
 
             this.client = new NsTcpWtfClient(
                 Assembly.LoggerFactory.CreateLogger<NsTcpWtfClient>(),
-                (_) => Task.FromResult(this.token.ToBase64JsonString()),
+                (_, _) => Task.FromResult(this.token.ToBase64JsonString()),
                 Stamp.LocalDev);
         }
 

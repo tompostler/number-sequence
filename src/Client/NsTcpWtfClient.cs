@@ -12,7 +12,7 @@ namespace TcpWtf.NumberSequence.Client
     public sealed class NsTcpWtfClient : IDisposable
     {
         private readonly ILogger<NsTcpWtfClient> logger;
-        private readonly Func<CancellationToken, Task<string>> tokenCallback;
+        private readonly Func<ILogger, CancellationToken, Task<string>> tokenCallback;
         private readonly HttpClient httpClient;
 
         private readonly string clientVersion;
@@ -26,7 +26,7 @@ namespace TcpWtf.NumberSequence.Client
         /// <param name="stamp">Override the base uri for unit testing or other hosting.</param>
         public NsTcpWtfClient(
             ILogger<NsTcpWtfClient> logger,
-            Func<CancellationToken, Task<string>> tokenCallback,
+            Func<ILogger, CancellationToken, Task<string>> tokenCallback,
             Stamp stamp = Stamp.Public)
         {
             this.logger = logger;
@@ -50,6 +50,7 @@ namespace TcpWtf.NumberSequence.Client
 
             this.Account = new AccountOperations(this);
             this.Count = new CountOperations(this);
+            this.DaysSince = new DaysSinceOperations(this);
             this.Invoice = new InvoiceOperations(this);
             this.LatexStatus = new LatexStatusOperations(this);
             this.Ping = new PingOperations(this);
@@ -67,6 +68,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Count operations.
         /// </summary>
         public CountOperations Count { get; }
+
+        /// <summary>
+        /// Days since operations.
+        /// </summary>
+        public DaysSinceOperations DaysSince { get; }
 
         /// <summary>
         /// Invoice operations.
@@ -126,7 +132,7 @@ namespace TcpWtf.NumberSequence.Client
                     requestMessage = requestFactory();
                     if (needsPreparation && this.tokenCallback != default)
                     {
-                        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Token", await this.tokenCallback(cancellationToken));
+                        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Token", await this.tokenCallback(this.logger, cancellationToken));
                     }
                     requestMessage.Headers.Add(HttpHeaderNames.ClientVersion, this.clientVersion);
                     requestMessage.Headers.Add(HttpHeaderNames.ClientName, this.clientName);
