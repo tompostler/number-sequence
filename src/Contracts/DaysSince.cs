@@ -19,10 +19,16 @@ namespace TcpWtf.NumberSequence.Contracts
         public string AccountName { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// The id of the days since. Unique in the system. Case insensitive (normalized to lower case).
+        /// The id of the days since. Unique in the system. Case insensitive (normalized to lower case). Used in the url.
         /// </summary>
         [Required, MinLength(3), MaxLength(36)]
         public string Id { get; set; }
+
+        /// <summary>
+        /// When provided, a way to keep the instance slightly obfuscated in the url but display in the tab title.
+        /// </summary>
+        [MaxLength(MaxValueLineWidth)]
+        public string FriendlyName { get; set; }
 
         /// <summary>
         /// Will be overridden by the addition of individual events.

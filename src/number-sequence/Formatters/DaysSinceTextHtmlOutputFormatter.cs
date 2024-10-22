@@ -27,7 +27,7 @@ namespace number_sequence.Formatters
                 <html>
 
                 <head>
-                  <title>{daysSinceCount} Days Since {HttpUtility.HtmlEncode(responseObject.Id)}</title>
+                  <title>{daysSinceCount} Days Since {HttpUtility.HtmlEncode(responseObject.FriendlyName ?? responseObject.Id)}</title>
                   <meta name=viewport content="width=device-width, initial-scale=1">
                   <meta http-equiv="refresh" content="33333">
                 </head>

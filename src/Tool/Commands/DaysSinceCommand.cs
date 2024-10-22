@@ -68,6 +68,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             {
                 AccountName = TokenProvider.GetAccount(),
                 Id = Input.GetString(nameof(daysSince.Id), Guid.NewGuid().ToString().Split('-').First()),
+                FriendlyName = Input.GetString(nameof(daysSince.FriendlyName)),
                 Value = Input.GetString(nameof(daysSince.Value)),
             };
 
@@ -81,6 +82,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Contracts.DaysSince daysSince = await client.DaysSince.GetAsync(id);
 
+            daysSince.FriendlyName = Input.GetString(nameof(daysSince.FriendlyName), daysSince.FriendlyName);
             daysSince.Value = Input.GetString(nameof(daysSince.Value), daysSince.Value);
             daysSince.ValueLine1 = Input.GetString(nameof(daysSince.ValueLine1), daysSince.ValueLine1);
             daysSince.ValueLine2 = Input.GetString(nameof(daysSince.ValueLine2), daysSince.ValueLine2);
@@ -177,12 +179,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 daysSinces.Select(x => new
                 {
                     x.Id,
+                    x.FriendlyName,
                     x.Value,
                     x.LastOccurrence,
                     AgoDays = (int)DateTime.UtcNow.Subtract(x.LastOccurrence.ToDateTime(new(), DateTimeKind.Utc)).TotalDays,
                     EventCount = x.Events.Count,
                 }),
                 nameof(Contracts.DaysSince.Id),
+                nameof(Contracts.DaysSince.FriendlyName),
                 nameof(Contracts.DaysSince.Value),
                 nameof(Contracts.DaysSince.LastOccurrence),
                 "AgoDays",

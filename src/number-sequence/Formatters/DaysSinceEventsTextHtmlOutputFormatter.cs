@@ -21,7 +21,7 @@ namespace number_sequence.Formatters
             var responseObject = context.Object as IList<DaysSinceEvent>;
 
             string title = responseObject.Any()
-                ? $"{(int)(DateTime.UtcNow - responseObject.First().EventDate.ToDateTime(new TimeOnly(), DateTimeKind.Utc)).TotalDays} Days Since {HttpUtility.UrlEncode(responseObject.First().DaysSince.Id)}: {responseObject.Count} events"
+                ? $"{(int)(DateTime.UtcNow - responseObject.First().EventDate.ToDateTime(new TimeOnly(), DateTimeKind.Utc)).TotalDays} Days Since {HttpUtility.UrlEncode(responseObject.First().DaysSince.FriendlyName ?? responseObject.First().DaysSince.Id)}: {responseObject.Count} events"
                 : "No Days Since events";
 
             StringBuilder sb = new();

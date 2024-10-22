@@ -84,7 +84,8 @@ namespace number_sequence.Controllers
             DaysSince toInsert = new()
             {
                 AccountName = account.Name,
-                Id = daysSince.Id,
+                Id = daysSince.Id.ToLowerInvariant(),
+                FriendlyName = daysSince.FriendlyName,
                 LastOccurrence = DateOnly.FromDateTime(DateTime.UtcNow),
                 Value = daysSince.Value.Trim(),
             };
