@@ -109,7 +109,8 @@ namespace number_sequence.Controllers
 
         private IActionResult ConvertValueToValueLines(DaysSince source, DaysSince target)
         {
-            if (source.ValueLine1 == target.ValueLine1
+            if (source.Value == target.Value
+                && source.ValueLine1 == target.ValueLine1
                 && source.ValueLine2 == target.ValueLine2
                 && source.ValueLine3 == target.ValueLine3
                 && source.ValueLine4 == target.ValueLine4)
