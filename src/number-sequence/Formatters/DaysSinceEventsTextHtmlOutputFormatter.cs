@@ -21,7 +21,7 @@ namespace number_sequence.Formatters
             var responseObject = context.Object as IList<DaysSinceEvent>;
 
             string title = responseObject.Any()
-                ? $"{(int)(DateTime.UtcNow - responseObject.First().EventDate.ToDateTime(new TimeOnly(), DateTimeKind.Utc)).TotalDays} Days Since {HttpUtility.UrlEncode(responseObject.First().DaysSince.FriendlyName ?? responseObject.First().DaysSince.Id)}: {responseObject.Count} events"
+                ? $"{(int)(DateTime.UtcNow - responseObject.First().EventDate.ToDateTime(new(), DateTimeKind.Utc)).TotalDays} Days Since {HttpUtility.HtmlEncode(responseObject.First().DaysSince.FriendlyName ?? responseObject.First().DaysSince.Id)}: {responseObject.Count} events"
                 : "No Days Since events";
 
             StringBuilder sb = new();
@@ -63,7 +63,7 @@ namespace number_sequence.Formatters
                 _ = sb.AppendLine("      <tr>");
                 _ = sb.AppendLine($"        <td>{daysSinceEvent.Id}</td>");
                 _ = sb.AppendLine($"        <td>{daysSinceEvent.EventDate:yyyy-MM-dd}</td>");
-                _ = sb.AppendLine($"        <td>{DateTime.UtcNow.Subtract(daysSinceEvent.EventDate.ToDateTime(new(), DateTimeKind.Utc)).TotalDays:0}</td>");
+                _ = sb.AppendLine($"        <td>{(int)(DateTime.UtcNow - daysSinceEvent.EventDate.ToDateTime(new(), DateTimeKind.Utc)).TotalDays}</td>");
                 _ = sb.AppendLine($"        <td>{HttpUtility.HtmlEncode(daysSinceEvent.Description)}</td>");
                 _ = sb.AppendLine("      </tr>");
             }

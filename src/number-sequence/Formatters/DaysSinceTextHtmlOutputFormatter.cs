@@ -19,7 +19,7 @@ namespace number_sequence.Formatters
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             var responseObject = context.Object as DaysSince;
-            int daysSinceCount = (int)(DateTime.UtcNow - responseObject.LastOccurrence.ToDateTime(new TimeOnly(), DateTimeKind.Utc)).TotalDays;
+            int daysSinceCount = (int)(DateTime.UtcNow - responseObject.LastOccurrence.ToDateTime(new(), DateTimeKind.Utc)).TotalDays;
 
             StringBuilder sb = new();
             _ = sb.AppendLine($"""
