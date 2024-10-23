@@ -46,7 +46,7 @@ namespace TcpWtf.NumberSequence.Contracts
         /// <summary>
         /// The phrase at the end.
         /// </summary>
-        [Required, MinLength(3), MaxLength(MaxValueLineWidth * 4)]
+        [NotMapped, MaxLength(MaxValueLineWidth * 4)]
         public string Value { get; set; }
 
         /// <summary>

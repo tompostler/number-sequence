@@ -38,6 +38,9 @@ namespace number_sequence.Controllers
                 return this.NotFound($"Days since [{id}] not found.");
             }
 
+            // For pretty display, set the Value back to the join of the ValueLines
+            daysSince.Value = string.Join(' ', daysSince.ValueLine1, daysSince.ValueLine2, daysSince.ValueLine3, daysSince.ValueLine4).TrimEnd();
+
             return this.Ok(daysSince);
         }
 
@@ -87,54 +90,13 @@ namespace number_sequence.Controllers
                 Id = daysSince.Id.ToLowerInvariant(),
                 FriendlyName = daysSince.FriendlyName,
                 LastOccurrence = DateOnly.FromDateTime(DateTime.UtcNow),
-                Value = daysSince.Value.Trim(),
             };
 
-            // Split up the one value across the 4 lines, with at most DaysSince.MaxValueLineWidth char per line.
-            // If it's not splittable, then it's a bad request.
-            string[] valueComponents = toInsert.Value.Split(' ');
-            List<string> chunks = new();
-            string currentChunk = string.Empty;
-            foreach (string component in valueComponents)
+            // Validate that either the Value is defined, or the ValueLines are defined, but not both.
+            IActionResult result = this.ConvertValueToValueLines(daysSince, toInsert);
+            if (result != null)
             {
-                if ((currentChunk + component).Length < DaysSince.MaxValueLineWidth)
-                {
-                    currentChunk += (currentChunk.Length == 0 ? string.Empty : ' ') + component;
-                }
-                else
-                {
-                    chunks.Add(currentChunk);
-                    currentChunk = component;
-                }
-            }
-            if (currentChunk.Length > 0)
-            {
-                chunks.Add(currentChunk);
-            }
-
-            // Validate.
-            // We don't need to validate if there's more than 4, since the max characters is DaysSince.MaxValueLineWidth*4.
-            if (chunks.Any(x => x.Length > DaysSince.MaxValueLineWidth))
-            {
-                return this.BadRequest($"Chunks cannot be longer than {DaysSince.MaxValueLineWidth}char. They were parsed as:\n{string.Join('\n', chunks)}");
-            }
-
-            // Store optimized.
-            if (chunks.Count >= 1)
-            {
-                toInsert.ValueLine1 = chunks[0];
-            }
-            if (chunks.Count >= 2)
-            {
-                toInsert.ValueLine2 = chunks[1];
-            }
-            if (chunks.Count >= 3)
-            {
-                toInsert.ValueLine3 = chunks[2];
-            }
-            if (chunks.Count >= 4)
-            {
-                toInsert.ValueLine4 = chunks[3];
+                return result;
             }
 
             _ = nsContext.DaysSinces.Add(toInsert);
@@ -143,6 +105,85 @@ namespace number_sequence.Controllers
             DaysSince created = await nsContext.DaysSinces.SingleAsync(x => x.AccountName == account.Name && x.Id == toInsert.Id, cancellationToken);
             this.logger.LogInformation($"Created days since: {created.ToJsonString()}");
             return this.Ok(created);
+        }
+
+        private IActionResult ConvertValueToValueLines(DaysSince source, DaysSince target)
+        {
+            if (source.Value == null)
+            {
+                // We're using the data from ValueLine#
+                if (string.IsNullOrEmpty(source.ValueLine1))
+                {
+                    return this.BadRequest($"Either {nameof(DaysSince.Value)} or {nameof(DaysSince.ValueLine1)} must have a value.");
+                }
+                target.ValueLine1 = source.ValueLine1;
+                target.ValueLine2 = source.ValueLine2;
+                target.ValueLine3 = source.ValueLine3;
+                target.ValueLine4 = source.ValueLine4;
+            }
+            else if (source.ValueLine1 != null)
+            {
+                // Both Value and ValueLine# were defined and should not be.
+                return this.BadRequest($"Either {nameof(DaysSince.Value)} or {nameof(DaysSince.ValueLine1)} must have a value, not both.");
+            }
+            else
+            {
+                // Split up the one value across the 4 lines, with at most DaysSince.MaxValueLineWidth char per line.
+                // If it's not splittable, then it's a bad request.
+                string[] valueComponents = source.Value.Split(' ');
+                List<string> chunks = new();
+                string currentChunk = string.Empty;
+                foreach (string component in valueComponents)
+                {
+                    if ((currentChunk + component).Length < DaysSince.MaxValueLineWidth)
+                    {
+                        currentChunk += (currentChunk.Length == 0 ? string.Empty : ' ') + component;
+                    }
+                    else
+                    {
+                        chunks.Add(currentChunk);
+                        currentChunk = component;
+                    }
+                }
+                if (currentChunk.Length > 0)
+                {
+                    chunks.Add(currentChunk);
+                }
+
+                // Validate.
+                // We don't need to validate if there's more than 4, since the max characters is DaysSince.MaxValueLineWidth*4.
+                if (chunks.Any(x => x.Length > DaysSince.MaxValueLineWidth))
+                {
+                    return this.BadRequest($"Chunks cannot be longer than {DaysSince.MaxValueLineWidth}char. They were parsed as:\n{string.Join('\n', chunks)}");
+                }
+
+                // Store optimized.
+                target.ValueLine1 = null;
+                target.ValueLine2 = null;
+                target.ValueLine3 = null;
+                target.ValueLine4 = null;
+                if (chunks.Count >= 1)
+                {
+                    target.ValueLine1 = chunks[0];
+                }
+                if (chunks.Count >= 2)
+                {
+                    target.ValueLine2 = chunks[1];
+                }
+                if (chunks.Count >= 3)
+                {
+                    target.ValueLine3 = chunks[2];
+                }
+                if (chunks.Count >= 4)
+                {
+                    target.ValueLine4 = chunks[3];
+                }
+            }
+
+            // For pretty display, set the Value back to the join of the ValueLines
+            target.Value = string.Join(' ', target.ValueLine1, target.ValueLine2, target.ValueLine3, target.ValueLine4).TrimEnd();
+
+            return default;
         }
 
         [HttpPut, RequiresToken]
@@ -160,18 +201,12 @@ namespace number_sequence.Controllers
                 return this.NotFound();
             }
 
-            // Allow the user to space apart the 4 lines however they want, as long as they remain equal to the original value.
-            string calculatedValue = $"{daysSince.ValueLine1} {daysSince.ValueLine2} {daysSince.ValueLine3} {daysSince.ValueLine4}".Trim();
-            if (daysSince.Value != calculatedValue)
+            // Validate that either the Value is defined, or the ValueLines are defined, but not both.
+            IActionResult result = this.ConvertValueToValueLines(daysSince, daysSinceRecord);
+            if (result != null)
             {
-                return this.BadRequest($"The calculated value of:\n{calculatedValue}\nDoes not equal the actual value of:\n{daysSince.Value}");
+                return result;
             }
-
-            daysSinceRecord.Value = daysSince.Value;
-            daysSinceRecord.ValueLine1 = daysSince.ValueLine1;
-            daysSinceRecord.ValueLine2 = daysSince.ValueLine2;
-            daysSinceRecord.ValueLine3 = daysSince.ValueLine3;
-            daysSinceRecord.ValueLine4 = daysSince.ValueLine4;
 
             List<DaysSinceEvent> daysSinceEvents = new();
             foreach (DaysSinceEvent daysSinceEvent in daysSince.Events)
@@ -201,7 +236,7 @@ namespace number_sequence.Controllers
             }
 
             daysSinceRecord.Events = daysSinceEvents;
-            daysSinceRecord.LastOccurrence = daysSinceRecord.Events.Max(x => x.EventDate);
+            daysSinceRecord.LastOccurrence = daysSinceRecord.Events.Any() ? daysSinceRecord.Events.Max(x => x.EventDate) : DateOnly.FromDateTime(daysSinceRecord.CreatedDate.UtcDateTime);
 
             daysSinceRecord.ModifiedDate = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
@@ -219,6 +254,13 @@ namespace number_sequence.Controllers
                 .Include(x => x.Events)
                 .Where(x => x.AccountName == this.User.Identity.Name)
                 .ToListAsync(cancellationToken);
+
+            foreach (DaysSince daysSince in daysSinces)
+            {
+                // For pretty display, set the Value back to the join of the ValueLines
+                daysSince.Value = string.Join(' ', daysSince.ValueLine1, daysSince.ValueLine2, daysSince.ValueLine3, daysSince.ValueLine4).TrimEnd();
+            }
+
             return this.Ok(daysSinces);
         }
     }

@@ -69,8 +69,20 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 AccountName = TokenProvider.GetAccount(),
                 Id = Input.GetString(nameof(daysSince.Id), Guid.NewGuid().ToString().Split('-').Last()),
                 FriendlyName = Input.GetString(nameof(daysSince.FriendlyName)),
-                Value = Input.GetString(nameof(daysSince.Value)),
             };
+
+            string answer = Input.GetString("Do you want to set Value, or the ValueLines? Default is Value, or enter any text to do ValueLines");
+            if (answer == null)
+            {
+                daysSince.Value = Input.GetString(nameof(daysSince.Value));
+            }
+            else
+            {
+                daysSince.ValueLine1 = Input.GetString(nameof(daysSince.ValueLine1));
+                daysSince.ValueLine2 = Input.GetString(nameof(daysSince.ValueLine2));
+                daysSince.ValueLine3 = Input.GetString(nameof(daysSince.ValueLine3));
+                daysSince.ValueLine4 = Input.GetString(nameof(daysSince.ValueLine4));
+            }
 
             daysSince = await client.DaysSince.CreateAsync(daysSince);
             Console.WriteLine(daysSince.ToJsonString(indented: true));
@@ -83,11 +95,24 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Contracts.DaysSince daysSince = await client.DaysSince.GetAsync(id);
 
             daysSince.FriendlyName = Input.GetString(nameof(daysSince.FriendlyName), daysSince.FriendlyName);
-            daysSince.Value = Input.GetString(nameof(daysSince.Value), daysSince.Value);
-            daysSince.ValueLine1 = Input.GetString(nameof(daysSince.ValueLine1), daysSince.ValueLine1);
-            daysSince.ValueLine2 = Input.GetString(nameof(daysSince.ValueLine2), daysSince.ValueLine2);
-            daysSince.ValueLine3 = Input.GetString(nameof(daysSince.ValueLine3), daysSince.ValueLine3);
-            daysSince.ValueLine4 = Input.GetString(nameof(daysSince.ValueLine4), daysSince.ValueLine4);
+
+            string answer = Input.GetString("Do you want to update Value, or the ValueLines? Default is Value, or enter any text to do ValueLines");
+            if (answer == null)
+            {
+                daysSince.Value = Input.GetString(nameof(daysSince.Value), daysSince.Value);
+                daysSince.ValueLine1 = null;
+                daysSince.ValueLine2 = null;
+                daysSince.ValueLine3 = null;
+                daysSince.ValueLine4 = null;
+            }
+            else
+            {
+                daysSince.Value = null;
+                daysSince.ValueLine1 = Input.GetString(nameof(daysSince.ValueLine1), daysSince.ValueLine1);
+                daysSince.ValueLine2 = Input.GetString(nameof(daysSince.ValueLine2), daysSince.ValueLine2);
+                daysSince.ValueLine3 = Input.GetString(nameof(daysSince.ValueLine3), daysSince.ValueLine3);
+                daysSince.ValueLine4 = Input.GetString(nameof(daysSince.ValueLine4), daysSince.ValueLine4);
+            }
 
             daysSince = await client.DaysSince.UpdateAsync(daysSince);
             PrintDaysSince(daysSince, raw);
