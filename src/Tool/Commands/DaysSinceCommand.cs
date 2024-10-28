@@ -146,8 +146,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             };
             daysSince.Events.Add(daysSinceEvent);
 
-            daysSince.Value = null;
-
             daysSince = await client.DaysSince.UpdateAsync(daysSince);
             PrintDaysSince(daysSince, raw);
         }
