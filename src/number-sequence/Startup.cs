@@ -98,6 +98,7 @@ namespace number_sequence
             _ = app.UseRouting();
 
             _ = app.UseMiddleware<Middleware.ExceptionToStatusCodeMiddleware>();
+            _ = app.UseMiddleware<Middleware.OperationIdHeaderMiddleware>();
 
             // Custom versioning middleware
             string assemblyFileVersion = ThisAssembly.AssemblyInformationalVersion;
