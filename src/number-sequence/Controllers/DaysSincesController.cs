@@ -209,7 +209,10 @@ namespace number_sequence.Controllers
                 return this.NotFound();
             }
 
-            this.logger.LogInformation($"Updating {daysSinceRecord} from {daysSince}");
+            // For pretty display, set the Value back to the join of the ValueLines
+            daysSinceRecord.Value = string.Join(' ', daysSinceRecord.ValueLine1, daysSinceRecord.ValueLine2, daysSinceRecord.ValueLine3, daysSinceRecord.ValueLine4).TrimEnd();
+
+            this.logger.LogInformation($"Updating record:\n{daysSinceRecord}\nFrom request:\n{daysSince}");
 
             // Validate that either the Value is defined, or the ValueLines are defined, but not both.
             IActionResult result = this.ConvertValueToValueLines(daysSince, daysSinceRecord);
