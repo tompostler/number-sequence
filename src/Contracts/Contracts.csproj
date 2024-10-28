@@ -8,5 +8,9 @@
     <Description>Contracts for the ns.tcp.wtf project.</Description>
     <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Unlimitedinf.Utilities" Version="3.2.1" />
+  </ItemGroup>
 
 </Project>

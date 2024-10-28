@@ -209,7 +209,7 @@ namespace number_sequence.Controllers
                 return this.NotFound();
             }
 
-            this.logger.LogInformation($"Updating {daysSinceRecord.ToJsonString()} from {daysSince.ToJsonString()}");
+            this.logger.LogInformation($"Updating {daysSinceRecord} from {daysSince}");
 
             // Validate that either the Value is defined, or the ValueLines are defined, but not both.
             IActionResult result = this.ConvertValueToValueLines(daysSince, daysSinceRecord);

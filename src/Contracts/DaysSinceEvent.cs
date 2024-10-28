@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.Contracts
 {
@@ -43,5 +44,16 @@ namespace TcpWtf.NumberSequence.Contracts
         /// A reference to the days since this event is for.
         /// </summary>
         public DaysSince DaysSince { get; set; }
+
+        /// <inheritdoc/>
+        public override string ToString() =>
+            new DaysSinceEvent()
+            {
+                Id = this.Id,
+                EventDate = this.EventDate,
+                Description = this.Description,
+                CreatedDate = this.CreatedDate,
+                ModifiedDate = this.ModifiedDate,
+            }.ToJsonString();
     }
 }

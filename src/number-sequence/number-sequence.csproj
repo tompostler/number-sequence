@@ -20,7 +20,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EFCoreVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(EFCoreVersion)" />
     <PackageReference Include="QuestPDF" Version="2024.10.1" />
-    <PackageReference Include="Unlimitedinf.Utilities" Version="3.2.1" />
   </ItemGroup>
 
   <ItemGroup>

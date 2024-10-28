@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.Contracts
 {
@@ -85,6 +86,9 @@ namespace TcpWtf.NumberSequence.Contracts
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset ModifiedDate { get; set; }
+
+        /// <inheritdoc/>
+        public override string ToString() => this.ToJsonString();
     }
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
