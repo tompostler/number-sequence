@@ -194,7 +194,13 @@ namespace TcpWtf.NumberSequence.Client
                 }
 
                 // Else the response was not successful (and should not be retried). Default behavior is to throw a client-specific exception.
-                string msg = $"Request returned an invalid status code '{responseMessage.StatusCode}'";
+                string msg = $"Request returned an invalid status code '{responseMessage.StatusCode}'.";
+
+                // Attempt to grab the operation id to make looking up server telemetry easier.
+                if (responseMessage.Headers.TryGetValues(HttpHeaderNames.ServerOperationId, out IEnumerable<string> serverOperationIdHeaders))
+                {
+                    msg += $" Operation id: {serverOperationIdHeaders.FirstOrDefault()}.";
+                }
 
                 // Attempt to read the body, but reset the stream position in case a subsequent user of the responseMessage wants to read it too.
                 try

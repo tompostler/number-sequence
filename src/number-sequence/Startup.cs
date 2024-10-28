@@ -98,8 +98,7 @@ namespace number_sequence
             _ = app.UseRouting();
 
             _ = app.UseMiddleware<Middleware.ExceptionToStatusCodeMiddleware>();
-            _ = app.UseMiddleware<Middleware.OperationIdHeaderMiddleware>();
-            _ = app.UseMiddleware<Middleware.ServerVersionMiddleware>();
+            _ = app.UseMiddleware<Middleware.ServerMetadataMiddleware>();
 
             _ = app.UseEndpoints(endpoints => _ = endpoints.MapControllers());
         }

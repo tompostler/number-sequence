@@ -22,6 +22,12 @@
         public const string ServerVersion = "server-version";
 
         /// <summary>
+        /// The operation id of the request on the server.
+        /// Logged by the client on exception.
+        /// </summary>
+        public const string ServerOperationId = "server-operation-id";
+
+        /// <summary>
         /// If an API is deprecated, this will be set with a yyyy-MM of the planned API removal.
         /// Logged as a warning or error based on the date by the client.
         /// </summary>
