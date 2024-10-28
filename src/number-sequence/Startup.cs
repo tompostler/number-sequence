@@ -99,15 +99,7 @@ namespace number_sequence
 
             _ = app.UseMiddleware<Middleware.ExceptionToStatusCodeMiddleware>();
             _ = app.UseMiddleware<Middleware.OperationIdHeaderMiddleware>();
-
-            // Custom versioning middleware
-            string assemblyFileVersion = ThisAssembly.AssemblyInformationalVersion;
-            _ = app.Use(
-                async (context, next) =>
-                {
-                    context.Response.Headers[HttpHeaderNames.ServerVersion] = assemblyFileVersion;
-                    await next.Invoke();
-                });
+            _ = app.UseMiddleware<Middleware.ServerVersionMiddleware>();
 
             _ = app.UseEndpoints(endpoints => _ = endpoints.MapControllers());
         }
