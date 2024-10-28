@@ -46,14 +46,6 @@ namespace TcpWtf.NumberSequence.Contracts
         public DaysSince DaysSince { get; set; }
 
         /// <inheritdoc/>
-        public override string ToString() =>
-            new DaysSinceEvent()
-            {
-                Id = this.Id,
-                EventDate = this.EventDate,
-                Description = this.Description,
-                CreatedDate = this.CreatedDate,
-                ModifiedDate = this.ModifiedDate,
-            }.ToJsonString();
+        public override string ToString() => this.ToJsonString();
     }
 }
