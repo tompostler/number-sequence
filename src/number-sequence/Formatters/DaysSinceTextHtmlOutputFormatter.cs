@@ -83,8 +83,10 @@ namespace number_sequence.Formatters
                 _ = sb.AppendLine($"""    <text x="200" y="280" font-family="Arial" font-size="30" fill="black" text-anchor="middle">{HttpUtility.HtmlEncode(responseObject.ValueLine1)}</text>""");
             }
             
-            _ = sb.AppendLine("""
+            _ = sb.AppendLine($"""
                   </svg>
+
+                  <div><a target="_blank" href="/days-since/{responseObject.Id}/history">(history, opens in new tab)</a></div>
 
                 </body>
 
