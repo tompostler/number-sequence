@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
+using System.Web;
 using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.Controllers
@@ -998,13 +999,19 @@ namespace number_sequence.Controllers
                 return this.Name();
             }
 
-            return this.Ok(fromValues[(int)Generate(16) % fromValues.Length]);
+            return this.Ok(HttpUtility.UrlDecode(fromValues[(int)Generate(16) % fromValues.Length]));
         }
 
         [HttpGet("fromlist")]
         public IActionResult FromList()
         {
             string[] fromValues = this.HttpContext.Request.QueryString.Value?.TrimStart('?').Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+
+            for (int i = 0; i < fromValues.Length; i++)
+            {
+                fromValues[i] = HttpUtility.UrlDecode(fromValues[i]);
+            }
+
             fromValues.Shuffle();
             return this.Ok(fromValues);
         }
