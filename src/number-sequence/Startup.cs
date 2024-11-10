@@ -2,9 +2,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Extensions.Options;
-using number_sequence.Services.Background.LatexGeneration;
 using System.Text.Json.Serialization;
-using TcpWtf.NumberSequence.Contracts.Framework;
 
 namespace number_sequence
 {
@@ -71,9 +69,9 @@ namespace number_sequence
             // Background services
             //
 
-            _ = services.AddHostedService<ChiroCanineLatexGenerationBackgroundService>();
-            _ = services.AddHostedService<ChiroEquineLatexGenerationBackgroundService>();
-            _ = services.AddHostedService<ReprocessInvoiceRegularlyBackgroundService>();
+            _ = services.AddHostedService<Services.Background.LatexGeneration.ChiroCanineLatexGenerationBackgroundService>();
+            _ = services.AddHostedService<Services.Background.LatexGeneration.ChiroEquineLatexGenerationBackgroundService>();
+            _ = services.AddHostedService<Services.Background.ReprocessInvoiceRegularlyBackgroundService>();
 
 
             //

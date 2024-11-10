@@ -6,7 +6,7 @@ using number_sequence.DataAccess;
 using number_sequence.Utilities;
 using TcpWtf.NumberSequence.Contracts.Invoicing;
 
-namespace number_sequence.Services.Background.LatexGeneration
+namespace number_sequence.Services.Background
 {
     public sealed class ReprocessInvoiceRegularlyBackgroundService : SqlSynchronizedBackgroundService
     {
