@@ -231,5 +231,19 @@
                 needsPreparation: false);
             return await response.Content.ReadAsStringAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Gets Heads or Tails.
+        /// </summary>
+        public async Task<string> GetCoinFlipAsync(CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/coin"),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
     }
 }

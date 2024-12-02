@@ -1108,5 +1108,13 @@ namespace number_sequence.Controllers
 
             return this.Ok(wotQuotes[book.Value - 1]);
         }
+
+        [HttpGet("coin")]
+        public IActionResult Coin()
+        {
+            return this.Ok(Generate(1) == 0
+                            ? "Heads"
+                            : "Tails");
+        }
     }
 }

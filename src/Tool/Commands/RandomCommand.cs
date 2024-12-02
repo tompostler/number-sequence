@@ -14,6 +14,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Argument<string> randomTypeArg = new Argument<string>("type", "The type of random to get. Pick from the supported values.")
                 .FromAmong(
                     "8ball",
+                    "coin",
                     "guid",
                     "name",
                     "wot",
@@ -53,6 +54,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             object response = type switch
             {
                 "8ball" => await client.Random.Get8BallAsync(),
+                "coin" => await client.Random.GetCoinFlipAsync(),
                 "guid" => await client.Random.GetGuidAsync(),
                 "name" => await client.Random.GetNameAsync(seed),
                 "wot" => await client.Random.GetWheelOfTimeIntroAsync(value),
