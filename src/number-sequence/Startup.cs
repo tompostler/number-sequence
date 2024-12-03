@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Extensions.Options;
+using QuestPDF.Drawing;
 using System.Text.Json.Serialization;
 
 namespace number_sequence
@@ -69,7 +70,7 @@ namespace number_sequence
             // Background services
             //
 
-            _ = services.AddHostedService<Services.Background.LatexGeneration.ChiroCanineLatexGenerationBackgroundService>();
+            _ = services.AddHostedService<Services.Background.GoogleSheetPdfGeneration.ChiroCanineGoogleSheetPdfGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.LatexGeneration.ChiroEquineLatexGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.ReprocessInvoiceRegularlyBackgroundService>();
 
@@ -80,6 +81,13 @@ namespace number_sequence
 
             _ = DurableTaskImpl.ServiceProviderOrchestrationExtensions.AddDurableOrchestrations(services);
             _ = services.AddHostedService<Services.Background.DurableOrchestrationWorkerBackgroundService>();
+
+
+            //
+            // Misc
+            //
+
+            FontManager.RegisterFont(Resources.ComputerModernRomanFont);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

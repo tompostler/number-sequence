@@ -15,6 +15,10 @@ namespace number_sequence.DurableTaskImpl
                 .AddSingleton<TaskOrchestration, Orchestrators.InvoicePostlerGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.InvoicePostlerPdfGenerationActivity>()
 
+                // Chiro (canine) generation
+                .AddSingleton<TaskOrchestration, Orchestrators.ChiroCanineGenerationOrchestrator>()
+                .AddSingleton<TaskActivity, Activities.ChiroCaninePdfGenerationActivity>()
+
                 // Convert latex to a pdf and email it
                 .AddSingleton<TaskOrchestration, Orchestrators.LatexGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.GeneratePdfFromLatexActivity>()

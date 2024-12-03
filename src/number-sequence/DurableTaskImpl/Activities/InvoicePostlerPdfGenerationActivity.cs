@@ -285,7 +285,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                             {
                                 table.ColumnsDefinition(columns =>
                                 {
-                                    columns.RelativeColumn();
+                                    columns.RelativeColumn(1);
                                     columns.RelativeColumn(8);
                                     columns.RelativeColumn(2);
                                     columns.RelativeColumn(2);
