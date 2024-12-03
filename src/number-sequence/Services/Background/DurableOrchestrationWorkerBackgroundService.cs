@@ -28,13 +28,13 @@ namespace number_sequence.Services.Background
                 MaxActiveOrchestrations = 1,
                 MaxConcurrentActivities = 1,
 
-                MinActivityPollingInterval = TimeSpan.FromSeconds(1),
-                DeltaBackoffActivityPollingInterval = TimeSpan.FromSeconds(3),
-                MaxActivityPollingInterval = TimeSpan.FromMinutes(5),
+                MinActivityPollingInterval = TimeSpan.FromSeconds(3),
+                DeltaBackoffActivityPollingInterval = TimeSpan.FromSeconds(7),
+                MaxActivityPollingInterval = TimeSpan.FromMinutes(10),
 
-                MinOrchestrationPollingInterval = TimeSpan.FromSeconds(1),
-                DeltaBackoffOrchestrationPollingInterval = TimeSpan.FromSeconds(3),
-                MaxOrchestrationPollingInterval = TimeSpan.FromMinutes(5),
+                MinOrchestrationPollingInterval = TimeSpan.FromSeconds(3),
+                DeltaBackoffOrchestrationPollingInterval = TimeSpan.FromSeconds(7),
+                MaxOrchestrationPollingInterval = TimeSpan.FromMinutes(10),
             };
             this.sqlOrchestrationService = new(sqlOrchestrationServiceSettings);
 
