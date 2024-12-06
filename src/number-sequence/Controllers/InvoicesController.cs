@@ -206,7 +206,8 @@ namespace number_sequence.Controllers
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
                 .Where(x => x.AccountName == this.User.Identity.Name)
-                .OrderByDescending(x => x.ModifiedDate)
+                .OrderByDescending(x => x.PaidDate ?? DateOnly.MaxValue)
+                .ThenByDescending(x => x.ModifiedDate)
                 .Skip(skip)
                 .Take(take)
                 .ToListAsync(cancellationToken);

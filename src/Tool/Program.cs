@@ -6,7 +6,7 @@ namespace TcpWtf.NumberSequence.Tool
 {
     internal static class Program
     {
-        internal static Stamp Stamp = Stamp.Public;
+        internal static Stamp Stamp = Stamp.LocalDev;
 
         public static async Task<int> Main(string[] args)
         {
