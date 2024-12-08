@@ -10,16 +10,16 @@ using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
 {
-    public sealed class ChiroCanineGoogleSheetPdfGenerationBackgroundService : SqlSynchronizedBackgroundService
+    public sealed class ChiroEquineGoogleSheetPdfGenerationBackgroundService : SqlSynchronizedBackgroundService
     {
         private readonly GoogleSheetDataAccess googleSheetDataAccess;
 
-        public ChiroCanineGoogleSheetPdfGenerationBackgroundService(
+        public ChiroEquineGoogleSheetPdfGenerationBackgroundService(
             GoogleSheetDataAccess googleSheetDataAccess,
             IOptions<Options.Google> googleOptions,
             IServiceProvider serviceProvider,
             Sentinals sentinals,
-            ILogger<ChiroCanineGoogleSheetPdfGenerationBackgroundService> logger,
+            ILogger<ChiroEquineGoogleSheetPdfGenerationBackgroundService> logger,
             TelemetryClient telemetryClient)
             : base(serviceProvider, sentinals, logger, telemetryClient)
         {
@@ -28,12 +28,12 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
 
         protected override List<CronExpression> Crons => new()
         {
-            // 45 seconds into the minute, every 15 minutes, 9AM through 10PM, Monday through Friday
-            CronExpression.Parse("45 */15 9-22 * * MON-FRI", CronFormat.IncludeSeconds),
-            // 45 seconds into the minute, every hour, 12AM through 9AM and 10PM through 12AM, Monday through Friday
-            CronExpression.Parse("45 0 0-9,23 * * MON-FRI", CronFormat.IncludeSeconds),
-            // 45 seconds into the minute, every hour, Saturday through Sunday
-            CronExpression.Parse("45 0 * * * SAT-SUN", CronFormat.IncludeSeconds),
+            // 15 seconds into the minute, every 15 minutes, 9AM through 10PM, Monday through Friday
+            CronExpression.Parse("15 */15 9-22 * * MON-FRI", CronFormat.IncludeSeconds),
+            // 15 seconds into the minute, every hour, 12AM through 9AM and 10PM through 12AM, Monday through Friday
+            CronExpression.Parse("15 0 0-9,23 * * MON-FRI", CronFormat.IncludeSeconds),
+            // 15 seconds into the minute, every hour, Saturday through Sunday
+            CronExpression.Parse("15 0 * * * SAT-SUN", CronFormat.IncludeSeconds),
         };
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
@@ -42,7 +42,7 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             // Get the template information.
-            LatexTemplate template = await nsContext.LatexTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.LTBP.ChiroCanine, cancellationToken);
+            LatexTemplate template = await nsContext.LatexTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.LTBP.ChiroEquine, cancellationToken);
             if (template == default)
             {
                 this.logger.LogInformation("No template defined.");
@@ -89,7 +89,7 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
 
                     TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
                     OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                        typeof(DurableTaskImpl.Orchestrators.ChiroCanineGenerationOrchestrator),
+                        typeof(DurableTaskImpl.Orchestrators.ChiroEquineGenerationOrchestrator),
                         instanceId: $"{id.MakeHumanFriendly()}_{template.Id}",
                         rowIndex + numberOfKnownRows);
                     this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");

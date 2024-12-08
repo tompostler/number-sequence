@@ -14,21 +14,21 @@ using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.DurableTaskImpl.Activities
 {
-    public sealed class ChiroCaninePdfGenerationActivity : AsyncTaskActivity<long, string>
+    public sealed class ChiroEquinePdfGenerationActivity : AsyncTaskActivity<long, string>
     {
         private readonly GoogleSheetDataAccess googleSheetDataAccess;
         private readonly NsStorage nsStorage;
         private readonly IServiceProvider serviceProvider;
         private readonly Sentinals sentinals;
-        private readonly ILogger<ChiroCaninePdfGenerationActivity> logger;
+        private readonly ILogger<ChiroEquinePdfGenerationActivity> logger;
         private readonly TelemetryClient telemetryClient;
 
-        public ChiroCaninePdfGenerationActivity(
+        public ChiroEquinePdfGenerationActivity(
             GoogleSheetDataAccess googleSheetDataAccess,
             NsStorage nsStorage,
             IServiceProvider serviceProvider,
             Sentinals sentinals,
-            ILogger<ChiroCaninePdfGenerationActivity> logger,
+            ILogger<ChiroEquinePdfGenerationActivity> logger,
             TelemetryClient telemetryClient)
         {
             this.googleSheetDataAccess = googleSheetDataAccess;
@@ -54,7 +54,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             // Get the template information.
-            LatexTemplate template = await nsContext.LatexTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.LTBP.ChiroCanine, cancellationToken);
+            LatexTemplate template = await nsContext.LatexTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.LTBP.ChiroEquine, cancellationToken);
             if (template == default)
             {
                 throw new InvalidOperationException("No template defined.");
@@ -122,13 +122,13 @@ namespace number_sequence.DurableTaskImpl.Activities
             }
 
             // Create and populate the data.
-            ChiroCaninePdfDocument pdf = new();
+            ChiroEquinePdfDocument pdf = new();
 
             // Parse the data row into meaningful replacement values
             // Index, Column label in spreadsheet, Description
             //  0  A Submission timestamp
-            // 80 CC Email Address
-            string emailSubmitter = row.Length > 80 ? row[80]?.Trim() : string.Empty;
+            // 92 CC Email Address
+            string emailSubmitter = row.Length > 92 ? row[92]?.Trim() : string.Empty;
             if (!string.IsNullOrWhiteSpace(emailSubmitter) && !string.IsNullOrWhiteSpace(template.AllowedSubmitterEmails))
             {
                 // Historically, old rows did not have the email captured.
@@ -196,7 +196,12 @@ namespace number_sequence.DurableTaskImpl.Activities
             // 27 AB T11
             // 28 AC T12
             // 29 AD T13
-            // 43 AR Sternum
+            // 30 AE T14
+            // 31 AF T15
+            // 32 AG T16
+            // 33 AH T17
+            // 34 AI T18
+            // 89 CL Sternum
             pdf.Thoracic += customAppend(pdf.Thoracic, "T1", 17);
             pdf.Thoracic += customAppend(pdf.Thoracic, "T2", 18);
             pdf.Thoracic += customAppend(pdf.Thoracic, "T3", 19);
@@ -210,125 +215,145 @@ namespace number_sequence.DurableTaskImpl.Activities
             pdf.Thoracic += customAppend(pdf.Thoracic, "T11", 27);
             pdf.Thoracic += customAppend(pdf.Thoracic, "T12", 28);
             pdf.Thoracic += customAppend(pdf.Thoracic, "T13", 29);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "Sternum", 43);
+            pdf.Thoracic += customAppend(pdf.Thoracic, "T14", 30);
+            pdf.Thoracic += customAppend(pdf.Thoracic, "T15", 31);
+            pdf.Thoracic += customAppend(pdf.Thoracic, "T16", 32);
+            pdf.Thoracic += customAppend(pdf.Thoracic, "T17", 33);
+            pdf.Thoracic += customAppend(pdf.Thoracic, "T18", 34);
+            pdf.Thoracic += customAppend(pdf.Thoracic, "Sternum", 89);
             pdf.Thoracic += customAppend(pdf.Thoracic, string.Empty, 16);
 
             // Ribs
-            // 30 AE R1
-            // 31 AF R2
-            // 32 AG R3
-            // 33 AH R4
-            // 34 AI R5
-            // 35 AJ R6
-            // 36 AK R7
-            // 37 AL R8
-            // 38 AM R9
-            // 39 AN R10
-            // 40 AO R11
-            // 41 AP R12
-            // 42 AQ R13
-            pdf.Ribs += customAppend(pdf.Ribs, "R1", 30);
-            pdf.Ribs += customAppend(pdf.Ribs, "R2", 31);
-            pdf.Ribs += customAppend(pdf.Ribs, "R3", 32);
-            pdf.Ribs += customAppend(pdf.Ribs, "R4", 33);
-            pdf.Ribs += customAppend(pdf.Ribs, "R5", 34);
-            pdf.Ribs += customAppend(pdf.Ribs, "R6", 35);
-            pdf.Ribs += customAppend(pdf.Ribs, "R7", 36);
-            pdf.Ribs += customAppend(pdf.Ribs, "R8", 37);
-            pdf.Ribs += customAppend(pdf.Ribs, "R9", 38);
-            pdf.Ribs += customAppend(pdf.Ribs, "R10", 39);
-            pdf.Ribs += customAppend(pdf.Ribs, "R11", 40);
-            pdf.Ribs += customAppend(pdf.Ribs, "R12", 41);
-            pdf.Ribs += customAppend(pdf.Ribs, "R13", 42);
+            // 35 AJ R1
+            // 36 AK R2
+            // 37 AL R3
+            // 38 AM R4
+            // 39 AN R5
+            // 40 AO R6
+            // 41 AP R7
+            // 42 AQ R8
+            // 43 AR R9
+            // 44 AS R10
+            // 45 AT R11
+            // 46 AU R12
+            // 47 AV R13
+            // 48 AW R14
+            // 49 AX R15
+            // 50 AY R16
+            // 51 AZ R17
+            // 52 BA R18
+            pdf.Ribs += customAppend(pdf.Ribs, "R1", 35);
+            pdf.Ribs += customAppend(pdf.Ribs, "R2", 36);
+            pdf.Ribs += customAppend(pdf.Ribs, "R3", 37);
+            pdf.Ribs += customAppend(pdf.Ribs, "R4", 38);
+            pdf.Ribs += customAppend(pdf.Ribs, "R5", 39);
+            pdf.Ribs += customAppend(pdf.Ribs, "R6", 40);
+            pdf.Ribs += customAppend(pdf.Ribs, "R7", 41);
+            pdf.Ribs += customAppend(pdf.Ribs, "R8", 42);
+            pdf.Ribs += customAppend(pdf.Ribs, "R9", 43);
+            pdf.Ribs += customAppend(pdf.Ribs, "R10", 44);
+            pdf.Ribs += customAppend(pdf.Ribs, "R11", 45);
+            pdf.Ribs += customAppend(pdf.Ribs, "R12", 46);
+            pdf.Ribs += customAppend(pdf.Ribs, "R13", 47);
+            pdf.Ribs += customAppend(pdf.Ribs, "R14", 48);
+            pdf.Ribs += customAppend(pdf.Ribs, "R15", 49);
+            pdf.Ribs += customAppend(pdf.Ribs, "R16", 50);
+            pdf.Ribs += customAppend(pdf.Ribs, "R17", 51);
+            pdf.Ribs += customAppend(pdf.Ribs, "R18", 52);
 
             // Lumbar
-            // 44 AS Other notes
-            // 45 AT L1
-            // 46 AU L2
-            // 47 AV L3
-            // 48 AW L4
-            // 49 AX L5
-            // 50 AY L6
-            // 51 AZ L7
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L1", 45);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L2", 46);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L3", 47);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L4", 48);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L5", 49);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L6", 50);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L7", 51);
-            pdf.Lumbar += customAppend(pdf.Lumbar, string.Empty, 44);
+            // 53 BB Other notes
+            // 54 BC L1
+            // 55 BD L2
+            // 56 BE L3
+            // 57 BF L4
+            // 58 BG L5
+            // 59 BH L6
+            // 60 BI L3/L4 Intertransverse
+            // 61 BJ L4/L5 Intertransverse
+            // 62 BK L5/L6 Intertransverse
+            pdf.Lumbar += customAppend(pdf.Lumbar, "L1", 54);
+            pdf.Lumbar += customAppend(pdf.Lumbar, "L2", 55);
+            pdf.Lumbar += customAppend(pdf.Lumbar, "L3", 56);
+            pdf.Lumbar += customAppend(pdf.Lumbar, "L4", 57);
+            pdf.Lumbar += customAppend(pdf.Lumbar, "L5", 58);
+            pdf.Lumbar += customAppend(pdf.Lumbar, "L6", 59);
+            pdf.Lumbar += customAppend(pdf.Lumbar, "L3/L4 Intertransverse", 60);
+            pdf.Lumbar += customAppend(pdf.Lumbar, "L4/L5 Intertransverse", 61);
+            pdf.Lumbar += customAppend(pdf.Lumbar, "L5/L6 Intertransverse", 62);
+            pdf.Lumbar += customAppend(pdf.Lumbar, string.Empty, 53);
 
             // Sacrum
-            // 52 BA Other notes
-            // 53 BB Base
-            // 54 BC Apex
+            // 63 BL Other notes
+            // 64 BM Base
+            // 65 BN Apex
             // Pelvic
-            // 55 BD Other notes
-            // 56 BE Left
-            // 57 BF Right
-            // 58 BG Traction
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Base", 53);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Apex", 54);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Sacrum", 52);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Left", 56);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Right", 57);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, string.Empty, 58);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Pelvis", 55);
+            // 66 BO Other notes
+            // 67 BP Left
+            // 68 BQ Right
+            // 90 CM Traction
+            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Base", 64);
+            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Apex", 65);
+            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Sacrum", 63);
+            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Left", 67);
+            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Right", 68);
+            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, string.Empty, 90);
+            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Pelvis", 66);
 
             // Left forelimb
-            // 59 BH Other notes
-            // 60 BI Scapula
-            // 61 BJ Humorous
-            // 62 BK Ulna
-            // 63 BL Radius
-            // 64 BM Carpus
-            // 65 BN Metatarsals/Phalanges
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Scapula", 60);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Humorous", 61);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Ulna", 62);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Radius", 63);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Carpus", 64);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Metatarsals/Phalanges", 65);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, string.Empty, 59);
+            // 69 BR Other notes
+            // 70 BS Scapula
+            // 71 BT Humorous
+            // 72 BU Ulna
+            // 73 BV Radius
+            // 74 BW Carpus
+            // 75 BX Metatarsals/Phalanges
+            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Scapula", 70);
+            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Humorous", 71);
+            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Ulna", 72);
+            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Radius", 73);
+            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Carpus", 74);
+            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Metatarsals/Phalanges", 75);
+            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, string.Empty, 69);
 
             // Right forelimb
-            // 66 BO Other notes
-            // 67 BP Scapula
-            // 68 BQ Humorous
-            // 69 BR Ulna
-            // 70 BS Radius
-            // 71 BT Carpus
-            // 72 BU Metatarsals/Phalanges
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Scapula", 67);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Humorous", 68);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Ulna", 69);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Radius", 70);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Carpus", 71);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Metatarsals/Phalanges", 72);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, string.Empty, 66);
+            // 76 BY Other notes
+            // 77 BZ Scapula
+            // 78 CA Humorous
+            // 79 CB Ulna
+            // 80 CC Radius
+            // 81 CD Carpus
+            // 82 CE Metatarsals/Phalanges
+            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Scapula", 77);
+            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Humorous", 78);
+            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Ulna", 79);
+            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Radius", 80);
+            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Carpus", 81);
+            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Metatarsals/Phalanges", 82);
+            pdf.RightForelimb += customAppend(pdf.RightForelimb, string.Empty, 76);
 
             // Left rear limb
-            // 73 BV Other notes
-            // 74 BW Raw response
-            pdf.LeftRearLimb += customAppend(pdf.LeftRearLimb, string.Empty, 74);
-            pdf.LeftRearLimb += customAppend(pdf.LeftRearLimb, string.Empty, 73);
+            // 83 CF Other notes
+            // 84 CG Raw response
+            pdf.LeftRearLimb += customAppend(pdf.LeftRearLimb, string.Empty, 84);
+            pdf.LeftRearLimb += customAppend(pdf.LeftRearLimb, string.Empty, 83);
 
             // Right rear limb
-            // 75 BX Other notes
-            // 76 BY Raw response
-            pdf.RightRearLimb += customAppend(pdf.RightRearLimb, string.Empty, 76);
-            pdf.RightRearLimb += customAppend(pdf.RightRearLimb, string.Empty, 75);
-
-            // Coccygeal
-            // 77 BZ Other notes
-            // 78 CA Coccygeal
-            pdf.Coccygeal += customAppend(pdf.Coccygeal, "Coccygeal", 78);
-            pdf.Coccygeal += customAppend(pdf.Coccygeal, string.Empty, 77);
+            // 85 CH Other notes
+            // 86 CI Raw response
+            pdf.RightRearLimb += customAppend(pdf.RightRearLimb, string.Empty, 86);
+            pdf.RightRearLimb += customAppend(pdf.RightRearLimb, string.Empty, 85);
 
             // Extended other notes
-            // 79 CB Raw response
-            pdf.Other = row.Length > 79 ? row[79]?.Trim() : string.Empty;
+            // 87 CJ Raw response
+            pdf.Other = row.Length > 87 ? row[87]?.Trim() : string.Empty;
+
+            // Coccygeal
+            // 88 CK Raw response
+            // 91 CN Coccygeal
+            pdf.Coccygeal += customAppend(pdf.Coccygeal, "Coccygeal", 91);
+            pdf.Coccygeal += customAppend(pdf.Coccygeal, string.Empty, 88);
+
 
             // Generate the PDF
             MemoryStream ms = new();
@@ -378,7 +403,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             return default;
         }
 
-        private sealed class ChiroCaninePdfDocument : IDocument
+        private sealed class ChiroEquinePdfDocument : IDocument
         {
             public string PatientName { get; set; }
             public string OwnerName { get; set; }
@@ -436,7 +461,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                 .PaddingBottom(7)
                                 .AlignCenter()
                                 .MaxWidth(5, Unit.Inch)
-                                .Image(Resources.ChiroCanineDiagram);
+                                .Image(Resources.ChiroEquineDiagram);
 
                             // Table of records
                             column.Item().Table(table =>

@@ -6,6 +6,7 @@
             => typeof(Resources).Assembly.GetManifestResourceStream("number_sequence.Resources." + resourceName);
 
         public static Stream ChiroCanineDiagram => GetFromResrouce("chiro-canine-diagram.png");
+        public static Stream ChiroEquineDiagram => GetFromResrouce("chiro-equine-diagram.png");
         public static Stream ComputerModernRomanFont => GetFromResrouce("cmunrm.ttf");
     }
 }
