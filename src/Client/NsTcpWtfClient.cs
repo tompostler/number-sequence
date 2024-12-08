@@ -51,6 +51,7 @@ namespace TcpWtf.NumberSequence.Client
             this.Account = new AccountOperations(this);
             this.Count = new CountOperations(this);
             this.DaysSince = new DaysSinceOperations(this);
+            this.History = new HistoryOperations(this);
             this.Invoice = new InvoiceOperations(this);
             this.LatexStatus = new LatexStatusOperations(this);
             this.Ping = new PingOperations(this);
@@ -73,6 +74,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Days since operations.
         /// </summary>
         public DaysSinceOperations DaysSince { get; }
+
+        /// <summary>
+        /// History operations.
+        /// </summary>
+        public HistoryOperations History { get; }
 
         /// <summary>
         /// Invoice operations.

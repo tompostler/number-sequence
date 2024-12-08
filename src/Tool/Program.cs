@@ -18,6 +18,7 @@ namespace TcpWtf.NumberSequence.Tool
             rootCommand.AddCommand(AccountCommand.Create(verbosityOption));
             rootCommand.AddCommand(CountCommand.Create(verbosityOption));
             rootCommand.AddCommand(DaysSinceCommand.Create(verbosityOption));
+            rootCommand.AddCommand(HistoryCommand.Create(verbosityOption));
             rootCommand.AddCommand(InvoiceCommand.Create(verbosityOption));
             rootCommand.AddCommand(IpCommand.Create(verbosityOption));
             rootCommand.AddCommand(LatexStatusCommand.Create(verbosityOption));
@@ -26,21 +27,7 @@ namespace TcpWtf.NumberSequence.Tool
             rootCommand.AddCommand(RedirectCommand.Create(verbosityOption));
             rootCommand.AddCommand(TokenCommand.Create(verbosityOption));
 
-            Option<bool> historyOption = new("--history", "Display version history of the last 25 commits.");
-            rootCommand.AddOption(historyOption);
-            rootCommand.SetHandler(Handle, historyOption, verbosityOption);
-
             return await rootCommand.InvokeAsync(args);
-        }
-
-        private static void Handle(bool history, Verbosity verbosity)
-        {
-            if (history)
-            {
-                Console.WriteLine("""
-HISTORY_PLACEHOLDER
-""");
-            }
         }
     }
 }
