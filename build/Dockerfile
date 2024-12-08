@@ -2,10 +2,9 @@
 # https://mcr.microsoft.com/en-us/product/dotnet/aspnet/tags
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-noble
 
-# Install texlive components for pdflatex
+# Ensure all updates are installed
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt update \
-    && apt-get install --yes texlive texlive-latex-extra \
     && apt-get clean
 
 # Copy in the code

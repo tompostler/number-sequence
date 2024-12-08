@@ -54,7 +54,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             // Get the template information.
-            LatexTemplate template = await nsContext.LatexTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.LTBP.ChiroEquine, cancellationToken);
+            PdfTemplate template = await nsContext.PdfTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.PT.ChiroEquine, cancellationToken);
             if (template == default)
             {
                 throw new InvalidOperationException("No template defined.");
@@ -76,23 +76,23 @@ namespace number_sequence.DurableTaskImpl.Activities
             // See if we've already processed it.
             string[] row = data.First().Select(x => x as string).ToArray();
             string id = string.Join('|', row).ComputeSHA256();
-            LatexTemplateSpreadsheetRow latexTemplateRow = await nsContext.LatexTemplateSpreadsheetRows
+            PdfTemplateSpreadsheetRow pdfTemplateRow = await nsContext.PdfTemplateSpreadsheetRows
                 .SingleOrDefaultAsync(x => x.SpreadsheetId == template.SpreadsheetId && x.RowId == id, cancellationToken);
-            if (latexTemplateRow != default)
+            if (pdfTemplateRow != default)
             {
-                throw new InvalidOperationException($"Data row {id} ({input + 1}) was inserted for processing at {latexTemplateRow.CreatedDate:u} and processed {latexTemplateRow.ProcessedAt:u}");
+                throw new InvalidOperationException($"Data row {id} ({input + 1}) was inserted for processing at {pdfTemplateRow.CreatedDate:u} and processed {pdfTemplateRow.ProcessedAt:u}");
             }
             else
             {
                 this.logger.LogInformation($"Data row {id} ({input + 1}) is new. Setting up for processing.");
-                latexTemplateRow = new()
+                pdfTemplateRow = new()
                 {
                     SpreadsheetId = template.SpreadsheetId,
                     RowId = id,
                     LatexDocumentId = context.OrchestrationInstance.InstanceId,
                     ProcessedAt = DateTimeOffset.UtcNow
                 };
-                _ = nsContext.LatexTemplateSpreadsheetRows.Add(latexTemplateRow);
+                _ = nsContext.PdfTemplateSpreadsheetRows.Add(pdfTemplateRow);
             }
 
             string customAppend(string existing, string prefix, int index)

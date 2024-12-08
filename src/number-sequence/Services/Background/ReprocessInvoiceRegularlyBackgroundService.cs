@@ -46,7 +46,7 @@ namespace number_sequence.Services.Background
                 TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
                 OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
                     typeof(DurableTaskImpl.Orchestrators.InvoicePostlerGenerationOrchestrator),
-                    instanceId: $"{invoiceNeedingReprocessing.Id:0000}-{invoiceNeedingReprocessing.ProccessAttempt:00}_{NsStorage.C.LTBP.InvoicePostler}",
+                    instanceId: $"{invoiceNeedingReprocessing.Id:0000}-{invoiceNeedingReprocessing.ProccessAttempt:00}_{NsStorage.C.PT.InvoicePostler}",
                     invoiceNeedingReprocessing.Id);
                 this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
 

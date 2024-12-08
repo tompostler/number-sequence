@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace number_sequence.Models
 {
-    public sealed class LatexTemplateSpreadsheetRow
+    public sealed class PdfTemplateSpreadsheetRow
     {
         [Required]
         [MaxLength(64)]

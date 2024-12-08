@@ -3,13 +3,13 @@
 namespace TcpWtf.NumberSequence.Client
 {
     /// <summary>
-    /// Get status about the latex background services.
+    /// Get status about the pdf background services.
     /// </summary>
-    public sealed class LatexStatusOperations
+    public sealed class PdfStatusOperations
     {
         private readonly NsTcpWtfClient nsTcpWtfClient;
 
-        internal LatexStatusOperations(NsTcpWtfClient nsTcpWtfClient)
+        internal PdfStatusOperations(NsTcpWtfClient nsTcpWtfClient)
         {
             this.nsTcpWtfClient = nsTcpWtfClient;
         }
@@ -17,14 +17,14 @@ namespace TcpWtf.NumberSequence.Client
         /// <summary>
         /// Get the current status; filtered server-side.
         /// </summary>
-        public async Task<LatexStatus> GetAsync(CancellationToken cancellationToken = default)
+        public async Task<PdfStatus> GetAsync(CancellationToken cancellationToken = default)
         {
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
-                    "latexstatus"),
+                    "pdfstatus"),
                 cancellationToken);
-            return await response.Content.ReadJsonAsAsync<LatexStatus>(cancellationToken: cancellationToken);
+            return await response.Content.ReadJsonAsAsync<PdfStatus>(cancellationToken: cancellationToken);
         }
     }
 }

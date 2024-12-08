@@ -22,9 +22,9 @@ namespace number_sequence.DataAccess
         public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
 
         public DbSet<EmailDocument> EmailDocuments { get; set; }
-        public DbSet<LatexDocument> LatexDocuments { get; set; }
-        public DbSet<LatexTemplate> LatexTemplates { get; set; }
-        public DbSet<LatexTemplateSpreadsheetRow> LatexTemplateSpreadsheetRows { get; set; }
+        public DbSet<PdfDocument> PdfDocuments { get; set; }
+        public DbSet<PdfTemplate> PdfTemplates { get; set; }
+        public DbSet<PdfTemplateSpreadsheetRow> PdfTemplateSpreadsheetRows { get; set; }
         
         public DbSet<Redirect> Redirects { get; set; }
 
@@ -146,7 +146,7 @@ namespace number_sequence.DataAccess
 
             #endregion // Invoicing
 
-            #region Latex
+            #region Pdf
 
             _ = modelBuilder.Entity<EmailDocument>()
                 .HasKey(x => x.Id);
@@ -155,28 +155,28 @@ namespace number_sequence.DataAccess
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-            _ = modelBuilder.Entity<LatexDocument>()
+            _ = modelBuilder.Entity<PdfDocument>()
                 .HasKey(x => x.Id);
 
-            _ = modelBuilder.Entity<LatexDocument>()
+            _ = modelBuilder.Entity<PdfDocument>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-            _ = modelBuilder.Entity<LatexTemplate>()
+            _ = modelBuilder.Entity<PdfTemplate>()
                 .HasKey(x => x.Id);
 
-            _ = modelBuilder.Entity<LatexTemplate>()
+            _ = modelBuilder.Entity<PdfTemplate>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-            _ = modelBuilder.Entity<LatexTemplateSpreadsheetRow>()
+            _ = modelBuilder.Entity<PdfTemplateSpreadsheetRow>()
                 .HasKey(x => x.LatexDocumentId);
 
-            _ = modelBuilder.Entity<LatexTemplateSpreadsheetRow>()
+            _ = modelBuilder.Entity<PdfTemplateSpreadsheetRow>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-            #endregion // Latex
+            #endregion // Pdf
 
             _ = modelBuilder.Entity<Count>()
                 .HasKey(x => new { x.Account, x.Name });

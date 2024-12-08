@@ -23,7 +23,7 @@ namespace TcpWtf.NumberSequence.Tool
             rootCommand.AddCommand(HistoryCommand.Create(stampOption, verbosityOption));
             rootCommand.AddCommand(InvoiceCommand.Create(stampOption, verbosityOption));
             rootCommand.AddCommand(IpCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(LatexStatusCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(PdfStatusCommand.Create(stampOption, verbosityOption));
             rootCommand.AddCommand(PingCommand.Create(stampOption, verbosityOption));
             rootCommand.AddCommand(RandomCommand.Create(stampOption, verbosityOption));
             rootCommand.AddCommand(RedirectCommand.Create(stampOption, verbosityOption));

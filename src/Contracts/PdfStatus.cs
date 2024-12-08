@@ -1,18 +1,18 @@
 ﻿namespace TcpWtf.NumberSequence.Contracts
 {
     /// <summary>
-    /// The status of the background services for latex generation.
+    /// The status of the background services for pdf generation.
     /// </summary>
-    public sealed class LatexStatus
+    public sealed class PdfStatus
     {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-        public sealed class LatexTemplateSpreadsheetRow
+        public sealed class TemplateSpreadsheetRow
         {
             public string RowId { get; set; }
-            public string LatexDocumentId { get; set; }
+            public string DocumentId { get; set; }
             public string CreatedDate { get; set; }
         }
-        public sealed class LatexDocument
+        public sealed class Document
         {
             public string Id { get; set; }
             public string CreatedDate { get; set; }
@@ -30,8 +30,8 @@
             public string Delay { get; set; }
         }
 
-        public List<LatexTemplateSpreadsheetRow> LatexTemplateSpreadsheetRows { get; set; }
-        public List<LatexDocument> LatexDocuments { get; set; }
+        public List<TemplateSpreadsheetRow> TemplateSpreadsheetRows { get; set; }
+        public List<Document> Documents { get; set; }
         public List<EmailDocument> EmailDocuments { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }

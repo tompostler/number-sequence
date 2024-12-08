@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace number_sequence.Models
 {
-    public sealed class LatexDocument
+    public sealed class PdfDocument
     {
         [Required]
         [MaxLength(64)]

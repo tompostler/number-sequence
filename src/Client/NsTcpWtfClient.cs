@@ -53,7 +53,7 @@ namespace TcpWtf.NumberSequence.Client
             this.DaysSince = new DaysSinceOperations(this);
             this.History = new HistoryOperations(this);
             this.Invoice = new InvoiceOperations(this);
-            this.LatexStatus = new LatexStatusOperations(this);
+            this.PdfStatus = new PdfStatusOperations(this);
             this.Ping = new PingOperations(this);
             this.Random = new RandomOperations(this);
             this.Redirect = new RedirectOperations(this);
@@ -86,9 +86,9 @@ namespace TcpWtf.NumberSequence.Client
         public InvoiceOperations Invoice { get; }
 
         /// <summary>
-        /// Latex status operations.
+        /// Pdf status operations.
         /// </summary>
-        public LatexStatusOperations LatexStatus { get; }
+        public PdfStatusOperations PdfStatus { get; }
 
         /// <summary>
         /// Ping operations.

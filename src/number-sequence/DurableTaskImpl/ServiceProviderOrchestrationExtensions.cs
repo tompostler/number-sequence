@@ -23,11 +23,6 @@ namespace number_sequence.DurableTaskImpl
                 .AddSingleton<TaskOrchestration, Orchestrators.ChiroEquineGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.ChiroEquinePdfGenerationActivity>()
 
-                // Convert latex to a pdf and email it
-                .AddSingleton<TaskOrchestration, Orchestrators.LatexGenerationOrchestrator>()
-                .AddSingleton<TaskActivity, Activities.GeneratePdfFromLatexActivity>()
-                .AddSingleton<TaskActivity, Activities.CopyPdfForLatexForEmailingActivity>()
-
                 // Shared activities
                 .AddSingleton<TaskActivity, Activities.EmailPdfActivity>()
             ;

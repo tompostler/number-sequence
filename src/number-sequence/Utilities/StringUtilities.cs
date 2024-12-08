@@ -56,29 +56,5 @@ namespace number_sequence.Utilities
                 return @this;
             }
         }
-
-        public static string EscapeForLatex(this string @this)
-        {
-            if (string.IsNullOrEmpty(@this))
-            {
-                return @this;
-            }
-            else
-            {
-                StringBuilder sb = new(@this.Length);
-                foreach (char letter in @this)
-                {
-                    _ = letter switch
-                    {
-                        '&' or '%' or '$' or '#' or '_' or '{' or '}' => sb.Append(@"\" + letter),
-                        '~' => sb.Append(@"{\textasciitilde}"),
-                        '^' => sb.Append(@"{\textasciicircum}"),
-                        '\\' => sb.Append(@"{\textbackslash}"),
-                        _ => sb.Append(letter),
-                    };
-                }
-                return sb.ToString();
-            }
-        }
     }
 }

@@ -42,7 +42,7 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             // Get the template information.
-            LatexTemplate template = await nsContext.LatexTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.LTBP.ChiroCanine, cancellationToken);
+            PdfTemplate template = await nsContext.PdfTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.PT.ChiroCanine, cancellationToken);
             if (template == default)
             {
                 this.logger.LogInformation("No template defined.");
@@ -50,7 +50,7 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
             }
 
             // Skip the number of rows that we already know about.
-            int numberOfKnownRows = await nsContext.LatexTemplateSpreadsheetRows
+            int numberOfKnownRows = await nsContext.PdfTemplateSpreadsheetRows
                 .CountAsync(x => x.SpreadsheetId == template.SpreadsheetId, cancellationToken);
             string spreadsheetRange = template.SpreadsheetRange.Replace("1", Math.Max(1, numberOfKnownRows).ToString());
             this.logger.LogInformation($"Skipping {numberOfKnownRows} known rows and querying range {spreadsheetRange}");
@@ -70,17 +70,17 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
             // Check each row of data to see if it's already been processed.
             // Only process one additional row at a time.
             string[] row = default;
-            LatexTemplateSpreadsheetRow latexTemplateRow = default;
+            PdfTemplateSpreadsheetRow pdfTemplateRow = default;
             for (int rowIndex = 0; rowIndex < data.Count; rowIndex++)
             {
                 row = data[rowIndex].Select(x => x as string).ToArray();
                 string id = string.Join('|', row).ComputeSHA256();
-                latexTemplateRow = await nsContext.LatexTemplateSpreadsheetRows
+                pdfTemplateRow = await nsContext.PdfTemplateSpreadsheetRows
                     .SingleOrDefaultAsync(x => x.SpreadsheetId == template.SpreadsheetId && x.RowId == id, cancellationToken);
 
-                if (latexTemplateRow != default)
+                if (pdfTemplateRow != default)
                 {
-                    this.logger.LogInformation($"Data row {id} ({rowIndex + numberOfKnownRows + 1}) was inserted for processing at {latexTemplateRow.CreatedDate:u} and processed {latexTemplateRow.ProcessedAt:u}");
+                    this.logger.LogInformation($"Data row {id} ({rowIndex + numberOfKnownRows + 1}) was inserted for processing at {pdfTemplateRow.CreatedDate:u} and processed {pdfTemplateRow.ProcessedAt:u}");
                     continue;
                 }
                 else

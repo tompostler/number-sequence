@@ -11,14 +11,9 @@
         public const string Invoicing = nameof(Invoicing);
 
         /// <summary>
-        /// Ability to view the status of the latex document generation.
+        /// Ability to view the status of the pdf document generation.
         /// </summary>
-        public const string LatexStatus = nameof(LatexStatus);
-
-        /// <summary>
-        /// The account has access to the loan features.
-        /// </summary>
-        public const string Loans = nameof(Loans);
+        public const string PdfStatus = nameof(PdfStatus);
 
         /// <summary>
         /// Verify that roles are working by being granted this role and using the ping endpoint.

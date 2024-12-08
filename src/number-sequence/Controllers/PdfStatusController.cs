@@ -6,12 +6,12 @@ using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.Controllers
 {
-    [ApiController, Route("[controller]"), RequiresToken(AccountRoles.LatexStatus)]
-    public sealed class LatexStatusController : ControllerBase
+    [ApiController, Route("[controller]"), RequiresToken(AccountRoles.PdfStatus)]
+    public sealed class PdfStatusController : ControllerBase
     {
         private readonly IServiceProvider serviceProvider;
 
-        public LatexStatusController(IServiceProvider serviceProvider)
+        public PdfStatusController(IServiceProvider serviceProvider)
         {
             this.serviceProvider = serviceProvider;
         }
@@ -24,33 +24,33 @@ namespace number_sequence.Controllers
 
             DateTimeOffset monthAgo = DateTimeOffset.UtcNow.AddDays(-30);
 
-            List<Models.LatexTemplateSpreadsheetRow> latexTemplateSpreadsheetRows = await nsContext.LatexTemplateSpreadsheetRows
-                                                                                                    .Where(r => r.CreatedDate > monthAgo)
-                                                                                                    .OrderByDescending(r => r.CreatedDate)
-                                                                                                    .Take(10)
-                                                                                                    .ToListAsync();
-            List<Models.LatexDocument> latexDocuments = await nsContext.LatexDocuments
-                                                                        .Where(r => r.CreatedDate > monthAgo)
-                                                                        .OrderByDescending(r => r.CreatedDate)
-                                                                        .Take(10)
-                                                                        .ToListAsync();
+            List<Models.PdfTemplateSpreadsheetRow> pdfTemplateSpreadsheetRows = await nsContext.PdfTemplateSpreadsheetRows
+                                                                                                .Where(r => r.CreatedDate > monthAgo)
+                                                                                                .OrderByDescending(r => r.CreatedDate)
+                                                                                                .Take(10)
+                                                                                                .ToListAsync();
+            List<Models.PdfDocument> pdfDocuments = await nsContext.PdfDocuments
+                                                                    .Where(r => r.CreatedDate > monthAgo)
+                                                                    .OrderByDescending(r => r.CreatedDate)
+                                                                    .Take(10)
+                                                                    .ToListAsync();
             List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
                                                                         .Where(r => r.CreatedDate > monthAgo)
                                                                         .OrderByDescending(r => r.CreatedDate)
                                                                         .Take(10)
                                                                         .ToListAsync();
-            LatexStatus latexStatus = new()
+            PdfStatus pdfStatus = new()
             {
-                LatexTemplateSpreadsheetRows = latexTemplateSpreadsheetRows.Select(
-                    r => new LatexStatus.LatexTemplateSpreadsheetRow
+                TemplateSpreadsheetRows = pdfTemplateSpreadsheetRows.Select(
+                    r => new PdfStatus.TemplateSpreadsheetRow
                     {
                         RowId = r.RowId,
-                        LatexDocumentId = r.LatexDocumentId,
+                        DocumentId = r.LatexDocumentId,
                         CreatedDate = r.CreatedDate.ToString("u"),
                     })
                     .ToList(),
-                LatexDocuments = latexDocuments.Select(
-                    d => new LatexStatus.LatexDocument
+                Documents = pdfDocuments.Select(
+                    d => new PdfStatus.Document
                     {
                         Id = d.Id,
                         CreatedDate = d.CreatedDate.ToString("u"),
@@ -60,7 +60,7 @@ namespace number_sequence.Controllers
                     })
                     .ToList(),
                 EmailDocuments = emailDocuments.Select(
-                    e => new LatexStatus.EmailDocument
+                    e => new PdfStatus.EmailDocument
                     {
                         Id = e.Id,
                         Subject = e.Subject,
@@ -72,7 +72,7 @@ namespace number_sequence.Controllers
                     .ToList()
             };
 
-            return this.Ok(latexStatus);
+            return this.Ok(pdfStatus);
         }
     }
 }
