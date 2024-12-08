@@ -170,7 +170,7 @@ namespace number_sequence.DataAccess
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
             _ = modelBuilder.Entity<PdfTemplateSpreadsheetRow>()
-                .HasKey(x => x.LatexDocumentId);
+                .HasKey(x => x.DocumentId);
 
             _ = modelBuilder.Entity<PdfTemplateSpreadsheetRow>()
                 .Property(x => x.CreatedDate)

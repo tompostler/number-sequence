@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using number_sequence.DataAccess;
 
@@ -11,9 +12,11 @@ using number_sequence.DataAccess;
 namespace number_sequence.Migrations
 {
     [DbContext(typeof(NsContext))]
-    partial class NsContextModelSnapshot : ModelSnapshot
+    [Migration("20241208223528_LatexDocumentIdToPdfRename")]
+    partial class LatexDocumentIdToPdfRename
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -45,7 +45,7 @@ namespace number_sequence.Controllers
                     r => new PdfStatus.TemplateSpreadsheetRow
                     {
                         RowId = r.RowId,
-                        DocumentId = r.LatexDocumentId,
+                        DocumentId = r.DocumentId,
                         CreatedDate = r.CreatedDate.ToString("u"),
                     })
                     .ToList(),

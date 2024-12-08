@@ -89,7 +89,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 {
                     SpreadsheetId = template.SpreadsheetId,
                     RowId = id,
-                    LatexDocumentId = context.OrchestrationInstance.InstanceId,
+                    DocumentId = context.OrchestrationInstance.InstanceId,
                     ProcessedAt = DateTimeOffset.UtcNow
                 };
                 _ = nsContext.PdfTemplateSpreadsheetRows.Add(pdfTemplateRow);

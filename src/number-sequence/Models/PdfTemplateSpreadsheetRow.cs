@@ -15,7 +15,7 @@ namespace number_sequence.Models
 
         [Required]
         [MaxLength(64)]
-        public string LatexDocumentId { get; set; }
+        public string DocumentId { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
