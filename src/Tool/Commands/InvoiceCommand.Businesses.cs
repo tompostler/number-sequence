@@ -6,9 +6,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static partial class InvoiceCommand
     {
-        private static async Task HandleBusinessCreateAsync(Verbosity verbosity)
+        private static async Task HandleBusinessCreateAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.InvoiceBusiness invoiceBusiness = new()
             {
@@ -24,16 +24,16 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(invoiceBusiness.ToJsonString(indented: true));
         }
 
-        private static async Task HandleBusinessGetAsync(long id, Verbosity verbosity)
+        private static async Task HandleBusinessGetAsync(long id, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             Contracts.Invoicing.InvoiceBusiness invoiceBusiness = await client.Invoice.GetBusinessAsync(id);
             Console.WriteLine(invoiceBusiness.ToJsonString(indented: true));
         }
 
-        private static async Task HandleBusinessListAsync(Verbosity verbosity)
+        private static async Task HandleBusinessListAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             List<Contracts.Invoicing.InvoiceBusiness> invoiceBusinesses = await client.Invoice.GetBusinessesAsync();
 
             Console.WriteLine();

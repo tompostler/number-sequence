@@ -6,9 +6,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static partial class InvoiceCommand
     {
-        private static async Task HandleLineDefaultCreateAsync(Verbosity verbosity)
+        private static async Task HandleLineDefaultCreateAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault = new()
             {
@@ -24,9 +24,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(invoiceLineDefault.ToJsonString(indented: true));
         }
 
-        private static async Task HandleLineDefaultEditAsync(long id, Verbosity verbosity)
+        private static async Task HandleLineDefaultEditAsync(long id, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault = await client.Invoice.GetLineDefaultAsync(id);
 
@@ -40,16 +40,16 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(invoiceLineDefault.ToJsonString(indented: true));
         }
 
-        private static async Task HandleLineDefaultGetAsync(long id, Verbosity verbosity)
+        private static async Task HandleLineDefaultGetAsync(long id, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault = await client.Invoice.GetLineDefaultAsync(id);
             Console.WriteLine(invoiceLineDefault.ToJsonString(indented: true));
         }
 
-        private static async Task HandleLineDefaultListAsync(Verbosity verbosity)
+        private static async Task HandleLineDefaultListAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             List<Contracts.Invoicing.InvoiceLineDefault> invoiceLineDefaults = await client.Invoice.GetLineDefaultsAsync();
 
             Console.WriteLine();
@@ -64,9 +64,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceLineDefault.ModifiedDate));
         }
 
-        private static async Task HandleLineDefaultSwapAsync(long id, long otherId, Verbosity verbosity)
+        private static async Task HandleLineDefaultSwapAsync(long id, long otherId, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault1 = await client.Invoice.GetLineDefaultAsync(id);
             Contracts.Invoicing.InvoiceLineDefault invoiceLineDefault2 = await client.Invoice.GetLineDefaultAsync(otherId);

@@ -7,7 +7,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static class RandomCommand
     {
-        public static Command Create(Option<Verbosity> verbosityOption)
+        public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
             Command command = new("random", "Get random data.");
 
@@ -34,20 +34,19 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Option<int?> valueOpt = new("--value", "If provided and the API supports it, the value to use for the randomness. (int)");
             command.AddOption(valueOpt);
 
-            command.SetHandler(HandleAsync, randomTypeArg, seedOpt, valueOpt, verbosityOption);
+            command.SetHandler(HandleAsync, randomTypeArg, seedOpt, valueOpt, stampOption, verbosityOption);
             return command;
         }
 
-        private static async Task HandleAsync(string type, string seedStr, int? value, Verbosity verbosity)
+        private static async Task HandleAsync(string type, string seedStr, int? value, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, stamp);
 
             // If there's a seed, convert it to an int by hashing it
             int? seed = default;
             if (!string.IsNullOrEmpty(seedStr))
             {
-                using var alg = MD5.Create();
-                byte[] hash = alg.ComputeHash(Encoding.UTF8.GetBytes(seedStr));
+                byte[] hash = MD5.HashData(Encoding.UTF8.GetBytes(seedStr));
                 seed = BitConverter.ToInt32(hash);
             }
 

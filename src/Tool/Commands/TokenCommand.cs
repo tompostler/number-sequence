@@ -8,14 +8,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static class TokenCommand
     {
-        public static Command Create(Option<Verbosity> verbosityOption)
+        public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
             Command rootCommand = new("token", "Create, save, or inspect an existing token.");
 
             Argument<string> tokenArgument = new("tokenValue", "The actual token.");
 
             Command createCommand = new("create", "Create a new token for your account.");
-            createCommand.SetHandler(HandleCreateAsync, verbosityOption);
+            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
 
             Command inspectCommand = new("inspect", "Decrypt an existing token to see its properties.");
             inspectCommand.AddArgument(tokenArgument);
@@ -36,9 +36,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             return rootCommand;
         }
 
-        private static async Task HandleCreateAsync(Verbosity verbosity)
+        private static async Task HandleCreateAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, stamp);
 
             Contracts.Token token = new()
             {

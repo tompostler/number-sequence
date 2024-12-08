@@ -7,7 +7,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static class DaysSinceCommand
     {
-        public static Command Create(Option<Verbosity> verbosityOption)
+        public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
             Command rootCommand = new("days-since", "Create and manage days since alerts.");
 
@@ -15,25 +15,25 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Option<bool> rawOption = new("--raw", "Show raw json object(s) instead of the nicer summary format.");
 
             Command createCommand = new("create", "Create a new days since.");
-            createCommand.SetHandler(HandleCreateAsync, verbosityOption);
+            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
             rootCommand.AddCommand(createCommand);
 
             Command editCommand = new("edit", "Edit an existing days since.");
             editCommand.AddArgument(idArgument);
             editCommand.AddOption(rawOption);
-            editCommand.SetHandler(HandleEditAsync, idArgument, rawOption, verbosityOption);
+            editCommand.SetHandler(HandleEditAsync, idArgument, rawOption, stampOption, verbosityOption);
             rootCommand.AddCommand(editCommand);
 
             Command getCommand = new("get", "Get an existing days since.");
             getCommand.AddAlias("show");
             getCommand.AddArgument(idArgument);
             getCommand.AddOption(rawOption);
-            getCommand.SetHandler(HandleGetAsync, idArgument, rawOption, verbosityOption);
+            getCommand.SetHandler(HandleGetAsync, idArgument, rawOption, stampOption, verbosityOption);
             rootCommand.AddCommand(getCommand);
 
             Command listCommand = new("list", "Get existing days sinces.");
             listCommand.AddAlias("ls");
-            listCommand.SetHandler(HandleListAsync, verbosityOption);
+            listCommand.SetHandler(HandleListAsync, stampOption, verbosityOption);
             rootCommand.AddCommand(listCommand);
 
 
@@ -42,14 +42,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Command eventCreateCommand = new("create", "Create a new days since event.");
             eventCreateCommand.AddArgument(idArgument);
             eventCreateCommand.AddOption(rawOption);
-            eventCreateCommand.SetHandler(HandleEventCreateAsync, idArgument, rawOption, verbosityOption);
+            eventCreateCommand.SetHandler(HandleEventCreateAsync, idArgument, rawOption, stampOption, verbosityOption);
 
             Command eventEditCommand = new("edit", "Edit an existing days since event.");
             Argument<long> eventIdArgument = new("eventId", "The id of the event.");
             eventEditCommand.AddArgument(idArgument);
             eventEditCommand.AddArgument(eventIdArgument);
             eventEditCommand.AddOption(rawOption);
-            eventEditCommand.SetHandler(HandleEventEditAsync, idArgument, eventIdArgument, rawOption, verbosityOption);
+            eventEditCommand.SetHandler(HandleEventEditAsync, idArgument, eventIdArgument, rawOption, stampOption, verbosityOption);
 
             eventCommand.AddCommand(eventCreateCommand);
             eventCommand.AddCommand(eventEditCommand);
@@ -59,9 +59,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             return rootCommand;
         }
 
-        private static async Task HandleCreateAsync(Verbosity verbosity)
+        private static async Task HandleCreateAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.DaysSince daysSince = new()
             {
@@ -87,9 +87,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(daysSince.ToJsonString(indented: true));
         }
 
-        private static async Task HandleEditAsync(string id, bool raw, Verbosity verbosity)
+        private static async Task HandleEditAsync(string id, bool raw, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.DaysSince daysSince = await client.DaysSince.GetAsync(id);
 
@@ -117,24 +117,24 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             PrintDaysSince(daysSince, raw);
         }
 
-        private static async Task HandleGetAsync(string id, bool raw, Verbosity verbosity)
+        private static async Task HandleGetAsync(string id, bool raw, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             Contracts.DaysSince daysSince = await client.DaysSince.GetAsync(id);
             PrintDaysSince(daysSince, raw);
         }
 
-        private static async Task HandleListAsync(Verbosity verbosity)
+        private static async Task HandleListAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             List<Contracts.DaysSince> daysSinces = await client.DaysSince.ListAsync();
 
             PrintDaysSinces(daysSinces.ToArray());
         }
 
-        private static async Task HandleEventCreateAsync(string id, bool raw, Verbosity verbosity)
+        private static async Task HandleEventCreateAsync(string id, bool raw, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             Contracts.DaysSince daysSince = await client.DaysSince.GetAsync(id);
             PrintDaysSince(daysSince, raw);
 
@@ -149,9 +149,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             PrintDaysSince(daysSince, raw);
         }
 
-        private static async Task HandleEventEditAsync(string id, long eventId, bool raw, Verbosity verbosity)
+        private static async Task HandleEventEditAsync(string id, long eventId, bool raw, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.DaysSince daysSince = await client.DaysSince.GetAsync(id);
             Contracts.DaysSinceEvent daysSinceEvent = daysSince.Events.Single(x => x.Id == eventId);

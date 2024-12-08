@@ -6,9 +6,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static partial class InvoiceCommand
     {
-        private static async Task HandleLineCreateAsync(long invoiceId, bool raw, Verbosity verbosity)
+        private static async Task HandleLineCreateAsync(long invoiceId, bool raw, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
             PrintSingleInvoice(invoice, raw);
@@ -43,9 +43,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             PrintSingleInvoice(invoice, raw);
         }
 
-        private static async Task HandleLineDuplicateAsync(long invoiceId, long id, long targetInvoiceId, bool raw, Verbosity verbosity)
+        private static async Task HandleLineDuplicateAsync(long invoiceId, long id, long targetInvoiceId, bool raw, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.Invoice sourceInvoice = await client.Invoice.GetAsync(invoiceId);
             Contracts.Invoicing.InvoiceLine sourceInvoiceLine = sourceInvoice.Lines.Single(x => x.Id == id);
@@ -66,9 +66,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             PrintSingleInvoice(targetInvoice, raw);
         }
 
-        private static async Task HandleLineEditAsync(long invoiceId, long id, bool raw, Verbosity verbosity)
+        private static async Task HandleLineEditAsync(long invoiceId, long id, bool raw, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
             Contracts.Invoicing.InvoiceLine invoiceLine = invoice.Lines.Single(x => x.Id == id);
@@ -83,17 +83,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             PrintSingleInvoice(invoice, raw);
         }
 
-        private static async Task HandleLineGetAsync(long invoiceId, long id, Verbosity verbosity)
+        private static async Task HandleLineGetAsync(long invoiceId, long id, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
             Contracts.Invoicing.InvoiceLine invoiceLine = invoice.Lines.Single(x => x.Id == id);
             Console.WriteLine(invoiceLine.ToJsonString(indented: true));
         }
 
-        private static async Task HandleLineListAsync(long invoiceId, Verbosity verbosity)
+        private static async Task HandleLineListAsync(long invoiceId, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
 
@@ -111,9 +111,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Invoicing.InvoiceLine.ModifiedDate));
         }
 
-        private static async Task HandleLineRemoveAsync(long invoiceId, long id, bool raw, Verbosity verbosity)
+        private static async Task HandleLineRemoveAsync(long invoiceId, long id, bool raw, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
             Contracts.Invoicing.InvoiceLine invoiceLine = invoice.Lines.Single(x => x.Id == id);
@@ -124,9 +124,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             PrintSingleInvoice(invoice, raw);
         }
 
-        private static async Task HandleLineSwapAsync(long invoiceId, long id, long otherId, bool raw, Verbosity verbosity)
+        private static async Task HandleLineSwapAsync(long invoiceId, long id, long otherId, bool raw, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Invoicing.Invoice invoice = await client.Invoice.GetAsync(invoiceId);
             Contracts.Invoicing.InvoiceLine invoiceLine1 = invoice.Lines.Single(x => x.Id == id);

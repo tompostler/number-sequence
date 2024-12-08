@@ -7,25 +7,25 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static class RedirectCommand
     {
-        public static Command Create(Option<Verbosity> verbosityOption)
+        public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
             Command rootCommand = new("redirect", "Create, update, or get redirects.");
 
             Command createCommand = new("create", "Create a new count.");
-            createCommand.SetHandler(HandleCreateAsync, verbosityOption);
+            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
 
             Command listCommand = new("list", "Get existing redirects.");
             listCommand.AddAlias("ls");
-            listCommand.SetHandler(HandleListAsync, verbosityOption);
+            listCommand.SetHandler(HandleListAsync, stampOption, verbosityOption);
 
             rootCommand.AddCommand(createCommand);
             rootCommand.AddCommand(listCommand);
             return rootCommand;
         }
 
-        private static async Task HandleCreateAsync(Verbosity verbosity)
+        private static async Task HandleCreateAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Redirect redirect = new()
             {
@@ -42,9 +42,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(redirect.ToJsonString(indented: true));
         }
 
-        private static async Task HandleListAsync(Verbosity verbosity)
+        private static async Task HandleListAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             List<Contracts.Redirect> redirects = await client.Redirect.ListAsync();
 
             Output.WriteTable(

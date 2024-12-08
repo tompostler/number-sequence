@@ -7,16 +7,16 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static class LatexStatusCommand
     {
-        public static Command Create(Option<Verbosity> verbosityOption)
+        public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
             Command command = new("latex-status", "Get the status of the latex background services.");
-            command.SetHandler(HandleAsync, verbosityOption);
+            command.SetHandler(HandleAsync, stampOption, verbosityOption);
             return command;
         }
 
-        private static async Task HandleAsync(Verbosity verbosity)
+        private static async Task HandleAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             LatexStatus latexStatus = await client.LatexStatus.GetAsync();
 
             Console.WriteLine();

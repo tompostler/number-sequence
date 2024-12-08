@@ -6,26 +6,28 @@ namespace TcpWtf.NumberSequence.Tool
 {
     internal static class Program
     {
-        internal static Stamp Stamp = Stamp.Public;
-
         public static async Task<int> Main(string[] args)
         {
             RootCommand rootCommand = new("A CLI for ns.tcp.wtf.");
+
+            Option<Stamp> stampOption = new("--stamp", () => Stamp.Public, "Stamp to use for the client.");
+            rootCommand.AddGlobalOption(stampOption);
+
             Option<Verbosity> verbosityOption = new("--verbosity", () => Verbosity.Warn, "Verbosity level for logging.");
             verbosityOption.AddAlias("-v");
             rootCommand.AddGlobalOption(verbosityOption);
 
-            rootCommand.AddCommand(AccountCommand.Create(verbosityOption));
-            rootCommand.AddCommand(CountCommand.Create(verbosityOption));
-            rootCommand.AddCommand(DaysSinceCommand.Create(verbosityOption));
-            rootCommand.AddCommand(HistoryCommand.Create(verbosityOption));
-            rootCommand.AddCommand(InvoiceCommand.Create(verbosityOption));
-            rootCommand.AddCommand(IpCommand.Create(verbosityOption));
-            rootCommand.AddCommand(LatexStatusCommand.Create(verbosityOption));
-            rootCommand.AddCommand(PingCommand.Create(verbosityOption));
-            rootCommand.AddCommand(RandomCommand.Create(verbosityOption));
-            rootCommand.AddCommand(RedirectCommand.Create(verbosityOption));
-            rootCommand.AddCommand(TokenCommand.Create(verbosityOption));
+            rootCommand.AddCommand(AccountCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(CountCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(DaysSinceCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(HistoryCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(InvoiceCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(IpCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(LatexStatusCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(PingCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(RandomCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(RedirectCommand.Create(stampOption, verbosityOption));
+            rootCommand.AddCommand(TokenCommand.Create(stampOption, verbosityOption));
 
             return await rootCommand.InvokeAsync(args);
         }

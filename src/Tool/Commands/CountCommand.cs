@@ -7,12 +7,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 {
     internal static class CountCommand
     {
-        public static Command Create(Option<Verbosity> verbosityOption)
+        public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
             Command rootCommand = new("count", "Create, update, or get counts. The namesake of the program.");
 
             Command createCommand = new("create", "Create a new count.");
-            createCommand.SetHandler(HandleCreateAsync, verbosityOption);
+            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
 
             Argument<string> countNameArgument = new("name", "The name of the count.");
             Option<bool> bareOption = new("--bare", "When used, will only return the count instead of the full count json object.");
@@ -21,24 +21,24 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             getCommand.AddAlias("show");
             getCommand.AddArgument(countNameArgument);
             getCommand.AddOption(bareOption);
-            getCommand.SetHandler(HandleGetAsync, countNameArgument, bareOption, verbosityOption);
+            getCommand.SetHandler(HandleGetAsync, countNameArgument, bareOption, stampOption, verbosityOption);
 
             Command incrementCommand = new("increment", "Increment a count by one.");
             incrementCommand.AddAlias("inc");
             incrementCommand.AddArgument(countNameArgument);
             incrementCommand.AddOption(bareOption);
-            incrementCommand.SetHandler(HandleIncrementAsync, countNameArgument, bareOption, verbosityOption);
+            incrementCommand.SetHandler(HandleIncrementAsync, countNameArgument, bareOption, stampOption, verbosityOption);
 
             Command incrementByCommand = new("increment-by", "Increment a count by a specific amount.");
             incrementByCommand.AddArgument(countNameArgument);
             Argument<ulong> incrementByAmountArgument = new("amount", "The amount to increment the count by.");
             incrementByCommand.AddArgument(incrementByAmountArgument);
             incrementByCommand.AddOption(bareOption);
-            incrementByCommand.SetHandler(HandleIncrementByAsync, countNameArgument, incrementByAmountArgument, bareOption, verbosityOption);
+            incrementByCommand.SetHandler(HandleIncrementByAsync, countNameArgument, incrementByAmountArgument, bareOption, stampOption, verbosityOption);
 
             Command listCommand = new("list", "Get existing counts.");
             listCommand.AddAlias("ls");
-            listCommand.SetHandler(HandleListAsync, verbosityOption);
+            listCommand.SetHandler(HandleListAsync, stampOption, verbosityOption);
 
             rootCommand.AddCommand(createCommand);
             rootCommand.AddCommand(getCommand);
@@ -48,9 +48,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             return rootCommand;
         }
 
-        private static async Task HandleCreateAsync(Verbosity verbosity)
+        private static async Task HandleCreateAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.Count count = new()
             {
@@ -62,9 +62,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(count.ToJsonString(indented: true));
         }
 
-        private static async Task HandleGetAsync(string name, bool bare, Verbosity verbosity)
+        private static async Task HandleGetAsync(string name, bool bare, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             Contracts.Count count = await client.Count.GetAsync(name);
 
             if (bare)
@@ -77,9 +77,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
         }
 
-        private static async Task HandleIncrementAsync(string name, bool bare, Verbosity verbosity)
+        private static async Task HandleIncrementAsync(string name, bool bare, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             Contracts.Count count = await client.Count.IncrementAsync(name);
 
             if (bare)
@@ -92,9 +92,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
         }
 
-        private static async Task HandleIncrementByAsync(string name, ulong amount, bool bare, Verbosity verbosity)
+        private static async Task HandleIncrementByAsync(string name, ulong amount, bool bare, Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             Contracts.Count count = await client.Count.IncrementByAmountAsync(name, amount);
 
             if (bare)
@@ -107,9 +107,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
         }
 
-        private static async Task HandleListAsync(Verbosity verbosity)
+        private static async Task HandleListAsync(Stamp stamp, Verbosity verbosity)
         {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, Program.Stamp);
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             List<Contracts.Count> counts = await client.Count.ListAsync();
 
             Output.WriteTable(
