@@ -12,18 +12,20 @@ using number_sequence.DataAccess;
 namespace number_sequence.Migrations
 {
     [DbContext(typeof(NsContext))]
-    [Migration("20230413021654_InvoiceReprocessRegularly")]
-    partial class InvoiceReprocessRegularly
+    [Migration("20241209003145_2024Squash")]
+    partial class _2024Squash
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.HasSequence("DaysSinceEventIds");
 
             modelBuilder.HasSequence("InvoiceBusinessIds");
 
@@ -34,6 +36,157 @@ namespace number_sequence.Migrations
             modelBuilder.HasSequence("InvoiceLineDefaultIds");
 
             modelBuilder.HasSequence("InvoiceLineIds");
+
+            modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Account", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("CreatedFrom")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("Roles")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Tier")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(8)");
+
+                    b.HasKey("Name");
+
+                    b.ToTable("Accounts");
+                });
+
+            modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Count", b =>
+                {
+                    b.Property<string>("Account")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<decimal>("Value")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.HasKey("Account", "Name");
+
+                    b.ToTable("Counts");
+                });
+
+            modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.DaysSince", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("AccountName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("FriendlyName")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateOnly>("LastOccurrence")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("ValueLine1")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ValueLine2")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ValueLine3")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ValueLine4")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DaysSinces");
+                });
+
+            modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.DaysSinceEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("NEXT VALUE FOR dbo.DaysSinceEventIds");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("DaysSinceId")
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateOnly>("EventDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DaysSinceId");
+
+                    b.ToTable("DaysSinceEvent");
+                });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Invoicing.Invoice", b =>
                 {
@@ -62,16 +215,16 @@ namespace number_sequence.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
-                    b.Property<DateTimeOffset>("DueDate")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
 
                     b.Property<DateTimeOffset>("ModifiedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-                    b.Property<DateTimeOffset?>("PaidDate")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateOnly?>("PaidDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("PaidDetails")
                         .HasMaxLength(64)
@@ -140,6 +293,11 @@ namespace number_sequence.Migrations
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("PayableName")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
@@ -292,7 +450,79 @@ namespace number_sequence.Migrations
                     b.ToTable("InvoiceLineDefaults");
                 });
 
-            modelBuilder.Entity("number_sequence.Models.EmailLatexDocument", b =>
+            modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Redirect", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("AccountName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<DateTimeOffset?>("Expiration")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("Hits")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Redirects");
+                });
+
+            modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Token", b =>
+                {
+                    b.Property<string>("Account")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("AccountTier")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(8)");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<DateTimeOffset>("ExpirationDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Value")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.HasKey("Account", "Name");
+
+                    b.ToTable("Tokens");
+                });
+
+            modelBuilder.Entity("number_sequence.Models.EmailDocument", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(64)
@@ -330,10 +560,10 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmailLatexDocuments");
+                    b.ToTable("EmailDocuments");
                 });
 
-            modelBuilder.Entity("number_sequence.Models.LatexDocument", b =>
+            modelBuilder.Entity("number_sequence.Models.PdfDocument", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(64)
@@ -352,14 +582,18 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LatexDocuments");
+                    b.ToTable("PdfDocuments");
                 });
 
-            modelBuilder.Entity("number_sequence.Models.LatexTemplate", b =>
+            modelBuilder.Entity("number_sequence.Models.PdfTemplate", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("AllowedSubmitterEmails")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("AttachmentNameTemplate")
                         .HasMaxLength(128)
@@ -389,12 +623,12 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LatexTemplates");
+                    b.ToTable("PdfTemplates");
                 });
 
-            modelBuilder.Entity("number_sequence.Models.LatexTemplateSpreadsheetRow", b =>
+            modelBuilder.Entity("number_sequence.Models.PdfTemplateSpreadsheetRow", b =>
                 {
-                    b.Property<string>("LatexDocumentId")
+                    b.Property<string>("DocumentId")
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
@@ -416,9 +650,9 @@ namespace number_sequence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.HasKey("LatexDocumentId");
+                    b.HasKey("DocumentId");
 
-                    b.ToTable("LatexTemplateSpreadsheetRows");
+                    b.ToTable("PdfTemplateSpreadsheetRows");
                 });
 
             modelBuilder.Entity("number_sequence.Models.SynchronizedBackgroundService", b =>
@@ -436,6 +670,15 @@ namespace number_sequence.Migrations
                     b.HasKey("Name");
 
                     b.ToTable("SynchronizedBackgroundServices");
+                });
+
+            modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.DaysSinceEvent", b =>
+                {
+                    b.HasOne("TcpWtf.NumberSequence.Contracts.DaysSince", "DaysSince")
+                        .WithMany("Events")
+                        .HasForeignKey("DaysSinceId");
+
+                    b.Navigation("DaysSince");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Invoicing.Invoice", b =>
@@ -464,6 +707,11 @@ namespace number_sequence.Migrations
                         .HasForeignKey("InvoiceId");
 
                     b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.DaysSince", b =>
+                {
+                    b.Navigation("Events");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Invoicing.Invoice", b =>
