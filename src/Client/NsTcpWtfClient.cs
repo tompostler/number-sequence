@@ -15,7 +15,6 @@ namespace TcpWtf.NumberSequence.Client
         private readonly Func<ILogger, CancellationToken, Task<string>> tokenCallback;
         private readonly HttpClient httpClient;
 
-        private readonly string clientVersion;
         private readonly string clientName;
 
         /// <summary>
@@ -45,7 +44,6 @@ namespace TcpWtf.NumberSequence.Client
                 this.httpClient = new HttpClient(new HttpClientHandler() { ServerCertificateCustomValidationCallback = (_, _, _, _) => true }) { BaseAddress = baseUri };
             }
 
-            this.clientVersion = ThisAssembly.AssemblyInformationalVersion;
             this.clientName = Environment.MachineName;
 
             this.Account = new AccountOperations(this);
@@ -140,7 +138,7 @@ namespace TcpWtf.NumberSequence.Client
                     {
                         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Token", await this.tokenCallback(this.logger, cancellationToken));
                     }
-                    requestMessage.Headers.Add(HttpHeaderNames.ClientVersion, this.clientVersion);
+                    requestMessage.Headers.Add(HttpHeaderNames.ClientVersion, ThisAssembly.AssemblyInformationalVersion);
                     requestMessage.Headers.Add(HttpHeaderNames.ClientName, this.clientName);
                     responseMessage = await this.httpClient.SendAsync(requestMessage, cancellationToken);
 
@@ -154,9 +152,16 @@ namespace TcpWtf.NumberSequence.Client
                         if (serverVersionHeaders.Any())
                         {
                             string serverVersion = serverVersionHeaders.First();
-                            if (!string.Equals(this.clientVersion, serverVersion, StringComparison.OrdinalIgnoreCase))
+                            if (!string.Equals(ThisAssembly.AssemblyInformationalVersion, serverVersion, StringComparison.OrdinalIgnoreCase))
                             {
-                                this.logger.LogWarning($"Current client version is {this.clientVersion} but server version ({serverVersion}) indicates there's a newer version available. If using as a tool, update with 'dotnet tool update TcpWtf.NumberSequence.Tool --global'");
+                                this.logger.LogWarning($"Current client version is {ThisAssembly.AssemblyInformationalVersion} but server version ({serverVersion}) indicates there's a newer version available. If using as a tool, update with 'dotnet tool update TcpWtf.NumberSequence.Tool --global'");
+                            }
+
+                            string clientVersionMajor = ThisAssembly.AssemblyInformationalVersion.Split('.').FirstOrDefault();
+                            string serverVersionMajor = serverVersion.Split('.').FirstOrDefault();
+                            if (!string.Equals(clientVersionMajor, serverVersionMajor, StringComparison.OrdinalIgnoreCase))
+                            {
+                                this.logger.LogError($"Current client major version is {clientVersionMajor} but server major version ({serverVersionMajor}) indicates your usage may not be compatible.");
                             }
                         }
                     }
