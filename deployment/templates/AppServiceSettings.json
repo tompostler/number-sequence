@@ -19,7 +19,7 @@
     },
     "siteName": {
       "type": "string",
-      "defaultValue": "ns-tcp-wtf"
+      "defaultValue": "ns-tcpwtf"
     },
     "sqlServerName": {
       "type": "string"
@@ -53,10 +53,6 @@
         "Email__Port": "[parameters('emailPort')]",
         "Email__Username": "[parameters('emailUsername')]",
         "Email__Password": "[parameters('emailPassword')]",
-        "DOCKER_ENABLE_CI": "true",
-        "DOCKER_REGISTRY_SERVER_PASSWORD": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', 'tomlatex'), '2019-05-01').passwords[0].value]",
-        "DOCKER_REGISTRY_SERVER_URL": "https://tomlatex.azurecr.io",
-        "DOCKER_REGISTRY_SERVER_USERNAME": "tomlatex",
         "Google__Credentials": "[parameters('googleCredentials')]",
         "Sql__ConnectionString": "[variables('sqlConnectionString')]",
         "Storage__ConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",

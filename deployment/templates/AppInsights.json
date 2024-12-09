@@ -4,7 +4,7 @@
   "parameters": {
     "siteName": {
       "type": "string",
-      "defaultValue": "ns-tcp-wtf"
+      "defaultValue": "ns-tcpwtf"
     },
     "location": {
       "type": "string",

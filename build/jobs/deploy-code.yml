@@ -1,0 +1,64 @@
+jobs:
+
+- job: Deploy_Code
+  dependsOn: []
+  displayName: Code
+
+  steps:
+
+  - checkout: self
+    fetchDepth: 1
+    fetchTags: false
+
+  - task: AzureResourceManagerTemplateDeployment@3
+    displayName: AppServiceSettings.json
+    inputs:
+      azureResourceManagerConnection: f54f1d6c-d346-41c4-a385-f3b9a579059f
+      subscriptionId: 78560c44-50bb-4840-9d59-84578a99032e
+      resourceGroupName: tcp-wtf-hosting
+      location: Central US
+      csmFile: $(Build.SourcesDirectory)/deployment/templates/AppServiceSettings.json
+      csmParametersFile: $(Build.SourcesDirectory)/deployment/parameters/Empty.json
+      overrideParameters: >-
+        -emailServer "$(email-server)"
+        -emailPort "$(email-port)"
+        -emailUsername "$(email-username)"
+        -emailPassword "$(email-password)"
+        -googleCredentials "$(google-dr-chiro-credentials)"
+        -sqlServerName tompostler
+        -sqlAdminPassword "$(tompostler-sqladmin-password)"
+
+  - download: current
+    artifact: drop
+    displayName: Download drop
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: 'App Service Deploy: ns-tcpwtf'
+    inputs:
+      azureSubscription: f54f1d6c-d346-41c4-a385-f3b9a579059f
+      appType: webAppLinux
+      WebAppName: ns-tcpwtf
+      packageForLinux: '$(Pipeline.Workspace)/drop/number-sequence.zip'
+      RuntimeStack: DOTNETCORE|8.0
+      StartupCommand: dotnet number-sequence.dll
+
+  - powershell: |
+      $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
+      $body = @{
+        ChannelId = '$(discord-pobot-bot-notification-channel-id)';
+        Title = "Deployment of number-sequence $(Build.BuildNumber)+$shortSha was successful";
+        Description = "``$(Build.SourceVersionMessage)``";
+      } | ConvertTo-Json;
+      Invoke-WebRequest -Uri '$(logicappuri-pobot-add-random-message)' -Method POST -ContentType 'application/json' -Body $body -UseBasicParsing;
+    displayName: Post deployment message (success)
+
+  - powershell: |
+      $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
+      $body = @{
+        ChannelId = '$(discord-pobot-bot-notification-channel-id)';
+        Title = "Deployment of number-sequence $(Build.BuildNumber)+$shortSha was not successful";
+        Description = "``$(Build.SourceVersionMessage)``";
+      } | ConvertTo-Json;
+      Invoke-WebRequest -Uri '$(logicappuri-pobot-add-random-message)' -Method POST -ContentType 'application/json' -Body $body -UseBasicParsing;
+    condition: failed()
+    displayName: Post deployment message (failure)

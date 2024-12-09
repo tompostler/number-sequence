@@ -1,6 +1,6 @@
 jobs:
 
-- job: DotnetBuildWeb
+- job: DotnetBuild
   pool:
     vmImage: windows-2022
 
@@ -26,9 +26,9 @@ jobs:
   - task: Cache@2
     displayName: NuGet package caching
     inputs:
-      key: 'nugetweb | $(Build.SourcesDirectory)/src/**/*.csproj | $(Build.SourcesDirectory)/src/Directory.Build.props'
+      key: 'nuget | $(Build.SourcesDirectory)/src/**/*.csproj | $(Build.SourcesDirectory)/src/Directory.Build.props'
       restoreKeys: |
-        nugetweb
+        nuget
       path: $(NUGET_PACKAGES)
 
   - powershell: |
@@ -68,7 +68,7 @@ jobs:
       arguments: '--no-restore --configuration Debug --no-build --logger:"console;verbosity=normal"'
 
   - task: DotNetCoreCLI@2
-    displayName: Publish web zip to the staging directory (linux-x64)
+    displayName: Build and zip to the staging directory (linux-x64)
     inputs:
       command: publish
       projects: src/number-sequence/number-sequence.csproj
@@ -80,53 +80,13 @@ jobs:
     displayName: Publish build artifacts
     inputs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: webdrop
+      artifactName: drop
       publishLocation: Container
-
-
-- job: ContainerBuild
-  dependsOn: DotnetBuildWeb
-  pool:
-    vmImage: ubuntu-22.04
-
-  steps:
-
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      source: current
-      artifact: webdrop
-      patterns: webdrop/number-sequence.zip
-      path: $(Agent.BuildDirectory)/ns-drop/
-
-  - task: ExtractFiles@1
-    inputs:
-      archiveFilePatterns: $(Agent.BuildDirectory)/ns-drop/number-sequence.zip
-      destinationFolder: $(Agent.BuildDirectory)/ns-extract/content/
-
-  - task: CopyFiles@1
-    inputs:
-      sourceFolder: $(Build.SourcesDirectory)/build/
-      contents: Dockerfile
-      targetFolder: $(Agent.BuildDirectory)/ns-extract/
-
-  - task: Docker@2
-    displayName: Login to ACR
-    inputs:
-      command: login
-      containerRegistry: c63008fe-73cc-485c-a90f-7de29f409078
-
-  - task: Docker@2
-    displayName: Build and Push
-    inputs:
-      command: buildAndPush
-      Dockerfile: $(Agent.BuildDirectory)/ns-extract/Dockerfile
-      repository: latex
-      tags: latest
 
 
 - job: TagSourceAndPushNuget
   condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
-  dependsOn: DotnetBuildWeb
+  dependsOn: DotnetBuild
   pool:
     vmImage: windows-latest
 
@@ -162,8 +122,8 @@ jobs:
   - task: DownloadPipelineArtifact@2
     inputs:
       source: current
-      artifact: webdrop
-      patterns: webdrop/*.nupkg
+      artifact: drop
+      patterns: drop/*.nupkg
       path: $(Agent.BuildDirectory)/ns-drop/
 
   - task: NuGetCommand@2
