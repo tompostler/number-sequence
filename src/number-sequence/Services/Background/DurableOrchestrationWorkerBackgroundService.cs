@@ -30,11 +30,11 @@ namespace number_sequence.Services.Background
 
                 MinActivityPollingInterval = TimeSpan.FromSeconds(3),
                 DeltaBackoffActivityPollingInterval = TimeSpan.FromSeconds(7),
-                MaxActivityPollingInterval = TimeSpan.FromMinutes(10),
+                MaxActivityPollingInterval = TimeSpan.FromMinutes(3),
 
                 MinOrchestrationPollingInterval = TimeSpan.FromSeconds(3),
                 DeltaBackoffOrchestrationPollingInterval = TimeSpan.FromSeconds(7),
-                MaxOrchestrationPollingInterval = TimeSpan.FromMinutes(10),
+                MaxOrchestrationPollingInterval = TimeSpan.FromMinutes(3),
             };
             this.sqlOrchestrationService = new(sqlOrchestrationServiceSettings);
 
