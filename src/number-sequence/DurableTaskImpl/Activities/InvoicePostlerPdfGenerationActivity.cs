@@ -197,15 +197,18 @@ namespace number_sequence.DurableTaskImpl.Activities
                                             .AlignRight()
                                             .Text(text =>
                                             {
-                                                _ = text.Span("Issue date: ")
+                                                _ = text.Span("Due date: ")
                                                     .Bold();
                                                 _ = text.Span(this.invoice.DueDate.ToString("MMMM dd, yyyy"));
                                             });
                                     });
                                 });
-                            _ = column.Item()
+
+                            // Line separating header from content
+                            column.Item()
                                 .PaddingVertical(2)
-                                .LineHorizontal(0.5f);
+                                .LineHorizontal(0.5f)
+                                .LineColor(Colors.Grey.Darken3);
                         });
                     });
 
@@ -286,7 +289,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                 table.ColumnsDefinition(columns =>
                                 {
                                     columns.RelativeColumn(1);
-                                    columns.RelativeColumn(8);
+                                    columns.RelativeColumn(9);
                                     columns.RelativeColumn(2);
                                     columns.RelativeColumn(2);
                                     columns.RelativeColumn(2);
@@ -324,12 +327,12 @@ namespace number_sequence.DurableTaskImpl.Activities
                                 foreach (InvoiceLine line in this.invoice.Lines)
                                 {
                                     static IContainer CellStyle(IContainer container)
-                                        => container.PaddingVertical(7);
+                                        => container.PaddingVertical(3);
                                     static IContainer RightCellStyle(IContainer container)
-                                        => container.PaddingVertical(7).AlignRight();
+                                        => container.PaddingVertical(3).AlignRight();
 
                                     // Line id
-                                    _ = table.Cell().Element(CellStyle).Text(line.Id.ToString());
+                                    _ = table.Cell().Element(CellStyle).Text(line.Id.ToString()).FontColor(Colors.Grey.Medium);
 
                                     // Line item
                                     table.Cell().Element(CellStyle).Text(text =>
