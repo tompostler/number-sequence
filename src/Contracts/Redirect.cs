@@ -22,7 +22,7 @@ namespace TcpWtf.NumberSequence.Contracts
         /// <summary>
         /// The target of the redirect.
         /// </summary>
-        [Required, Length(12, 4096)]
+        [Required, MinLength(12), MaxLength(4096)]
         [CustomValidation(typeof(RedirectValidation), nameof(RedirectValidation.ValueValidation))]
         public string Value { get; set; }
 

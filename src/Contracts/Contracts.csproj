@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFrameworks>$(TargetFrameworks);net6.0</TargetFrameworks>
     <RootNamespace>TcpWtf.NumberSequence.Contracts</RootNamespace>
     <AssemblyName>TcpWtf.NumberSequence.Contracts</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -9,8 +10,12 @@
     <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <PackageReference Include="Unlimitedinf.Utilities" Version="3.2.2" />
+    <PackageReference Include="Unlimitedinf.Utilities" Version="3.3.0" />
   </ItemGroup>
 
 </Project>

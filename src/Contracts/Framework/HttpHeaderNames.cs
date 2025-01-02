@@ -32,7 +32,7 @@
         /// Logged as a warning or error based on the date by the client.
         /// </summary>
         /// <remarks>
-        /// While using the <see cref="ObsoleteAttribute"/> works if clients are actively taking newer packages,
+        /// While using the <code>ObsoleteAttribute</code> works if clients are actively taking newer packages,
         /// this will enable an old client to start seeing deprecation warnings from a newer server.
         /// </remarks>
         public const string ApiDeprecated = "api-deprecated";
