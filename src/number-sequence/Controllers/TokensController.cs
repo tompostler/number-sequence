@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
+using number_sequence.Filters;
 using number_sequence.Models;
 using TcpWtf.NumberSequence.Contracts;
 using Unlimitedinf.Utilities.Extensions;
@@ -23,51 +24,80 @@ namespace number_sequence.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] Token token, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateAsync([FromBody] Token requestedToken, CancellationToken cancellationToken)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            Account account = await nsContext.Accounts.SingleOrDefaultAsync(x => x.Name == token.Account, cancellationToken);
+            Account account = await nsContext.Accounts.SingleOrDefaultAsync(x => x.Name == requestedToken.Account, cancellationToken);
             if (account == default)
             {
-                return this.BadRequest($"Account with name [{token.Account}] does not exist.");
+                return this.BadRequest($"Account with name [{requestedToken.Account}] does not exist.");
             }
-            if (token.Key?.ComputeSHA256() != account.Key)
+            if (requestedToken.Key?.ComputeSHA256() != account.Key)
             {
-                return this.Unauthorized($"Provided key did not match for account with name [{token.Account}].");
+                return this.Unauthorized($"Provided key did not match for account with name [{requestedToken.Account}].");
             }
 
-            // Check if the account already exists
-            if (await nsContext.Tokens.AnyAsync(x => x.Account == account.Name && x.Name == token.Name.ToLower(), cancellationToken))
+            // Check if the token already exists.
+            // If it's expired, then we can recreate it in place.
+            Token token = await nsContext.Tokens.SingleOrDefaultAsync(x => x.Account == this.User.Identity.Name && x.Name == requestedToken.Name.ToLower(), cancellationToken);
+            if (token != default && token.ExpirationDate > DateTimeOffset.UtcNow)
             {
-                return this.Conflict($"Token with name [{token.Name}] already exists.");
+                return this.Conflict($"Token with name [{requestedToken.Name}] already exists and is not expired.");
             }
 
-            // Check if we shouldn't make another token for this account
+            // Check if we shouldn't make another token for this account.
             int tokenCountForAccount = await nsContext.Tokens.CountAsync(x => x.Account == account.Name, cancellationToken);
             if (tokenCountForAccount >= TierLimits.TokensPerAccount[account.Tier])
             {
                 return this.Conflict($"Too many tokens already created for account with name [{account.Name}].");
             }
 
-            Token toInsert = new()
+            // Init if not found.
+            if (token == default)
             {
-                Account = account.Name,
-                AccountTier = account.Tier,
-                ExpirationDate = token.ExpirationDate.ToUniversalTime(),
-                Key = Guid.NewGuid().ToString(),
-                Name = token.Name.ToLower(),
-            };
-            toInsert.Value = TokenValue.CreateFrom(toInsert).ToBase64JsonString();
+                token = new()
+                {
+                    Account = account.Name,
+                    AccountTier = account.Tier,
+                    ExpirationDate = requestedToken.ExpirationDate.ToUniversalTime(),
+                    Name = requestedToken.Name.ToLower(),
+                };
+                _ = nsContext.Tokens.Add(token);
+            }
 
-            _ = nsContext.Tokens.Add(toInsert);
+            // Finish init.
+            token.Key = Guid.NewGuid().ToString(); // Junk for DB storage due to [Required] attribute.
+            token.Value = TokenValue.CreateFrom(token).ToBase64JsonString();
+
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
-            Token createdToken = await nsContext.Tokens.SingleAsync(x => x.Account == account.Name && x.Name == toInsert.Name, cancellationToken);
+            Token createdToken = await nsContext.Tokens.SingleAsync(x => x.Account == account.Name && x.Name == token.Name, cancellationToken);
             createdToken.Key = default;
             this.logger.LogInformation($"Created token: {createdToken.ToJsonString()}");
             return this.Ok(createdToken);
+        }
+
+        [RequiresToken]
+        [HttpDelete("{name}")]
+        public async Task<IActionResult> DeleteAsync(string name, CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            Token token = await nsContext.Tokens.SingleOrDefaultAsync(x => x.Account == this.User.Identity.Name && x.Name == name, cancellationToken);
+            if (token == default)
+            {
+                return this.NotFound($"Token with name [{name}] does not exist for your account.");
+            }
+
+            _ = nsContext.Tokens.Remove(token);
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+
+            token.Key = default;
+            this.logger.LogInformation($"Deleted token: {token.ToJsonString()}");
+            return this.Ok(token);
         }
     }
 }

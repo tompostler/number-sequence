@@ -5,7 +5,6 @@ namespace TcpWtf.NumberSequence.Client
     /// <summary>
     /// Token operations.
     /// Tokens are required to interact with the remaining APIs.
-    /// Because it's a personal project, tokens cannot be deleted. They only expire naturally.
     /// </summary>
     public sealed class TokenOperations
     {
@@ -17,7 +16,7 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
-        /// Create a token.
+        /// Create a token. If a request is submitted for an expired token, it will be overwritten with a new one.
         /// </summary>
         public async Task<Token> CreateAsync(
             Token token,
@@ -32,6 +31,21 @@ namespace TcpWtf.NumberSequence.Client
                 },
                 cancellationToken,
                 needsPreparation: false);
+            return await response.Content.ReadJsonAsAsync<Token>(cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// Delete a token.
+        /// </summary>
+        public async Task<Token> DeleteAsync(
+            string name,
+            CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Delete,
+                    $"tokens/{name}"),
+                cancellationToken);
             return await response.Content.ReadJsonAsAsync<Token>(cancellationToken: cancellationToken);
         }
     }

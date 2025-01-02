@@ -15,7 +15,7 @@ namespace number_sequence.Models
                 Account = token.Account,
                 AccountTier = token.AccountTier,
                 Name = token.Name,
-                CreatedDate = token.CreatedDate,
+                CreatedDate = token.CreatedDate == default ? DateTimeOffset.UtcNow : token.CreatedDate,
                 ExpirationDate = token.ExpirationDate,
                 Key = StringUtilities.GetRandomAlphanumericString(128)
             };
