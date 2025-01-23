@@ -22,7 +22,6 @@ namespace number_sequence.DataAccess
         public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
 
         public DbSet<EmailDocument> EmailDocuments { get; set; }
-        public DbSet<PdfDocument> PdfDocuments { get; set; }
         public DbSet<PdfTemplate> PdfTemplates { get; set; }
         public DbSet<PdfTemplateSpreadsheetRow> PdfTemplateSpreadsheetRows { get; set; }
         
@@ -152,13 +151,6 @@ namespace number_sequence.DataAccess
                 .HasKey(x => x.Id);
 
             _ = modelBuilder.Entity<EmailDocument>()
-                .Property(x => x.CreatedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-            _ = modelBuilder.Entity<PdfDocument>()
-                .HasKey(x => x.Id);
-
-            _ = modelBuilder.Entity<PdfDocument>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 

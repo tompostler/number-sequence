@@ -29,11 +29,6 @@ namespace number_sequence.Controllers
                                                                                                 .OrderByDescending(r => r.CreatedDate)
                                                                                                 .Take(10)
                                                                                                 .ToListAsync();
-            List<Models.PdfDocument> pdfDocuments = await nsContext.PdfDocuments
-                                                                    .Where(r => r.CreatedDate > monthAgo)
-                                                                    .OrderByDescending(r => r.CreatedDate)
-                                                                    .Take(10)
-                                                                    .ToListAsync();
             List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
                                                                         .Where(r => r.CreatedDate > monthAgo)
                                                                         .OrderByDescending(r => r.CreatedDate)
@@ -47,16 +42,6 @@ namespace number_sequence.Controllers
                         RowId = r.RowId,
                         DocumentId = r.DocumentId,
                         CreatedDate = r.CreatedDate.ToString("u"),
-                    })
-                    .ToList(),
-                Documents = pdfDocuments.Select(
-                    d => new PdfStatus.Document
-                    {
-                        Id = d.Id,
-                        CreatedDate = d.CreatedDate.ToString("u"),
-                        ProcessedAt = d.ProcessedAt?.ToString("u"),
-                        Delay = (d.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(d.CreatedDate).ToString(),
-                        Successful = d.Successful?.ToString(),
                     })
                     .ToList(),
                 EmailDocuments = emailDocuments.Select(

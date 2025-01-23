@@ -12,14 +12,6 @@
             public string DocumentId { get; set; }
             public string CreatedDate { get; set; }
         }
-        public sealed class Document
-        {
-            public string Id { get; set; }
-            public string CreatedDate { get; set; }
-            public string ProcessedAt { get; set; }
-            public string Delay { get; set; }
-            public string Successful { get; set; }
-        }
         public sealed class EmailDocument
         {
             public string Id { get; set; }
@@ -31,7 +23,6 @@
         }
 
         public List<TemplateSpreadsheetRow> TemplateSpreadsheetRows { get; set; }
-        public List<Document> Documents { get; set; }
         public List<EmailDocument> EmailDocuments { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }

@@ -28,15 +28,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.TemplateSpreadsheetRow.DocumentId),
                 nameof(PdfStatus.TemplateSpreadsheetRow.CreatedDate));
 
-            Console.WriteLine(nameof(PdfStatus.Documents));
-            Output.WriteTable(
-                pdfStatus.Documents,
-                nameof(PdfStatus.Document.Id),
-                nameof(PdfStatus.Document.CreatedDate),
-                nameof(PdfStatus.Document.ProcessedAt),
-                nameof(PdfStatus.Document.Delay),
-                nameof(PdfStatus.Document.Successful));
-
             Console.WriteLine(nameof(PdfStatus.EmailDocuments));
             Output.WriteTable(
                 pdfStatus.EmailDocuments,
@@ -46,7 +37,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.EmailDocument.CreatedDate),
                 nameof(PdfStatus.EmailDocument.ProcessedAt),
                 nameof(PdfStatus.EmailDocument.Delay));
-
         }
     }
 }
