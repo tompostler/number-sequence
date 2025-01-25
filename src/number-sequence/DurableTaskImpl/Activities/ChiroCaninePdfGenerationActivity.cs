@@ -150,10 +150,16 @@ namespace number_sequence.DurableTaskImpl.Activities
             //  2  C Owner Name
             //  3  D Date of Service
             //  4  E CC email(s)
+            // 81 CD Clinic Abbreviation
             pdf.PatientName = row[1]?.Trim();
             pdf.OwnerName = row[2]?.Trim();
             pdf.DateOfService = DateTimeOffset.Parse(row[3]);
             string[] ccEmail = row[4].Split(new[] { ',', ';' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string clinicAbbreviation = row.Length > 81 ? row[81]?.Trim() : string.Empty;
+            if (!string.IsNullOrWhiteSpace(clinicAbbreviation))
+            {
+                pdf.OwnerName = clinicAbbreviation + " - " + pdf.OwnerName;
+            }
 
             // Head
             //  5  F Other notes
