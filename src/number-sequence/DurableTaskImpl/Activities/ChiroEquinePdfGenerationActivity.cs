@@ -403,7 +403,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             // Put it in storage
             Azure.Storage.Blobs.BlobClient pdfBlobClient = this.nsStorage.GetBlobClient(emailDocument);
             this.logger.LogInformation($"Uploading to {pdfBlobClient.Uri.AbsoluteUri.Split('?').First()}");
-            _ = await pdfBlobClient.UploadAsync(ms, cancellationToken);
+            _ = await pdfBlobClient.UploadAsync(ms, overwrite: true, cancellationToken);
 
             _ = await nsContext.SaveChangesAsync(cancellationToken);
             return default;
@@ -446,12 +446,30 @@ namespace number_sequence.DurableTaskImpl.Activities
                     {
                         container.Column(column =>
                         {
-                            _ = column.Item()
-                                .Text($"Patient Name: {this.PatientName}");
-                            _ = column.Item()
-                                .Text($"Owner Name: {this.OwnerName}");
-                            _ = column.Item()
-                                .Text($"Date of Service: {this.DateOfService:MM/dd/yyyy}");
+                            // 2 columns in the header for the patient/client info and the clinic info.
+                            column.Item().Row(row =>
+                            {
+                                // Paitent/client info.
+                                row.RelativeItem().Column(column =>
+                                {
+                                    _ = column.Item()
+                                        .Text($"Patient Name: {this.PatientName}");
+                                    _ = column.Item()
+                                        .Text($"Owner Name: {this.OwnerName}");
+                                    _ = column.Item()
+                                        .Text($"Date of Service: {this.DateOfService:MM/dd/yyyy}");
+                                });
+
+                                // Clinic logo/info.
+                                row.RelativeItem().Column(column =>
+                                {
+                                    _ = column.Item()
+                                        .AlignRight()
+                                        .Height(baseFontSize * 4f)
+                                        .Image(Resources.ChiroLogo);
+                                });
+                            });
+
                             _ = column.Item()
                                 .PaddingVertical(2)
                                 .LineHorizontal(0.25f);

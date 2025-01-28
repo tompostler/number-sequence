@@ -107,7 +107,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             // Put it in storage
             Azure.Storage.Blobs.BlobClient pdfBlobClient = this.nsStorage.GetBlobClient(emailDocument);
             this.logger.LogInformation($"Uploading to {pdfBlobClient.Uri.AbsoluteUri.Split('?').First()}");
-            _ = await pdfBlobClient.UploadAsync(ms, cancellationToken);
+            _ = await pdfBlobClient.UploadAsync(ms, overwrite: true, cancellationToken);
 
             // And save it to enable processing
             invoice.ProcessedAt = DateTimeOffset.UtcNow;

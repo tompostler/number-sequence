@@ -7,6 +7,7 @@
 
         public static Stream ChiroCanineDiagram => GetFromResrouce("chiro-canine-diagram.png");
         public static Stream ChiroEquineDiagram => GetFromResrouce("chiro-equine-diagram.png");
+        public static Stream ChiroLogo => GetFromResrouce("chiro-logo.png");
         public static Stream ComputerModernRomanFont => GetFromResrouce("cmunrm.ttf");
     }
 }
