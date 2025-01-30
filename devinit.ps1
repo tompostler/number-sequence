@@ -67,9 +67,7 @@ if ($confirm -eq 'y') {
     Write-Cyan 'Resizing nslocal sql database to GP_S_Gen5_1....';
     Set-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal -RequestedServiceObjectiveName GP_S_Gen5_1;
 
-    Write-Yellow 'You will need to perform manual cleaning of the database! Use the following to make sure production options are not executed:';
-    Write-Yellow "DELETE FROM [PdfTemplates] WHERE [Id] LIKE 'chiro-%';";
-    Write-Yellow "UPDATE [PdfTemplates] SET [SubjectTemplate] = '[LOCALDEV] ' + [SubjectTemplate];";
+    Write-Yellow 'You will need to perform manual cleaning of the database for experimentation!';
 }
 else {
     Write-Cyan 'Not copying sql database from prod to localdev.';
