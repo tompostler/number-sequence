@@ -371,7 +371,8 @@ namespace number_sequence.DurableTaskImpl.Activities
                 To = template.EmailTo,
                 CC = string.Join(';', ccEmail),
                 Subject = subject,
-                AttachmentName = attachmentName
+                AttachmentName = attachmentName,
+                AdditionalBody = new { clinicAbbreviation }.ToJsonString(indented: true),
             };
             _ = nsContext.EmailDocuments.Add(emailDocument);
 
