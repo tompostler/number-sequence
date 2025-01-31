@@ -1,4 +1,6 @@
-﻿namespace number_sequence
+﻿using Unlimitedinf.Utilities.Extensions;
+
+namespace number_sequence
 {
     public static class Options
     {
@@ -13,6 +15,9 @@
 
         public sealed class Email
         {
+            public string ChiroBatchMap { get; set; }
+            public Dictionary<string, string> ChiroBatchMapParsed => this.ChiroBatchMap.FromJsonString<Dictionary<string, string>>();
+            public string ChiroBatchUri { get; set; }
             public string Server { get; set; }
             public int Port { get; set; }
             public string Username { get; set; }

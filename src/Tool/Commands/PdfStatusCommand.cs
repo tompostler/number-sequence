@@ -37,6 +37,16 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.EmailDocument.CreatedDate),
                 nameof(PdfStatus.EmailDocument.ProcessedAt),
                 nameof(PdfStatus.EmailDocument.Delay));
+
+            Console.WriteLine(nameof(PdfStatus.ChiroBatches));
+            Output.WriteTable(
+                pdfStatus.ChiroBatches,
+                nameof(PdfStatus.ChiroBatch.Id),
+                nameof(PdfStatus.ChiroBatch.Clinic),
+                nameof(PdfStatus.ChiroBatch.AttachmentName),
+                nameof(PdfStatus.ChiroBatch.CreatedDate),
+                nameof(PdfStatus.ChiroBatch.ProcessedAt),
+                nameof(PdfStatus.ChiroBatch.Delay));
         }
     }
 }

@@ -38,10 +38,16 @@ namespace number_sequence.DataAccess
             this.blobServiceClient = new BlobServiceClient(options.Value.ConnectionString);
         }
 
-        public BlobClient GetBlobClient(EmailDocument emailDocument)
+        public BlobClient GetBlobClient(EmailDocument record)
         {
             BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(C.CN.Pdf);
-            return blobContainerClient.GetBlobClient($"{(emailDocument.CreatedDate == default ? DateTimeOffset.UtcNow : emailDocument.CreatedDate).Year}/{EnsureEndsWithPdf(emailDocument.AttachmentName ?? emailDocument.Id)}");
+            return blobContainerClient.GetBlobClient($"{(record.CreatedDate == default ? DateTimeOffset.UtcNow : record.CreatedDate).Year}/{EnsureEndsWithPdf(record.AttachmentName ?? record.Id)}");
+        }
+
+        public BlobClient GetBlobClient(ChiroEmailBatch record)
+        {
+            BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(C.CN.Pdf);
+            return blobContainerClient.GetBlobClient($"{(record.CreatedDate == default ? DateTimeOffset.UtcNow : record.CreatedDate).Year}/{EnsureEndsWithPdf(record.AttachmentName ?? record.Id)}");
         }
 
         private static string EnsureEndsWithPdf(string input) => input.EndsWith(".pdf") ? input : input + ".pdf";

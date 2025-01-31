@@ -20,6 +20,8 @@ jobs:
       csmFile: $(Build.SourcesDirectory)/deployment/templates/AppServiceSettings.json
       csmParametersFile: $(Build.SourcesDirectory)/deployment/parameters/Empty.json
       overrideParameters: >-
+        -emailChiroBatchMap "$(email-chiro-batch-map)"
+        -emailChiroBatchUri "$(email-chiro-batch-uri)"
         -emailServer "$(email-server)"
         -emailPort "$(email-port)"
         -emailUsername "$(email-username)"

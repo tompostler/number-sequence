@@ -20,6 +20,7 @@ namespace number_sequence
         public void ConfigureServices(IServiceCollection services)
         {
             _ = services.AddMemoryCache();
+            _ = services.AddHttpClient();
             _ = services
                 .AddControllers(options =>
                 {
@@ -72,6 +73,7 @@ namespace number_sequence
 
             _ = services.AddHostedService<Services.Background.GoogleSheetPdfGeneration.ChiroCanineGoogleSheetPdfGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.GoogleSheetPdfGeneration.ChiroEquineGoogleSheetPdfGenerationBackgroundService>();
+            _ = services.AddHostedService<Services.Background.ChiroBatchSendBackgroundService>();
             _ = services.AddHostedService<Services.Background.ReprocessInvoiceRegularlyBackgroundService>();
 
 

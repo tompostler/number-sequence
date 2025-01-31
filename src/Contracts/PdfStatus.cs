@@ -21,9 +21,19 @@
             public string ProcessedAt { get; set; }
             public string Delay { get; set; }
         }
+        public sealed class ChiroBatch
+        {
+            public string Id { get; set; }
+            public string Clinic { get; set; }
+            public string AttachmentName { get; set; }
+            public string CreatedDate { get; set; }
+            public string ProcessedAt { get; set; }
+            public string Delay { get; set; }
+        }
 
         public List<TemplateSpreadsheetRow> TemplateSpreadsheetRows { get; set; }
         public List<EmailDocument> EmailDocuments { get; set; }
+        public List<ChiroBatch> ChiroBatches { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

@@ -2,6 +2,12 @@
   "$schema": "http://schemas.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "emailChiroBatchMap": {
+      "type": "securestring"
+    },
+    "emailChiroBatchUri": {
+      "type": "securestring"
+    },
     "emailServer": {
       "type": "securestring"
     },
@@ -49,6 +55,8 @@
       "properties": {
         "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('Microsoft.Insights/components', parameters('siteName')), '2020-02-02').ConnectionString]",
         "ApplicationInsightsAgent_EXTENSION_VERSION": "~3",
+        "Email__ChiroBatchMap": "[parameters('emailChiroBatchMap')]",
+        "Email__ChiroBatchUri": "[parameters('emailChiroBatchUri')]",
         "Email__Server": "[parameters('emailServer')]",
         "Email__Port": "[parameters('emailPort')]",
         "Email__Username": "[parameters('emailUsername')]",

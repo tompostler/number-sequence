@@ -20,6 +20,8 @@ Write-Host;
 Write-Cyan 'Generating local settings....';
 $localSettings = [PSCustomObject]@{
     Email   = [PSCustomObject]@{
+        ChiroBatchMap      = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-chiro-batch-map -AsPlainText).Replace('\"', '"');
+        ChiroBatchUri      = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-chiro-batch-uri -AsPlainText);
         Server             = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-server -AsPlainText);
         Port               = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-port -AsPlainText);
         Username           = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-username -AsPlainText);

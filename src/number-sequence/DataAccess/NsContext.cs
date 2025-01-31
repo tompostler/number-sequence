@@ -21,10 +21,11 @@ namespace number_sequence.DataAccess
         public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
         public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
 
+        public DbSet<ChiroEmailBatch> ChiroEmailBatches { get; set; }
         public DbSet<EmailDocument> EmailDocuments { get; set; }
         public DbSet<PdfTemplate> PdfTemplates { get; set; }
         public DbSet<PdfTemplateSpreadsheetRow> PdfTemplateSpreadsheetRows { get; set; }
-        
+
         public DbSet<Redirect> Redirects { get; set; }
 
         public DbSet<SynchronizedBackgroundService> SynchronizedBackgroundServices { get; set; }
@@ -146,6 +147,13 @@ namespace number_sequence.DataAccess
             #endregion // Invoicing
 
             #region Pdf
+
+            _ = modelBuilder.Entity<ChiroEmailBatch>()
+                .HasKey(x => x.Id);
+
+            _ = modelBuilder.Entity<ChiroEmailBatch>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
             _ = modelBuilder.Entity<EmailDocument>()
                 .HasKey(x => x.Id);

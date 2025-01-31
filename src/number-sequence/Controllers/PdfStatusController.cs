@@ -34,6 +34,11 @@ namespace number_sequence.Controllers
                                                                         .OrderByDescending(r => r.CreatedDate)
                                                                         .Take(10)
                                                                         .ToListAsync();
+            List<Models.ChiroEmailBatch> chiroBatches = await nsContext.ChiroEmailBatches
+                                                                        .Where(r => r.CreatedDate > monthAgo)
+                                                                        .OrderByDescending(r => r.CreatedDate)
+                                                                        .Take(20)
+                                                                        .ToListAsync();
             PdfStatus pdfStatus = new()
             {
                 TemplateSpreadsheetRows = pdfTemplateSpreadsheetRows.Select(
@@ -54,7 +59,18 @@ namespace number_sequence.Controllers
                         ProcessedAt = e.ProcessedAt?.ToString("u"),
                         Delay = (e.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(e.CreatedDate).ToString(),
                     })
-                    .ToList()
+                    .ToList(),
+                ChiroBatches = chiroBatches.Select(
+                    c => new PdfStatus.ChiroBatch
+                    {
+                        Id = c.Id,
+                        Clinic = c.ClinicAbbreviation,
+                        AttachmentName = c.AttachmentName,
+                        CreatedDate = c.CreatedDate.ToString("u"),
+                        ProcessedAt = c.ProcessedAt?.ToString("u"),
+                        Delay = (c.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(c.CreatedDate).ToString(),
+                    })
+                    .ToList(),
             };
 
             return this.Ok(pdfStatus);

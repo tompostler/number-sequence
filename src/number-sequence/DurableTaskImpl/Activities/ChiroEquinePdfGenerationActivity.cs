@@ -397,9 +397,19 @@ namespace number_sequence.DurableTaskImpl.Activities
                 CC = string.Join(';', ccEmail),
                 Subject = subject,
                 AttachmentName = attachmentName,
-                AdditionalBody = new { clinicAbbreviation }.ToJsonString(indented: true),
             };
             _ = nsContext.EmailDocuments.Add(emailDocument);
+
+            // Optionally add the batch email request.
+            if (!string.IsNullOrWhiteSpace(clinicAbbreviation))
+            {
+                _ = nsContext.ChiroEmailBatches.Add(new()
+                {
+                    Id = context.OrchestrationInstance.InstanceId,
+                    ClinicAbbreviation = clinicAbbreviation,
+                    AttachmentName = attachmentName,
+                });
+            }
 
             // Put it in storage
             Azure.Storage.Blobs.BlobClient pdfBlobClient = this.nsStorage.GetBlobClient(emailDocument);
