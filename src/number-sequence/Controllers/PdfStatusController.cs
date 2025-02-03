@@ -57,7 +57,7 @@ namespace number_sequence.Controllers
                         AttachmentName = e.AttachmentName,
                         CreatedDate = e.CreatedDate.ToString("u"),
                         ProcessedAt = e.ProcessedAt?.ToString("u"),
-                        Delay = (e.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(e.CreatedDate).ToString(),
+                        Delay = (e.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(e.CreatedDate).ToString(@"dd\.hh\:mm\:ss\.fff"),
                     })
                     .ToList(),
                 ChiroBatches = chiroBatches.Select(
@@ -68,7 +68,7 @@ namespace number_sequence.Controllers
                         AttachmentName = c.AttachmentName,
                         CreatedDate = c.CreatedDate.ToString("u"),
                         ProcessedAt = c.ProcessedAt?.ToString("u"),
-                        Delay = (c.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(c.CreatedDate).ToString(),
+                        Delay = (c.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(c.CreatedDate).ToString(@"dd\.hh\:mm\:ss\.fff"),
                     })
                     .ToList(),
             };
