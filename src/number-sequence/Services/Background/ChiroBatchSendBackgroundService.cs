@@ -71,7 +71,7 @@ namespace number_sequence.Services.Background
                 {
                     To = string.IsNullOrEmpty(this.emailOptions.LocalDevToOverride) ? toEmail : this.emailOptions.LocalDevToOverride,
                     Subject = "Chiro Records",
-                    Body = $"There are {batchByClinic.Value.Count} attached records.",
+                    Body = $"There are {batchByClinic.Value.Count} attached records.\nThis is an automated message. Please let us know if there are any issues.",
                 };
 
                 // If there's less than 7, just throw them on as individual attachements.
@@ -110,7 +110,7 @@ namespace number_sequence.Services.Background
                     }
                     payload.Attachments.Add(new()
                     {
-                        Name = "records.zip",
+                        Name = "records-batch.zip",
                         ContentBytes = Convert.ToBase64String(ms.ToArray()),
                     });
                 }
