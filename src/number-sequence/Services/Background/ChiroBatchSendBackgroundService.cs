@@ -102,7 +102,8 @@ namespace number_sequence.Services.Background
                             BlobClient blobClient = this.nsStorage.GetBlobClient(record);
                             BlobDownloadResult result = await blobClient.DownloadContentAsync(cancellationToken);
                             ZipArchiveEntry entry = zip.CreateEntry(Path.GetFileName(blobClient.Name), CompressionLevel.SmallestSize);
-                            await result.Content.ToStream().CopyToAsync(entry.Open(), cancellationToken);
+                            using Stream entryStream = entry.Open();
+                            await result.Content.ToStream().CopyToAsync(entryStream, cancellationToken);
 
                             record.ProcessedAt = DateTimeOffset.UtcNow;
                         }
