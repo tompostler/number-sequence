@@ -39,36 +39,81 @@ namespace number_sequence.Controllers
                                                                         .OrderByDescending(r => r.CreatedDate)
                                                                         .Take(20)
                                                                         .ToListAsync();
+
+            static string determineTimeSpanFormat(IEnumerable<TimeSpan> spans)
+            {
+                TimeSpan largest = spans.Max();
+                if (largest.TotalDays >= 10)
+                {
+                    return @"dd\.hh\:mm\:ss";
+                }
+                else if (largest.TotalDays >= 1)
+                {
+                    return @"d\.hh\:mm\:ss";
+                }
+                else if (largest.TotalHours >= 10)
+                {
+                    return @"hh\:mm\:ss";
+                }
+                else if (largest.TotalHours >= 1)
+                {
+                    return @"h\:mm\:ss";
+                }
+                else if (largest.TotalMinutes >= 10)
+                {
+                    return @"mm\:ss\.fff";
+                }
+                else if (largest.TotalMinutes >= 1)
+                {
+                    return @"m\:ss\.fff";
+                }
+                else if (largest.TotalSeconds >= 10)
+                {
+                    return @"ss\.fff";
+                }
+                else if (largest.TotalSeconds >= 1)
+                {
+                    return @"s\.fff";
+                }
+                else
+                {
+                    return @"dd\.hh\:mm\:ss\.fff";
+                }
+            }
+
+            string emailDocumentTimeSpanFormat = determineTimeSpanFormat(emailDocuments.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
+            string chiroBatchTimeSpanFormat = determineTimeSpanFormat(chiroBatches.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
+
             PdfStatus pdfStatus = new()
             {
                 TemplateSpreadsheetRows = pdfTemplateSpreadsheetRows.Select(
-                    r => new PdfStatus.TemplateSpreadsheetRow
+                    x => new PdfStatus.TemplateSpreadsheetRow
                     {
-                        RowId = r.RowId,
-                        DocumentId = r.DocumentId,
-                        CreatedDate = r.CreatedDate.ToString("u"),
+                        RowId = x.RowId,
+                        DocumentId = x.DocumentId,
+                        CreatedDate = x.CreatedDate.ToString("u"),
                     })
                     .ToList(),
                 EmailDocuments = emailDocuments.Select(
-                    e => new PdfStatus.EmailDocument
+                    x => new PdfStatus.EmailDocument
                     {
-                        Id = e.Id,
-                        Subject = e.Subject,
-                        AttachmentName = e.AttachmentName,
-                        CreatedDate = e.CreatedDate.ToString("u"),
-                        ProcessedAt = e.ProcessedAt?.ToString("u"),
-                        Delay = (e.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(e.CreatedDate).ToString(@"dd\.hh\:mm\:ss\.fff"),
+                        Id = x.Id,
+                        Subject = x.Subject,
+                        AttachmentName = x.AttachmentName,
+                        CreatedDate = x.CreatedDate.ToString("u"),
+                        ProcessedAt = x.ProcessedAt?.ToString("u"),
+                        Delay = (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate).ToString(emailDocumentTimeSpanFormat),
                     })
                     .ToList(),
                 ChiroBatches = chiroBatches.Select(
-                    c => new PdfStatus.ChiroBatch
+                    x => new PdfStatus.ChiroBatch
                     {
-                        Id = c.Id,
-                        Clinic = c.ClinicAbbreviation,
-                        AttachmentName = c.AttachmentName,
-                        CreatedDate = c.CreatedDate.ToString("u"),
-                        ProcessedAt = c.ProcessedAt?.ToString("u"),
-                        Delay = (c.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(c.CreatedDate).ToString(@"dd\.hh\:mm\:ss\.fff"),
+                        Id = x.Id,
+                        Clinic = x.ClinicAbbreviation,
+                        AttachmentName = x.AttachmentName,
+                        CreatedDate = x.CreatedDate.ToString("u"),
+                        ProcessedAt = x.ProcessedAt?.ToString("u"),
+                        Delay = (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate).ToString(chiroBatchTimeSpanFormat),
                     })
                     .ToList(),
             };
