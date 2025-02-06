@@ -21,14 +21,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Console.WriteLine();
 
-            Console.WriteLine(nameof(PdfStatus.TemplateSpreadsheetRows));
+            Console.WriteLine($"{nameof(PdfStatus.TemplateSpreadsheetRows)} ({pdfStatus.TemplateSpreadsheetRows.Count}):");
             Output.WriteTable(
                 pdfStatus.TemplateSpreadsheetRows,
                 nameof(PdfStatus.TemplateSpreadsheetRow.RowId),
                 nameof(PdfStatus.TemplateSpreadsheetRow.DocumentId),
                 nameof(PdfStatus.TemplateSpreadsheetRow.CreatedDate));
 
-            Console.WriteLine(nameof(PdfStatus.EmailDocuments));
+            Console.WriteLine($"{nameof(PdfStatus.EmailDocuments)} ({pdfStatus.EmailDocuments.Count}):");
             Output.WriteTable(
                 pdfStatus.EmailDocuments,
                 nameof(PdfStatus.EmailDocument.Id),
@@ -38,7 +38,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.EmailDocument.ProcessedAt),
                 nameof(PdfStatus.EmailDocument.Delay));
 
-            Console.WriteLine(nameof(PdfStatus.ChiroBatches));
+            Console.WriteLine($"{nameof(PdfStatus.ChiroBatches)} ({pdfStatus.ChiroBatches.Count}):");
             Output.WriteTable(
                 pdfStatus.ChiroBatches,
                 nameof(PdfStatus.ChiroBatch.Id),

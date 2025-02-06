@@ -178,7 +178,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 Console.WriteLine("Summary:");
                 PrintDaysSinces(daysSince);
 
-                Console.WriteLine("Events:");
+                Console.WriteLine($"Events ({daysSince.Events.Count}):");
                 Output.WriteTable(
                     daysSince.Events
                         .OrderByDescending(x => x.EventDate)
