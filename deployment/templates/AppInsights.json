@@ -34,7 +34,8 @@
       "location": "[parameters('location')]",
       "kind": "web",
       "properties": {
-        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('siteName'))]"
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('siteName'))]",
+        "DisableIpMasking": true
       },
       "dependsOn": [
         "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('siteName'))]"
