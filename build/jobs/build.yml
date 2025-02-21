@@ -14,7 +14,7 @@ jobs:
   - task: UseDotNet@2
     displayName: Use net9
     inputs:
-      version: 9.x
+      version: 9.0.102 # Pinned after having issues with dotnet commands no longer including src directory
 
   - task: PowerShell@2
     displayName: dotnet tool install nbgv
