@@ -37,14 +37,14 @@ jobs:
       path: $(NUGET_PACKAGES)
 
   - powershell: |
-      dotnet workload restore $(Build.SourcesDirectory)/src/number-sequence.sln;
+      dotnet workload restore src/number-sequence.sln;
     displayName: Restore dotnet workloads
 
   - task: DotNetCoreCLI@2
     displayName: Restore nuget packages
     inputs:
       command: restore
-      projects: $(Build.SourcesDirectory)/src/number-sequence.sln
+      projects: src/number-sequence.sln
 
   - powershell: |
       New-Item -Path $(Build.SourcesDirectory)/src/number-sequence/ -Name appsettings.Development.json -Type File
@@ -69,14 +69,14 @@ jobs:
     displayName: Run unit tests
     inputs:
       command: test
-      projects: $(Build.SourcesDirectory)/src/UnitTests/UnitTests.csproj
+      projects: src/UnitTests/UnitTests.csproj
       arguments: '--no-restore --configuration Debug --no-build --logger:"console;verbosity=normal"'
 
   - task: DotNetCoreCLI@2
     displayName: Build and zip to the staging directory (linux-x64)
     inputs:
       command: publish
-      projects: $(Build.SourcesDirectory)/src/number-sequence/number-sequence.csproj
+      projects: src/number-sequence/number-sequence.csproj
       arguments: '--no-restore --configuration Debug --framework net8.0 --runtime linux-x64 --output $(Build.ArtifactStagingDirectory) --no-self-contained'
       zipAfterPublish: true
       modifyOutputPath: true
