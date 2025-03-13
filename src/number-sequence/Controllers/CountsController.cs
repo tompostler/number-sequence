@@ -75,9 +75,7 @@ namespace number_sequence.Controllers
             Count count = await nsContext.Counts.SingleOrDefaultAsync(x => x.Account == this.User.Identity.Name && x.Name == name, cancellationToken);
             return count == default
                 ? (IActionResult)this.NotFound()
-                : this.Request.Query.ContainsKey("bare")
-                    ? this.Ok(count.Value)
-                    : this.Ok(count);
+                : this.Ok(count);
         }
 
         [HttpPut("{name}")]
@@ -97,9 +95,7 @@ namespace number_sequence.Controllers
 
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
-            return this.Request.Query.ContainsKey("bare")
-                ? this.Ok(count.Value)
-                : this.Ok(count);
+            return this.Ok(count);
         }
 
         [HttpPut("{name}/{amount}")]
@@ -119,9 +115,23 @@ namespace number_sequence.Controllers
 
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
-            return this.Request.Query.ContainsKey("bare")
-                ? this.Ok(count.Value)
-                : this.Ok(count);
+            return this.Ok(count);
+        }
+
+        private OkObjectResult Ok(Count count)
+        {
+            if (this.Request.Query.ContainsKey("bare"))
+            {
+                return this.Ok(count.Value);
+            }
+            else if (this.Request.Query.ContainsKey("bases"))
+            {
+                return this.Ok(CountWithBases.From(count));
+            }
+            else
+            {
+                return base.Ok(count);
+            }
         }
     }
 }
