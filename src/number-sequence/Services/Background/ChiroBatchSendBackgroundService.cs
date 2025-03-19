@@ -43,7 +43,7 @@ namespace number_sequence.Services.Background
         protected override List<CronExpression> Crons => new()
         {
             // On the 10th of every month, at 10:10 AM
-            CronExpression.Parse("10 10 10 * *"),
+            CronExpression.Parse("10 10 10,20,30 * *"),
         };
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
