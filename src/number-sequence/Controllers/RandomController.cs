@@ -33,46 +33,25 @@ namespace number_sequence.Controllers
         }
 
         [HttpGet("bit")]
-        public IActionResult Bit()
-        {
-            return this.Ok(Generate(1));
-        }
+        public IActionResult Bit() => this.Ok(Generate(1));
 
         [HttpGet("crumb")]
-        public IActionResult Crumb()
-        {
-            return this.Ok(Generate(2));
-        }
+        public IActionResult Crumb() => this.Ok(Generate(2));
 
         [HttpGet("nibble")]
-        public IActionResult Nibble()
-        {
-            return this.Ok(Generate(4));
-        }
+        public IActionResult Nibble() => this.Ok(Generate(4));
 
         [HttpGet("byte")]
-        public IActionResult Byte()
-        {
-            return this.Ok(Generate(8));
-        }
+        public IActionResult Byte() => this.Ok(Generate(8));
 
         [HttpGet("short")]
-        public IActionResult Short()
-        {
-            return this.Ok(Generate(16));
-        }
+        public IActionResult Short() => this.Ok(Generate(16));
 
         [HttpGet("int")]
-        public IActionResult Int()
-        {
-            return this.Ok(Generate(32));
-        }
+        public IActionResult Int() => this.Ok(Generate(32));
 
         [HttpGet("long")]
-        public IActionResult Long()
-        {
-            return this.Ok(Generate(64));
-        }
+        public IActionResult Long() => this.Ok(Generate(64));
 
         public static readonly string[] EightBallResponses = new[]
         {
@@ -84,10 +63,7 @@ namespace number_sequence.Controllers
             "[Y] You may rely on it.",    "[Y] Signs point to yes.",    "[~] Concentrate and ask again.",     "[X] Very doubtful.",
         };
         [HttpGet("8ball")]
-        public IActionResult EightBall()
-        {
-            return this.Ok(EightBallResponses[(int)Generate(8) % EightBallResponses.Length]);
-        }
+        public IActionResult EightBall() => this.Ok(EightBallResponses[(int)Generate(8) % EightBallResponses.Length]);
 
         [HttpGet("bits/{num}")]
         public IActionResult Bits(byte num)
@@ -101,10 +77,7 @@ namespace number_sequence.Controllers
         }
 
         [HttpGet("guid")]
-        public IActionResult GuidMethod()
-        {
-            return this.Ok(Guid.NewGuid().ToString("D"));
-        }
+        public IActionResult GuidMethod() => this.Ok(Guid.NewGuid().ToString("D"));
 
         private static readonly ulong[] bitmaps = new ulong[]
         {
@@ -988,10 +961,12 @@ namespace number_sequence.Controllers
             return this.Ok(nameAdjectives[seed.Value % nameAdjectives.Length] + '_' + nameNames[seed.Value % nameNames.Length]);
         }
 
+        private static readonly char[] fromSeparators = new[] { ';', ',' };
+
         [HttpGet("from")]
         public IActionResult From()
         {
-            string[] fromValues = this.HttpContext.Request.QueryString.Value?.TrimStart('?').Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            string[] fromValues = this.HttpContext.Request.QueryString.Value?.TrimStart('?').Split(fromSeparators, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
             // If there's no values provided, give it a docker name
             if (fromValues.Length == 0)
@@ -1005,7 +980,7 @@ namespace number_sequence.Controllers
         [HttpGet("fromlist")]
         public IActionResult FromList()
         {
-            string[] fromValues = this.HttpContext.Request.QueryString.Value?.TrimStart('?').Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            string[] fromValues = this.HttpContext.Request.QueryString.Value?.TrimStart('?').Split(fromSeparators, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
             for (int i = 0; i < fromValues.Length; i++)
             {
