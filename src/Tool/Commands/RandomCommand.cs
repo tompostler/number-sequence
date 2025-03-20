@@ -17,6 +17,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     "coin",
                     "guid",
                     "name",
+                    "razor",
                     "wot",
                     "bit",
                     "crumb",
@@ -28,17 +29,20 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 );
             command.AddArgument(randomTypeArg);
 
+            Option<string> nameOpt = new("--name", "If provided and the API supports it, the name to use for the randomness.");
+            command.AddOption(nameOpt);
+
             Option<string> seedOpt = new("--seed", "If provided and the API supports it, the seed to use for the randomness. Hashed with MD5 to an int. (string)");
             command.AddOption(seedOpt);
 
             Option<int?> valueOpt = new("--value", "If provided and the API supports it, the value to use for the randomness. (int)");
             command.AddOption(valueOpt);
 
-            command.SetHandler(HandleAsync, randomTypeArg, seedOpt, valueOpt, stampOption, verbosityOption);
+            command.SetHandler(HandleAsync, randomTypeArg, nameOpt, seedOpt, valueOpt, stampOption, verbosityOption);
             return command;
         }
 
-        private static async Task HandleAsync(string type, string seedStr, int? value, Stamp stamp, Verbosity verbosity)
+        private static async Task HandleAsync(string type, string nameStr, string seedStr, int? value, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, stamp);
 
@@ -56,6 +60,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 "coin" => await client.Random.GetCoinFlipAsync(),
                 "guid" => await client.Random.GetGuidAsync(),
                 "name" => await client.Random.GetNameAsync(seed),
+                "razor" => await client.Random.GetPhilosophicalRazorAsync(nameStr),
                 "wot" => await client.Random.GetWheelOfTimeIntroAsync(value),
                 "bit" => await client.Random.GetULong01Async(),
                 "crumb" => await client.Random.GetULong02Async(),

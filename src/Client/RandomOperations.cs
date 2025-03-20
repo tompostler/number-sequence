@@ -1,4 +1,6 @@
-﻿namespace TcpWtf.NumberSequence.Client
+﻿using TcpWtf.NumberSequence.Contracts;
+
+namespace TcpWtf.NumberSequence.Client
 {
     /// <summary>
     /// Random. Get random numbers or data.
@@ -244,6 +246,22 @@
                 cancellationToken,
                 needsPreparation: false);
             return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a random philosophical razor.
+        /// </summary>
+        public async Task<Razor> GetPhilosophicalRazorAsync(string name = default, CancellationToken cancellationToken = default)
+        {
+            string queryString = !string.IsNullOrEmpty(name) ? $"?name={name}" : string.Empty;
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/razor" + queryString),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadJsonAsAsync<Razor>(cancellationToken);
         }
     }
 }
