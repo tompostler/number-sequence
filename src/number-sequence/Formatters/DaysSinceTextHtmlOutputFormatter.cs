@@ -27,7 +27,7 @@ namespace number_sequence.Formatters
                 <html>
 
                 <head>
-                  <title>{daysSinceCount} Days Since {HttpUtility.HtmlEncode(responseObject.FriendlyName ?? responseObject.Id)}</title>
+                  <title>{daysSinceCount} Day{(daysSinceCount != 1 ? "s" : string.Empty)} Since {HttpUtility.HtmlEncode(responseObject.FriendlyName ?? responseObject.Id)}</title>
                   <meta name=viewport content="width=device-width, initial-scale=1">
                   <meta http-equiv="refresh" content="33333">
                 </head>
@@ -55,7 +55,7 @@ namespace number_sequence.Formatters
                     <!-- Days counter -->
                     <text x="200" y="130" font-family="Arial" font-size="80" font-weight="bold" fill="blue" text-anchor="middle">{daysSinceCount}</text>
                     <!-- Days since text -->
-                    <text x="200" y="200" font-family="Arial" font-size="40" font-weight="bold" fill="black" text-anchor="middle">DAYS SINCE</text>
+                    <text x="200" y="200" font-family="Arial" font-size="40" font-weight="bold" fill="black" text-anchor="middle">DAY{(daysSinceCount != 1 ? "S" : string.Empty)} SINCE</text>
                     <!-- Days since descriptive text -->
                 """);
 

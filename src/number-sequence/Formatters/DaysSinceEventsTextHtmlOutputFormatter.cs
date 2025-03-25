@@ -20,8 +20,9 @@ namespace number_sequence.Formatters
         {
             var responseObject = context.Object as IList<DaysSinceEvent>;
 
+            int daysSinceNewest = (int)(DateTime.UtcNow - responseObject.Max(x => x.EventDate).ToDateTime(new(), DateTimeKind.Utc)).TotalDays;
             string title = responseObject.Any()
-                ? $"{(int)(DateTime.UtcNow - responseObject.Max(x => x.EventDate).ToDateTime(new(), DateTimeKind.Utc)).TotalDays} Days Since {HttpUtility.HtmlEncode(responseObject.First().DaysSince.FriendlyName ?? responseObject.First().DaysSince.Id)}: {responseObject.Count} events"
+                ? $"{daysSinceNewest} Day{(daysSinceNewest != 1 ? "s" : string.Empty)} Since {HttpUtility.HtmlEncode(responseObject.First().DaysSince.FriendlyName ?? responseObject.First().DaysSince.Id)}: {responseObject.Count} events"
                 : "No Days Since events";
 
             StringBuilder sb = new();
