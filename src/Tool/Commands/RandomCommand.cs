@@ -15,10 +15,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 .FromAmong(
                     "8ball",
                     "coin",
+                    "gibbs",
                     "guid",
                     "name",
                     "razor",
                     "wot",
+
                     "bit",
                     "crumb",
                     "nibble",
@@ -58,10 +60,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             {
                 "8ball" => await client.Random.Get8BallAsync(),
                 "coin" => await client.Random.GetCoinFlipAsync(),
+                "gibbs" => await client.Random.GetGibbsRuleAsync(nameStr),
                 "guid" => await client.Random.GetGuidAsync(),
                 "name" => await client.Random.GetNameAsync(seed),
                 "razor" => await client.Random.GetPhilosophicalRazorAsync(nameStr),
                 "wot" => await client.Random.GetWheelOfTimeIntroAsync(value),
+
                 "bit" => await client.Random.GetULong01Async(),
                 "crumb" => await client.Random.GetULong02Async(),
                 "nibble" => await client.Random.GetULong04Async(),
@@ -69,6 +73,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 "short" => await client.Random.GetULong16Async(),
                 "int" => await client.Random.GetULong32Async(),
                 "long" => await client.Random.GetULong64Async(),
+
                 _ => throw new NotImplementedException($"{type} was not implemented.")
             };
             Console.WriteLine(response);

@@ -263,5 +263,21 @@ namespace TcpWtf.NumberSequence.Client
                 needsPreparation: false);
             return await response.Content.ReadJsonAsAsync<Razor>(cancellationToken);
         }
+
+        /// <summary>
+        /// Gets a random Gibbs rule (from the show NCIS).
+        /// </summary>
+        public async Task<string> GetGibbsRuleAsync(string rule = default, CancellationToken cancellationToken = default)
+        {
+            string queryString = !string.IsNullOrEmpty(rule) ? $"?rule={rule}" : string.Empty;
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/gibbs" + queryString),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadJsonAsAsync<string>(cancellationToken);
+        }
     }
 }
