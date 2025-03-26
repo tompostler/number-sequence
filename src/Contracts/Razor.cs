@@ -1,4 +1,6 @@
-﻿namespace TcpWtf.NumberSequence.Contracts
+﻿using Unlimitedinf.Utilities.Extensions;
+
+namespace TcpWtf.NumberSequence.Contracts
 {
     /// <summary>
     /// <see href="https://en.wikipedia.org/wiki/Philosophical_razor"/>
@@ -24,5 +26,8 @@
         /// A link to more information.
         /// </summary>
         public string Reference { get; set; }
+
+        /// <inheritdoc/>
+        public override string ToString() => this.ToJsonString(indented: true);
     }
 }

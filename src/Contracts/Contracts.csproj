@@ -15,7 +15,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Unlimitedinf.Utilities" Version="3.4.7" />
+    <PackageReference Include="Unlimitedinf.Utilities" Version="3.5.0" />
   </ItemGroup>
 
 </Project>
