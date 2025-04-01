@@ -14,10 +14,7 @@ namespace number_sequence.Middleware
         public async Task InvokeAsync(HttpContext httpContext)
         {
             httpContext.Response.Headers[HttpHeaderNames.ServerOperationId] = System.Diagnostics.Activity.Current?.RootId;
-
-            string assemblyFileVersion = ThisAssembly.AssemblyInformationalVersion;
-            httpContext.Response.Headers[HttpHeaderNames.ServerVersion] = assemblyFileVersion;
-
+            httpContext.Response.Headers[HttpHeaderNames.ServerVersion] = ThisAssembly.AssemblyInformationalVersion;
             await this.next(httpContext);
         }
     }
