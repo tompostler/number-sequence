@@ -67,7 +67,7 @@ if ($confirm -eq 'y') {
     Write-Host;
 
     Write-Cyan 'Resizing nslocal sql database to GP_S_Gen5_1....';
-    Set-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal -RequestedServiceObjectiveName GP_S_Gen5_1;
+    Set-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal -RequestedServiceObjectiveName GP_S_Gen5_1 -AutoPauseDelayInMinutes 15;
 
     Write-Yellow 'You will need to perform manual cleaning of the database for experimentation!';
 }
