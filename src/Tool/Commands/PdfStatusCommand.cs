@@ -9,7 +9,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
     {
         public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
-            Command command = new("pdf-status", "Get the status of the pdf background services.");
+            Command command = new("pdf-status", "Get the status of the pdf background services. Defaults to local time.");
             command.SetHandler(HandleAsync, stampOption, verbosityOption);
             return command;
         }
@@ -17,7 +17,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         private static async Task HandleAsync(Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            PdfStatus pdfStatus = await client.PdfStatus.GetAsync();
+            PdfStatus pdfStatus = await client.PdfStatus.GetAsync(TimeZoneInfo.Local.BaseUtcOffset.TotalHours);
 
             Console.WriteLine();
 
@@ -26,7 +26,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 pdfStatus.TemplateSpreadsheetRows,
                 nameof(PdfStatus.TemplateSpreadsheetRow.RowId),
                 nameof(PdfStatus.TemplateSpreadsheetRow.DocumentId),
-                nameof(PdfStatus.TemplateSpreadsheetRow.CreatedDate));
+                nameof(PdfStatus.TemplateSpreadsheetRow.RowCreatedAt),
+                nameof(PdfStatus.TemplateSpreadsheetRow.ProcessedAt),
+                nameof(PdfStatus.TemplateSpreadsheetRow.Delay));
 
             Console.WriteLine($"{nameof(PdfStatus.EmailDocuments)} ({pdfStatus.EmailDocuments.Count}):");
             Output.WriteTable(

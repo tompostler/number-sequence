@@ -17,9 +17,9 @@ namespace number_sequence.Models
         [MaxLength(64)]
         public string DocumentId { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public DateTimeOffset CreatedDate { get; set; }
+        public DateTimeOffset? RowCreatedAt { get; set; }
 
-        public DateTimeOffset? ProcessedAt { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTimeOffset ProcessedAt { get; set; }
     }
 }

@@ -17,12 +17,12 @@ namespace TcpWtf.NumberSequence.Client
         /// <summary>
         /// Get the current status; filtered server-side.
         /// </summary>
-        public async Task<PdfStatus> GetAsync(CancellationToken cancellationToken = default)
+        public async Task<PdfStatus> GetAsync(double hoursOffset = 0, CancellationToken cancellationToken = default)
         {
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
-                    "pdfstatus"),
+                    $"pdfstatus?{nameof(hoursOffset)}={hoursOffset}"),
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<PdfStatus>(cancellationToken: cancellationToken);
         }

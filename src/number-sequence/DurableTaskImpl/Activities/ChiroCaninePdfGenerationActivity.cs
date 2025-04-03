@@ -10,6 +10,7 @@ using QuestPDF;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using System.Globalization;
 using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.DurableTaskImpl.Activities
@@ -80,7 +81,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 .SingleOrDefaultAsync(x => x.SpreadsheetId == template.SpreadsheetId && x.RowId == id, cancellationToken);
             if (pdfTemplateRow != default)
             {
-                throw new InvalidOperationException($"Data row {id} ({input + 1}) was inserted for processing at {pdfTemplateRow.CreatedDate:u} and processed {pdfTemplateRow.ProcessedAt:u}");
+                throw new InvalidOperationException($"Data row {id} ({input + 1}) was created at {pdfTemplateRow.RowCreatedAt:u} and recorded at {pdfTemplateRow.ProcessedAt:u}");
             }
             else
             {
@@ -90,7 +91,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                     SpreadsheetId = template.SpreadsheetId,
                     RowId = id,
                     DocumentId = context.OrchestrationInstance.InstanceId,
-                    ProcessedAt = DateTimeOffset.UtcNow
+                    RowCreatedAt = new DateTimeOffset(DateTime.ParseExact(row[0], "M/d/yyyy H:mm:ss", CultureInfo.InvariantCulture), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time").BaseUtcOffset).ToUniversalTime(),
                 };
                 _ = nsContext.PdfTemplateSpreadsheetRows.Add(pdfTemplateRow);
             }

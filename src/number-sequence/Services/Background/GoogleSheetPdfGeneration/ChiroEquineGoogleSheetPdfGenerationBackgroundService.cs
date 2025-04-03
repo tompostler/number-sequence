@@ -80,7 +80,7 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
 
                 if (pdfTemplateRow != default)
                 {
-                    this.logger.LogInformation($"Data row {id} ({rowIndex + numberOfKnownRows + 1}) was inserted for processing at {pdfTemplateRow.CreatedDate:u} and processed {pdfTemplateRow.ProcessedAt:u}");
+                    this.logger.LogInformation($"Data row {id} ({rowIndex + numberOfKnownRows + 1}) was created at {pdfTemplateRow.RowCreatedAt:u} and recorded at {pdfTemplateRow.ProcessedAt:u}");
                     continue;
                 }
                 else

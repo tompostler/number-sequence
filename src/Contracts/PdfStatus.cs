@@ -10,7 +10,9 @@
         {
             public string RowId { get; set; }
             public string DocumentId { get; set; }
-            public string CreatedDate { get; set; }
+            public string RowCreatedAt { get; set; }
+            public string ProcessedAt { get; set; }
+            public string Delay { get; set; }
         }
         public sealed class EmailDocument
         {

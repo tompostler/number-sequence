@@ -17,7 +17,7 @@ namespace number_sequence.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        public async Task<IActionResult> GetAsync([FromQuery] double hoursOffset = 0)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
@@ -25,8 +25,8 @@ namespace number_sequence.Controllers
             DateTimeOffset monthAgo = DateTimeOffset.UtcNow.AddDays(-30);
 
             List<Models.PdfTemplateSpreadsheetRow> pdfTemplateSpreadsheetRows = await nsContext.PdfTemplateSpreadsheetRows
-                                                                                                .Where(r => r.CreatedDate > monthAgo)
-                                                                                                .OrderByDescending(r => r.CreatedDate)
+                                                                                                .Where(r => r.ProcessedAt > monthAgo)
+                                                                                                .OrderByDescending(r => r.ProcessedAt)
                                                                                                 .Take(10)
                                                                                                 .ToListAsync();
             List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
@@ -61,11 +61,11 @@ namespace number_sequence.Controllers
                 }
                 else if (largest.TotalMinutes >= 10)
                 {
-                    return @"mm\:ss\.fff";
+                    return @"mm\:ss\.f";
                 }
                 else if (largest.TotalMinutes >= 1)
                 {
-                    return @"m\:ss\.fff";
+                    return @"m\:ss\.ff";
                 }
                 else if (largest.TotalSeconds >= 10)
                 {
@@ -81,6 +81,8 @@ namespace number_sequence.Controllers
                 }
             }
 
+            const string dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+            string templateSpreadsheetRowsTimeSpanFormat = determineTimeSpanFormat(pdfTemplateSpreadsheetRows.Select(x => x.ProcessedAt.Subtract(x.RowCreatedAt ?? x.ProcessedAt)));
             string emailDocumentTimeSpanFormat = determineTimeSpanFormat(emailDocuments.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
             string chiroBatchTimeSpanFormat = determineTimeSpanFormat(chiroBatches.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
 
@@ -91,7 +93,9 @@ namespace number_sequence.Controllers
                     {
                         RowId = x.RowId,
                         DocumentId = x.DocumentId,
-                        CreatedDate = x.CreatedDate.ToString("u"),
+                        RowCreatedAt = x.RowCreatedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        ProcessedAt = x.ProcessedAt.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        Delay = x.ProcessedAt.Subtract(x.RowCreatedAt ?? x.ProcessedAt).ToString(templateSpreadsheetRowsTimeSpanFormat),
                     })
                     .ToList(),
                 EmailDocuments = emailDocuments.Select(
@@ -100,8 +104,8 @@ namespace number_sequence.Controllers
                         Id = x.Id,
                         Subject = x.Subject,
                         AttachmentName = x.AttachmentName,
-                        CreatedDate = x.CreatedDate.ToString("u"),
-                        ProcessedAt = x.ProcessedAt?.ToString("u"),
+                        CreatedDate = x.CreatedDate.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
                         Delay = (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate).ToString(emailDocumentTimeSpanFormat),
                     })
                     .ToList(),
@@ -111,8 +115,8 @@ namespace number_sequence.Controllers
                         Id = x.Id,
                         Clinic = x.ClinicAbbreviation,
                         AttachmentName = x.AttachmentName,
-                        CreatedDate = x.CreatedDate.ToString("u"),
-                        ProcessedAt = x.ProcessedAt?.ToString("u"),
+                        CreatedDate = x.CreatedDate.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
                         Delay = (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate).ToString(chiroBatchTimeSpanFormat),
                     })
                     .ToList(),

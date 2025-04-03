@@ -173,7 +173,7 @@ namespace number_sequence.DataAccess
                 .HasKey(x => x.DocumentId);
 
             _ = modelBuilder.Entity<PdfTemplateSpreadsheetRow>()
-                .Property(x => x.CreatedDate)
+                .Property(x => x.ProcessedAt)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
             #endregion // Pdf
