@@ -27,12 +27,12 @@ namespace number_sequence.Controllers
             List<Models.PdfTemplateSpreadsheetRow> pdfTemplateSpreadsheetRows = await nsContext.PdfTemplateSpreadsheetRows
                                                                                                 .Where(r => r.ProcessedAt > monthAgo)
                                                                                                 .OrderByDescending(r => r.ProcessedAt)
-                                                                                                .Take(10)
+                                                                                                .Take(20)
                                                                                                 .ToListAsync();
             List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
                                                                         .Where(r => r.CreatedDate > monthAgo)
                                                                         .OrderByDescending(r => r.CreatedDate)
-                                                                        .Take(10)
+                                                                        .Take(20)
                                                                         .ToListAsync();
             List<Models.ChiroEmailBatch> chiroBatches = await nsContext.ChiroEmailBatches
                                                                         .Where(r => r.CreatedDate > monthAgo)
