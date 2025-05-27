@@ -71,7 +71,7 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
-        /// Gets a random name based on the docker container naming generator.
+        /// Gets a random name of the union of moby and ubuntu naming conventions normalized to lower case with no spaces.
         /// </summary>
         public async Task<string> GetNameAsync(int? seed = default, CancellationToken cancellationToken = default)
         {
@@ -81,6 +81,38 @@ namespace TcpWtf.NumberSequence.Client
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "random/name"+ queryString),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a random name from the moby (docker) naming conventions.
+        /// </summary>
+        public async Task<string> GetNameMobyAsync(int? seed = default, CancellationToken cancellationToken = default)
+        {
+            string queryString = seed.HasValue ? $"?seed={seed}" : string.Empty;
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/name/moby" + queryString),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a random name from the ubuntu naming conventions.
+        /// </summary>
+        public async Task<string> GetNameUbuntuAsync(int? seed = default, CancellationToken cancellationToken = default)
+        {
+            string queryString = seed.HasValue ? $"?seed={seed}" : string.Empty;
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/name/ubuntu" + queryString),
                 cancellationToken,
                 needsPreparation: false);
             return await response.Content.ReadAsStringAsync(cancellationToken);

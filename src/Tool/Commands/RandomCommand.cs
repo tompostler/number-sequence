@@ -18,6 +18,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     "gibbs",
                     "guid",
                     "name",
+                    "name_moby",
+                    "name_ubuntu",
                     "razor",
                     "wot",
 
@@ -63,6 +65,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 "gibbs" => await client.Random.GetGibbsRuleAsync(nameStr),
                 "guid" => await client.Random.GetGuidAsync(),
                 "name" => await client.Random.GetNameAsync(seed),
+                "name_moby" => await client.Random.GetNameMobyAsync(seed),
+                "name_ubuntu" => await client.Random.GetNameUbuntuAsync(seed),
                 "razor" => await client.Random.GetPhilosophicalRazorAsync(nameStr),
                 "wot" => await client.Random.GetWheelOfTimeIntroAsync(value),
 
