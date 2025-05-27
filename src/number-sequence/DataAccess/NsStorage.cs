@@ -26,7 +26,6 @@ namespace number_sequence.DataAccess
             {
                 public const string ChiroCanine = "chiro-canine";
                 public const string ChiroEquine = "chiro-equine";
-                public const string InvoicePostler = "invoice-postler";
             }
         }
 
