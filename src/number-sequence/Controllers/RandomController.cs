@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
 using System.Web;
 using TcpWtf.NumberSequence.Contracts;
 using Unlimitedinf.Utilities.Extensions;
@@ -10,8 +9,6 @@ namespace number_sequence.Controllers
     [Route("[controller]")]
     public sealed class RandomController : ControllerBase
     {
-        private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
-
         [HttpGet]
         public IActionResult Default(ulong min = 0, ulong max = 100)
         {
@@ -25,7 +22,7 @@ namespace number_sequence.Controllers
                 return this.Ok(min);
             }
 
-            ulong val = Generate(64);
+            ulong val = (ulong)Random.Shared.NextInt64();
 
             val %= max - min + 1;
             val += min;
@@ -34,25 +31,25 @@ namespace number_sequence.Controllers
         }
 
         [HttpGet("bit")]
-        public IActionResult Bit() => this.Ok(Generate(1));
+        public IActionResult Bit() => this.Ok(Random.Shared.NextInt64() % (1 << 1));
 
         [HttpGet("crumb")]
-        public IActionResult Crumb() => this.Ok(Generate(2));
+        public IActionResult Crumb() => this.Ok(Random.Shared.NextInt64() % (1 << 2));
 
         [HttpGet("nibble")]
-        public IActionResult Nibble() => this.Ok(Generate(4));
+        public IActionResult Nibble() => this.Ok(Random.Shared.NextInt64() % (1 << 4));
 
         [HttpGet("byte")]
-        public IActionResult Byte() => this.Ok(Generate(8));
+        public IActionResult Byte() => this.Ok(Random.Shared.NextInt64() % byte.MaxValue);
 
         [HttpGet("short")]
-        public IActionResult Short() => this.Ok(Generate(16));
+        public IActionResult Short() => this.Ok(Random.Shared.NextInt64() % ushort.MaxValue);
 
         [HttpGet("int")]
-        public IActionResult Int() => this.Ok(Generate(32));
+        public IActionResult Int() => this.Ok(Random.Shared.NextInt64() % uint.MaxValue);
 
         [HttpGet("long")]
-        public IActionResult Long() => this.Ok(Generate(64));
+        public IActionResult Long() => this.Ok((ulong)Random.Shared.NextInt64());
 
         public static readonly string[] EightBallResponses = new[]
         {
@@ -64,21 +61,7 @@ namespace number_sequence.Controllers
             "[Y] You may rely on it.",    "[Y] Signs point to yes.",    "[~] Concentrate and ask again.",     "[X] Very doubtful.",
         };
         [HttpGet("8ball")]
-        public IActionResult EightBall() => this.Ok(EightBallResponses[(int)Generate(8) % EightBallResponses.Length]);
-
-        [HttpGet("bits/{num}")]
-        public IActionResult Bits(byte num)
-        {
-            if (num <= 0 || num > 64)
-            {
-                return this.BadRequest("num must be in (0,64]");
-            }
-
-            return this.Ok(Generate(num));
-        }
-
-        [HttpGet("guid")]
-        public IActionResult GuidMethod() => this.Ok(Guid.NewGuid().ToString("D"));
+        public IActionResult EightBall() => this.Ok(EightBallResponses[Random.Shared.Next(EightBallResponses.Length)]);
 
         private static readonly ulong[] bitmaps = new ulong[]
         {
@@ -101,18 +84,19 @@ namespace number_sequence.Controllers
             0x1FFFFFFFFFFFFFFF, 0x3FFFFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF
         };
 
-        private static ulong Generate(byte bits)
+        [HttpGet("bits/{num}")]
+        public IActionResult Bits(byte num)
         {
-            byte[] bytes = new byte[8];
-            _rng.GetBytes(bytes);
-            ulong val = 0;
-            for (int i = 0; i < 8; i++)
+            if (num <= 0 || num > 64)
             {
-                val += (ulong)(bytes[i] << (i * 8));
+                return this.BadRequest("num must be in (0,64]");
             }
 
-            return val & bitmaps[bits];
+            return this.Ok((ulong)Random.Shared.NextInt64() & bitmaps[num]);
         }
+
+        [HttpGet("guid")]
+        public IActionResult GuidMethod() => this.Ok(Guid.NewGuid().ToString("D"));
 
         // Fetched 2021-06-03 from https://github.com/moby/moby/blob/master/pkg/namesgenerator/names-generator.go
         #region Moby name constants
@@ -956,7 +940,7 @@ namespace number_sequence.Controllers
             }
             else if (seed == default)
             {
-                seed = (int)Generate(8);
+                seed = Random.Shared.Next();
             }
 
             return this.Ok(mobyNameAdjectives[seed.Value % mobyNameAdjectives.Length] + '_' + mobyNameNames[seed.Value % mobyNameNames.Length]);
@@ -2409,7 +2393,7 @@ namespace number_sequence.Controllers
             }
             else if (seed == default)
             {
-                seed = (int)Generate(8);
+                seed = Random.Shared.Next();
             }
 
             return this.Ok(ubuntuNameAdjectives[seed.Value % ubuntuNameAdjectives.Length] + ' ' + ubuntuNameAnimals[seed.Value % ubuntuNameAnimals.Length]);
@@ -2427,7 +2411,7 @@ namespace number_sequence.Controllers
             }
             else if (seed == default)
             {
-                seed = (int)Generate(8);
+                seed = Random.Shared.Next();
             }
 
             return this.Ok((nameAdjectives.ElementAt(seed.Value % nameAdjectives.Count()) + '_' + nameNames.ElementAt(seed.Value % nameNames.Count())).Replace(' ', '-').Replace("'", string.Empty).ToLower());
@@ -2446,7 +2430,7 @@ namespace number_sequence.Controllers
                 return this.Name();
             }
 
-            return this.Ok(HttpUtility.UrlDecode(fromValues[(int)Generate(16) % fromValues.Length]));
+            return this.Ok(HttpUtility.UrlDecode(fromValues[Random.Shared.Next(fromValues.Length)]));
         }
 
         [HttpGet("fromlist")]
@@ -2550,7 +2534,7 @@ namespace number_sequence.Controllers
             }
             else if (!book.HasValue)
             {
-                book = ((int)Generate(16) % wotQuotes.Length) + 1;
+                book = Random.Shared.Next(wotQuotes.Length) + 1;
             }
 
             return this.Ok(wotQuotes[book.Value - 1]);
@@ -2559,7 +2543,7 @@ namespace number_sequence.Controllers
         [HttpGet("coin")]
         public IActionResult Coin()
         {
-            return this.Ok(Generate(1) == 0
+            return this.Ok(Random.Shared.Next() % 2 == 0
                             ? "Heads"
                             : "Tails");
         }
@@ -2639,7 +2623,7 @@ namespace number_sequence.Controllers
                 }
             }
 
-            return this.Ok(razors[(int)Generate(16) % razors.Length]);
+            return this.Ok(razors[Random.Shared.Next(razors.Length)]);
         }
 
         // Fetched 2025-03-26 from https://discover.hubpages.com/entertainment/ncis-jethro-gibbs-rules
@@ -2701,9 +2685,9 @@ namespace number_sequence.Controllers
             ["51"] = "Rule #51: \"Sometimes you're wrong.\"",
 
             ["62"] = "Rule #62: \"Always give people space when they get off the elevator.\"",
-            
+
             ["69"] = "Rule #69: \"Never trust a woman who doesn't trust her man.\"",
-            
+
             ["73"] = "Rule #73: \"Never meet your heroes.\"",
 
             ["91"] = "Rule #91: \"When you decide to walk away, don't look back.\"",
@@ -2727,7 +2711,7 @@ namespace number_sequence.Controllers
                 }
             }
 
-            return this.Ok(gibbs[gibbsKeys[(int)Generate(16) % gibbsKeys.Length]]);
+            return this.Ok(gibbs[gibbsKeys[Random.Shared.Next(gibbsKeys.Length)]]);
         }
     }
 }
