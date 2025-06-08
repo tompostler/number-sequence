@@ -17,27 +17,30 @@ namespace number_sequence.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAsync([FromQuery] double hoursOffset = 0)
+        public async Task<IActionResult> GetAsync(
+            [FromQuery] double hoursOffset = 0,
+            [FromQuery] int takeAmount = 20,
+            [FromQuery] int daysLookback = 30)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            DateTimeOffset monthAgo = DateTimeOffset.UtcNow.AddDays(-30);
+            DateTimeOffset monthAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
 
             List<Models.PdfTemplateSpreadsheetRow> pdfTemplateSpreadsheetRows = await nsContext.PdfTemplateSpreadsheetRows
                                                                                                 .Where(r => r.ProcessedAt > monthAgo)
                                                                                                 .OrderByDescending(r => r.ProcessedAt)
-                                                                                                .Take(20)
+                                                                                                .Take(takeAmount)
                                                                                                 .ToListAsync();
             List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
                                                                         .Where(r => r.CreatedDate > monthAgo)
                                                                         .OrderByDescending(r => r.CreatedDate)
-                                                                        .Take(20)
+                                                                        .Take(takeAmount)
                                                                         .ToListAsync();
             List<Models.ChiroEmailBatch> chiroBatches = await nsContext.ChiroEmailBatches
                                                                         .Where(r => r.CreatedDate > monthAgo)
                                                                         .OrderByDescending(r => r.CreatedDate)
-                                                                        .Take(20)
+                                                                        .Take(takeAmount)
                                                                         .ToListAsync();
 
             static string determineTimeSpanFormat(IEnumerable<TimeSpan> spans)
