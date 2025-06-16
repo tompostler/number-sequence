@@ -18,7 +18,7 @@ namespace TcpWtf.NumberSequence.Contracts
         /// <summary>
         /// When the event occurred.
         /// </summary>
-        [Required, CustomValidation(typeof(DaysSinceValidation), nameof(DaysSinceValidation.LastOccurrenceValidation))]
+        [Required, CustomValidation(typeof(MiscValidation), nameof(MiscValidation.DateOnlyWithinTenYears))]
         public DateOnly EventDate { get; set; }
 
         /// <summary>

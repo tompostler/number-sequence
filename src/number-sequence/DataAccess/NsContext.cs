@@ -13,6 +13,8 @@ namespace number_sequence.DataAccess
 
         public DbSet<Count> Counts { get; set; }
 
+        public DbSet<DailySequenceValue> DailySequenceValues { get; set; }
+
         public DbSet<DaysSince> DaysSinces { get; set; }
 
         public DbSet<ChiroEmailBatch> ChiroEmailBatches { get; set; }
@@ -99,6 +101,18 @@ namespace number_sequence.DataAccess
             _ = modelBuilder.Entity<Count>()
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<DailySequenceValue>()
+                .HasKey(x => new { x.Account, x.Category, x.EventDate });
+            _ = modelBuilder.Entity<DailySequenceValue>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<DailySequenceValue>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<DailySequenceValue>()
+                .Property(x => x.Value)
+                .HasPrecision(27, 5);
 
             _ = modelBuilder.Entity<DaysSince>()
                 .Property(x => x.CreatedDate)

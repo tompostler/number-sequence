@@ -28,6 +28,11 @@
         public static readonly IReadOnlyDictionary<AccountTier, int> CountsPerAccount = AccountsPerCreatedFrom;
 
         /// <summary>
+        /// Number of 'daily sequence value' allowed is based on the account tier.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<AccountTier, int> DailySequenceValuesPerAccount = AccountsPerCreatedFrom;
+
+        /// <summary>
         /// Number of 'days since' allowed is based on the account tier.
         /// </summary>
         public static readonly IReadOnlyDictionary<AccountTier, int> DaysSincePerAccount = AccountsPerCreatedFrom;

@@ -48,6 +48,7 @@ namespace TcpWtf.NumberSequence.Client
 
             this.Account = new AccountOperations(this);
             this.Count = new CountOperations(this);
+            this.DailySequenceValue = new DailySequenceValueOperations(this);
             this.DaysSince = new DaysSinceOperations(this);
             this.History = new HistoryOperations(this);
             this.PdfStatus = new PdfStatusOperations(this);
@@ -66,6 +67,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Count operations.
         /// </summary>
         public CountOperations Count { get; }
+
+        /// <summary>
+        /// Daily Sequence Value (DSV) operations.
+        /// </summary>
+        public DailySequenceValueOperations DailySequenceValue { get; }
 
         /// <summary>
         /// Days since operations.

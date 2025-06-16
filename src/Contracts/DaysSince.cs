@@ -35,7 +35,7 @@ namespace TcpWtf.NumberSequence.Contracts
         /// Will be overridden by the addition of individual events.
         /// If no events, will default to the creation date.
         /// </summary>
-        [CustomValidation(typeof(DaysSinceValidation), nameof(DaysSinceValidation.LastOccurrenceValidation))]
+        [CustomValidation(typeof(MiscValidation), nameof(MiscValidation.DateOnlyWithinTenYears))]
         public DateOnly LastOccurrence { get; set; }
 
         /// <summary>
@@ -90,28 +90,4 @@ namespace TcpWtf.NumberSequence.Contracts
         /// <inheritdoc/>
         public override string ToString() => this.ToJsonString();
     }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-    public static class DaysSinceValidation
-    {
-        public static ValidationResult LastOccurrenceValidation(DateOnly lastOccurrence, ValidationContext _)
-        {
-            if (lastOccurrence == default)
-            {
-                return default;
-            }
-
-            if (lastOccurrence < DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddYears(-10).UtcDateTime))
-            {
-                return new ValidationResult("LastOccurrence cannot be older than 10 years from now.");
-            }
-            else if (lastOccurrence > DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddYears(10).UtcDateTime))
-            {
-                return new ValidationResult("LastOccurrence cannot be later than 10 years from now.");
-            }
-
-            return default;
-        }
-    }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }
