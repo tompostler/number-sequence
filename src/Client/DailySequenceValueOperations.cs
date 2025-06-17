@@ -44,19 +44,6 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
-        /// Get DSVs for a category.
-        /// </summary>
-        public async Task<List<DailySequenceValue>> GetAsync(string category, CancellationToken cancellationToken = default)
-        {
-            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
-                () => new HttpRequestMessage(
-                    HttpMethod.Get,
-                    $"dailysequencevalues/{category}"),
-                cancellationToken);
-            return await response.Content.ReadJsonAsAsync<List<DailySequenceValue>>(cancellationToken);
-        }
-
-        /// <summary>
         /// Get an existing DSV.
         /// </summary>
         public async Task<DailySequenceValue> GetAsync(string category, DateOnly date, CancellationToken cancellationToken = default)
@@ -70,7 +57,7 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
-        /// List all existing counts.
+        /// List all existing DSVs.
         /// </summary>
         public async Task<List<DailySequenceValue>> ListAsync(CancellationToken cancellationToken = default)
         {
@@ -78,6 +65,19 @@ namespace TcpWtf.NumberSequence.Client
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
                     "dailysequencevalues"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<DailySequenceValue>>(cancellationToken);
+        }
+
+        /// <summary>
+        /// Get DSVs for a category.
+        /// </summary>
+        public async Task<List<DailySequenceValue>> ListAsync(string category, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"dailysequencevalues/{category}"),
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<List<DailySequenceValue>>(cancellationToken);
         }

@@ -71,7 +71,7 @@ namespace number_sequence.Controllers
             List<DailySequenceValue> dsvs = await nsContext.DailySequenceValues
                                                 .Where(x => x.Account == this.User.Identity.Name)
                                                 .OrderBy(x => x.Category)
-                                                .ThenBy(x => x.EventDate)
+                                                .ThenByDescending(x => x.EventDate)
                                                 .ToListAsync(cancellationToken);
             return this.Ok(dsvs);
         }
@@ -84,7 +84,7 @@ namespace number_sequence.Controllers
 
             List<DailySequenceValue> dsvs = await nsContext.DailySequenceValues
                                                 .Where(x => x.Account == this.User.Identity.Name && x.Category == category.ToLower())
-                                                .OrderBy(x => x.EventDate)
+                                                .OrderByDescending(x => x.EventDate)
                                                 .ToListAsync(cancellationToken);
             return this.Ok(dsvs);
         }

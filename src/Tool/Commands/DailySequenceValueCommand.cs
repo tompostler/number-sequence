@@ -24,9 +24,11 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             getCommand.AddArgument(dateArgument);
             getCommand.SetHandler(HandleGetAsync, categoryArgument, dateArgument, stampOption, verbosityOption);
 
-            Command listCommand = new("list", "Get existing counts.");
+            Command listCommand = new("list", "Get existing DSVs.");
             listCommand.AddAlias("ls");
-            listCommand.SetHandler(HandleListAsync, stampOption, verbosityOption);
+            Argument<string> categoryOptionalArgument = new("category", () => default, "The category of the DSV.");
+            listCommand.AddArgument(categoryOptionalArgument);
+            listCommand.SetHandler(HandleListAsync, categoryOptionalArgument, stampOption, verbosityOption);
 
             Command updateCommand = new("update", "Update an existing DSV.");
             updateCommand.AddArgument(categoryArgument);
@@ -59,26 +61,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
-            if (date == default)
-            {
-                List<Contracts.DailySequenceValue> dsvs = await client.DailySequenceValue.GetAsync(category);
-                Output.WriteTable(
-                    dsvs,
-                    nameof(Contracts.DailySequenceValue.Category),
-                    nameof(Contracts.DailySequenceValue.EventDate),
-                    nameof(Contracts.DailySequenceValue.Value));
-            }
-            else
-            {
-                Contracts.DailySequenceValue dsv = await client.DailySequenceValue.GetAsync(category, date);
-                Console.WriteLine(dsv.ToJsonString(indented: true));
-            }
+            Contracts.DailySequenceValue dsv = await client.DailySequenceValue.GetAsync(category, date);
+            Console.WriteLine(dsv.ToJsonString(indented: true));
         }
 
-        private static async Task HandleListAsync(Stamp stamp, Verbosity verbosity)
+        private static async Task HandleListAsync(string category, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            List<Contracts.DailySequenceValue> dsvs = await client.DailySequenceValue.ListAsync();
+            List<Contracts.DailySequenceValue> dsvs = await client.DailySequenceValue.ListAsync(category);
 
             Output.WriteTable(
                 dsvs,
