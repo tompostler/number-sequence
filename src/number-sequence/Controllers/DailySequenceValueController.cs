@@ -33,12 +33,17 @@ namespace number_sequence.Controllers
                 return this.Conflict($"DSV with category [{dsv.Category}] and date [{dsv.EventDate}] already exists.");
             }
 
-            // Check if we shouldn't make another dsv for this account.
+            // Check if we shouldn't make another dsv for this account or category.
             Account account = await nsContext.Accounts.SingleAsync(x => x.Name == this.User.Identity.Name, cancellationToken);
-            int countForAccount = await nsContext.DailySequenceValues.CountAsync(x => x.Account == account.Name, cancellationToken);
-            if (countForAccount >= TierLimits.DailySequenceValuesPerAccount[account.Tier])
+            int countCategoriesForAccount = await nsContext.DailySequenceValues.Where(x => x.Account == account.Name).GroupBy(x => x.Category).CountAsync(cancellationToken);
+            if (countCategoriesForAccount >= TierLimits.DailySequenceValueCategoriesPerAccount[account.Tier])
             {
-                return this.Conflict($"Too many DSVs already created for account with name [{account.Name}].");
+                return this.Conflict($"Too many DSV categories already created for account with name [{account.Name}].");
+            }
+            int countForCategoryForAccount = await nsContext.DailySequenceValues.CountAsync(x=> x.Account == account.Name && x.Category == dsv.Category.ToLower(), cancellationToken);
+            if (countForCategoryForAccount >= TierLimits.DailySequenceValuesPerCategory[account.Tier])
+            {
+                return this.Conflict($"Too many DSVs already created for account with name [{account.Name}] in category [{dsv.Category.ToLower()}].");
             }
 
             DailySequenceValue toInsert = new()
