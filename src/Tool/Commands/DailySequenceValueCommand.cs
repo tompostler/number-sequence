@@ -12,11 +12,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Command rootCommand = new("daily-sequence-value", "Create, update, or get daily sequence values (DSVs).");
             rootCommand.AddAlias("dsv");
 
-            Command createCommand = new("create", "Create a new DSV.");
-            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
-
             Argument<string> categoryArgument = new("category", "The category of the DSV.");
             Argument<DateOnly> dateArgument = new("date", "The date of the DSV.");
+            Argument<decimal> valueArgument = new("value", "The value of the DSV.");
+
+            Command createCommand = new("create", "Create a new DSV for today.");
+            createCommand.AddArgument(categoryArgument);
+            createCommand.AddArgument(valueArgument);
+            createCommand.SetHandler(HandleCreateAsync, categoryArgument, valueArgument, stampOption, verbosityOption);
+
+            Command createAskCommand = new("create-ask", "Create a new DSV, asking for the properties.");
+            createAskCommand.SetHandler(HandleCreateWithInputsAsync, stampOption, verbosityOption);
 
             Command getCommand = new("get", "Get an existing DSV to see its properties.");
             getCommand.AddAlias("show");
@@ -36,20 +42,36 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             updateCommand.SetHandler(HandleUpdateAsync, categoryArgument, dateArgument, stampOption, verbosityOption);
 
             rootCommand.AddCommand(createCommand);
+            rootCommand.AddCommand(createAskCommand);
             rootCommand.AddCommand(getCommand);
             rootCommand.AddCommand(listCommand);
             rootCommand.AddCommand(updateCommand);
             return rootCommand;
         }
 
-        private static async Task HandleCreateAsync(Stamp stamp, Verbosity verbosity)
+        private static async Task HandleCreateAsync(string category, decimal value, Stamp stamp, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
+
+            Contracts.DailySequenceValue dsv = new()
+            {
+                Category = category,
+                EventDate = DateOnly.FromDateTime(DateTime.Now),
+                Value = value,
+            };
+
+            dsv = await client.DailySequenceValue.CreateAsync(dsv);
+            Console.WriteLine(dsv.ToJsonString(indented: true));
+        }
+
+        private static async Task HandleCreateWithInputsAsync(Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             Contracts.DailySequenceValue dsv = new()
             {
                 Category = Input.GetString(nameof(dsv.Category)),
-                EventDate = Input.GetDateOnly(nameof(dsv.EventDate)),
+                EventDate = Input.GetDateOnly(nameof(dsv.EventDate), defaultVal: DateOnly.FromDateTime(DateTime.Now)),
                 Value = Input.GetDecimal(nameof(dsv.Value), canDefault: false),
             };
 
