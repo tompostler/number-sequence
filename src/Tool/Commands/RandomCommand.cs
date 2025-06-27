@@ -22,6 +22,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     "name_ubuntu",
                     "razor",
                     "wot",
+                    "xkcd",
 
                     "bit",
                     "crumb",
@@ -69,6 +70,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 "name_ubuntu" => await client.Random.GetNameUbuntuAsync(seed),
                 "razor" => await client.Random.GetPhilosophicalRazorAsync(nameStr),
                 "wot" => await client.Random.GetWheelOfTimeIntroAsync(value),
+                "xkcd" => await client.Random.GetXkcdAsync(),
 
                 "bit" => await client.Random.GetULong01Async(),
                 "crumb" => await client.Random.GetULong02Async(),

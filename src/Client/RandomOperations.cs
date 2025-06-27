@@ -311,5 +311,19 @@ namespace TcpWtf.NumberSequence.Client
                 needsPreparation: false);
             return await response.Content.ReadJsonAsAsync<string>(cancellationToken);
         }
+
+        /// <summary>
+        /// Gets a random number according to xkcd comic 221.
+        /// </summary>
+        public async Task<int> GetXkcdAsync(CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/xkcd"),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadJsonAsAsync<int>(cancellationToken);
+        }
     }
 }

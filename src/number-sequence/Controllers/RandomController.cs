@@ -2713,5 +2713,9 @@ namespace number_sequence.Controllers
 
             return this.Ok(gibbs[gibbsKeys[Random.Shared.Next(gibbsKeys.Length)]]);
         }
+
+        // https://xkcd.com/221/
+        [HttpGet("xkcd")]
+        public IActionResult Xkcd() => this.Ok(4);
     }
 }
