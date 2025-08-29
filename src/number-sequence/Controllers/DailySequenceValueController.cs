@@ -40,7 +40,7 @@ namespace number_sequence.Controllers
             {
                 return this.Conflict($"Too many DSV categories already created for account with name [{account.Name}].");
             }
-            int countForCategoryForAccount = await nsContext.DailySequenceValues.CountAsync(x=> x.Account == account.Name && x.Category == dsv.Category.ToLower(), cancellationToken);
+            int countForCategoryForAccount = await nsContext.DailySequenceValues.CountAsync(x => x.Account == account.Name && x.Category == dsv.Category.ToLower(), cancellationToken);
             if (countForCategoryForAccount >= TierLimits.DailySequenceValuesPerCategory[account.Tier])
             {
                 return this.Conflict($"Too many DSVs already created for account with name [{account.Name}] in category [{dsv.Category.ToLower()}].");
@@ -53,6 +53,53 @@ namespace number_sequence.Controllers
                 EventDate = dsv.EventDate,
                 Value = dsv.Value
             };
+
+            // Check if there is a config for this category. If so, adjust the value if necessary.
+            DailySequenceValueConfig dsvc = await nsContext.DailySequenceValueConfigs.SingleOrDefaultAsync(x => x.Account == account.Name && x.Category == dsv.Category.ToLower(), cancellationToken);
+            if (dsvc != default)
+            {
+                DailySequenceValue previousDsv = await nsContext.DailySequenceValues
+                                                                .Where(x => x.Account == account.Name && x.Category == dsv.Category.ToLower() && x.EventDate < dsv.EventDate)
+                                                                .OrderByDescending(x => x.EventDate)
+                                                                .FirstOrDefaultAsync(cancellationToken);
+                if (previousDsv != default)
+                {
+                    decimal delta = dsv.Value - previousDsv.Value;
+                    this.logger.LogInformation($"Applying DSVC {dsvc.ToJsonString()} to DSV {dsv.ToJsonString()} with previous DSV {previousDsv.ToJsonString()} and delta {delta}.");
+                    if (delta < 0)
+                    {
+                        // Negative delta.
+                        if (dsvc.NegativeDeltaMin.HasValue && delta > dsvc.NegativeDeltaMin.Value)
+                        {
+                            toInsert.OriginalValue = toInsert.Value;
+                            toInsert.Value = previousDsv.Value + dsvc.NegativeDeltaMin.Value;
+                        }
+                        else if (dsvc.NegativeDeltaMax.HasValue && delta < dsvc.NegativeDeltaMax.Value)
+                        {
+                            toInsert.OriginalValue = toInsert.Value;
+                            toInsert.Value = previousDsv.Value + dsvc.NegativeDeltaMax.Value;
+                        }
+                    }
+                    else if (delta > 0)
+                    {
+                        // Positive delta.
+                        if (dsvc.PositiveDeltaMin.HasValue && delta < dsvc.PositiveDeltaMin.Value)
+                        {
+                            toInsert.OriginalValue = toInsert.Value;
+                            toInsert.Value = previousDsv.Value + dsvc.PositiveDeltaMin.Value;
+                        }
+                        else if (dsvc.PositiveDeltaMax.HasValue && delta > dsvc.PositiveDeltaMax.Value)
+                        {
+                            toInsert.OriginalValue = toInsert.Value;
+                            toInsert.Value = previousDsv.Value + dsvc.PositiveDeltaMax.Value;
+                        }
+                    }
+                    else
+                    {
+                        // No change.
+                    }
+                }
+            }
 
             _ = nsContext.DailySequenceValues.Add(toInsert);
             _ = await nsContext.SaveChangesAsync(cancellationToken);
@@ -131,9 +178,16 @@ namespace number_sequence.Controllers
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             DailySequenceValue dsv = await nsContext.DailySequenceValues.SingleOrDefaultAsync(x => x.Account == this.User.Identity.Name && x.Category == category.ToLower() && x.EventDate == date, cancellationToken);
-            return dsv == default
-                ? this.NotFound()
-                : this.Ok(dsv);
+            if (dsv == default)
+            {
+                return this.NotFound($"DSV with category [{category}] and date [{date}] does not exist.");
+            }
+
+            _ = nsContext.DailySequenceValues.Remove(dsv);
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+            this.logger.LogInformation($"Deleted DSV: {dsv.ToJsonString()}");
+
+            return this.Ok(dsv);
         }
     }
 }

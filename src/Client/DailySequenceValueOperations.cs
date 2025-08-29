@@ -81,5 +81,22 @@ namespace TcpWtf.NumberSequence.Client
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<List<DailySequenceValue>>(cancellationToken);
         }
+
+        /// <summary>
+        /// Update an existing DSV.
+        /// Ignores the config validation and lets you update to anything.
+        /// </summary>
+        public async Task<DailySequenceValue> UpdateAsync(DailySequenceValue dsv, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Put,
+                    "dailysequencevalues")
+                {
+                    Content = dsv.ToJsonContent()
+                },
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<DailySequenceValue>(cancellationToken);
+        }
     }
 }

@@ -14,11 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="8.5.0" />
+    <PackageReference Include="FluentAssertions" Version="8.6.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.*" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.*" />
-    <PackageReference Include="MSTest" Version="3.10.0" />
+    <PackageReference Include="MSTest" Version="3.10.3" />
   </ItemGroup>
 
   <ItemGroup>

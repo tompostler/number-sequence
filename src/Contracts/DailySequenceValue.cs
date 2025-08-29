@@ -24,16 +24,23 @@ namespace TcpWtf.NumberSequence.Contracts
         [Required, MinLength(3), MaxLength(36)]
         public string Category { get; set; }
 
+
         /// <summary>
         /// The value.
         /// </summary>
         public decimal Value { get; set; }
 
         /// <summary>
+        /// When a value is requested that would exceed the delta limits from the config, this is the value that was requested.
+        /// </summary>
+        public decimal? OriginalValue { get; set; }
+
+        /// <summary>
         /// When the event occurred.
         /// </summary>
         [Required, CustomValidation(typeof(MiscValidation), nameof(MiscValidation.DateOnlyWithinTenYears))]
         public DateOnly EventDate { get; set; }
+
 
         /// <summary>
         /// The date the item was created.

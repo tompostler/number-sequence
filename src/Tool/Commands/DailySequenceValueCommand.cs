@@ -96,7 +96,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 dsvs,
                 nameof(Contracts.DailySequenceValue.Category),
                 nameof(Contracts.DailySequenceValue.EventDate),
-                nameof(Contracts.DailySequenceValue.Value));
+                nameof(Contracts.DailySequenceValue.Value),
+                nameof(Contracts.DailySequenceValue.OriginalValue));
         }
 
         private static async Task HandleUpdateAsync(string category, DateOnly date, Stamp stamp, Verbosity verbosity)

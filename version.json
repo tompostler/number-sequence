@@ -1,5 +1,5 @@
 {
-  "version": "3.2",
+  "version": "3.3",
   "versionHeightOffset": -1, // Offset to make it so the first version after a rev ends with a zero.
   "publicReleaseRefSpec": [
     "^refs/heads/main$"
