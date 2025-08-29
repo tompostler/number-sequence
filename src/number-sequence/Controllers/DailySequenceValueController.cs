@@ -110,28 +110,41 @@ namespace number_sequence.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ListAsync(CancellationToken cancellationToken)
+        public async Task<IActionResult> ListAsync(
+            CancellationToken cancellationToken,
+            [FromQuery] int takeAmount = 20,
+            [FromQuery] int daysLookback = 30)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+            
+            DateOnly daysAgo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-daysLookback));
 
             List<DailySequenceValue> dsvs = await nsContext.DailySequenceValues
-                                                .Where(x => x.Account == this.User.Identity.Name)
+                                                .Where(x => x.Account == this.User.Identity.Name && x.EventDate > daysAgo)
                                                 .OrderBy(x => x.Category)
                                                 .ThenByDescending(x => x.EventDate)
+                                                .Take(takeAmount)
                                                 .ToListAsync(cancellationToken);
             return this.Ok(dsvs);
         }
 
         [HttpGet("{category}")]
-        public async Task<IActionResult> GetCategoryAsync(string category, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetCategoryAsync(
+            string category,
+            CancellationToken cancellationToken,
+            [FromQuery] int takeAmount = 20,
+            [FromQuery] int daysLookback = 30)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+            
+            DateOnly daysAgo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-daysLookback));
 
             List<DailySequenceValue> dsvs = await nsContext.DailySequenceValues
-                                                .Where(x => x.Account == this.User.Identity.Name && x.Category == category.ToLower())
+                                                .Where(x => x.Account == this.User.Identity.Name && x.Category == category.ToLower() && x.EventDate > daysAgo)
                                                 .OrderByDescending(x => x.EventDate)
+                                                .Take(takeAmount)
                                                 .ToListAsync(cancellationToken);
             return this.Ok(dsvs);
         }

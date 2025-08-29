@@ -59,12 +59,15 @@ namespace TcpWtf.NumberSequence.Client
         /// <summary>
         /// List all existing DSVs.
         /// </summary>
-        public async Task<List<DailySequenceValue>> ListAsync(CancellationToken cancellationToken = default)
+        public async Task<List<DailySequenceValue>> ListAsync(
+            int takeAmount = 20,
+            int daysLookback = 30,
+            CancellationToken cancellationToken = default)
         {
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
-                    "dailysequencevalues"),
+                    $"dailysequencevalues?{nameof(takeAmount)}={takeAmount}&{nameof(daysLookback)}={daysLookback}"),
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<List<DailySequenceValue>>(cancellationToken);
         }
@@ -72,12 +75,16 @@ namespace TcpWtf.NumberSequence.Client
         /// <summary>
         /// Get DSVs for a category.
         /// </summary>
-        public async Task<List<DailySequenceValue>> ListAsync(string category, CancellationToken cancellationToken = default)
+        public async Task<List<DailySequenceValue>> ListAsync(
+            string category,
+            int takeAmount = 20,
+            int daysLookback = 30,
+            CancellationToken cancellationToken = default)
         {
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
-                    $"dailysequencevalues/{category}"),
+                    $"dailysequencevalues/{category}?{nameof(takeAmount)}={takeAmount}&{nameof(daysLookback)}={daysLookback}"),
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<List<DailySequenceValue>>(cancellationToken);
         }

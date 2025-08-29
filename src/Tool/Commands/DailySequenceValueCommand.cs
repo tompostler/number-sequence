@@ -15,6 +15,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Argument<string> categoryArgument = new("category", "The category of the DSV.");
             Argument<DateOnly> dateArgument = new("date", "The date of the DSV.");
             Argument<decimal> valueArgument = new("value", "The value of the DSV.");
+            Option<int> takeAmountOption = new("--take", () => 20, "How many records of each type to return, within the days of lookback ordered by most recent first.");
+            Option<int> daysLookbackOption = new("--days-lookback", () => 30, "How many days of lookback.");
 
             Command createCommand = new("create", "Create a new DSV for today.");
             createCommand.AddArgument(categoryArgument);
@@ -34,7 +36,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             listCommand.AddAlias("ls");
             Argument<string> categoryOptionalArgument = new("category", () => default, "The category of the DSV.");
             listCommand.AddArgument(categoryOptionalArgument);
-            listCommand.SetHandler(HandleListAsync, categoryOptionalArgument, stampOption, verbosityOption);
+            listCommand.AddOption(takeAmountOption);
+            listCommand.AddOption(daysLookbackOption);
+            listCommand.SetHandler(HandleListAsync, categoryOptionalArgument, takeAmountOption, daysLookbackOption, stampOption, verbosityOption);
 
             Command updateCommand = new("update", "Update an existing DSV.");
             updateCommand.AddArgument(categoryArgument);
@@ -87,10 +91,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine(dsv.ToJsonString(indented: true));
         }
 
-        private static async Task HandleListAsync(string category, Stamp stamp, Verbosity verbosity)
+        private static async Task HandleListAsync(string category, int takeAmount, int daysLookback, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            List<Contracts.DailySequenceValue> dsvs = await client.DailySequenceValue.ListAsync(category);
+            List<Contracts.DailySequenceValue> dsvs = await client.DailySequenceValue.ListAsync(category, takeAmount, daysLookback);
 
             Output.WriteTable(
                 dsvs,

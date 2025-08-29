@@ -25,20 +25,20 @@ namespace number_sequence.Controllers
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            DateTimeOffset monthAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
+            DateTimeOffset daysAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
 
             List<Models.PdfTemplateSpreadsheetRow> pdfTemplateSpreadsheetRows = await nsContext.PdfTemplateSpreadsheetRows
-                                                                                                .Where(r => r.ProcessedAt > monthAgo)
+                                                                                                .Where(r => r.ProcessedAt > daysAgo)
                                                                                                 .OrderByDescending(r => r.ProcessedAt)
                                                                                                 .Take(takeAmount)
                                                                                                 .ToListAsync();
             List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
-                                                                        .Where(r => r.CreatedDate > monthAgo)
+                                                                        .Where(r => r.CreatedDate > daysAgo)
                                                                         .OrderByDescending(r => r.CreatedDate)
                                                                         .Take(takeAmount)
                                                                         .ToListAsync();
             List<Models.ChiroEmailBatch> chiroBatches = await nsContext.ChiroEmailBatches
-                                                                        .Where(r => r.CreatedDate > monthAgo)
+                                                                        .Where(r => r.CreatedDate > daysAgo)
                                                                         .OrderByDescending(r => r.CreatedDate)
                                                                         .Take(takeAmount)
                                                                         .ToListAsync();
