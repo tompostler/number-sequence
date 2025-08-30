@@ -359,12 +359,14 @@ namespace number_sequence.DurableTaskImpl.Activities
             string attachmentName = default;
             if (!string.IsNullOrWhiteSpace(template.AttachmentNameTemplate))
             {
-                attachmentName = template.AttachmentNameTemplate
+                attachmentName = new(
+                    template.AttachmentNameTemplate
                     .Replace("((DateOfService))", pdf.DateOfService.ToString("yyyy-MM-dd"))
                     .Replace("((OwnerName))", pdf.OwnerName)
                     .Replace("((PatientName))", pdf.PatientName)
-                    .Replace(" ", "-")
-                    ;
+                    .Select(x => (char.IsLetterOrDigit(x) || x == '-' || x == '_') ? x : '-')
+                    .ToArray()
+                    );
             }
             EmailDocument emailDocument = new()
             {
