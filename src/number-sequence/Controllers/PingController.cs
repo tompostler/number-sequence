@@ -39,6 +39,9 @@ namespace number_sequence.Controllers
         [HttpPut, RequiresToken(AccountRoles.Ping)]
         public IActionResult GetWithAuthAndRole() => this.Ok();
 
+        [HttpGet("headers")]
+        public IActionResult GetHeaders() => this.Ok(this.Request.Headers);
+
         [HttpGet("ip")]
         public IActionResult GetIp() => this.Ok(this.Request.GetClientIPAddress());
     }

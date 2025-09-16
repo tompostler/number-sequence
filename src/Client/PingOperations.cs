@@ -13,6 +13,20 @@
         }
 
         /// <summary>
+        /// Ping the service, and return the headers as reported to the server.
+        /// </summary>
+        public async Task<Dictionary<string, List<string>>> GetHeadersAsync(CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "ping/headers"),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadJsonAsAsync<Dictionary<string, List<string>>>(cancellationToken);
+        }
+
+        /// <summary>
         /// Ping the service, and return the IP address as reported to the server.
         /// </summary>
         public async Task<string> GetPublicIpAsync(CancellationToken cancellationToken = default)
