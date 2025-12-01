@@ -2443,7 +2443,7 @@ namespace number_sequence.Controllers
                 fromValues[i] = HttpUtility.UrlDecode(fromValues[i]);
             }
 
-            fromValues.Shuffle();
+            fromValues = [.. Enumerable.Shuffle(fromValues)];
             return this.Ok(fromValues);
         }
 

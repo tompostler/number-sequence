@@ -41,7 +41,7 @@ jobs:
       appType: webAppLinux
       WebAppName: ns-tcpwtf
       packageForLinux: '$(Pipeline.Workspace)/drop/number-sequence.zip'
-      RuntimeStack: DOTNETCORE|8.0
+      RuntimeStack: DOTNETCORE|10.0
       StartupCommand: dotnet number-sequence.dll
 
   - powershell: |

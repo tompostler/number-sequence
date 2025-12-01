@@ -7,20 +7,15 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: Use net8
+    displayName: Use net10
     inputs:
-      version: 8.x
-
-  - task: UseDotNet@2
-    displayName: Use net9
-    inputs:
-      version: 9.0.102 # Pinned after having issues with dotnet commands no longer including src directory
+      version: 10.x
 
   - task: PowerShell@2
     displayName: dotnet tool install nbgv
     inputs:
       targetType: inline
-      script: dotnet tool install nbgv --global --version 3.7.*
+      script: dotnet tool install nbgv --global --version 3.9.*
 
   - task: PowerShell@2
     displayName: nbgv cloud
@@ -77,7 +72,7 @@ jobs:
     inputs:
       command: publish
       projects: src/number-sequence/number-sequence.csproj
-      arguments: '--no-restore --configuration Debug --framework net8.0 --runtime linux-x64 --output $(Build.ArtifactStagingDirectory) --no-self-contained'
+      arguments: '--no-restore --configuration Debug --framework net10.0 --runtime linux-x64 --output $(Build.ArtifactStagingDirectory) --no-self-contained'
       zipAfterPublish: true
       modifyOutputPath: true
 

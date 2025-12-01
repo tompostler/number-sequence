@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworks);net6.0</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworks);net8.0</TargetFrameworks>
     <RootNamespace>TcpWtf.NumberSequence.Tool</RootNamespace>
     <AssemblyName>TcpWtf.NumberSequence.Tool</AssemblyName>
     <OutputType>Exe</OutputType>
@@ -12,10 +12,6 @@
 
     <Description>dotnet tool for the ns.tcp.wtf project.</Description>
     <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
   <ItemGroup>
