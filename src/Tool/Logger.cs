@@ -18,6 +18,11 @@ namespace TcpWtf.NumberSequence.Tool
 
     internal class Logger : ILogger
     {
+#if NET10_0_OR_GREATER
+        private static readonly Lock consoleLock = new();
+#else
+        private static readonly object consoleLock = new();
+#endif
         private readonly LogLevel minimumLogLevel;
 
         public Logger(Verbosity verbosity)
@@ -57,19 +62,31 @@ namespace TcpWtf.NumberSequence.Tool
                 LogLevel.Debug => "DEBG",
                 LogLevel.Information => "INFO",
                 LogLevel.Warning => "WARN",
-                LogLevel.Error => "ERRO",
+                LogLevel.Error => "FAIL",
                 LogLevel.Critical => "CRIT",
                 _ => logLevel.ToString().ToUpper()
             };
-            message = $"[{prefix}] {message}";
 
-            if (logLevel >= LogLevel.Warning)
+            lock (consoleLock)
             {
-                Console.Error.WriteLine(message);
-            }
-            else
-            {
-                Console.Out.WriteLine(message);
+                TextWriter output = logLevel >= LogLevel.Warning ? Console.Error : Console.Out;
+                output.Write('[');
+                Console.ForegroundColor = logLevel switch
+                {
+                    LogLevel.Information => ConsoleColor.Green,
+                    LogLevel.Warning => ConsoleColor.Yellow,
+                    LogLevel.Error => ConsoleColor.Red,
+                    LogLevel.Critical => ConsoleColor.Black,
+                    _ => Console.ForegroundColor
+                };
+                Console.BackgroundColor = logLevel switch
+                {
+                    LogLevel.Critical => ConsoleColor.White,
+                    _ => Console.BackgroundColor
+                };
+                output.Write(prefix);
+                Console.ResetColor();
+                output.WriteLine($"] {message}");
             }
         }
     }
