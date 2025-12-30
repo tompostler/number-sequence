@@ -75,14 +75,18 @@ namespace number_sequence.Controllers
         //    return this.Ok(output);
         //}
 
-        [HttpGet("request")]
-        public IActionResult HttpGetRequest()
+        [Route("request")]
+        public IActionResult HttpRequest()
             => this.Ok(
                 new
                 {
                     ManualRemoteIpAddress = this.Request.GetClientIPAddress(),
                     RemoteIpAddress = this.HttpContext.Connection.RemoteIpAddress?.ToString(),
                     this.HttpContext.Request.Headers,
+                    this.HttpContext.Request.Method,
+                    this.HttpContext.Request.Path,
+                    this.HttpContext.Request.ContentType,
+                    this.HttpContext.Request.ContentLength,
                 });
 
         //[HttpGet("slowrequest")]
