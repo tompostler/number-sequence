@@ -80,11 +80,11 @@ namespace number_sequence.Controllers
             => this.Ok(
                 new
                 {
+                    this.HttpContext.Request.Method,
+                    Path = this.HttpContext.Request.Path.Value,
                     ManualRemoteIpAddress = this.Request.GetClientIPAddress(),
                     RemoteIpAddress = this.HttpContext.Connection.RemoteIpAddress?.ToString(),
                     this.HttpContext.Request.Headers,
-                    this.HttpContext.Request.Method,
-                    this.HttpContext.Request.Path,
                     this.HttpContext.Request.ContentType,
                     this.HttpContext.Request.ContentLength,
                 });
