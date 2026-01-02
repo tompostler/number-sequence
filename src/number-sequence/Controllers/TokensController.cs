@@ -42,9 +42,13 @@ namespace number_sequence.Controllers
             // Check if the token already exists.
             // If it's expired, then we can recreate it in place.
             Token token = await nsContext.Tokens.SingleOrDefaultAsync(x => x.Account == this.User.Identity.Name && x.Name == requestedToken.Name.ToLower(), cancellationToken);
-            if (token != default && token.ExpirationDate > DateTimeOffset.UtcNow)
+            if (token != default)
             {
-                return this.Conflict($"Token with name [{requestedToken.Name}] already exists and is not expired.");
+                this.logger.LogInformation($"Found existing token: {token.ToJsonString()}");
+                if (token.ExpirationDate > DateTimeOffset.UtcNow)
+                {
+                    return this.Conflict($"Token with name [{requestedToken.Name}] already exists and is not expired.");
+                }
             }
 
             // Check if we shouldn't make another token for this account.
