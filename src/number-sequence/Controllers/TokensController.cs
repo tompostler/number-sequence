@@ -61,14 +61,14 @@ namespace number_sequence.Controllers
                 {
                     Account = account.Name,
                     AccountTier = account.Tier,
-                    ExpirationDate = requestedToken.ExpirationDate.ToUniversalTime(),
                     Name = requestedToken.Name.ToLower(),
                 };
                 _ = nsContext.Tokens.Add(token);
             }
 
-            // Finish init.
+            // Finish init/update.
             token.Key = Guid.NewGuid().ToString(); // Junk for DB storage due to [Required] attribute.
+            token.ExpirationDate = requestedToken.ExpirationDate.ToUniversalTime();
             token.Value = TokenValue.CreateFrom(token).ToBase64JsonString();
 
             _ = await nsContext.SaveChangesAsync(cancellationToken);
