@@ -1,0 +1,20 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorConfig" />
+    <File Path="../devinit.ps1" />
+    <File Path="../README.md" />
+    <File Path="../version.json" />
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Project Path="_build/_build.csproj" />
+  <Project Path="_deployment/_deployment.csproj" />
+  <Project Path="Client/Client.csproj" />
+  <Project Path="Contracts/Contracts.csproj" />
+  <Project Path="IntTests/IntTests.csproj" />
+  <Project Path="number-sequence/number-sequence.csproj" />
+  <Project Path="Tool/Tool.csproj" />
+  <Project Path="UnitTests/UnitTests.csproj" />
+</Solution>

@@ -32,14 +32,14 @@ jobs:
       path: $(NUGET_PACKAGES)
 
   - powershell: |
-      dotnet workload restore src/number-sequence.sln;
+      dotnet workload restore src/number-sequence.slnx;
     displayName: Restore dotnet workloads
 
   - task: DotNetCoreCLI@2
     displayName: Restore nuget packages
     inputs:
       command: restore
-      projects: src/number-sequence.sln
+      projects: src/number-sequence.slnx
 
   - powershell: |
       New-Item -Path $(Build.SourcesDirectory)/src/number-sequence/ -Name appsettings.Development.json -Type File
@@ -55,7 +55,7 @@ jobs:
     displayName: Build solution
     inputs:
       command: build
-      projects: src/number-sequence.sln
+      projects: src/number-sequence.slnx
       arguments: '--no-restore --configuration Debug --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
 
   - task: DotNetCoreCLI@2
