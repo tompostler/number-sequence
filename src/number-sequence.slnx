@@ -2,16 +2,7 @@
   <Configurations>
     <BuildType Name="Debug" />
   </Configurations>
-  <Folder Name="/Solution Items/">
-    <File Path="../.editorConfig" />
-    <File Path="../devinit.ps1" />
-    <File Path="../README.md" />
-    <File Path="../version.json" />
-    <File Path="Directory.Build.props" />
-    <File Path="Directory.Packages.props" />
-  </Folder>
-  <Project Path="_build/_build.csproj" />
-  <Project Path="_deployment/_deployment.csproj" />
+  <Project Path="_repo/_repo.csproj" />
   <Project Path="Client/Client.csproj" />
   <Project Path="Contracts/Contracts.csproj" />
   <Project Path="IntTests/IntTests.csproj" />

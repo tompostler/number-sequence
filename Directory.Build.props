@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
 
-  <!-- Ensures that if this file changes, projects will be rebuilt. -->
   <PropertyGroup>
+    <!-- Ensures that if this file changes, projects will be rebuilt -->
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
@@ -16,6 +15,11 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
 
+  <!-- Define this property for other build steps/tasks. -->
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+  </PropertyGroup>
+
   <!-- Populate version variables based on NerdBank.GitVersion if available. -->
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning">
@@ -26,8 +30,14 @@
   <!-- Packaging Metadata -->
   <PropertyGroup>
     <Authors>Tom Postler</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryUrl>https://github.com/tompostler/number-sequence</RepositoryUrl>
   </PropertyGroup>
+
+  <!-- Include the repo's readme for the package readme reference. -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 
 </Project>
