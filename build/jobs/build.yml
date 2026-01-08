@@ -19,8 +19,10 @@ jobs:
   - task: Cache@2
     displayName: NuGet package caching
     inputs:
-      key: 'nuget | $(Build.SourcesDirectory)/Directory.Packages.props'
+      key: 'nuget | $(NBGV_VersionMajor) | $(NBGV_VersionMinor) | $(Build.SourcesDirectory)/Directory.Packages.props'
       restoreKeys: |
+        nuget | $(NBGV_VersionMajor) | $(NBGV_VersionMinor)
+        nuget | $(NBGV_VersionMajor)
         nuget
       path: $(NUGET_PACKAGES)
 
