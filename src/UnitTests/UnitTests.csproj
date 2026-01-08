@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="8.8.0" />
-    <PackageReference Include="MSTest" Version="4.0.2" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="MSTest" />
   </ItemGroup>
 
   <ItemGroup>

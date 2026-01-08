@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <!-- Enable Central Package Management (CPM) -->
+    <EnableCentralPackageManagement>true</EnableCentralPackageManagement>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- dotnet -->
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+
+    <!-- EFCore -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0" />
+
+    <!-- Azure -->
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.26.0" />
+    <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
+
+    <!-- Tests -->
+    <PackageVersion Include="FluentAssertions" Version="8.8.0" />
+    <PackageVersion Include="MSTest" Version="4.0.2" />
+
+    <!-- Everything else -->
+    <PackageVersion Include="Cronos" Version="0.11.1" />
+    <PackageVersion Include="Google.Apis.Sheets.v4" Version="1.72.0.3966" />
+    <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.5.2" />
+    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.9.50" />
+    <PackageVersion Include="QuestPDF" Version="2025.12.1" />
+    <PackageVersion Include="Unlimitedinf.Utilities" Version="4.1.0" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.1" />
+  </ItemGroup>
+</Project>

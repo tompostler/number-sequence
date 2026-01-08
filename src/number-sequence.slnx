@@ -8,6 +8,7 @@
     <File Path="../README.md" />
     <File Path="../version.json" />
     <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
   </Folder>
   <Project Path="_build/_build.csproj" />
   <Project Path="_deployment/_deployment.csproj" />

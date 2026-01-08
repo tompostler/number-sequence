@@ -11,16 +11,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
-    <PackageReference Include="Cronos" Version="0.11.1" />
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.72.0.3966" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
-    <PackageReference Include="Microsoft.DurableTask.SqlServer" Version="1.5.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EFCoreVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(EFCoreVersion)" />
-    <PackageReference Include="QuestPDF" Version="2025.12.1" />
+    <PackageReference Include="Azure.Storage.Blobs" />
+    <PackageReference Include="Cronos" />
+    <PackageReference Include="Google.Apis.Sheets.v4" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+    <PackageReference Include="Microsoft.DurableTask.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
+    <PackageReference Include="QuestPDF" />
   </ItemGroup>
 
   <ItemGroup>

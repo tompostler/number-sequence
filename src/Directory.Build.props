@@ -14,15 +14,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-
-    <EFCoreVersion>10.0.*</EFCoreVersion>
   </PropertyGroup>
 
   <!-- Populate version variables based on NerdBank.GitVersion if available. -->
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning">
       <PrivateAssets>all</PrivateAssets>
-      <Version>3.9.*</Version>
     </PackageReference>
   </ItemGroup>
 
