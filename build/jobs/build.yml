@@ -11,22 +11,15 @@ jobs:
     inputs:
       version: 10.x
 
-  - task: PowerShell@2
-    displayName: dotnet tool install nbgv
-    inputs:
-      targetType: inline
-      script: dotnet tool install nbgv --global --version 3.9.*
-
-  - task: PowerShell@2
-    displayName: nbgv cloud
-    inputs:
-      targetType: inline
-      script: nbgv cloud;
+  - powershell: |
+      dotnet tool install nbgv --global --version 3.9.*;
+      nbgv cloud --all-vars;
+    displayName: nbgv
 
   - task: Cache@2
     displayName: NuGet package caching
     inputs:
-      key: 'nuget | $(Build.SourcesDirectory)/Directory.Packages.props | $(Build.SourcesDirectory)/src/**/*.csproj | $(Build.SourcesDirectory)/Directory.Build.props'
+      key: 'nuget | $(Build.SourcesDirectory)/Directory.Packages.props'
       restoreKeys: |
         nuget
       path: $(NUGET_PACKAGES)
