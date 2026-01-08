@@ -19,11 +19,10 @@ jobs:
   - task: Cache@2
     displayName: NuGet package caching
     inputs:
-      key: 'nuget | $(NBGV_VersionMajor) | $(NBGV_VersionMinor) | $(Build.SourcesDirectory)/Directory.Packages.props'
+      # Use major and minor version to poison the cache.
+      key: '$(NBGV_VersionMajor) | $(NBGV_VersionMinor) | $(Build.SourcesDirectory)/Directory.Packages.props'
       restoreKeys: |
-        nuget | $(NBGV_VersionMajor) | $(NBGV_VersionMinor)
-        nuget | $(NBGV_VersionMajor)
-        nuget
+        $(NBGV_VersionMajor) | $(NBGV_VersionMinor)
       path: $(NUGET_PACKAGES)
 
   - powershell: dotnet workload restore src/number-sequence.slnx
