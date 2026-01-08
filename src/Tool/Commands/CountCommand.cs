@@ -12,44 +12,104 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         {
             Command rootCommand = new("count", "Create, update, or get counts. The namesake of the program.");
 
-            Command createCommand = new("create", "Create a new count.");
-            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
+            Command createCommand = new("create", "Create a new count.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            createCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleCreateAsync(stamp, verbosity);
+                });
 
-            Argument<string> countNameArgument = new("name", "The name of the count.");
-            Option<bool> bareOption = new("--bare", "When used, will only return the count instead of the full count json object.");
-            Option<bool> basesOption = new("--bases", "When used, will return the count object with all the bases.");
+            Argument<string> countNameArgument = new("name") { Description = "The name of the count." };
+            Option<bool> bareOption = new("--bare") { Description = "When used, will only return the count instead of the full count json object." };
+            Option<bool> basesOption = new("--bases") { Description = "When used, will return the count object with all the bases." };
 
-            Command getCommand = new("get", "Get an existing count to see its properties.");
-            getCommand.AddAlias("show");
-            getCommand.AddArgument(countNameArgument);
-            getCommand.AddOption(bareOption);
-            getCommand.AddOption(basesOption);
-            getCommand.SetHandler(HandleGetAsync, countNameArgument, bareOption, basesOption, stampOption, verbosityOption);
+            Command getCommand = new("get", "Get an existing count to see its properties.")
+            {
+                stampOption,
+                verbosityOption,
+                countNameArgument,
+                bareOption,
+                basesOption,
+            };
+            getCommand.Aliases.Add("show");
+            getCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string name = parseResult.GetRequiredValue(countNameArgument);
+                    bool bare = parseResult.GetValue(bareOption);
+                    bool bases = parseResult.GetValue(basesOption);
+                    return HandleGetAsync(name, bare, bases, stamp, verbosity);
+                });
 
-            Command incrementCommand = new("increment", "Increment a count by one.");
-            incrementCommand.AddAlias("inc");
-            incrementCommand.AddArgument(countNameArgument);
-            incrementCommand.AddOption(bareOption);
-            incrementCommand.AddOption(basesOption);
-            incrementCommand.SetHandler(HandleIncrementAsync, countNameArgument, bareOption, basesOption, stampOption, verbosityOption);
+            Command incrementCommand = new("increment", "Increment a count by one.")
+            {
+                stampOption,
+                verbosityOption,
+                countNameArgument,
+                bareOption,
+                basesOption,
+            };
+            incrementCommand.Aliases.Add("inc");
+            incrementCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string name = parseResult.GetRequiredValue(countNameArgument);
+                    bool bare = parseResult.GetValue(bareOption);
+                    bool bases = parseResult.GetValue(basesOption);
+                    return HandleIncrementAsync(name, bare, bases, stamp, verbosity);
+                });
 
-            Command incrementByCommand = new("increment-by", "Increment a count by a specific amount.");
-            incrementByCommand.AddArgument(countNameArgument);
-            Argument<ulong> incrementByAmountArgument = new("amount", "The amount to increment the count by.");
-            incrementByCommand.AddArgument(incrementByAmountArgument);
-            incrementByCommand.AddOption(bareOption);
-            incrementByCommand.AddOption(basesOption);
-            incrementByCommand.SetHandler(HandleIncrementByAsync, countNameArgument, incrementByAmountArgument, bareOption, basesOption, stampOption, verbosityOption);
+            Argument<ulong> incrementByAmountArgument = new("amount") { Description = "The amount to increment the count by." };
+            Command incrementByCommand = new("increment-by", "Increment a count by a specific amount.")
+            {
+                stampOption,
+                verbosityOption,
+                countNameArgument,
+                incrementByAmountArgument,
+                bareOption,
+                basesOption,
+            };
+            incrementByCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string name = parseResult.GetRequiredValue(countNameArgument);
+                    ulong incrementByAmount = parseResult.GetRequiredValue(incrementByAmountArgument);
+                    bool bare = parseResult.GetValue(bareOption);
+                    bool bases = parseResult.GetValue(basesOption);
+                    return HandleIncrementByAsync(name, incrementByAmount, bare, bases, stamp, verbosity);
+                });
 
-            Command listCommand = new("list", "Get existing counts.");
-            listCommand.AddAlias("ls");
-            listCommand.SetHandler(HandleListAsync, stampOption, verbosityOption);
+            Command listCommand = new("list", "Get existing counts.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            listCommand.Aliases.Add("ls");
+            listCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleListAsync(stamp, verbosity);
+                });
 
-            rootCommand.AddCommand(createCommand);
-            rootCommand.AddCommand(getCommand);
-            rootCommand.AddCommand(incrementCommand);
-            rootCommand.AddCommand(incrementByCommand);
-            rootCommand.AddCommand(listCommand);
+            rootCommand.Subcommands.Add(createCommand);
+            rootCommand.Subcommands.Add(getCommand);
+            rootCommand.Subcommands.Add(incrementCommand);
+            rootCommand.Subcommands.Add(incrementByCommand);
+            rootCommand.Subcommands.Add(listCommand);
             return rootCommand;
         }
 

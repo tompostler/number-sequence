@@ -7,12 +7,23 @@ namespace TcpWtf.NumberSequence.Tool.Commands
     {
         public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
-            Command command = new("history", "Get the last 25 commit messages.");
+            Option<bool> remoteOption = new("--remote") { Description = "Get the most recent 25 commits from the server instead of built-in to the tool." };
+            
+            Command command = new("history", "Get the last 25 commit messages.")
+            {
+                stampOption,
+                verbosityOption,
+                remoteOption,
+            };
+            command.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    bool remote = parseResult.GetValue(remoteOption);
+                    return HandleAsync(remote, stamp, verbosity);
+                });
 
-            Option<bool> remoteOption = new("--remote", "Get the most recent 25 commits from the server instead of built-in to the tool.");
-            command.AddOption(remoteOption);
-
-            command.SetHandler(HandleAsync, remoteOption, stampOption, verbosityOption);
             return command;
         }
 

@@ -11,17 +11,38 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         {
             Command rootCommand = new("account", "Create or get an account.");
 
-            Command createCommand = new("create", "Create a new account.");
-            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
+            Command createCommand = new("create", "Create a new account.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            createCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleCreateAsync(stamp, verbosity);
+                });
 
-            Command getCommand = new("get", "Get an existing account to see its properties.");
-            getCommand.AddAlias("show");
-            Argument<string> accountNameArgument = new("name", "The name of the account.");
-            getCommand.AddArgument(accountNameArgument);
-            getCommand.SetHandler(HandleGetAsync, accountNameArgument, stampOption, verbosityOption);
+            Argument<string> accountNameArgument = new("name") { Description = "The name of the account." };
+            Command getCommand = new("get", "Get an existing account to see its properties.")
+            {
+                stampOption,
+                verbosityOption,
+                accountNameArgument,
+            };
+            getCommand.Aliases.Add("show");
+            getCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    string name = parseResult.GetRequiredValue(accountNameArgument);
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleGetAsync(name, stamp, verbosity);
+                });
 
-            rootCommand.AddCommand(createCommand);
-            rootCommand.AddCommand(getCommand);
+            rootCommand.Subcommands.Add(createCommand);
+            rootCommand.Subcommands.Add(getCommand);
             return rootCommand;
         }
 

@@ -10,46 +10,118 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
             Command rootCommand = new("daily-sequence-value", "Create, update, or get daily sequence values (DSVs).");
-            rootCommand.AddAlias("dsv");
+            rootCommand.Aliases.Add("dsv");
 
-            Argument<string> categoryArgument = new("category", "The category of the DSV.");
-            Argument<DateOnly> dateArgument = new("date", "The date of the DSV.");
-            Argument<decimal> valueArgument = new("value", "The value of the DSV.");
-            Option<int> takeAmountOption = new("--take", () => 20, "How many records of each type to return, within the days of lookback ordered by most recent first.");
-            Option<int> daysLookbackOption = new("--days-lookback", () => 30, "How many days of lookback.");
+            Argument<string> categoryArgument = new("category") { Description = "The category of the DSV." };
+            Argument<string> categoryOptionalArgument = new("category")
+            {
+                Description = "The category of the DSV.",
+                DefaultValueFactory = _ => default,
+            };
+            Argument<DateOnly> dateArgument = new("date") { Description = "The date of the DSV." };
+            Argument<decimal> valueArgument = new("value") { Description = "The value of the DSV." };
+            Option<int> takeAmountOption = new("--take")
+            {
+                Description = "How many records of each type to return, within the days of lookback ordered by most recent first.",
+                DefaultValueFactory = _ => 20,
+            };
+            Option<int> daysLookbackOption = new("--days-lookback")
+            {
+                Description = "How many days of lookback.",
+                DefaultValueFactory = _ => 30,
+            };
 
-            Command createCommand = new("create", "Create a new DSV for today.");
-            createCommand.AddArgument(categoryArgument);
-            createCommand.AddArgument(valueArgument);
-            createCommand.SetHandler(HandleCreateAsync, categoryArgument, valueArgument, stampOption, verbosityOption);
+            Command createCommand = new("create", "Create a new DSV for today.")
+            {
+                stampOption,
+                verbosityOption,
+                categoryArgument,
+                valueArgument,
+            };
+            createCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string category = parseResult.GetRequiredValue(categoryArgument);
+                    decimal value = parseResult.GetRequiredValue(valueArgument);
+                    return HandleCreateAsync(category, value, stamp, verbosity);
 
-            Command createAskCommand = new("create-ask", "Create a new DSV, asking for the properties.");
-            createAskCommand.SetHandler(HandleCreateWithInputsAsync, stampOption, verbosityOption);
+                });
 
-            Command getCommand = new("get", "Get an existing DSV to see its properties.");
-            getCommand.AddAlias("show");
-            getCommand.AddArgument(categoryArgument);
-            getCommand.AddArgument(dateArgument);
-            getCommand.SetHandler(HandleGetAsync, categoryArgument, dateArgument, stampOption, verbosityOption);
+            Command createAskCommand = new("create-ask", "Create a new DSV, asking for the properties.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            createAskCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleCreateWithInputsAsync(stamp, verbosity);
+                });
 
-            Command listCommand = new("list", "Get existing DSVs.");
-            listCommand.AddAlias("ls");
-            Argument<string> categoryOptionalArgument = new("category", () => default, "The category of the DSV.");
-            listCommand.AddArgument(categoryOptionalArgument);
-            listCommand.AddOption(takeAmountOption);
-            listCommand.AddOption(daysLookbackOption);
-            listCommand.SetHandler(HandleListAsync, categoryOptionalArgument, takeAmountOption, daysLookbackOption, stampOption, verbosityOption);
+            Command getCommand = new("get", "Get an existing DSV to see its properties.")
+            {
+                stampOption,
+                verbosityOption,
+                categoryArgument,
+                dateArgument,
+            };
+            getCommand.Aliases.Add("show");
+            getCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string category = parseResult.GetRequiredValue(categoryArgument);
+                    DateOnly date = parseResult.GetRequiredValue(dateArgument);
+                    return HandleGetAsync(category, date, stamp, verbosity);
+                });
 
-            Command updateCommand = new("update", "Update an existing DSV.");
-            updateCommand.AddArgument(categoryArgument);
-            updateCommand.AddArgument(dateArgument);
-            updateCommand.SetHandler(HandleUpdateAsync, categoryArgument, dateArgument, stampOption, verbosityOption);
+            Command listCommand = new("list", "Get existing DSVs.")
+            {
+                stampOption,
+                verbosityOption,
+                categoryOptionalArgument,
+                takeAmountOption,
+                daysLookbackOption,
+            };
+            listCommand.Aliases.Add("ls");
+            listCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string category = parseResult.GetValue(categoryOptionalArgument);
+                    int takeAmount = parseResult.GetRequiredValue(takeAmountOption);
+                    int daysLookback = parseResult.GetRequiredValue(daysLookbackOption);
+                    return HandleListAsync(category, takeAmount, daysLookback, stamp, verbosity);
+                });
 
-            rootCommand.AddCommand(createCommand);
-            rootCommand.AddCommand(createAskCommand);
-            rootCommand.AddCommand(getCommand);
-            rootCommand.AddCommand(listCommand);
-            rootCommand.AddCommand(updateCommand);
+            Command updateCommand = new("update", "Update an existing DSV.")
+            {
+                stampOption,
+                verbosityOption,
+                categoryArgument,
+                dateArgument,
+            };
+            updateCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string category = parseResult.GetRequiredValue(categoryArgument);
+                    DateOnly date = parseResult.GetRequiredValue(dateArgument);
+                    return HandleUpdateAsync(category, date, stamp, verbosity);
+                });
+
+            rootCommand.Subcommands.Add(createCommand);
+            rootCommand.Subcommands.Add(createAskCommand);
+            rootCommand.Subcommands.Add(getCommand);
+            rootCommand.Subcommands.Add(listCommand);
+            rootCommand.Subcommands.Add(updateCommand);
             return rootCommand;
         }
 

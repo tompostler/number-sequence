@@ -10,27 +10,32 @@ namespace TcpWtf.NumberSequence.Tool
         {
             RootCommand rootCommand = new("A CLI for ns.tcp.wtf.");
 
-            Option<Stamp> stampOption = new("--stamp", () => Stamp.Public, "Stamp to use for the client.");
-            rootCommand.AddGlobalOption(stampOption);
+            Option<Stamp> stampOption = new("--stamp")
+            {
+                Description = "Stamp to use for the client.",
+                DefaultValueFactory = _ => Stamp.Public,
+            };
+            Option<Verbosity> verbosityOption = new("--verbosity", "-v")
+            {
+                Description = "Verbosity level for logging.",
+                DefaultValueFactory = _ => Verbosity.Warn,
+            };
 
-            Option<Verbosity> verbosityOption = new("--verbosity", () => Verbosity.Warn, "Verbosity level for logging.");
-            verbosityOption.AddAlias("-v");
-            rootCommand.AddGlobalOption(verbosityOption);
+            rootCommand.Subcommands.Add(AccountCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(CountCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(DailySequenceValueCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(DailySequenceValueConfigCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(DaysSinceCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(HistoryCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(IpCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(PdfStatusCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(PingCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(RandomCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(RedirectCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(TokenCommand.Create(stampOption, verbosityOption));
 
-            rootCommand.AddCommand(AccountCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(CountCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(DailySequenceValueCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(DailySequenceValueConfigCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(DaysSinceCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(HistoryCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(IpCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(PdfStatusCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(PingCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(RandomCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(RedirectCommand.Create(stampOption, verbosityOption));
-            rootCommand.AddCommand(TokenCommand.Create(stampOption, verbosityOption));
-
-            return await rootCommand.InvokeAsync(args);
+            ParseResult parseResult = rootCommand.Parse(args);
+            return await parseResult.InvokeAsync();
         }
     }
 }

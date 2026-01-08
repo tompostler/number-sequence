@@ -9,12 +9,32 @@ namespace TcpWtf.NumberSequence.Tool.Commands
     {
         public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
-            Command command = new("pdf-status", "Get the status of the pdf background services. Defaults to local time.");
-            Option<int> takeAmountOption = new("--take", () => 20, "How many records of each type to return, within the days of lookback ordered by most recent first.");
-            command.AddOption(takeAmountOption);
-            Option<int> daysLookbackOption = new("--days-lookback", () => 30, "How many days of lookback.");
-            command.AddOption(daysLookbackOption);
-            command.SetHandler(HandleAsync, stampOption, takeAmountOption, daysLookbackOption, verbosityOption);
+            Option<int> takeAmountOption = new("--take")
+            {
+                Description = "How many records of each type to return, within the days of lookback ordered by most recent first.",
+                DefaultValueFactory = _ => 20,
+            };
+            Option<int> daysLookbackOption = new("--days-lookback")
+            {
+                Description = "How many days of lookback.",
+                DefaultValueFactory = _ => 30,
+            };
+            Command command = new("pdf-status", "Get the status of the pdf background services. Defaults to local time.")
+            {
+                stampOption,
+                verbosityOption,
+                takeAmountOption,
+                daysLookbackOption,
+            };
+            command.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    int takeAmount = parseResult.GetRequiredValue(takeAmountOption);
+                    int daysLookback = parseResult.GetRequiredValue(daysLookbackOption);
+                    return HandleAsync(stamp, takeAmount, daysLookback, verbosity);
+                });
             return command;
         }
 

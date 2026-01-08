@@ -7,8 +7,18 @@ namespace TcpWtf.NumberSequence.Tool.Commands
     {
         public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
-            Command command = new("ip", "Ping the service and display the ip address the server saw the request originate from.");
-            command.SetHandler(HandleAsync, stampOption, verbosityOption);
+            Command command = new("ip", "Ping the service and display the ip address the server saw the request originate from.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            command.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleAsync(stamp, verbosity);
+                });
             return command;
         }
 

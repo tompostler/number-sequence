@@ -10,30 +10,72 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
             Command rootCommand = new("daily-sequence-value-config", "Create, update, or get daily sequence value configs (DSVCs).");
-            rootCommand.AddAlias("dsvc");
+            rootCommand.Aliases.Add("dsvc");
 
-            Argument<string> categoryArgument = new("category", "The category of the DSVC.");
+            Argument<string> categoryArgument = new("category") { Description = "The category of the DSVC." };
 
-            Command createCommand = new("create", "Create a new DSVC.");
-            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
+            Command createCommand = new("create", "Create a new DSVC.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            createCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleCreateAsync(stamp, verbosity);
+                });
 
-            Command getCommand = new("get", "Get an existing DSVC to see its properties.");
-            getCommand.AddAlias("show");
-            getCommand.AddArgument(categoryArgument);
-            getCommand.SetHandler(HandleGetAsync, categoryArgument, stampOption, verbosityOption);
+            Command getCommand = new("get", "Get an existing DSVC to see its properties.")
+            {
+                stampOption,
+                verbosityOption,
+                categoryArgument,
+            };
+            getCommand.Aliases.Add("show");
+            getCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string category = parseResult.GetRequiredValue(categoryArgument);
+                    return HandleGetAsync(category, stamp, verbosity);
+                });
 
-            Command listCommand = new("list", "Get existing DSVCs.");
-            listCommand.AddAlias("ls");
-            listCommand.SetHandler(HandleListAsync, stampOption, verbosityOption);
+            Command listCommand = new("list", "Get existing DSVCs.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            listCommand.Aliases.Add("ls");
+            listCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleListAsync(stamp, verbosity);
+                });
 
-            Command updateCommand = new("update", "Update an existing DSVC.");
-            updateCommand.AddArgument(categoryArgument);
-            updateCommand.SetHandler(HandleUpdateAsync, categoryArgument, stampOption, verbosityOption);
+            Command updateCommand = new("update", "Update an existing DSVC.")
+            {
+                stampOption,
+                verbosityOption,
+                categoryArgument,
+            };
+            updateCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string category = parseResult.GetRequiredValue(categoryArgument);
+                    return HandleUpdateAsync(category, stamp, verbosity);
+                });
 
-            rootCommand.AddCommand(createCommand);
-            rootCommand.AddCommand(getCommand);
-            rootCommand.AddCommand(listCommand);
-            rootCommand.AddCommand(updateCommand);
+            rootCommand.Subcommands.Add(createCommand);
+            rootCommand.Subcommands.Add(getCommand);
+            rootCommand.Subcommands.Add(listCommand);
+            rootCommand.Subcommands.Add(updateCommand);
             return rootCommand;
         }
 

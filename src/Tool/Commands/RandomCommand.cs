@@ -9,10 +9,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
     {
         public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
-            Command command = new("random", "Get random data.");
-
-            Argument<string> randomTypeArg = new Argument<string>("type", "The type of random to get. Pick from the supported values.")
-                .FromAmong(
+            Argument<string> randomTypeArgument = new Argument<string>("type") { Description = "The type of random to get. Pick from the supported values." }
+                .AcceptOnlyFromAmong(
                     "8ball",
                     "coin",
                     "gibbs",
@@ -32,18 +30,34 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     "int",
                     "long"
                 );
-            command.AddArgument(randomTypeArg);
 
-            Option<string> nameOpt = new("--name", "If provided and the API supports it, the name to use for the randomness.");
-            command.AddOption(nameOpt);
+            Option<string> nameOption = new("--name") { Description = "If provided and the API supports it, the name to use for the randomness." };
 
-            Option<string> seedOpt = new("--seed", "If provided and the API supports it, the seed to use for the randomness. Hashed with MD5 to an int. (string)");
-            command.AddOption(seedOpt);
+            Option<string> seedOption = new("--seed") { Description = "If provided and the API supports it, the seed to use for the randomness. Hashed with MD5 to an int. (string)" };
 
-            Option<int?> valueOpt = new("--value", "If provided and the API supports it, the value to use for the randomness. (int)");
-            command.AddOption(valueOpt);
+            Option<int?> valueOption = new("--value") { Description = "If provided and the API supports it, the value to use for the randomness. (int)" };
 
-            command.SetHandler(HandleAsync, randomTypeArg, nameOpt, seedOpt, valueOpt, stampOption, verbosityOption);
+            Command command = new("random", "Get random data.")
+            {
+                stampOption,
+                verbosityOption,
+                randomTypeArgument,
+                nameOption,
+                seedOption,
+                valueOption,
+            };
+            command.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string type = parseResult.GetValue(randomTypeArgument);
+                    string name = parseResult.GetValue(nameOption);
+                    string seed = parseResult.GetValue(seedOption);
+                    int? value = parseResult.GetValue(valueOption);
+                    return HandleAsync(type, name, seed, value, stamp, verbosity);
+                });
+
             return command;
         }
 

@@ -7,12 +7,24 @@ namespace TcpWtf.NumberSequence.Tool.Commands
     {
         public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
-            Command command = new("ping", "Ping the service to verify configuration and availability.");
-            Option<bool> pingAuthOption = new("--authed", "If requested, make the ping request with authentication.");
-            command.AddOption(pingAuthOption);
-            Option<bool> pingAuthRoleOption = new("--roled", "If requested, make the ping request with authentication to an endpoint that requies a role.");
-            command.AddOption(pingAuthRoleOption);
-            command.SetHandler(HandleAsync, pingAuthOption, pingAuthRoleOption, stampOption, verbosityOption);
+            Option<bool> pingAuthOption = new("--authed") { Description = "If requested, make the ping request with authentication." };
+            Option<bool> pingAuthRoleOption = new("--roled") { Description = "If requested, make the ping request with authentication to an endpoint that requies a role." };
+            Command command = new("ping", "Ping the service to verify configuration and availability.")
+            {
+                stampOption,
+                verbosityOption,
+                pingAuthOption,
+                pingAuthRoleOption,
+            };
+            command.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    bool pingAuth = parseResult.GetValue(pingAuthOption);
+                    bool pingAuthRoled = parseResult.GetValue(pingAuthRoleOption);
+                    return HandleAsync(pingAuth, pingAuthRoled, stamp, verbosity);
+                });
             return command;
         }
 

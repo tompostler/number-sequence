@@ -11,49 +11,118 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         {
             Command rootCommand = new("days-since", "Create and manage days since alerts.");
 
-            Argument<string> idArgument = new("daysSinceId", "The id of the days since.");
-            Option<bool> rawOption = new("--raw", "Show raw json object(s) instead of the nicer summary format.");
+            Argument<string> idArgument = new("daysSinceId") { Description = "The id of the days since." };
+            Option<bool> rawOption = new("--raw") { Description = "Show raw json object(s) instead of the nicer summary format." };
 
-            Command createCommand = new("create", "Create a new days since.");
-            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
-            rootCommand.AddCommand(createCommand);
+            Command createCommand = new("create", "Create a new days since.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            createCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleCreateAsync(stamp, verbosity);
+                });
+            rootCommand.Subcommands.Add(createCommand);
 
-            Command editCommand = new("edit", "Edit an existing days since.");
-            editCommand.AddArgument(idArgument);
-            editCommand.AddOption(rawOption);
-            editCommand.SetHandler(HandleEditAsync, idArgument, rawOption, stampOption, verbosityOption);
-            rootCommand.AddCommand(editCommand);
+            Command editCommand = new("edit", "Edit an existing days since.")
+            {
+                stampOption,
+                verbosityOption,
+                idArgument,
+                rawOption,
+            };
+            editCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string id = parseResult.GetRequiredValue(idArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleEditAsync(id, raw, stamp, verbosity);
+                });
+            rootCommand.Subcommands.Add(editCommand);
 
-            Command getCommand = new("get", "Get an existing days since.");
-            getCommand.AddAlias("show");
-            getCommand.AddArgument(idArgument);
-            getCommand.AddOption(rawOption);
-            getCommand.SetHandler(HandleGetAsync, idArgument, rawOption, stampOption, verbosityOption);
-            rootCommand.AddCommand(getCommand);
+            Command getCommand = new("get", "Get an existing days since.")
+            {
+                stampOption,
+                verbosityOption,
+                idArgument,
+                rawOption,
+            };
+            getCommand.Aliases.Add("show");
+            getCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string id = parseResult.GetRequiredValue(idArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleGetAsync(id, raw, stamp, verbosity);
+                });
+            rootCommand.Subcommands.Add(getCommand);
 
-            Command listCommand = new("list", "Get existing days sinces.");
-            listCommand.AddAlias("ls");
-            listCommand.SetHandler(HandleListAsync, stampOption, verbosityOption);
-            rootCommand.AddCommand(listCommand);
+            Command listCommand = new("list", "Get existing days sinces.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            listCommand.Aliases.Add("ls");
+            listCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleListAsync(stamp, verbosity);
+                });
+            rootCommand.Subcommands.Add(listCommand);
 
 
             Command eventCommand = new("event", "Create and manage days since events that reset the counter.");
+            Argument<long> eventIdArgument = new("eventId") { Description = "The id of the event." };
 
-            Command eventCreateCommand = new("create", "Create a new days since event.");
-            eventCreateCommand.AddArgument(idArgument);
-            eventCreateCommand.AddOption(rawOption);
-            eventCreateCommand.SetHandler(HandleEventCreateAsync, idArgument, rawOption, stampOption, verbosityOption);
+            Command eventCreateCommand = new("create", "Create a new days since event.")
+            {
+                stampOption,
+                verbosityOption,
+                idArgument,
+                rawOption,
+            };
+            eventCreateCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string id = parseResult.GetRequiredValue(idArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleEventCreateAsync(id, raw, stamp, verbosity);
+                });
 
-            Command eventEditCommand = new("edit", "Edit an existing days since event.");
-            Argument<long> eventIdArgument = new("eventId", "The id of the event.");
-            eventEditCommand.AddArgument(idArgument);
-            eventEditCommand.AddArgument(eventIdArgument);
-            eventEditCommand.AddOption(rawOption);
-            eventEditCommand.SetHandler(HandleEventEditAsync, idArgument, eventIdArgument, rawOption, stampOption, verbosityOption);
+            Command eventEditCommand = new("edit", "Edit an existing days since event.")
+            {
+                stampOption,
+                verbosityOption,
+                idArgument,
+                eventIdArgument,
+                rawOption,
+            };
+            eventEditCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string id = parseResult.GetRequiredValue(idArgument);
+                    long eventId = parseResult.GetRequiredValue(eventIdArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleEventEditAsync(id, eventId, raw, stamp, verbosity);
+                });
 
-            eventCommand.AddCommand(eventCreateCommand);
-            eventCommand.AddCommand(eventEditCommand);
-            rootCommand.AddCommand(eventCommand);
+            eventCommand.Subcommands.Add(eventCreateCommand);
+            eventCommand.Subcommands.Add(eventEditCommand);
+            rootCommand.Subcommands.Add(eventCommand);
 
 
             return rootCommand;

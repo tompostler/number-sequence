@@ -12,28 +12,73 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         {
             Command rootCommand = new("token", "Create, save, or inspect an existing token.");
 
-            Command createCommand = new("create", "Create a new token for your account.");
-            createCommand.SetHandler(HandleCreateAsync, stampOption, verbosityOption);
+            Command createCommand = new("create", "Create a new token for your account.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            createCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleCreateAsync(stamp, verbosity);
+                });
 
-            Command deleteCommand = new("delete", "Delete an existing token for your account.");
-            Argument<string> nameArgument = new("tokenName", "The name of the token.");
-            deleteCommand.SetHandler(HandleDeleteAsync, nameArgument, stampOption, verbosityOption);
+            Argument<string> nameArgument = new("tokenName") { Description = "The name of the token." };
+            Command deleteCommand = new("delete", "Delete an existing token for your account.")
+            {
+                stampOption,
+                verbosityOption,
+                nameArgument,
+            };
+            deleteCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string name = parseResult.GetRequiredValue(nameArgument);
+                    return HandleDeleteAsync(name, stamp, verbosity);
+                });
 
             Command inspectCommand = new("inspect", "Decrypt an existing token to see its properties.");
-            inspectCommand.SetHandler(HandleInspect);
+            inspectCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    HandleInspect();
+                    return Task.CompletedTask;
+                });
 
-            Command readCommand = new("read", "Inspects the token on disk.");
-            readCommand.AddAlias("show");
-            readCommand.SetHandler(HandleRead, verbosityOption);
+            Command readCommand = new("read", "Inspects the token on disk.")
+            {
+                verbosityOption,
+            };
+            readCommand.Aliases.Add("show");
+            readCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    HandleRead(verbosity);
+                    return Task.CompletedTask;
+                });
 
-            Command saveCommand = new("save", "Saves the token to disk for usage in authenticated commands.");
-            saveCommand.SetHandler(HandleSave, verbosityOption);
+            Command saveCommand = new("save", "Saves the token to disk for usage in authenticated commands.")
+            {
+                verbosityOption,
+            };
+            saveCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    HandleSave(verbosity);
+                    return Task.CompletedTask;
+                });
 
-            rootCommand.AddCommand(createCommand);
-            rootCommand.AddCommand(deleteCommand);
-            rootCommand.AddCommand(inspectCommand);
-            rootCommand.AddCommand(saveCommand);
-            rootCommand.AddCommand(readCommand);
+            rootCommand.Subcommands.Add(createCommand);
+            rootCommand.Subcommands.Add(deleteCommand);
+            rootCommand.Subcommands.Add(inspectCommand);
+            rootCommand.Subcommands.Add(saveCommand);
+            rootCommand.Subcommands.Add(readCommand);
             return rootCommand;
         }
 
