@@ -1,9 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Include="$(RepoRoot)\build\**\*" Link="build\%(RecursiveDir)\%(Filename)%(Extension)" />
     <None Include="$(RepoRoot)\deployment\**\*" Link="deployment\%(RecursiveDir)\%(Filename)%(Extension)" />

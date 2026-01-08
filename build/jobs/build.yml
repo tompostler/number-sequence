@@ -2,7 +2,7 @@ jobs:
 
 - job: DotnetBuild
   pool:
-    vmImage: windows-2022
+    vmImage: windows-latest
 
   steps:
 
@@ -26,13 +26,12 @@ jobs:
   - task: Cache@2
     displayName: NuGet package caching
     inputs:
-      key: 'nuget | $(Build.SourcesDirectory)/src/**/*.csproj | $(Build.SourcesDirectory)/src/Directory.Build.props'
+      key: 'nuget | $(Build.SourcesDirectory)/Directory.Packages.props | $(Build.SourcesDirectory)/src/**/*.csproj | $(Build.SourcesDirectory)/Directory.Build.props'
       restoreKeys: |
         nuget
       path: $(NUGET_PACKAGES)
 
-  - powershell: |
-      dotnet workload restore src/number-sequence.slnx;
+  - powershell: dotnet workload restore src/number-sequence.slnx
     displayName: Restore dotnet workloads
 
   - task: DotNetCoreCLI@2
@@ -41,8 +40,7 @@ jobs:
       command: restore
       projects: src/number-sequence.slnx
 
-  - powershell: |
-      New-Item -Path $(Build.SourcesDirectory)/src/number-sequence/ -Name appsettings.Development.json -Type File
+  - powershell: New-Item -Path $(Build.SourcesDirectory)/src/number-sequence/ -Name appsettings.Development.json -Type File
     displayName: Create dummy file for IntTests
 
   - powershell: |
@@ -59,8 +57,6 @@ jobs:
       arguments: '--no-restore --configuration Debug --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
 
   - task: DotNetCoreCLI@2
-    # Only run the tests if it's a CI build instead of on the weekly scheduled builds
-    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
     displayName: Run unit tests
     inputs:
       command: test
