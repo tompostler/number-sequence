@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Web;
 using TcpWtf.NumberSequence.Contracts;
 using Unlimitedinf.Utilities.Extensions;
@@ -2717,5 +2719,23 @@ namespace number_sequence.Controllers
         // https://xkcd.com/221/
         [HttpGet("xkcd")]
         public IActionResult Xkcd() => this.Ok(4);
+
+        private static readonly string[] nos = JsonSerializer.Deserialize<string[]>(Resources.NoAsAServiceJson);
+
+
+        [HttpGet("no")]
+        public IActionResult No([FromQuery] int? index = default)
+        {
+            if (index.HasValue && (index <= 0 || index > nos.Length))
+            {
+                return this.BadRequest($"If supplying index, it must be in [1,{nos.Length}]. You supplied '{index}'.");
+            }
+            else if (!index.HasValue)
+            {
+                index = Random.Shared.Next(nos.Length) + 1;
+            }
+
+            return this.Ok(nos[index.Value - 1]);
+        }
     }
 }

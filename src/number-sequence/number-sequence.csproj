@@ -7,7 +7,8 @@
 
   <ItemGroup>
     <Content Remove="$(USERPROFILE)\.nuget\packages\microsoft.azure.cosmos\**\ThirdPartyNotice.txt" />
-    <EmbeddedResource Include="Resources\**" />
+    <EmbeddedResource Include="Resources/**" />
+    <EmbeddedResource Include="../../sub/no-as-a-service/reasons.json" Link="Resources/no-as-a-service.json" />
   </ItemGroup>
 
   <ItemGroup>

@@ -325,5 +325,21 @@ namespace TcpWtf.NumberSequence.Client
                 needsPreparation: false);
             return await response.Content.ReadJsonAsAsync<int>(cancellationToken);
         }
+
+        /// <summary>
+        /// Gets a random 'no' excuse.
+        /// </summary>
+        public async Task<string> GetNoAsync(int? index = default, CancellationToken cancellationToken = default)
+        {
+            string queryString = index.HasValue ? $"?index={index}" : string.Empty;
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/no" + queryString),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
     }
 }

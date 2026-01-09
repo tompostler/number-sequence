@@ -1,0 +1,3 @@
+[submodule "sub/no-as-a-service"]
+	path = sub/no-as-a-service
+	url = https://tompostler@dev.azure.com/tompostler/public/_git/no-as-a-service
