@@ -75,6 +75,7 @@ namespace number_sequence
             _ = services.AddHostedService<Services.Background.GoogleSheetPdfGeneration.ChiroCanineGoogleSheetPdfGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.GoogleSheetPdfGeneration.ChiroEquineGoogleSheetPdfGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.ChiroBatchSendBackgroundService>();
+            _ = services.AddHostedService<Services.Background.ReprocessInvoiceRegularlyBackgroundService>();
 
 
             //

@@ -52,6 +52,7 @@ namespace TcpWtf.NumberSequence.Client
             this.DailySequenceValueConfig = new DailySequenceValueConfigOperations(this);
             this.DaysSince = new DaysSinceOperations(this);
             this.History = new HistoryOperations(this);
+            this.Invoice = new InvoiceOperations(this);
             this.PdfStatus = new PdfStatusOperations(this);
             this.Ping = new PingOperations(this);
             this.Random = new RandomOperations(this);
@@ -88,6 +89,11 @@ namespace TcpWtf.NumberSequence.Client
         /// History operations.
         /// </summary>
         public HistoryOperations History { get; }
+
+        /// <summary>
+        /// Invoice operations.
+        /// </summary>
+        public InvoiceOperations Invoice { get; }
 
         /// <summary>
         /// Pdf status operations.

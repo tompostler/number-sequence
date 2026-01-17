@@ -27,6 +27,7 @@ namespace TcpWtf.NumberSequence.Tool
             rootCommand.Subcommands.Add(DailySequenceValueConfigCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(DaysSinceCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(HistoryCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(InvoiceCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(IpCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(PdfStatusCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(PingCommand.Create(stampOption, verbosityOption));
