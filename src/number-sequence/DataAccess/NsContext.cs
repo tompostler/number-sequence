@@ -121,6 +121,8 @@ namespace number_sequence.DataAccess
             _ = modelBuilder.Entity<InvoiceLine>()
                 .Property(x => x.Price)
                 .HasPrecision(18, 2);
+            _ = modelBuilder.Entity<InvoiceLine>()
+                .ToTable("InvoiceLines");
 
             _ = modelBuilder.Entity<InvoiceLineDefault>()
                 .Property(x => x.Id)
