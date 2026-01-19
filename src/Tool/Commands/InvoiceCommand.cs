@@ -368,11 +368,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             rootCommand.Subcommands.Add(lineCommand);
 
 
+            Option<long?> idFromOption = new("--from") { Description = "The id of the invoice if creating from another invoice. The first two lines of the new invoice will be the total of the previous and the payment information." };
             Command createCommand = new("create", "Create a new invoice.")
             {
                 stampOption,
                 verbosityOption,
-                new Option<long?>("--from") { Description = "The id of the invoice if creating from another invoice. The first two lines of the new invoice will be the total of the previous and the payment information." },
+                idFromOption,
                 rawOption,
             };
             createCommand.SetAction(
@@ -380,7 +381,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long? from = parseResult.GetValue(new Option<long?>("--from"));
+                    long? from = parseResult.GetValue(idFromOption);
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleCreateAsync(from, raw, stamp, verbosity);
                 });
