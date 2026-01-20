@@ -332,7 +332,10 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         => container.PaddingVertical(3).AlignRight();
 
                                     // Line id
-                                    _ = table.Cell().Element(CellStyle).Text(line.Id.ToString()).FontColor(Colors.Grey.Medium);
+                                    _ = table.Cell().Element(CellStyle).Text(line.Id.ToString())
+                                        .FontColor(Colors.Grey.Medium)
+                                        .FontSize(baseFontSize * 0.9f)
+                                        .LetterSpacing(-0.05f);
 
                                     // Line item
                                     table.Cell().Element(CellStyle).Text(text =>
@@ -340,6 +343,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         _ = text.Line(line.Title);
                                         _ = text.Span(line.Description)
                                             .FontColor(Colors.Grey.Medium)
+                                            .FontSize(baseFontSize * .9f)
                                             .Italic();
                                     });
 
@@ -415,7 +419,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     _ = text.Span("Cash discounts and credit surcharges").Bold();
                                     _ = text.Span(" will not be added.");
                                     _ = text.Span(" Cash or cash equivalent payment methods still require handling to be processed.");
-                                    _ = text.Span(" Credit processing incurs direct fees roughly equivalent to cash handling");
+                                    _ = text.Span(" Credit processing incurs direct fees roughly equivalent to cash handling.");
                                     _ = text.Line(string.Empty);
 
                                     _ = text.Span("Finance charges").Bold();
