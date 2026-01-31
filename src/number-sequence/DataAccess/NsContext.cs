@@ -23,6 +23,7 @@ namespace number_sequence.DataAccess
         public DbSet<InvoiceBusiness> InvoiceBusinesses { get; set; }
         public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
         public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
+        public DbSet<Statement> Statements { get; set; }
 
         public DbSet<ChiroEmailBatch> ChiroEmailBatches { get; set; }
         public DbSet<EmailDocument> EmailDocuments { get; set; }
@@ -75,6 +76,7 @@ namespace number_sequence.DataAccess
             _ = modelBuilder.HasSequence<long>("InvoiceCustomerIds");
             _ = modelBuilder.HasSequence<long>("InvoiceLineIds");
             _ = modelBuilder.HasSequence<long>("InvoiceLineDefaultIds");
+            _ = modelBuilder.HasSequence<long>("StatementIds");
 
             _ = modelBuilder.Entity<Invoice>()
                 .Property(x => x.Id)
@@ -83,6 +85,16 @@ namespace number_sequence.DataAccess
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
             _ = modelBuilder.Entity<Invoice>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<Statement>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.StatementIds");
+            _ = modelBuilder.Entity<Statement>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<Statement>()
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 

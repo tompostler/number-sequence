@@ -28,7 +28,7 @@
     <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.5.2" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.9.50" />
     <PackageVersion Include="QuestPDF" Version="2025.12.3" />
-    <PackageVersion Include="Unlimitedinf.Utilities" Version="4.1.0" />
+    <PackageVersion Include="Unlimitedinf.Utilities" Version="4.2.1" />
     <PackageVersion Include="System.CommandLine" Version="2.0.2" />
   </ItemGroup>
 </Project>

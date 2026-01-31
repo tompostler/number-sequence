@@ -134,6 +134,76 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             rootCommand.Subcommands.Add(customerCommand);
 
 
+            Command statementCommand = new("statement", "Manage invoice statements (a collection of invoices for a customer over a date range).");
+
+            Argument<long> statementIdArgument = new("statementId") { Description = "The id of the statement." };
+
+            Command statementCreateCommand = new("create", "Create a new invoice statement.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            statementCreateCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleStatementCreateAsync(stamp, verbosity);
+                });
+
+            Command statementGetCommand = new("get", "Get an existing invoice statement.")
+            {
+                stampOption,
+                verbosityOption,
+                statementIdArgument,
+            };
+            statementGetCommand.Aliases.Add("show");
+            statementGetCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long statementId = parseResult.GetRequiredValue(statementIdArgument);
+                    return HandleStatementGetAsync(statementId, stamp, verbosity);
+                });
+
+            Command statementListCommand = new("list", "Get existing invoice statements.")
+            {
+                stampOption,
+                verbosityOption,
+            };
+            statementListCommand.Aliases.Add("ls");
+            statementListCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    return HandleStatementListAsync(stamp, verbosity);
+                });
+
+            Command statementProcessCommand = new("process", "Mark a specific statement for [re-]processing to pdf.")
+            {
+                stampOption,
+                verbosityOption,
+                statementIdArgument,
+            };
+            statementProcessCommand.Aliases.Add("reprocess");
+            statementProcessCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long statementId = parseResult.GetRequiredValue(statementIdArgument);
+                    return HandleStatementProcessAsync(statementId, stamp, verbosity);
+                });
+
+            statementCommand.Subcommands.Add(statementCreateCommand);
+            statementCommand.Subcommands.Add(statementGetCommand);
+            statementCommand.Subcommands.Add(statementListCommand);
+            statementCommand.Subcommands.Add(statementProcessCommand);
+            rootCommand.Subcommands.Add(statementCommand);
+
+
             Command lineDefaultCommand = new("line-default", "Manage invoice line defaults (line items that can be used as a reference for adding a line to an invoice).");
 
             Command lineDefaultCreateCommand = new("create", "Create a new invoice line default.")

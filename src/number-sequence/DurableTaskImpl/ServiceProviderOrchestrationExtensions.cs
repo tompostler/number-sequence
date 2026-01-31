@@ -15,6 +15,10 @@ namespace number_sequence.DurableTaskImpl
                 .AddSingleton<TaskOrchestration, Orchestrators.InvoicePostlerGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.InvoicePostlerPdfGenerationActivity>()
 
+                // Statement (postler) generation
+                .AddSingleton<TaskOrchestration, Orchestrators.StatementPostlerGenerationOrchestrator>()
+                .AddSingleton<TaskActivity, Activities.StatementPostlerPdfGenerationActivity>()
+
                 // Chiro (canine) generation
                 .AddSingleton<TaskOrchestration, Orchestrators.ChiroCanineGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.ChiroCaninePdfGenerationActivity>()
