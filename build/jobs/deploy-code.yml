@@ -47,20 +47,18 @@ jobs:
   - powershell: |
       $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
       $body = @{
-        ChannelId = '$(discord-pobot-bot-notification-channel-id)';
         Title = "Deployment of number-sequence $(Build.BuildNumber)+$shortSha was successful";
         Description = "``$(Build.SourceVersionMessage)``";
-      } | ConvertTo-Json;
-      Invoke-WebRequest -Uri '$(logicappuri-pobot-add-random-message)' -Method POST -ContentType 'application/json' -Body $body -UseBasicParsing;
+      } | ConvertTo-Json -Compress;
+      Invoke-RestMethod -Method Post -Uri https://po.tcp.wtf/randommessage -Headers @{ 'x-api-key' = '$(pobot-api-key)' } -ContentType 'application/json' -Body $body;
     displayName: Post deployment message (success)
 
   - powershell: |
       $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
       $body = @{
-        ChannelId = '$(discord-pobot-bot-notification-channel-id)';
-        Title = "Deployment of number-sequence $(Build.BuildNumber)+$shortSha was not successful";
+        Title = "Deployment of number-sequence $(Build.BuildNumber)+$shortSha was successful";
         Description = "``$(Build.SourceVersionMessage)``";
-      } | ConvertTo-Json;
-      Invoke-WebRequest -Uri '$(logicappuri-pobot-add-random-message)' -Method POST -ContentType 'application/json' -Body $body -UseBasicParsing;
+      } | ConvertTo-Json -Compress;
+      Invoke-RestMethod -Method Post -Uri https://po.tcp.wtf/randommessage -Headers @{ 'x-api-key' = '$(pobot-api-key)' } -ContentType 'application/json' -Body $body;
     condition: failed()
     displayName: Post deployment message (failure)
