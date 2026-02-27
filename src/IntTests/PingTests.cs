@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace number_sequence.IntTests
+﻿namespace number_sequence.IntTests
 {
     [TestClass]
     public sealed class PingTests

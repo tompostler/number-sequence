@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Web;
 using TcpWtf.NumberSequence.Contracts;
-using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.Controllers
 {

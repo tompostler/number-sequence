@@ -1,6 +1,5 @@
 ﻿using TcpWtf.NumberSequence.Client;
 using Unlimitedinf.Utilities;
-using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.Tool.Commands
 {

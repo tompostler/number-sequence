@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using number_sequence.Controllers;
 using System.Net;
 using TcpWtf.NumberSequence.Client;

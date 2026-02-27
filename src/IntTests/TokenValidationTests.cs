@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using number_sequence.Models;
 using System.Net;
 using TcpWtf.NumberSequence.Client;
