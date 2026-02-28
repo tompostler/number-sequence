@@ -262,9 +262,9 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         _ = column.Item()
                                             .Text($"PDF created {DateTime.Now:MMMM dd, yyyy}.");
                                         _ = column.Item()
-                                            .Text($"Total billed: ${this.statement.TotalBilled:N2}.");
+                                            .Text($"Invoices by {(this.statement.SearchByDueDate ? "due" : "created")} date.");
                                         _ = column.Item()
-                                            .Text($"Total paid: ${this.statement.TotalPaid:N2}.");
+                                            .Text($"Paid: ${this.statement.TotalPaid:N2}. Billed: ${this.statement.TotalBilled:N2}.");
                                         _ = column.Item()
                                             .Text($"Amount remaining: ${this.statement.TotalBilled - this.statement.TotalPaid:N2}.");
                                         _ = column.Item()

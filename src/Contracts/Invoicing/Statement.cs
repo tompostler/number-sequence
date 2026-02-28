@@ -75,6 +75,11 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         public DateTimeOffset ModifiedDate { get; set; }
 
         /// <summary>
+        /// Whether to search for invoices by due date instead of created date.
+        /// </summary>
+        public bool SearchByDueDate { get; set; }
+
+        /// <summary>
         /// Indicates if the statement is ready for PDF generation.
         /// </summary>
         public bool ReadyForProcessing { get; set; }

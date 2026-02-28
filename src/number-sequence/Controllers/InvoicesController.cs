@@ -430,7 +430,9 @@ namespace number_sequence.Controllers
                 .Where(x => x.AccountName == statement.AccountName)
                 .Where(x => x.Business == statement.Business)
                 .Where(x => x.Customer == statement.Customer)
-                .Where(x => x.CreatedDate > statement.InvoiceStartDate.ToDateTime(TimeOnly.MinValue) && x.CreatedDate < statement.InvoiceEndDate.ToDateTime(TimeOnly.MaxValue))
+                .Where(x => statement.SearchByDueDate
+                    ? x.DueDate >= statement.InvoiceStartDate && x.DueDate <= statement.InvoiceEndDate
+                    : x.CreatedDate > statement.InvoiceStartDate.ToDateTime(TimeOnly.MinValue) && x.CreatedDate < statement.InvoiceEndDate.ToDateTime(TimeOnly.MaxValue))
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)

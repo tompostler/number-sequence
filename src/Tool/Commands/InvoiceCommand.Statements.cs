@@ -38,8 +38,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 AccountName = TokenProvider.GetAccount(),
                 Business = invoiceBusinesses.Single(x => x.Id == invoiceBusinessId),
                 Customer = invoiceCustomers.Single(x => x.Id == invoiceCustomerId),
-                InvoiceStartDate = Input.GetDateOnly(nameof(statement.InvoiceStartDate)),
-                InvoiceEndDate = Input.GetDateOnly(nameof(statement.InvoiceEndDate)),
+                InvoiceStartDate = Input.GetDateOnly(nameof(statement.InvoiceStartDate), new DateOnly(DateTime.Now.Year, 1, 1)),
+                InvoiceEndDate = Input.GetDateOnly(nameof(statement.InvoiceEndDate), new DateOnly(DateTime.Now.Year + 1, 1, 1)),
+                SearchByDueDate = Input.GetBool(nameof(statement.SearchByDueDate), defaultVal: true),
                 ReadyForProcessing = Input.GetBool(nameof(statement.ReadyForProcessing), defaultVal: true),
             };
 
