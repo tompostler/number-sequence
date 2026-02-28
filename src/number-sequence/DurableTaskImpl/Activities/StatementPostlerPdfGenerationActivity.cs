@@ -78,15 +78,15 @@ namespace number_sequence.DurableTaskImpl.Activities
                 attachmentName = string.Concat(attachmentName.AsSpan(0, 124), ".pdf");
             }
             StringBuilder additionalBody = new();
-            _ = additionalBody.AppendLine($"Statement id: {statementId}");
-            _ = additionalBody.AppendLine($"Business name: {statement.Business.Name}");
-            _ = additionalBody.AppendLine($"Customer name: {statement.Customer.Name}");
-            _ = additionalBody.AppendLine($"Start date: {statement.InvoiceStartDate:MMMM dd, yyyy}");
-            _ = additionalBody.AppendLine($"End due: {statement.InvoiceEndDate:MMMM dd, yyyy}");
-            _ = additionalBody.AppendLine($"Total billed: ${statement.TotalBilled:N2}");
-            _ = additionalBody.AppendLine($"Total paid: ${statement.TotalPaid:N2}");
-            _ = additionalBody.AppendLine($"Amount remaining: ${statement.TotalBilled - statement.TotalPaid:N2}");
-            _ = additionalBody.AppendLine($"Invoice count: {statement.Invoices.Count:N0}");
+            _ = additionalBody.AppendLine($"Statement id: {statementId}.");
+            _ = additionalBody.AppendLine($"Business name: {statement.Business.Name}.");
+            _ = additionalBody.AppendLine($"Customer name: {statement.Customer.Name}.");
+            _ = additionalBody.AppendLine($"Invoices by {(statement.SearchByDueDate ? "due" : "created")} date.");
+            _ = additionalBody.AppendLine($"Start date: {statement.InvoiceStartDate:MMMM dd, yyyy}.");
+            _ = additionalBody.AppendLine($"End due: {statement.InvoiceEndDate:MMMM dd, yyyy}.");
+            _ = additionalBody.AppendLine($"Paid: ${statement.TotalPaid:N2}. Billed: ${statement.TotalBilled:N2}.");
+            _ = additionalBody.AppendLine($"Amount remaining: ${statement.TotalBilled - statement.TotalPaid:N2}.");
+            _ = additionalBody.AppendLine($"Invoice count: {statement.Invoices.Count:N0}.");
             EmailDocument emailDocument = new()
             {
                 Id = context.OrchestrationInstance.InstanceId,
