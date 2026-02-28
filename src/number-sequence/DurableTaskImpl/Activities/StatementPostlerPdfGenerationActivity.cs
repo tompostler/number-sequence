@@ -72,7 +72,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             {
                 subject = subject.Substring(0, 128);
             }
-            string attachmentName = new($"{statementId}_{statement.Business.Name}_{statement.Customer.Name}_{title}".Select(x => char.IsAsciiLetterOrDigit(x) || x == '_' ? x : '-').ToArray());
+            string attachmentName = new($"S{statementId}_{statement.Business.Name}_{statement.Customer.Name}_{title}".Select(x => char.IsAsciiLetterOrDigit(x) || x == '_' ? x : '-').ToArray());
             if (attachmentName.Length > 128)
             {
                 attachmentName = string.Concat(attachmentName.AsSpan(0, 124), ".pdf");
