@@ -189,7 +189,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 Console.WriteLine("Summary:");
                 PrintInvoices(invoice);
 
-                Console.WriteLine($"Lines ({invoice.Lines.Count}):");
+                Console.WriteLine($"Lines ({invoice.Lines?.Count ?? 0}):");
                 Output.WriteTable(
                     invoice.Lines,
                     nameof(Contracts.Invoicing.InvoiceLine.Id),
