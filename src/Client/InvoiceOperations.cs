@@ -300,5 +300,62 @@ namespace TcpWtf.NumberSequence.Client
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<InvoiceLineDefault>(cancellationToken);
         }
+
+        /// <summary>
+        /// Create a logo for an existing business.
+        /// </summary>
+        public async Task<InvoiceBusinessLogo> CreateBusinessLogoAsync(long businessId, InvoiceBusinessLogo logo, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Post,
+                    $"invoices/businesses/{businessId}/logo")
+                {
+                    Content = logo.ToJsonContent()
+                },
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<InvoiceBusinessLogo>(cancellationToken);
+        }
+
+        /// <summary>
+        /// Update the logo for an existing business.
+        /// </summary>
+        public async Task<InvoiceBusinessLogo> UpdateBusinessLogoAsync(long businessId, InvoiceBusinessLogo logo, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Put,
+                    $"invoices/businesses/{businessId}/logo")
+                {
+                    Content = logo.ToJsonContent()
+                },
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<InvoiceBusinessLogo>(cancellationToken);
+        }
+
+        /// <summary>
+        /// Get the logo for an existing business.
+        /// </summary>
+        public async Task<InvoiceBusinessLogo> GetBusinessLogoAsync(long businessId, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"invoices/businesses/{businessId}/logo"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<InvoiceBusinessLogo>(cancellationToken);
+        }
+
+        /// <summary>
+        /// Delete the logo for an existing business.
+        /// </summary>
+        public async Task DeleteBusinessLogoAsync(long businessId, CancellationToken cancellationToken = default)
+        {
+            _ = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Delete,
+                    $"invoices/businesses/{businessId}/logo"),
+                cancellationToken);
+        }
     }
 }

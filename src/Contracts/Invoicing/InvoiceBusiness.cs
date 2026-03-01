@@ -64,6 +64,11 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
 
 
         /// <summary>
+        /// An optional logo image used in invoice and statement PDFs.
+        /// </summary>
+        public InvoiceBusinessLogo Logo { get; set; }
+
+        /// <summary>
         /// A reference to the invoices this business unit has in the system.
         /// </summary>
         public ICollection<Invoice> Invoices { get; set; }

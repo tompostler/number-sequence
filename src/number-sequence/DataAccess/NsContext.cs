@@ -21,6 +21,7 @@ namespace number_sequence.DataAccess
 
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceBusiness> InvoiceBusinesses { get; set; }
+        public DbSet<InvoiceBusinessLogo> InvoiceBusinessLogos { get; set; }
         public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
         public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
         public DbSet<Statement> Statements { get; set; }
@@ -107,6 +108,20 @@ namespace number_sequence.DataAccess
             _ = modelBuilder.Entity<InvoiceBusiness>()
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.Entity<InvoiceBusinessLogo>()
+                .HasKey(x => x.BusinessId);
+            _ = modelBuilder.Entity<InvoiceBusinessLogo>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoiceBusinessLogo>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoiceBusiness>()
+                .HasOne(x => x.Logo)
+                .WithOne(x => x.Business)
+                .HasForeignKey<InvoiceBusinessLogo>(x => x.BusinessId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             _ = modelBuilder.Entity<InvoiceCustomer>()
                 .Property(x => x.Id)

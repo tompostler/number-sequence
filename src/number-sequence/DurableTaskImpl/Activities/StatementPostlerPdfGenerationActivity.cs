@@ -55,6 +55,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             // Check if there's any statements ready to be processed
             Statement statement = await nsContext.Statements
                 .Include(x => x.Business)
+                    .ThenInclude(x => x.Logo)
                 .Include(x => x.Customer)
                 .Include(x => x.Invoices)
                     .ThenInclude(x => x.Lines)
@@ -154,9 +155,15 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     // Logo
                                     row.RelativeItem().Column(column =>
                                     {
-                                        _ = column.Item()
-                                            .Width(30)
-                                            .Image(Resources.InvoicePostlerLogo);
+                                        IContainer logoContainer = column.Item().Width(30);
+                                        if (this.statement.Business.Logo != null)
+                                        {
+                                            _ = logoContainer.Image(this.statement.Business.Logo.Data);
+                                        }
+                                        else
+                                        {
+                                            _ = logoContainer.Image(Resources.InvoicePostlerLogo);
+                                        }
                                     });
 
                                     // Business info

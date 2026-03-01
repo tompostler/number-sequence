@@ -60,6 +60,83 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleBusinessListAsync(stamp, verbosity);
                 });
 
+            Command businessLogoCommand = new("logo", "Manage the logo image for an invoice business.");
+
+            Argument<FileInfo> logoFileInfoArgument = new Argument<FileInfo>("file-path") { Description = "Path to the image file (.gif, .jpg, .jpeg, .png, .webp). Maximum 64kb." }.AcceptExistingOnly();
+            Command businessLogoCreateCommand = new("create", "Upload a logo for an existing invoice business.")
+            {
+                stampOption,
+                verbosityOption,
+                businessIdArgument,
+                logoFileInfoArgument,
+            };
+            businessLogoCreateCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long businessId = parseResult.GetRequiredValue(businessIdArgument);
+                    FileInfo logoFileInfo = parseResult.GetRequiredValue(logoFileInfoArgument);
+                    return HandleBusinessLogoCreateAsync(businessId, logoFileInfo, stamp, verbosity);
+                });
+
+            Command businessLogoUpdateCommand = new("update", "Replace the logo for an existing invoice business.")
+            {
+                stampOption,
+                verbosityOption,
+                businessIdArgument,
+                logoFileInfoArgument,
+            };
+            businessLogoUpdateCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long businessId = parseResult.GetRequiredValue(businessIdArgument);
+                    FileInfo logoFileInfo = parseResult.GetRequiredValue(logoFileInfoArgument);
+                    return HandleBusinessLogoUpdateAsync(businessId, logoFileInfo, stamp, verbosity);
+                });
+
+            Argument<FileInfo> outputFileInfoArgument = new Argument<FileInfo>("output-path") { Description = "Path to write the downloaded image file." }.AcceptLegalFilePathsOnly();
+            Command businessLogoGetCommand = new("get", "Download the logo for an existing invoice business.")
+            {
+                stampOption,
+                verbosityOption,
+                businessIdArgument,
+                outputFileInfoArgument,
+            };
+            businessLogoGetCommand.Aliases.Add("show");
+            businessLogoGetCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long businessId = parseResult.GetRequiredValue(businessIdArgument);
+                    FileInfo outputFileInfo = parseResult.GetRequiredValue(outputFileInfoArgument);
+                    return HandleBusinessLogoGetAsync(businessId, outputFileInfo, stamp, verbosity);
+                });
+
+            Command businessLogoDeleteCommand = new("delete", "Delete the logo for an existing invoice business.")
+            {
+                stampOption,
+                verbosityOption,
+                businessIdArgument,
+            };
+            businessLogoDeleteCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long businessId = parseResult.GetRequiredValue(businessIdArgument);
+                    return HandleBusinessLogoDeleteAsync(businessId, stamp, verbosity);
+                });
+
+            businessLogoCommand.Subcommands.Add(businessLogoCreateCommand);
+            businessLogoCommand.Subcommands.Add(businessLogoUpdateCommand);
+            businessLogoCommand.Subcommands.Add(businessLogoGetCommand);
+            businessLogoCommand.Subcommands.Add(businessLogoDeleteCommand);
+            businessCommand.Subcommands.Add(businessLogoCommand);
+
             businessCommand.Subcommands.Add(businessCreateCommand);
             businessCommand.Subcommands.Add(businessGetCommand);
             businessCommand.Subcommands.Add(businessListCommand);

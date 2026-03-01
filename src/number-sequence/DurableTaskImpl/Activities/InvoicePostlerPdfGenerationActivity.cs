@@ -55,6 +55,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             // Check if there's any invoices ready to be processed
             Invoice invoice = await nsContext.Invoices
                 .Include(x => x.Business)
+                    .ThenInclude(x => x.Logo)
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
                 .FirstOrDefaultAsync(x => x.Id == input && (x.ReadyForProcessing || x.ReprocessRegularly) && x.ProcessedAt == default, cancellationToken);
@@ -153,9 +154,15 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     // Logo
                                     row.RelativeItem().Column(column =>
                                     {
-                                        _ = column.Item()
-                                            .Width(30)
-                                            .Image(Resources.InvoicePostlerLogo);
+                                        IContainer logoContainer = column.Item().Width(30);
+                                        if (this.invoice.Business.Logo != null)
+                                        {
+                                            _ = logoContainer.Image(this.invoice.Business.Logo.Data);
+                                        }
+                                        else
+                                        {
+                                            _ = logoContainer.Image(Resources.InvoicePostlerLogo);
+                                        }
                                     });
 
                                     // Business info
