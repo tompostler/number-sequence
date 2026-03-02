@@ -25,6 +25,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="QuestPDF" />
+    <!-- QuestPDF uses SkiaSharp, which does not automatically include Linux native assets. Without this, libSkiaSharp.so is missing on the Linux app service and PDF generation fails. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
   </ItemGroup>
 
   <ItemGroup>
