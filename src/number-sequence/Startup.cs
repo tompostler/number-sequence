@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Extensions.Options;
 using QuestPDF.Drawing;
 using System.Text.Json.Serialization;
@@ -35,7 +34,6 @@ namespace number_sequence
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
 
-            _ = services.AddLogging(options => options.AddConsole().AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information));
             _ = services.AddApplicationInsightsTelemetry();
 
             _ = services.AddNsConfig(this.Configuration);
