@@ -20,6 +20,7 @@ Write-Host;
 Write-Cyan 'Generating local settings....';
 $localSettings = [PSCustomObject]@{
     ApplicationInsights = [PSCustomObject]@{
+        # Disable in local.
         ConnectionString = '';
     };
     Email   = [PSCustomObject]@{
