@@ -63,6 +63,12 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         public decimal TotalPaid => this.Invoices?.Where(x => x.PaidDate.HasValue).Sum(x => x.Total) ?? 0;
 
         /// <summary>
+        /// A human-friendly identifier combining the statement id and process attempt.
+        /// </summary>
+        [NotMapped]
+        public string FriendlyId => $"{this.Id:0000}-{this.ProccessAttempt:00}";
+
+        /// <summary>
         /// The date the invoice was created.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

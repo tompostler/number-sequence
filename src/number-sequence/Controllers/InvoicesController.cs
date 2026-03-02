@@ -444,8 +444,8 @@ namespace number_sequence.Controllers
 
                 TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
                 OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                    typeof(DurableTaskImpl.Orchestrators.InvoicePostlerGenerationOrchestrator),
-                    instanceId: $"{invoiceRecord.Id:0000}-{invoiceRecord.ProccessAttempt:00}_{NsStorage.C.PT.InvoicePostler}",
+                    typeof(DurableTaskImpl.Orchestrators.InvoiceGenerationOrchestrator),
+                    instanceId: $"{invoiceRecord.FriendlyId}_invoice",
                     invoiceRecord.Id);
                 this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
             }
@@ -580,8 +580,8 @@ namespace number_sequence.Controllers
 
                 TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
                 OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                    typeof(DurableTaskImpl.Orchestrators.StatementPostlerGenerationOrchestrator),
-                    instanceId: $"{statement.Id:0000}-{statement.ProccessAttempt:00}_{NsStorage.C.PT.StatementPostler}",
+                    typeof(DurableTaskImpl.Orchestrators.StatementGenerationOrchestrator),
+                    instanceId: $"{statement.FriendlyId}_statement",
                     statement.Id);
                 this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
             }
@@ -666,8 +666,8 @@ namespace number_sequence.Controllers
 
                 TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
                 OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                    typeof(DurableTaskImpl.Orchestrators.StatementPostlerGenerationOrchestrator),
-                    instanceId: $"{statementRecord.Id:0000}-{statementRecord.ProccessAttempt:00}_{NsStorage.C.PT.StatementPostler}",
+                    typeof(DurableTaskImpl.Orchestrators.StatementGenerationOrchestrator),
+                    instanceId: $"{statementRecord.FriendlyId}_statement",
                     statementRecord.Id);
                 this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
             }
