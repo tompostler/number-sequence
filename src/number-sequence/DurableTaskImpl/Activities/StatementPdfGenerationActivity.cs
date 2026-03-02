@@ -158,7 +158,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     {
                                         _ = column.Item()
                                             .Width(30)
-                                            .Image(this.statement.Business.Logo?.Data ?? new IdenticonGenerator().GeneratePng(this.statement.Business.Id.ToString(), 120));
+                                            .Image(this.statement.Business.Logo?.Data ?? new IdenticonGenerator() { Grayscale = true }.GeneratePng(this.statement.Business.Id.ToString(), 256));
                                     });
 
                                     // Business info

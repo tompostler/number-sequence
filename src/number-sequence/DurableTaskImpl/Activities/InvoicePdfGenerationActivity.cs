@@ -157,7 +157,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     {
                                         _ = column.Item()
                                             .Width(30)
-                                            .Image(this.invoice.Business.Logo?.Data ?? new IdenticonGenerator().GeneratePng(this.invoice.Business.Id.ToString(), 120));
+                                            .Image(this.invoice.Business.Logo?.Data ?? new IdenticonGenerator() { Grayscale = true }.GeneratePng(this.invoice.Business.Id.ToString(), 256));
                                     });
 
                                     // Business info
