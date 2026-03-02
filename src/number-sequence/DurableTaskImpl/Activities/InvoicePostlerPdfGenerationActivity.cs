@@ -12,6 +12,7 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System.Text;
 using TcpWtf.NumberSequence.Contracts.Invoicing;
+using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.DurableTaskImpl.Activities
@@ -154,15 +155,9 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     // Logo
                                     row.RelativeItem().Column(column =>
                                     {
-                                        IContainer logoContainer = column.Item().Width(30);
-                                        if (this.invoice.Business.Logo != null)
-                                        {
-                                            _ = logoContainer.Image(this.invoice.Business.Logo.Data);
-                                        }
-                                        else
-                                        {
-                                            _ = logoContainer.Image(Resources.InvoicePostlerLogo);
-                                        }
+                                        _ = column.Item()
+                                            .Width(30)
+                                            .Image(this.invoice.Business.Logo?.Data ?? new IdenticonGenerator().GeneratePng(this.invoice.Business.Id.ToString(), 120));
                                     });
 
                                     // Business info
