@@ -341,5 +341,41 @@ namespace TcpWtf.NumberSequence.Client
                 needsPreparation: false);
             return await response.Content.ReadAsStringAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Gets an identicon as a PNG. If value is not provided, a random identicon is generated.
+        /// </summary>
+        public async Task<byte[]> GetIdenticonPngAsync(string value = default, int? size = default, CancellationToken cancellationToken = default)
+        {
+            string queryString = "?format=png";
+            if (!string.IsNullOrEmpty(value)) queryString += $"&value={value}";
+            if (size.HasValue) queryString += $"&size={size}";
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/identicon" + queryString),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets an identicon as an SVG. If value is not provided, a random identicon is generated.
+        /// </summary>
+        public async Task<string> GetIdenticonSvgAsync(string value = default, int? size = default, CancellationToken cancellationToken = default)
+        {
+            string queryString = "?format=svg";
+            if (!string.IsNullOrEmpty(value)) queryString += $"&value={value}";
+            if (size.HasValue) queryString += $"&size={size}";
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/identicon" + queryString),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
     }
 }

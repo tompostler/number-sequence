@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Web;
 using TcpWtf.NumberSequence.Contracts;
+using Unlimitedinf.Utilities;
 
 namespace number_sequence.Controllers
 {
@@ -2734,6 +2735,24 @@ namespace number_sequence.Controllers
             }
 
             return this.Ok(nos[index.Value - 1]);
+        }
+
+        [HttpGet("identicon")]
+        public IActionResult Identicon([FromQuery] string value = default, [FromQuery] string format = "png", [FromQuery] int size = 128)
+        {
+            if (format != "png" && format != "svg")
+            {
+                return this.BadRequest("format must be 'png' or 'svg'.");
+            }
+            if (format == "png" && size > 256)
+            {
+                return this.BadRequest("size must be at most 256 for png.");
+            }
+            value ??= Guid.NewGuid().ToString();
+            IdenticonGenerator generator = new();
+            return format == "svg"
+                ? this.Content(generator.GenerateSvg(value, size), "image/svg+xml")
+                : this.File(generator.GeneratePng(value, size), "image/png");
         }
     }
 }

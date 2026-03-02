@@ -29,7 +29,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     "byte",
                     "short",
                     "int",
-                    "long"
+                    "long",
+
+                    "identicon_png",
+                    "identicon_svg"
                 );
 
             Option<string> nameOption = new("--name") { Description = "If provided and the API supports it, the name to use for the randomness." };
@@ -37,6 +40,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Option<string> seedOption = new("--seed") { Description = "If provided and the API supports it, the seed to use for the randomness. Hashed with MD5 to an int. (string)" };
 
             Option<int?> valueOption = new("--value") { Description = "If provided and the API supports it, the value to use for the randomness. (int)" };
+
+            Option<FileInfo> outputOption = new Option<FileInfo>("--output") { Description = "If provided and the API supports it, the file to write the output to." }.AcceptLegalFilePathsOnly();
 
             Command command = new("random", "Get random data.")
             {
@@ -46,6 +51,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameOption,
                 seedOption,
                 valueOption,
+                outputOption,
             };
             command.SetAction(
                 (parseResult, cancellationToken) =>
@@ -56,13 +62,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     string name = parseResult.GetValue(nameOption);
                     string seed = parseResult.GetValue(seedOption);
                     int? value = parseResult.GetValue(valueOption);
-                    return HandleAsync(type, name, seed, value, stamp, verbosity);
+                    FileInfo output = parseResult.GetValue(outputOption);
+                    return HandleAsync(type, name, seed, value, output, stamp, verbosity);
                 });
 
             return command;
         }
 
-        private static async Task HandleAsync(string type, string nameStr, string seedStr, int? value, Stamp stamp, Verbosity verbosity)
+        private static async Task HandleAsync(string type, string nameStr, string seedStr, int? value, FileInfo output, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), EmptyTokenProvider.GetAsync, stamp);
 
@@ -72,6 +79,22 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             {
                 byte[] hash = MD5.HashData(Encoding.UTF8.GetBytes(seedStr));
                 seed = BitConverter.ToInt32(hash);
+            }
+
+            if (type == "identicon_png")
+            {
+                byte[] png = await client.Random.GetIdenticonPngAsync(nameStr, value);
+                await File.WriteAllBytesAsync(output.FullName, png);
+                Console.WriteLine($"Written {png.Length:N0} bytes (image/png) to {output.FullName}");
+                return;
+            }
+
+            if (type == "identicon_svg")
+            {
+                string svg = await client.Random.GetIdenticonSvgAsync(nameStr, value);
+                await File.WriteAllTextAsync(output.FullName, svg);
+                Console.WriteLine($"Written {svg.Length:N0} chars (image/svg+xml) to {output.FullName}");
+                return;
             }
 
             object response = type switch
