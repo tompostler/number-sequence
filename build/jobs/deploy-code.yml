@@ -47,7 +47,7 @@ jobs:
   - powershell: |
       $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
       $body = @{
-        Title = "Deployment of number-sequence $(Build.BuildNumber)+$shortSha was successful";
+        Title = "Deployment of $(Build.DefinitionName) $(Build.BuildNumber)+$shortSha was successful";
         Description = "``$(Build.SourceVersionMessage)``";
       } | ConvertTo-Json -Compress;
       Invoke-RestMethod -Method Post -Uri https://po.tcp.wtf/randommessage -Headers @{ 'x-api-key' = '$(pobot-api-key)' } -ContentType 'application/json' -Body $body;
@@ -56,7 +56,7 @@ jobs:
   - powershell: |
       $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
       $body = @{
-        Title = "Deployment of number-sequence $(Build.BuildNumber)+$shortSha was successful";
+        Title = "Deployment of $(Build.DefinitionName) $(Build.BuildNumber)+$shortSha was successful";
         Description = "``$(Build.SourceVersionMessage)``";
       } | ConvertTo-Json -Compress;
       Invoke-RestMethod -Method Post -Uri https://po.tcp.wtf/randommessage -Headers @{ 'x-api-key' = '$(pobot-api-key)' } -ContentType 'application/json' -Body $body;
