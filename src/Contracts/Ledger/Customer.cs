@@ -1,12 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace TcpWtf.NumberSequence.Contracts.Invoicing
+namespace TcpWtf.NumberSequence.Contracts.Ledger
 {
     /// <summary>
-    /// The business unit generating the invoice.
+    /// The customer being billed.
     /// </summary>
-    public sealed class InvoiceBusiness
+    public sealed class Customer
     {
         /// <summary>
         /// See <see cref="Account.Name"/>.
@@ -15,61 +15,50 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         public string AccountName { get; set; }
 
         /// <summary>
-        /// The id of the busines unit. Unique in the system.
+        /// The id of the customer. Unique in the system.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
         /// <summary>
-        /// The business unit name.
+        /// The customer name.
         /// </summary>
         [Required, MaxLength(64)]
         public string Name { get; set; }
 
         /// <summary>
-        /// The business unit display name to put in the invoice for checks and cash.
-        /// </summary>
-        [Required, MaxLength(64)]
-        public string PayableName { get; set; }
-
-        /// <summary>
-        /// The business unit address.
+        /// The customer address.
         /// </summary>
         [Required, MaxLength(64)]
         public string AddressLine1 { get; set; }
 
         /// <summary>
-        /// The business unit address.
+        /// The customer address.
         /// </summary>
         [Required, MaxLength(64)]
         public string AddressLine2 { get; set; }
 
         /// <summary>
-        /// Contact information for the business unit, such as email or phone.
+        /// Contact information for the customer, such as email or phone.
         /// </summary>
         [Required, MaxLength(64)]
         public string Contact { get; set; }
 
         /// <summary>
-        /// The date the business unit was created.
+        /// The date the customer was created.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
 
         /// <summary>
-        /// The date the business unit was modified.
+        /// The date the customer was modified.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset ModifiedDate { get; set; }
 
 
         /// <summary>
-        /// An optional logo image used in invoice and statement PDFs.
-        /// </summary>
-        public InvoiceBusinessLogo Logo { get; set; }
-
-        /// <summary>
-        /// A reference to the invoices this business unit has in the system.
+        /// A reference to the invoices this customer has in the system.
         /// </summary>
         public ICollection<Invoice> Invoices { get; set; }
     }

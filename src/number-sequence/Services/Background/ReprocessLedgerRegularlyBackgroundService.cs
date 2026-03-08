@@ -1,19 +1,19 @@
-﻿using Cronos;
+using Cronos;
 using DurableTask.Core;
 using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
 using number_sequence.Utilities;
-using TcpWtf.NumberSequence.Contracts.Invoicing;
+using TcpWtf.NumberSequence.Contracts.Ledger;
 
 namespace number_sequence.Services.Background
 {
-    public sealed class ReprocessInvoiceRegularlyBackgroundService : SqlSynchronizedBackgroundService
+    public sealed class ReprocessLedgerRegularlyBackgroundService : SqlSynchronizedBackgroundService
     {
-        public ReprocessInvoiceRegularlyBackgroundService(
+        public ReprocessLedgerRegularlyBackgroundService(
             IServiceProvider serviceProvider,
             Sentinals sentinals,
-            ILogger<ReprocessInvoiceRegularlyBackgroundService> logger,
+            ILogger<ReprocessLedgerRegularlyBackgroundService> logger,
             TelemetryClient telemetryClient)
             : base(serviceProvider, sentinals, logger, telemetryClient)
         { }
@@ -30,6 +30,8 @@ namespace number_sequence.Services.Background
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             DateTimeOffset fourteenDaysAgo = DateTimeOffset.UtcNow.AddDays(-14);
+
+            // Invoices
             List<Invoice> invoicesNeedingReprocessing = await nsContext.Invoices
                                                             .Where(x =>
                                                                 !x.PaidDate.HasValue
@@ -37,7 +39,6 @@ namespace number_sequence.Services.Background
                                                                 // It must have been processed at least once to be reprocessed regularly
                                                                 && x.ProcessedAt < fourteenDaysAgo)
                                                             .ToListAsync(cancellationToken);
-
             foreach (Invoice invoiceNeedingReprocessing in invoicesNeedingReprocessing)
             {
                 invoiceNeedingReprocessing.ProccessAttempt += 1;
@@ -45,7 +46,7 @@ namespace number_sequence.Services.Background
 
                 TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
                 OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                    typeof(DurableTaskImpl.Orchestrators.InvoiceGenerationOrchestrator),
+                    typeof(DurableTaskImpl.Orchestrators.LedgerInvoiceGenerationOrchestrator),
                     instanceId: $"{invoiceNeedingReprocessing.FriendlyId}_invoice",
                     invoiceNeedingReprocessing.Id);
                 this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");

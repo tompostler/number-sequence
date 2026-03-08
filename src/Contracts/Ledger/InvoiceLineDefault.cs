@@ -1,15 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TcpWtf.NumberSequence.Contracts.Invoicing
+namespace TcpWtf.NumberSequence.Contracts.Ledger
 {
     /// <summary>
-    /// The acutal line items on the invoice.
+    /// Used for defining standard/default <see cref="InvoiceLine"/> items.
     /// </summary>
-    public sealed class InvoiceLine
+    public sealed class InvoiceLineDefault
     {
         /// <summary>
-        /// The id of the line. Unique in the system.
+        /// See <see cref="Account.Name"/>.
+        /// </summary>
+        [Required, MaxLength(64)]
+        public string AccountName { get; set; }
+
+        /// <summary>
+        /// The id of the line default. Unique in the system.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
@@ -46,27 +52,36 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         public decimal Price { get; set; }
 
         /// <summary>
-        /// The total for this line item.
-        /// </summary>
-        [NotMapped]
-        public decimal Total => this.Quantity * this.Price;
-
-        /// <summary>
-        /// The date the line was created.
+        /// The date the line default was created.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
 
         /// <summary>
-        /// The date the line was modified.
+        /// The date the line default was modified.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset ModifiedDate { get; set; }
 
-
         /// <summary>
-        /// A reference to the invoice this line is for.
+        /// Enables conversion from <see cref="InvoiceLineDefault"/> to <see cref="InvoiceLine"/>.
         /// </summary>
-        public Invoice Invoice { get; set; }
+        public static implicit operator InvoiceLine(InvoiceLineDefault @this)
+        {
+            if (@this is null)
+            {
+                return null;
+            }
+
+            return new()
+            {
+                Id = @this.Id,
+                Title = @this.Title,
+                Description = @this.Description,
+                Quantity = @this.Quantity,
+                Unit = @this.Unit,
+                Price = @this.Price
+            };
+        }
     }
 }

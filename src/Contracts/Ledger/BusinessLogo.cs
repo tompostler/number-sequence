@@ -1,22 +1,22 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TcpWtf.NumberSequence.Contracts.Invoicing
+namespace TcpWtf.NumberSequence.Contracts.Ledger
 {
     /// <summary>
     /// An optional logo image for a business unit, used in invoice and statement PDFs.
     /// </summary>
-    public sealed class InvoiceBusinessLogo
+    public sealed class BusinessLogo
     {
         /// <summary>
-        /// See <see cref="InvoiceBusiness.Id"/>. Also the primary key for this table.
+        /// See <see cref="Business.Id"/>. Also the primary key for this table.
         /// </summary>
         public long BusinessId { get; set; }
 
         /// <summary>
         /// The business this logo belongs to.
         /// </summary>
-        public InvoiceBusiness Business { get; set; }
+        public Business Business { get; set; }
 
         /// <summary>
         /// The MIME content type of the image (e.g. image/png, image/jpeg).

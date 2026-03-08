@@ -11,25 +11,25 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System.Text;
-using TcpWtf.NumberSequence.Contracts.Invoicing;
+using TcpWtf.NumberSequence.Contracts.Ledger;
 using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.DurableTaskImpl.Activities
 {
-    public sealed class InvoicePdfGenerationActivity : AsyncTaskActivity<long, string>
+    public sealed class LedgerStatementPdfGenerationActivity : AsyncTaskActivity<long, string>
     {
         private readonly NsStorage nsStorage;
         private readonly IServiceProvider serviceProvider;
         private readonly Sentinals sentinals;
-        private readonly ILogger<InvoicePdfGenerationActivity> logger;
+        private readonly ILogger<LedgerStatementPdfGenerationActivity> logger;
         private readonly TelemetryClient telemetryClient;
 
-        public InvoicePdfGenerationActivity(
+        public LedgerStatementPdfGenerationActivity(
             NsStorage nsStorage,
             IServiceProvider serviceProvider,
             Sentinals sentinals,
-            ILogger<InvoicePdfGenerationActivity> logger,
+            ILogger<LedgerStatementPdfGenerationActivity> logger,
             TelemetryClient telemetryClient)
         {
             this.nsStorage = nsStorage;
@@ -53,42 +53,46 @@ namespace number_sequence.DurableTaskImpl.Activities
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            // Check if there's any invoices ready to be processed
-            Invoice invoice = await nsContext.Invoices
+            // Check if there's any statements ready to be processed
+            Statement statement = await nsContext.Statements
                 .Include(x => x.Business)
                     .ThenInclude(x => x.Logo)
                 .Include(x => x.Customer)
-                .Include(x => x.Lines)
-                .FirstOrDefaultAsync(x => x.Id == input && (x.ReadyForProcessing || x.ReprocessRegularly) && x.ProcessedAt == default, cancellationToken);
-            if (invoice == default)
+                .Include(x => x.Invoices)
+                    .ThenInclude(x => x.Lines)
+                .FirstOrDefaultAsync(x => x.Id == input && x.ReadyForProcessing && x.ProcessedAt == default, cancellationToken);
+            if (statement == default)
             {
-                throw new InvalidOperationException("Could not find invoice that was ready for processing.");
+                throw new InvalidOperationException("Could not find statment that was ready for processing.");
             }
 
             // Add the email request
-            string friendlyId = invoice.FriendlyId;
-            string title = string.IsNullOrEmpty(invoice.Title) ? $"Invoice #{friendlyId}" : invoice.Title;
-            string subject = $"[Invoice {friendlyId}] {invoice.Customer.Name} - {title}";
+            string friendlyId = statement.FriendlyId;
+            string title = $"Statement #{friendlyId}";
+            string subject = $"[Statement {friendlyId}] {statement.Customer.Name} - {title}";
             if (subject.Length > 128)
             {
                 subject = subject.Substring(0, 128);
             }
-            string attachmentName = new($"{friendlyId}_{invoice.Business.Name}_{invoice.Customer.Name}_{title}".Select(x => char.IsAsciiLetterOrDigit(x) || x == '_' ? x : '-').ToArray());
+            string attachmentName = new($"S{friendlyId}_{statement.Business.Name}_{statement.Customer.Name}_{title}".Select(x => char.IsAsciiLetterOrDigit(x) || x == '_' ? x : '-').ToArray());
             if (attachmentName.Length > 128)
             {
                 attachmentName = string.Concat(attachmentName.AsSpan(0, 124), ".pdf");
             }
             StringBuilder additionalBody = new();
-            _ = additionalBody.AppendLine($"Invoice id: {friendlyId}");
-            _ = additionalBody.AppendLine($"Business name: {invoice.Business.Name}");
-            _ = additionalBody.AppendLine($"Customer name: {invoice.Customer.Name}");
-            _ = additionalBody.AppendLine($"Due date: {invoice.DueDate:MMMM dd, yyyy}");
-            _ = additionalBody.AppendLine($"Total due: $ {invoice.Total:N2}");
-            _ = additionalBody.AppendLine($"Line count: {invoice.Lines.Count}");
+            _ = additionalBody.AppendLine($"Statement id: {friendlyId}.");
+            _ = additionalBody.AppendLine($"Business name: {statement.Business.Name}.");
+            _ = additionalBody.AppendLine($"Customer name: {statement.Customer.Name}.");
+            _ = additionalBody.AppendLine($"Invoices by {(statement.SearchByDueDate ? "due" : "created")} date.");
+            _ = additionalBody.AppendLine($"Start date: {statement.InvoiceStartDate:MMMM dd, yyyy}.");
+            _ = additionalBody.AppendLine($"End due: {statement.InvoiceEndDate:MMMM dd, yyyy}.");
+            _ = additionalBody.AppendLine($"Paid: ${statement.TotalPaid:N2}. Billed: ${statement.TotalBilled:N2}.");
+            _ = additionalBody.AppendLine($"Amount remaining: ${statement.TotalBilled - statement.TotalPaid:N2}.");
+            _ = additionalBody.AppendLine($"Invoice count: {statement.Invoices.Count:N0}.");
             EmailDocument emailDocument = new()
             {
-                Id = context.OrchestrationInstance.InstanceId,
-                To = invoice.Business.Contact,
+                Id = friendlyId,
+                To = statement.Business.Contact,
                 Subject = subject,
                 AttachmentName = attachmentName,
                 AdditionalBody = additionalBody.ToString()
@@ -101,7 +105,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             using (IDisposable disposable = this.logger.BeginScope("Generating PDF"))
             {
                 Settings.License = LicenseType.Community;
-                InvoicePdfDocument pdfDocument = new(invoice);
+                StatementPdfDocument pdfDocument = new(statement);
                 pdfDocument.GeneratePdf(ms);
                 ms.Position = 0;
             }
@@ -112,26 +116,23 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = await pdfBlobClient.UploadAsync(ms, overwrite: true, cancellationToken);
 
             // And save it to enable processing
-            invoice.ProcessedAt = DateTimeOffset.UtcNow;
+            statement.ProcessedAt = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
             return default;
         }
 
-        private sealed class InvoicePdfDocument : IDocument
+        private sealed class StatementPdfDocument : IDocument
         {
-            private readonly Invoice invoice;
+            private readonly Statement statement;
 
-            public InvoicePdfDocument(Invoice invoice)
+            public StatementPdfDocument(Statement statement)
             {
-                this.invoice = invoice;
+                this.statement = statement;
             }
 
             public void Compose(IDocumentContainer container)
             {
-                string invoiceIdFormat = $"Invoice #{this.invoice.FriendlyId}";
-                string invoiceTitle = string.IsNullOrWhiteSpace(this.invoice.Title)
-                    ? invoiceIdFormat
-                    : this.invoice.Title;
+                string statementTitle = $"Statement #{this.statement.FriendlyId}";
                 const float baseFontSize = 10;
 
                 _ = container.Page(page =>
@@ -159,7 +160,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                             .MaxHeight((baseFontSize + 1) * 4 * .8f)
                                             .AlignLeft()
                                             .AlignMiddle()
-                                            .Image(this.invoice.Business.Logo?.Data ?? new IdenticonGenerator() { Grayscale = true }.GeneratePng(this.invoice.Business.Id.ToString(), 128))
+                                            .Image(this.statement.Business.Logo?.Data ?? new IdenticonGenerator() { Grayscale = true }.GeneratePng(this.statement.Business.Id.ToString(), 128))
                                             .FitArea();
                                     });
 
@@ -168,17 +169,17 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     {
                                         _ = column.Item()
                                             .AlignCenter()
-                                            .Text(this.invoice.Business.Name)
+                                            .Text(this.statement.Business.Name)
                                             .Bold();
                                         _ = column.Item()
                                             .AlignCenter()
-                                            .Text(this.invoice.Business.AddressLine1);
+                                            .Text(this.statement.Business.AddressLine1);
                                         _ = column.Item()
                                             .AlignCenter()
-                                            .Text(this.invoice.Business.AddressLine2);
+                                            .Text(this.statement.Business.AddressLine2);
                                         _ = column.Item()
                                             .AlignCenter()
-                                            .Text(this.invoice.Business.Contact);
+                                            .Text(this.statement.Business.Contact);
                                     });
 
                                     // Invoice info
@@ -186,10 +187,8 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     {
                                         _ = column.Item()
                                             .AlignRight()
-                                            .Text(invoiceIdFormat)
+                                            .Text(statementTitle)
                                             .Bold();
-                                        _ = column.Item()
-                                            .Text(string.Empty);
                                         column.Item()
                                             .AlignRight()
                                             .Text(text =>
@@ -202,9 +201,17 @@ namespace number_sequence.DurableTaskImpl.Activities
                                             .AlignRight()
                                             .Text(text =>
                                             {
-                                                _ = text.Span("Due date: ")
+                                                _ = text.Span("Start date: ")
                                                     .Bold();
-                                                _ = text.Span(this.invoice.DueDate.ToString("MMMM dd, yyyy"));
+                                                _ = text.Span(this.statement.InvoiceStartDate.ToString("MMMM dd, yyyy"));
+                                            });
+                                        column.Item()
+                                            .AlignRight()
+                                            .Text(text =>
+                                            {
+                                                _ = text.Span("End date: ")
+                                                    .Bold();
+                                                _ = text.Span(this.statement.InvoiceEndDate.ToString("MMMM dd, yyyy"));
                                             });
                                     });
                                 });
@@ -222,17 +229,13 @@ namespace number_sequence.DurableTaskImpl.Activities
                     {
                         container.PaddingVertical(10).Column(column =>
                         {
-                            // Invoice title
+                            // Statement title
                             _ = column.Item()
-                                .Text(invoiceTitle)
+                                .Text(statementTitle)
                                 .FontSize(baseFontSize * 2)
                                 .Bold();
 
-                            // Invoice description
-                            _ = column.Item()
-                                .Text(this.invoice.Description);
-
-                            // Invoice summary. 3-column 'table' at the top under the title and description.
+                            // Statement summary. 3-column 'table' at the top under the title and description.
                             column.Item()
                                 .PaddingVertical(30)
                                 .PaddingHorizontal(15)
@@ -246,58 +249,44 @@ namespace number_sequence.DurableTaskImpl.Activities
                                             .Text("Bill To")
                                             .Bold();
                                         _ = column.Item()
-                                            .Text(this.invoice.Customer.Name);
+                                            .Text(this.statement.Customer.Name);
                                         _ = column.Item()
-                                            .Text(this.invoice.Customer.Contact);
+                                            .Text(this.statement.Customer.Contact);
                                         _ = column.Item()
-                                            .Text(this.invoice.Customer.AddressLine1);
+                                            .Text(this.statement.Customer.AddressLine1);
                                         _ = column.Item()
-                                            .Text(this.invoice.Customer.AddressLine2);
+                                            .Text(this.statement.Customer.AddressLine2);
                                     });
 
-                                    // Invoice Details
+                                    // Statement Details
                                     row.RelativeItem().Column(column =>
                                     {
                                         _ = column.Item()
-                                            .Text("Invoice Details")
+                                            .Text("Statement Details")
                                             .Bold();
                                         _ = column.Item()
                                             .Text($"PDF created {DateTime.Now:MMMM dd, yyyy}.");
                                         _ = column.Item()
-                                            .Text($"Total: ${this.invoice.Total:N2}.");
+                                            .Text($"Invoices by {(this.statement.SearchByDueDate ? "due" : "created")} date.");
                                         _ = column.Item()
-                                            .Text($"Line count: {this.invoice.Lines.Count:N0}.");
-                                    });
-
-                                    // Payment
-                                    row.RelativeItem().Column(column =>
-                                    {
+                                            .Text($"Paid: ${this.statement.TotalPaid:N2}. Billed: ${this.statement.TotalBilled:N2}.");
                                         _ = column.Item()
-                                            .Text("Payment")
-                                            .Bold();
+                                            .Text($"Amount remaining: ${this.statement.TotalBilled - this.statement.TotalPaid:N2}.");
                                         _ = column.Item()
-                                            .Text($"Due {this.invoice.DueDate:MMMM dd, yyyy}.");
-                                        _ = column.Item()
-                                            .Text(string.Empty)
-                                            .FontSize(baseFontSize * .5f);
-                                        _ = column.Item()
-                                            .Text("Accepted forms of payment:");
-                                        _ = column.Item()
-                                            .Text("Cash, Check, Bank Transfer, or Cash Equivalents (PayPal, Google Pay, Venmo, Zelle, etc.). Credit cards may be accepted. Inquire if questions.")
-                                            .FontSize(baseFontSize * .8f);
+                                            .Text($"Invoice count: {this.statement.Invoices.Count:N0}.");
                                     });
                                 });
 
-                            // Invoice lines
+                            // Statement lines
                             column.Item().Table(table =>
                             {
                                 table.ColumnsDefinition(columns =>
                                 {
                                     columns.RelativeColumn(1);
-                                    columns.RelativeColumn(9);
-                                    columns.RelativeColumn(2);
-                                    columns.RelativeColumn(2);
-                                    columns.RelativeColumn(2);
+                                    columns.RelativeColumn(8);
+                                    columns.RelativeColumn(3);
+                                    columns.RelativeColumn(3);
+                                    columns.RelativeColumn(3);
                                 });
 
                                 // Header, will be repeated on every page
@@ -307,37 +296,37 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         .Text("Id")
                                         .Bold();
                                     _ = header.Cell()
-                                        .Text("Item")
+                                        .Text("Invoice")
                                         .Bold();
                                     _ = header.Cell()
-                                        .Text("Quantity")
+                                        .Text("Created")
                                         .AlignRight()
                                         .Bold();
                                     _ = header.Cell()
-                                        .Text("Price")
+                                        .Text("Billed")
                                         .AlignRight()
                                         .Bold();
                                     _ = header.Cell()
-                                        .Text("Amount")
+                                        .Text("Paid")
                                         .AlignRight()
                                         .Bold();
                                     _ = header.Cell()
-                                        .ColumnSpan(5)
+                                        .ColumnSpan(4)
                                         .PaddingVertical(4)
                                         .BorderBottom(0.5f)
                                         .BorderColor(Colors.Black);
                                 });
 
-                                // Individual lines. Make sure to get correct width every 'row', else table will misalign.
-                                foreach (InvoiceLine line in this.invoice.Lines)
+                                // Individual invoices. Make sure to get correct width every 'row', else table will misalign.
+                                foreach (Invoice invoice in this.statement.Invoices)
                                 {
                                     static IContainer CellStyle(IContainer container)
                                         => container.PaddingVertical(3);
                                     static IContainer RightCellStyle(IContainer container)
                                         => container.PaddingVertical(3).AlignRight();
 
-                                    // Line id
-                                    _ = table.Cell().Element(CellStyle).Text(line.Id.ToString())
+                                    // Invoice id
+                                    _ = table.Cell().Element(CellStyle).Text(invoice.Id.ToString())
                                         .FontColor(Colors.Grey.Medium)
                                         .FontSize(baseFontSize * 0.9f)
                                         .LetterSpacing(-0.05f);
@@ -345,92 +334,31 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     // Line item
                                     table.Cell().Element(CellStyle).Text(text =>
                                     {
-                                        _ = text.Line(line.Title);
-                                        _ = text.Span(line.Description)
+                                        _ = text.Span("Invoice");
+                                        _ = !string.IsNullOrWhiteSpace(invoice.Title)
+                                            ? text.Line($" \"{invoice.Title}\" (id {invoice.Id:0000})")
+                                            : text.Line($" id {invoice.Id:0000}");
+                                        _ = text.Span(invoice.Description)
                                             .FontColor(Colors.Grey.Medium)
                                             .FontSize(baseFontSize * .9f)
                                             .Italic();
                                     });
 
-                                    // Line quantity
-                                    if (string.IsNullOrWhiteSpace(line.Unit))
-                                    {
-                                        _ = table.Cell().Element(RightCellStyle).Text($"{line.Quantity:N2}");
-                                    }
-                                    else
-                                    {
-                                        // We have a unit and should format the quantity differently
-                                        _ = table.Cell().Element(RightCellStyle).Text($"{line.Quantity:N2} {line.Unit}");
-                                    }
+                                    // Invoice created date
+                                    _ = table.Cell().Element(RightCellStyle).Text($"{invoice.CreatedDate:MMM dd, yyyy}");
 
-                                    // Line price
+                                    // Invoice amount billed
+                                    _ = table.Cell().Element(RightCellStyle).Text($"$ {invoice.Total:N2}");
+
+                                    // Invoice paid date
                                     table.Cell().Element(RightCellStyle).Text(text =>
                                     {
-                                        _ = text.Span(line.Price.ToString("N2"));
-                                        if (!string.IsNullOrWhiteSpace(line.Unit))
-                                        {
-                                            _ = text.Span("/");
-                                            _ = text.Span(line.Unit);
-                                        }
-                                    });
-
-                                    // Line amount
-                                    table.Cell().Element(RightCellStyle).Text(text =>
-                                    {
-                                        _ = text.Span("$ ");
-                                        if (line.Price < 0)
-                                        {
-                                            _ = text.Span("(");
-                                        }
-                                        _ = text.Span(Math.Abs(line.Quantity * line.Price).ToString("N2"));
-                                        if (line.Price < 0)
-                                        {
-                                            _ = text.Span(")");
-                                        }
+                                        _ = invoice.PaidDate.HasValue
+                                            ? text.Span($"{invoice.PaidDate:MMM dd, yyyy}")
+                                            : text.Span("-");
                                     });
                                 }
                             });
-
-                            _ = column.Item().PaddingVertical(10).LineHorizontal(0.5f);
-
-                            // Total due
-                            column.Item()
-                                .DefaultTextStyle(TextStyle.Default.FontSize(baseFontSize * 1.5f).Bold())
-                                .Row(row =>
-                                {
-                                    row.RelativeItem().Column(column =>
-                                    {
-                                        _ = column.Item().Text("Total Due");
-                                    });
-                                    row.RelativeItem().AlignRight().Column(column =>
-                                    {
-                                        _ = column.Item().Text($"${this.invoice.Total:N2}");
-                                    });
-                                });
-
-                            // Terms
-                            column.Item()
-                                .DefaultTextStyle(TextStyle.Default.FontSize(baseFontSize * .8f))
-                                .ExtendVertical()
-                                .AlignBottom()
-                                .Text(text =>
-                                {
-                                    _ = text.Span("Invoice numbering").Bold();
-                                    _ = text.Span(" is of the form id-version.");
-                                    _ = text.Span(" For any given invoice id, there may be multiple versions as additional lines are added or other modifications are necessary.");
-                                    _ = text.Span(" Unless otherwise noted, the largest numerical version for a specific id is to be considered the official invoice and all prior versions discarded.");
-                                    _ = text.Line(string.Empty);
-
-                                    _ = text.Span("Cash discounts and credit surcharges").Bold();
-                                    _ = text.Span(" will not be added.");
-                                    _ = text.Span(" Cash or cash equivalent payment methods still require handling to be processed.");
-                                    _ = text.Span(" Credit processing incurs direct fees roughly equivalent to cash handling.");
-                                    _ = text.Line(string.Empty);
-
-                                    _ = text.Span("Finance charges").Bold();
-                                    _ = text.Span(" will accrue on unpaid, overdue invoices.");
-                                    _ = text.Span(" The rate of 2% per month, which is an approximate 24% APR (annual percentage rate), will be applied to any remaining balance on the 1st of every month following the due date until the invoice is paid in full.");
-                                });
 
                         });
                     });
@@ -448,7 +376,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     row.RelativeItem().Column(column =>
                                     {
                                         _ = column.Item()
-                                            .Text(invoiceTitle);
+                                            .Text(statementTitle);
                                     });
 
                                     // Page of Page

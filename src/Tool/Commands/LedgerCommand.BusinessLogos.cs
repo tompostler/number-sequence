@@ -3,7 +3,7 @@ using Unlimitedinf.Utilities.Extensions;
 
 namespace TcpWtf.NumberSequence.Tool.Commands
 {
-    internal static partial class InvoiceCommand
+    internal static partial class LedgerCommand
     {
         private static async Task HandleBusinessLogoCreateAsync(long businessId, FileInfo logoFileInfo, Stamp stamp, Verbosity verbosity)
         {
@@ -19,14 +19,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 var ext => throw new InvalidOperationException($"Unsupported file extension [{ext}]. Must be one of: .gif, .jpg, .jpeg, .png, .webp"),
             };
 
-            Contracts.Invoicing.InvoiceBusinessLogo logo = new()
+            Contracts.Ledger.BusinessLogo logo = new()
             {
                 BusinessId = businessId,
                 ContentType = contentType,
                 Data = data,
             };
 
-            logo = await client.Invoice.CreateBusinessLogoAsync(businessId, logo);
+            logo = await client.Ledger.CreateBusinessLogoAsync(businessId, logo);
             Console.WriteLine(new { logo.BusinessId, logo.ContentType, DataLength = logo.Data?.Length, logo.CreatedDate, logo.ModifiedDate }.ToJsonString(indented: true));
         }
 
@@ -44,14 +44,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 var ext => throw new InvalidOperationException($"Unsupported file extension [{ext}]. Must be one of: .gif, .jpg, .jpeg, .png, .webp"),
             };
 
-            Contracts.Invoicing.InvoiceBusinessLogo logo = new()
+            Contracts.Ledger.BusinessLogo logo = new()
             {
                 BusinessId = businessId,
                 ContentType = contentType,
                 Data = data,
             };
 
-            logo = await client.Invoice.UpdateBusinessLogoAsync(businessId, logo);
+            logo = await client.Ledger.UpdateBusinessLogoAsync(businessId, logo);
             Console.WriteLine(new { logo.BusinessId, logo.ContentType, DataLength = logo.Data?.Length, logo.CreatedDate, logo.ModifiedDate }.ToJsonString(indented: true));
         }
 
@@ -59,7 +59,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
-            Contracts.Invoicing.InvoiceBusinessLogo logo = await client.Invoice.GetBusinessLogoAsync(businessId);
+            Contracts.Ledger.BusinessLogo logo = await client.Ledger.GetBusinessLogoAsync(businessId);
             await File.WriteAllBytesAsync(outputFileInfo.FullName, logo.Data);
             Console.WriteLine($"Written {logo.Data.Length:N0} bytes ({logo.ContentType}) to {outputFileInfo.FullName}");
         }
@@ -67,7 +67,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         private static async Task HandleBusinessLogoDeleteAsync(long businessId, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            await client.Invoice.DeleteBusinessLogoAsync(businessId);
+            await client.Ledger.DeleteBusinessLogoAsync(businessId);
         }
     }
 }

@@ -2,12 +2,12 @@
 
 namespace number_sequence.DurableTaskImpl.Orchestrators
 {
-    public sealed class StatementGenerationOrchestrator : TaskOrchestration<string, long>
+    public sealed class LedgerStatementGenerationOrchestrator : TaskOrchestration<string, long>
     {
         public override async Task<string> RunTask(OrchestrationContext context, long input)
         {
             _ = await context.ScheduleWithRetry<string>(
-                typeof(Activities.StatementPdfGenerationActivity),
+                typeof(Activities.LedgerStatementPdfGenerationActivity),
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
                 input);
 

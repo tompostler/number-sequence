@@ -1,23 +1,31 @@
-﻿using System.CommandLine;
+using System.CommandLine;
 using TcpWtf.NumberSequence.Client;
 
 namespace TcpWtf.NumberSequence.Tool.Commands
 {
-    internal static partial class InvoiceCommand
+    internal static partial class LedgerCommand
     {
         public static Command Create(Option<Stamp> stampOption, Option<Verbosity> verbosityOption)
         {
-            Command rootCommand = new("invoice", "Create and manage invoices.");
+            Command rootCommand = new("ledger", "Create and manage ledger data.");
+            rootCommand.Aliases.Add("l");
 
-            // Common arguments
-            Argument<long> idArgument = new("invoiceId") { Description = "The id of the invoice." };
+            #region Common
+
+            // Common arguments shared across invoice and invoice line subcommands
             Option<bool> rawOption = new("--raw") { Description = "Show raw json object(s) instead of the nicer summary format." };
 
-            Command businessCommand = new("business", "Manage invoice invoices (location that creates invoices).");
+            #endregion // Common
+
+
+            #region Business
+
+            Command businessCommand = new("business", "Manage businesses (the entity that creates invoices).");
+            businessCommand.Aliases.Add("b");
 
             Argument<long> businessIdArgument = new("businessId") { Description = "The id of the business." };
 
-            Command businessCreateCommand = new("create", "Create a new invoice business.")
+            Command businessCreateCommand = new("create", "Create a new business.")
             {
                 stampOption,
                 verbosityOption,
@@ -30,13 +38,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleBusinessCreateAsync(stamp, verbosity);
                 });
 
-            Command businessGetCommand = new("get", "Get an existing invoice business.")
+            Command businessGetCommand = new("get", "Get an existing business.")
             {
                 stampOption,
                 verbosityOption,
                 businessIdArgument,
             };
             businessGetCommand.Aliases.Add("show");
+            businessGetCommand.Aliases.Add("read");
             businessGetCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -46,7 +55,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleBusinessGetAsync(businessId, stamp, verbosity);
                 });
 
-            Command businessListCommand = new("list", "Get existing invoice businesses.")
+            Command businessListCommand = new("list", "Get existing businesses.")
             {
                 stampOption,
                 verbosityOption,
@@ -60,10 +69,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleBusinessListAsync(stamp, verbosity);
                 });
 
-            Command businessLogoCommand = new("logo", "Manage the logo image for an invoice business.");
+            Command businessLogoCommand = new("logo", "Manage the logo image for a business.");
 
             Argument<FileInfo> logoFileInfoArgument = new Argument<FileInfo>("file-path") { Description = "Path to the image file (.gif, .jpg, .jpeg, .png, .webp). Maximum 64kb." }.AcceptExistingOnly();
-            Command businessLogoCreateCommand = new("create", "Upload a logo for an existing invoice business.")
+            Command businessLogoCreateCommand = new("create", "Upload a logo for an existing business.")
             {
                 stampOption,
                 verbosityOption,
@@ -80,7 +89,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleBusinessLogoCreateAsync(businessId, logoFileInfo, stamp, verbosity);
                 });
 
-            Command businessLogoUpdateCommand = new("update", "Replace the logo for an existing invoice business.")
+            Command businessLogoUpdateCommand = new("update", "Replace the logo for an existing business.")
             {
                 stampOption,
                 verbosityOption,
@@ -98,7 +107,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
 
             Argument<FileInfo> outputFileInfoArgument = new Argument<FileInfo>("output-path") { Description = "Path to write the downloaded image file." }.AcceptLegalFilePathsOnly();
-            Command businessLogoGetCommand = new("get", "Download the logo for an existing invoice business.")
+            Command businessLogoGetCommand = new("get", "Download the logo for an existing business.")
             {
                 stampOption,
                 verbosityOption,
@@ -106,6 +115,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 outputFileInfoArgument,
             };
             businessLogoGetCommand.Aliases.Add("show");
+            businessLogoGetCommand.Aliases.Add("read");
             businessLogoGetCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -116,7 +126,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleBusinessLogoGetAsync(businessId, outputFileInfo, stamp, verbosity);
                 });
 
-            Command businessLogoDeleteCommand = new("delete", "Delete the logo for an existing invoice business.")
+            Command businessLogoDeleteCommand = new("delete", "Delete the logo for an existing business.")
             {
                 stampOption,
                 verbosityOption,
@@ -142,10 +152,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             businessCommand.Subcommands.Add(businessListCommand);
             rootCommand.Subcommands.Add(businessCommand);
 
+            #endregion // Business
 
-            Command customerCommand = new("customer", "Manage invoice customers (location that receives invoices).");
 
-            Command customerCreateCommand = new("create", "Create a new invoice customer.")
+            #region Customer
+
+            Command customerCommand = new("customer", "Manage customers (the entity that receives invoices).");
+            customerCommand.Aliases.Add("c");
+
+            Argument<long> customerIdArgument = new("customerId") { Description = "The id of the customer." };
+
+            Command customerCreateCommand = new("create", "Create a new customer.")
             {
                 stampOption,
                 verbosityOption,
@@ -158,13 +175,13 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleCustomerCreateAsync(stamp, verbosity);
                 });
 
-            Argument<long> customerIdArgument = new("customerId") { Description = "The id of the customer." };
-            Command customerEditCommand = new("edit", "Edit an existing invoice customer.")
+            Command customerEditCommand = new("edit", "Edit an existing customer.")
             {
                 stampOption,
                 verbosityOption,
                 customerIdArgument,
             };
+            customerEditCommand.Aliases.Add("update");
             customerEditCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -174,13 +191,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleCustomerEditAsync(customerId, stamp, verbosity);
                 });
 
-            Command customerGetCommand = new("get", "Get an existing invoice customer.")
+            Command customerGetCommand = new("get", "Get an existing customer.")
             {
                 stampOption,
                 verbosityOption,
                 customerIdArgument,
             };
             customerGetCommand.Aliases.Add("show");
+            customerGetCommand.Aliases.Add("read");
             customerGetCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -190,7 +208,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleCustomerGetAsync(customerId, stamp, verbosity);
                 });
 
-            Command customerListCommand = new("list", "Get existing invoice customers.")
+            Command customerListCommand = new("list", "Get existing customers.")
             {
                 stampOption,
                 verbosityOption,
@@ -210,12 +228,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             customerCommand.Subcommands.Add(customerListCommand);
             rootCommand.Subcommands.Add(customerCommand);
 
+            #endregion // Customer
 
-            Command statementCommand = new("statement", "Manage invoice statements (a collection of invoices for a customer over a date range).");
+
+            #region Statement
+
+            Command statementCommand = new("statement", "Manage statements (a collection of invoices for a customer over a date range).");
+            statementCommand.Aliases.Add("s");
 
             Argument<long> statementIdArgument = new("statementId") { Description = "The id of the statement." };
 
-            Command statementCreateCommand = new("create", "Create a new invoice statement.")
+            Command statementCreateCommand = new("create", "Create a new statement.")
             {
                 stampOption,
                 verbosityOption,
@@ -228,13 +251,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleStatementCreateAsync(stamp, verbosity);
                 });
 
-            Command statementGetCommand = new("get", "Get an existing invoice statement.")
+            Command statementGetCommand = new("get", "Get an existing statement.")
             {
                 stampOption,
                 verbosityOption,
                 statementIdArgument,
             };
             statementGetCommand.Aliases.Add("show");
+            statementGetCommand.Aliases.Add("read");
             statementGetCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -244,7 +268,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleStatementGetAsync(statementId, stamp, verbosity);
                 });
 
-            Command statementListCommand = new("list", "Get existing invoice statements.")
+            Command statementListCommand = new("list", "Get existing statements.")
             {
                 stampOption,
                 verbosityOption,
@@ -280,15 +304,182 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             statementCommand.Subcommands.Add(statementProcessCommand);
             rootCommand.Subcommands.Add(statementCommand);
 
+            #endregion // Statement
 
-            Command lineDefaultCommand = new("line-default", "Manage invoice line defaults (line items that can be used as a reference for adding a line to an invoice).");
 
-            Command lineDefaultCreateCommand = new("create", "Create a new invoice line default.")
+            #region Invoice
+
+            Command invoiceCommand = new("invoice", "Create and manage invoices.");
+            invoiceCommand.Aliases.Add("i");
+            Argument<long> invoiceIdArgument = new("invoiceId") { Description = "The id of the invoice." };
+
+            #region Invoice Lines
+
+            Command invoiceLineCommand = new("line", "Manage invoice lines.");
+            invoiceLineCommand.Aliases.Add("l");
+
+            Argument<long> invoiceLineIdArgument = new("lineId") { Description = "The id of the line." };
+            Argument<long> invoiceLineOtherIdArgument = new("lineOtherId") { Description = "The id of the other line." };
+            Argument<long> targetInvoiceIdArgument = new("target-invoice-id") { Description = "If supplied, the target invoice id to create the duplicate line on.", DefaultValueFactory = _ => -1L };
+
+            Command invoiceLineCreateCommand = new("create", "Create a new invoice line.")
+            {
+                stampOption,
+                verbosityOption,
+                invoiceIdArgument,
+                rawOption,
+            };
+            invoiceLineCreateCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleLineCreateAsync(invoiceId, raw, stamp, verbosity);
+                });
+
+            Command invoiceLineDuplicateCommand = new("duplicate", "Duplicate an invoice line, optionally to another invoice.")
+            {
+                stampOption,
+                verbosityOption,
+                invoiceIdArgument,
+                invoiceLineIdArgument,
+                targetInvoiceIdArgument,
+                rawOption,
+            };
+            invoiceLineDuplicateCommand.Aliases.Add("dupe");
+            invoiceLineDuplicateCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
+                    long lineId = parseResult.GetRequiredValue(invoiceLineIdArgument);
+                    long targetId = parseResult.GetRequiredValue(targetInvoiceIdArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleLineDuplicateAsync(invoiceId, lineId, targetId, raw, stamp, verbosity);
+                });
+
+            Command invoiceLineEditCommand = new("edit", "Edit an existing invoice line.")
+            {
+                stampOption,
+                verbosityOption,
+                invoiceIdArgument,
+                invoiceLineIdArgument,
+                rawOption,
+            };
+            invoiceLineEditCommand.Aliases.Add("update");
+            invoiceLineEditCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
+                    long lineId = parseResult.GetRequiredValue(invoiceLineIdArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleLineEditAsync(invoiceId, lineId, raw, stamp, verbosity);
+                });
+
+            Command invoiceLineGetCommand = new("get", "Get an existing invoice line.")
+            {
+                stampOption,
+                verbosityOption,
+                invoiceIdArgument,
+                invoiceLineIdArgument,
+            };
+            invoiceLineGetCommand.Aliases.Add("show");
+            invoiceLineGetCommand.Aliases.Add("read");
+            invoiceLineGetCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
+                    long lineId = parseResult.GetRequiredValue(invoiceLineIdArgument);
+                    return HandleLineGetAsync(invoiceId, lineId, stamp, verbosity);
+                });
+
+            Command invoiceLineListCommand = new("list", "Get existing invoice lines.")
+            {
+                stampOption,
+                verbosityOption,
+                invoiceIdArgument,
+            };
+            invoiceLineListCommand.Aliases.Add("ls");
+            invoiceLineListCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
+                    return HandleLineListAsync(invoiceId, stamp, verbosity);
+                });
+
+            Command invoiceLineRemoveCommand = new("remove", "Remove an existing invoice line.")
+            {
+                stampOption,
+                verbosityOption,
+                invoiceIdArgument,
+                invoiceLineIdArgument,
+                rawOption,
+            };
+            invoiceLineRemoveCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
+                    long lineId = parseResult.GetRequiredValue(invoiceLineIdArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleLineRemoveAsync(invoiceId, lineId, raw, stamp, verbosity);
+                });
+
+            Command invoiceLineSwapCommand = new("swap", "Swap lines in an invoice to change their ordering to a more preferred sorting.")
+            {
+                stampOption,
+                verbosityOption,
+                invoiceIdArgument,
+                invoiceLineIdArgument,
+                invoiceLineOtherIdArgument,
+                rawOption,
+            };
+            invoiceLineSwapCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
+                    long lineId = parseResult.GetRequiredValue(invoiceLineIdArgument);
+                    long otherId = parseResult.GetRequiredValue(invoiceLineOtherIdArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleLineSwapAsync(invoiceId, lineId, otherId, raw, stamp, verbosity);
+                });
+
+            invoiceLineCommand.Subcommands.Add(invoiceLineCreateCommand);
+            invoiceLineCommand.Subcommands.Add(invoiceLineDuplicateCommand);
+            invoiceLineCommand.Subcommands.Add(invoiceLineEditCommand);
+            invoiceLineCommand.Subcommands.Add(invoiceLineGetCommand);
+            invoiceLineCommand.Subcommands.Add(invoiceLineListCommand);
+            invoiceLineCommand.Subcommands.Add(invoiceLineRemoveCommand);
+            invoiceLineCommand.Subcommands.Add(invoiceLineSwapCommand);
+            invoiceCommand.Subcommands.Add(invoiceLineCommand);
+
+            #endregion // Invoice Lines
+
+            #region Invoice Line Defaults
+
+            Command invoiceLineDefaultCommand = new("line-default", "Manage invoice line defaults (line items that can be used as a reference for adding a line to an invoice).");
+            invoiceLineDefaultCommand.Aliases.Add("ld");
+
+            Argument<long> invoiceLineDefaultIdArgument = new("lineDefaultId") { Description = "The id of the line default." };
+
+            Command invoiceLineDefaultCreateCommand = new("create", "Create a new invoice line default.")
             {
                 stampOption,
                 verbosityOption,
             };
-            lineDefaultCreateCommand.SetAction(
+            invoiceLineDefaultCreateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -296,45 +487,46 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleLineDefaultCreateAsync(stamp, verbosity);
                 });
 
-            Argument<long> lineDefaultIdArgument = new("lineDefaultId") { Description = "The id of the line default." };
-            Command lineDefaultEditCommand = new("edit", "Edit an existing invoice line.")
+            Command invoiceLineDefaultEditCommand = new("edit", "Edit an existing invoice line default.")
             {
                 stampOption,
                 verbosityOption,
-                lineDefaultIdArgument,
+                invoiceLineDefaultIdArgument,
             };
-            lineDefaultEditCommand.SetAction(
+            invoiceLineDefaultEditCommand.Aliases.Add("update");
+            invoiceLineDefaultEditCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long id = parseResult.GetRequiredValue(lineDefaultIdArgument);
+                    long id = parseResult.GetRequiredValue(invoiceLineDefaultIdArgument);
                     return HandleLineDefaultEditAsync(id, stamp, verbosity);
                 });
 
-            Command lineDefaultGetCommand = new("get", "Get an existing invoice line default.")
+            Command invoiceLineDefaultGetCommand = new("get", "Get an existing invoice line default.")
             {
                 stampOption,
                 verbosityOption,
-                lineDefaultIdArgument,
+                invoiceLineDefaultIdArgument,
             };
-            lineDefaultGetCommand.Aliases.Add("show");
-            lineDefaultGetCommand.SetAction(
+            invoiceLineDefaultGetCommand.Aliases.Add("show");
+            invoiceLineDefaultGetCommand.Aliases.Add("read");
+            invoiceLineDefaultGetCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long id = parseResult.GetRequiredValue(lineDefaultIdArgument);
+                    long id = parseResult.GetRequiredValue(invoiceLineDefaultIdArgument);
                     return HandleLineDefaultGetAsync(id, stamp, verbosity);
                 });
 
-            Command lineDefaultListCommand = new("list", "Get existing invoice line defaults.")
+            Command invoiceLineDefaultListCommand = new("list", "Get existing invoice line defaults.")
             {
                 stampOption,
                 verbosityOption,
             };
-            lineDefaultListCommand.Aliases.Add("ls");
-            lineDefaultListCommand.SetAction(
+            invoiceLineDefaultListCommand.Aliases.Add("ls");
+            invoiceLineDefaultListCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -342,178 +534,31 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleLineDefaultListAsync(stamp, verbosity);
                 });
 
-            Command lineDefaultSwapCommand = new("swap", "Since line defaults are a CLI utility, swap two of them for more preferred sorting.")
+            Command invoiceLineDefaultSwapCommand = new("swap", "Since line defaults are a CLI utility, swap two of them for more preferred sorting.")
             {
                 stampOption,
                 verbosityOption,
-                lineDefaultIdArgument,
+                invoiceLineDefaultIdArgument,
                 new Argument<long>("lineDefaultOtherId") { Description = "The id of the other line default." },
             };
-            lineDefaultSwapCommand.SetAction(
+            invoiceLineDefaultSwapCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long id = parseResult.GetRequiredValue(lineDefaultIdArgument);
+                    long id = parseResult.GetRequiredValue(invoiceLineDefaultIdArgument);
                     long otherId = parseResult.GetRequiredValue<long>("lineDefaultOtherId");
                     return HandleLineDefaultSwapAsync(id, otherId, stamp, verbosity);
                 });
 
-            lineDefaultCommand.Subcommands.Add(lineDefaultCreateCommand);
-            lineDefaultCommand.Subcommands.Add(lineDefaultEditCommand);
-            lineDefaultCommand.Subcommands.Add(lineDefaultGetCommand);
-            lineDefaultCommand.Subcommands.Add(lineDefaultListCommand);
-            lineDefaultCommand.Subcommands.Add(lineDefaultSwapCommand);
-            rootCommand.Subcommands.Add(lineDefaultCommand);
+            invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultCreateCommand);
+            invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultEditCommand);
+            invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultGetCommand);
+            invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultListCommand);
+            invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultSwapCommand);
+            invoiceCommand.Subcommands.Add(invoiceLineDefaultCommand);
 
-
-            Command lineCommand = new("line", "Manage invoice lines.");
-
-            Argument<long> lineIdArgument = new("lineId") { Description = "The id of the line." };
-            Argument<long> lineOtherIdArgument = new("lineOtherId") { Description = "The id of the other line." };
-            Argument<long> targetInvoiceIdArgument = new("target-invoice-id") { Description = "If supplied, the target invoice id to create the duplicate line on.", DefaultValueFactory = _ => -1L };
-
-            Command lineCreateCommand = new("create", "Create a new invoice line.")
-            {
-                stampOption,
-                verbosityOption,
-                idArgument,
-                rawOption,
-            };
-            lineCreateCommand.SetAction(
-                (parseResult, cancellationToken) =>
-                {
-                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
-                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
-                    bool raw = parseResult.GetValue(rawOption);
-                    return HandleLineCreateAsync(invoiceId, raw, stamp, verbosity);
-                });
-
-            Command lineDuplicateCommand = new("duplicate", "Duplicate an invoice line, optionally to another invoice.")
-            {
-                stampOption,
-                verbosityOption,
-                idArgument,
-                lineIdArgument,
-                targetInvoiceIdArgument,
-                rawOption,
-            };
-            lineDuplicateCommand.Aliases.Add("dupe");
-            lineDuplicateCommand.SetAction(
-                (parseResult, cancellationToken) =>
-                {
-                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
-                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
-                    long lineId = parseResult.GetRequiredValue(lineIdArgument);
-                    long targetId = parseResult.GetRequiredValue(targetInvoiceIdArgument);
-                    bool raw = parseResult.GetValue(rawOption);
-                    return HandleLineDuplicateAsync(invoiceId, lineId, targetId, raw, stamp, verbosity);
-                });
-
-            Command lineEditCommand = new("edit", "Edit an existing invoice line.")
-            {
-                stampOption,
-                verbosityOption,
-                idArgument,
-                lineIdArgument,
-                rawOption,
-            };
-            lineEditCommand.SetAction(
-                (parseResult, cancellationToken) =>
-                {
-                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
-                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
-                    long lineId = parseResult.GetRequiredValue(lineIdArgument);
-                    bool raw = parseResult.GetValue(rawOption);
-                    return HandleLineEditAsync(invoiceId, lineId, raw, stamp, verbosity);
-                });
-
-            Command lineGetCommand = new("get", "Get an existing invoice line.")
-            {
-                stampOption,
-                verbosityOption,
-                idArgument,
-                lineIdArgument,
-            };
-            lineGetCommand.Aliases.Add("show");
-            lineGetCommand.SetAction(
-                (parseResult, cancellationToken) =>
-                {
-                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
-                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
-                    long lineId = parseResult.GetRequiredValue(lineIdArgument);
-                    return HandleLineGetAsync(invoiceId, lineId, stamp, verbosity);
-                });
-
-            Command lineListCommand = new("list", "Get existing invoice lines.")
-            {
-                stampOption,
-                verbosityOption,
-                idArgument,
-            };
-            lineListCommand.Aliases.Add("ls");
-            lineListCommand.SetAction(
-                (parseResult, cancellationToken) =>
-                {
-                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
-                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
-                    return HandleLineListAsync(invoiceId, stamp, verbosity);
-                });
-
-            Command lineRemoveCommand = new("remove", "Remove an existing invoice line.")
-            {
-                stampOption,
-                verbosityOption,
-                idArgument,
-                lineIdArgument,
-                rawOption,
-            };
-            lineRemoveCommand.SetAction(
-                (parseResult, cancellationToken) =>
-                {
-                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
-                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
-                    long lineId = parseResult.GetRequiredValue(lineIdArgument);
-                    bool raw = parseResult.GetValue(rawOption);
-                    return HandleLineRemoveAsync(invoiceId, lineId, raw, stamp, verbosity);
-                });
-
-            Command lineSwapCommand = new("swap", "Swap lines in an invoice to change their ordering to a more preferred sorting.")
-            {
-                stampOption,
-                verbosityOption,
-                idArgument,
-                lineIdArgument,
-                lineOtherIdArgument,
-                rawOption,
-            };
-            lineSwapCommand.SetAction(
-                (parseResult, cancellationToken) =>
-                {
-                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
-                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
-                    long lineId = parseResult.GetRequiredValue(lineIdArgument);
-                    long otherId = parseResult.GetRequiredValue(lineOtherIdArgument);
-                    bool raw = parseResult.GetValue(rawOption);
-                    return HandleLineSwapAsync(invoiceId, lineId, otherId, raw, stamp, verbosity);
-                });
-
-            lineCommand.Subcommands.Add(lineCreateCommand);
-            lineCommand.Subcommands.Add(lineDuplicateCommand);
-            lineCommand.Subcommands.Add(lineEditCommand);
-            lineCommand.Subcommands.Add(lineGetCommand);
-            lineCommand.Subcommands.Add(lineListCommand);
-            lineCommand.Subcommands.Add(lineRemoveCommand);
-            lineCommand.Subcommands.Add(lineSwapCommand);
-            rootCommand.Subcommands.Add(lineCommand);
-
+            #endregion // Invoice Line Defaults
 
             Option<long?> idFromOption = new("--from") { Description = "The id of the invoice if creating from another invoice. The first two lines of the new invoice will be the total of the previous and the payment information." };
             Command createCommand = new("create", "Create a new invoice.")
@@ -532,120 +577,123 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleCreateAsync(from, raw, stamp, verbosity);
                 });
-            rootCommand.Subcommands.Add(createCommand);
+            invoiceCommand.Subcommands.Add(createCommand);
 
-
-            Command editCommand = new("edit", "Edit an existing invoice.")
+            Command invoiceEditCommand = new("edit", "Edit an existing invoice.")
             {
                 stampOption,
                 verbosityOption,
-                idArgument,
+                invoiceIdArgument,
                 rawOption,
             };
-            editCommand.SetAction(
+            invoiceEditCommand.Aliases.Add("update");
+            invoiceEditCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleEditAsync(invoiceId, raw, stamp, verbosity);
                 });
-            rootCommand.Subcommands.Add(editCommand);
+            invoiceCommand.Subcommands.Add(invoiceEditCommand);
 
-
-            Command getCommand = new("get", "Get an existing invoice.")
+            Command invoiceGetCommand = new("get", "Get an existing invoice.")
             {
                 stampOption,
                 verbosityOption,
-                idArgument,
+                invoiceIdArgument,
                 rawOption,
             };
-            getCommand.Aliases.Add("show");
-            getCommand.SetAction(
+            invoiceGetCommand.Aliases.Add("show");
+            invoiceGetCommand.Aliases.Add("read");
+            invoiceGetCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleGetAsync(invoiceId, raw, stamp, verbosity);
                 });
-            rootCommand.Subcommands.Add(getCommand);
+            invoiceCommand.Subcommands.Add(invoiceGetCommand);
 
-
-            Command listCommand = new("list", "Get existing invoices.")
+            Command invoiceListCommand = new("list", "Get existing invoices.")
             {
                 stampOption,
                 verbosityOption,
             };
-            listCommand.Aliases.Add("ls");
-            listCommand.SetAction(
+            invoiceListCommand.Aliases.Add("ls");
+            invoiceListCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
                     return HandleListAsync(stamp, verbosity);
                 });
-            rootCommand.Subcommands.Add(listCommand);
+            invoiceCommand.Subcommands.Add(invoiceListCommand);
 
-
-            Command markPaidCommand = new("mark-paid", "Mark a specific invoice as paid.")
+            Command invoiceMarkPaidCommand = new("mark-paid", "Mark a specific invoice as paid.")
             {
                 stampOption,
                 verbosityOption,
-                idArgument,
+                invoiceIdArgument,
                 rawOption,
             };
-            markPaidCommand.SetAction(
+            invoiceMarkPaidCommand.Aliases.Add("mp");
+            invoiceMarkPaidCommand.Aliases.Add("pay");
+            invoiceMarkPaidCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleMarkPaidAsync(invoiceId, raw, stamp, verbosity);
                 });
-            rootCommand.Subcommands.Add(markPaidCommand);
+            invoiceCommand.Subcommands.Add(invoiceMarkPaidCommand);
 
-
-            Command markReprocessRegularlyCommand = new("mark-reprocess-regularly", "Mark a specific invoice to be automatically reprocessed to pdf every 14d if not marked as paid.")
+            Command invoiceMarkReprocessRegularlyCommand = new("mark-reprocess-regularly", "Mark a specific invoice to be automatically reprocessed to pdf every 14d if not marked as paid.")
             {
                 stampOption,
                 verbosityOption,
-                idArgument,
+                invoiceIdArgument,
                 rawOption,
             };
-            markReprocessRegularlyCommand.SetAction(
+            invoiceMarkReprocessRegularlyCommand.Aliases.Add("mrr");
+            invoiceMarkReprocessRegularlyCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleMarkReprocessRegularlyAsync(invoiceId, raw, stamp, verbosity);
                 });
-            rootCommand.Subcommands.Add(markReprocessRegularlyCommand);
+            invoiceCommand.Subcommands.Add(invoiceMarkReprocessRegularlyCommand);
 
-
-            Command processCommand = new("process", "Mark a specific invoice for [re-]processing to pdf.")
+            Command invoiceProcessCommand = new("process", "Mark a specific invoice for [re-]processing to pdf.")
             {
                 stampOption,
                 verbosityOption,
-                idArgument,
+                invoiceIdArgument,
                 rawOption,
             };
-            processCommand.Aliases.Add("reprocess");
-            processCommand.SetAction(
+            invoiceProcessCommand.Aliases.Add("reprocess");
+            invoiceProcessCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    long invoiceId = parseResult.GetRequiredValue(idArgument);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleProcessAsync(invoiceId, raw, stamp, verbosity);
                 });
-            rootCommand.Subcommands.Add(processCommand);
+            invoiceCommand.Subcommands.Add(invoiceProcessCommand);
+
+            rootCommand.Subcommands.Add(invoiceCommand);
+
+            #endregion // Invoice
 
 
             return rootCommand;

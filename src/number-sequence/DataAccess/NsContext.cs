@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using number_sequence.Models;
 using TcpWtf.NumberSequence.Contracts;
-using TcpWtf.NumberSequence.Contracts.Invoicing;
+using TcpWtf.NumberSequence.Contracts.Ledger;
 
 namespace number_sequence.DataAccess
 {
@@ -20,9 +20,9 @@ namespace number_sequence.DataAccess
         public DbSet<DaysSince> DaysSinces { get; set; }
 
         public DbSet<Invoice> Invoices { get; set; }
-        public DbSet<InvoiceBusiness> InvoiceBusinesses { get; set; }
-        public DbSet<InvoiceBusinessLogo> InvoiceBusinessLogos { get; set; }
-        public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
+        public DbSet<Business> InvoiceBusinesses { get; set; }
+        public DbSet<BusinessLogo> InvoiceBusinessLogos { get; set; }
+        public DbSet<Customer> InvoiceCustomers { get; set; }
         public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
         public DbSet<Statement> Statements { get; set; }
 
@@ -70,7 +70,7 @@ namespace number_sequence.DataAccess
 
             #endregion // Accounts
 
-            #region Invoicing
+            #region Ledger
 
             _ = modelBuilder.HasSequence<long>("InvoiceIds");
             _ = modelBuilder.HasSequence<long>("InvoiceBusinessIds");
@@ -99,37 +99,37 @@ namespace number_sequence.DataAccess
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-            _ = modelBuilder.Entity<InvoiceBusiness>()
+            _ = modelBuilder.Entity<Business>()
                 .Property(x => x.Id)
                 .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoiceBusinessIds");
-            _ = modelBuilder.Entity<InvoiceBusiness>()
+            _ = modelBuilder.Entity<Business>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-            _ = modelBuilder.Entity<InvoiceBusiness>()
+            _ = modelBuilder.Entity<Business>()
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-            _ = modelBuilder.Entity<InvoiceBusinessLogo>()
+            _ = modelBuilder.Entity<BusinessLogo>()
                 .HasKey(x => x.BusinessId);
-            _ = modelBuilder.Entity<InvoiceBusinessLogo>()
+            _ = modelBuilder.Entity<BusinessLogo>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-            _ = modelBuilder.Entity<InvoiceBusinessLogo>()
+            _ = modelBuilder.Entity<BusinessLogo>()
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-            _ = modelBuilder.Entity<InvoiceBusiness>()
+            _ = modelBuilder.Entity<Business>()
                 .HasOne(x => x.Logo)
                 .WithOne(x => x.Business)
-                .HasForeignKey<InvoiceBusinessLogo>(x => x.BusinessId)
+                .HasForeignKey<BusinessLogo>(x => x.BusinessId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            _ = modelBuilder.Entity<InvoiceCustomer>()
+            _ = modelBuilder.Entity<Customer>()
                 .Property(x => x.Id)
                 .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoiceCustomerIds");
-            _ = modelBuilder.Entity<InvoiceCustomer>()
+            _ = modelBuilder.Entity<Customer>()
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-            _ = modelBuilder.Entity<InvoiceCustomer>()
+            _ = modelBuilder.Entity<Customer>()
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
@@ -176,7 +176,7 @@ namespace number_sequence.DataAccess
                 .WithMany(x => x.Invoices)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            #endregion // Invoicing
+            #endregion // Ledger
 
             #region Pdf
 

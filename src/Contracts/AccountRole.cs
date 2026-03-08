@@ -6,9 +6,9 @@
     public static class AccountRoles
     {
         /// <summary>
-        /// The account has access to the invoicing features.
+        /// The account has access to the ledger features.
         /// </summary>
-        public const string Invoicing = nameof(Invoicing);
+        public const string Ledger = nameof(Ledger);
 
         /// <summary>
         /// Ability to view the status of the pdf document generation.

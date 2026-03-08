@@ -12,12 +12,12 @@ namespace number_sequence.DurableTaskImpl
                 //
 
                 // Invoice generation
-                .AddSingleton<TaskOrchestration, Orchestrators.InvoiceGenerationOrchestrator>()
-                .AddSingleton<TaskActivity, Activities.InvoicePdfGenerationActivity>()
+                .AddSingleton<TaskOrchestration, Orchestrators.LedgerInvoiceGenerationOrchestrator>()
+                .AddSingleton<TaskActivity, Activities.LedgerInvoicePdfGenerationActivity>()
 
                 // Statement generation
-                .AddSingleton<TaskOrchestration, Orchestrators.StatementGenerationOrchestrator>()
-                .AddSingleton<TaskActivity, Activities.StatementPdfGenerationActivity>()
+                .AddSingleton<TaskOrchestration, Orchestrators.LedgerStatementGenerationOrchestrator>()
+                .AddSingleton<TaskActivity, Activities.LedgerStatementPdfGenerationActivity>()
 
                 // Chiro (canine) generation
                 .AddSingleton<TaskOrchestration, Orchestrators.ChiroCanineGenerationOrchestrator>()

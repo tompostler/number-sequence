@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TcpWtf.NumberSequence.Contracts.Invoicing
+namespace TcpWtf.NumberSequence.Contracts.Ledger
 {
     /// <summary>
     /// An statement.
@@ -34,16 +34,16 @@ namespace TcpWtf.NumberSequence.Contracts.Invoicing
         public DateOnly InvoiceEndDate { get; set; }
 
         /// <summary>
-        /// See <see cref="InvoiceBusiness"/>.
+        /// See <see cref="Business"/>.
         /// </summary>
         [Required]
-        public InvoiceBusiness Business { get; set; }
+        public Business Business { get; set; }
 
         /// <summary>
-        /// See <see cref="InvoiceCustomer"/>.
+        /// See <see cref="Customer"/>.
         /// </summary>
         [Required]
-        public InvoiceCustomer Customer { get; set; }
+        public Customer Customer { get; set; }
 
         /// <summary>
         /// The acutal line items on the statement.

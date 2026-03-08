@@ -1,13 +1,13 @@
-﻿using DurableTask.Core;
+using DurableTask.Core;
 
 namespace number_sequence.DurableTaskImpl.Orchestrators
 {
-    public sealed class InvoiceGenerationOrchestrator : TaskOrchestration<string, long>
+    public sealed class LedgerInvoiceGenerationOrchestrator : TaskOrchestration<string, long>
     {
         public override async Task<string> RunTask(OrchestrationContext context, long input)
         {
             _ = await context.ScheduleWithRetry<string>(
-                typeof(Activities.InvoicePdfGenerationActivity),
+                typeof(Activities.LedgerInvoicePdfGenerationActivity),
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
                 input);
 
