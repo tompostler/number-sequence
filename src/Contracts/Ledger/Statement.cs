@@ -61,6 +61,12 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         public decimal TotalPaid => this.Invoices?.Sum(x => x.TotalPaid) ?? 0;
 
         /// <summary>
+        /// The remaining balance across all invoices in the statement.
+        /// </summary>
+        [NotMapped]
+        public decimal Balance => this.TotalBilled - this.TotalPaid;
+
+        /// <summary>
         /// A human-friendly identifier combining the statement id and process attempt.
         /// </summary>
         [NotMapped]

@@ -65,7 +65,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 .FirstOrDefaultAsync(x => x.Id == input && x.ReadyForProcessing && x.ProcessedAt == default, cancellationToken);
             if (statement == default)
             {
-                throw new InvalidOperationException("Could not find statment that was ready for processing.");
+                throw new InvalidOperationException("Could not find statement that was ready for processing.");
             }
 
             // Add the email request
@@ -88,7 +88,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = additionalBody.AppendLine($"Invoices by {(statement.SearchByDueDate ? "due" : "created")} date.");
             _ = additionalBody.AppendLine($"Start date: {statement.InvoiceStartDate:MMMM dd, yyyy}.");
             _ = additionalBody.AppendLine($"End due: {statement.InvoiceEndDate:MMMM dd, yyyy}.");
-            _ = additionalBody.AppendLine($"Billed: ${statement.TotalBilled:N2}. Paid: ${statement.TotalPaid:N2}. Balance: ${statement.TotalBilled - statement.TotalPaid:N2}.");
+            _ = additionalBody.AppendLine($"Billed: ${statement.TotalBilled:N2}. Paid: ${statement.TotalPaid:N2}. Balance: ${statement.Balance:N2}.");
             _ = additionalBody.AppendLine($"Invoice count: {statement.Invoices.Count:N0}.");
             EmailDocument emailDocument = new()
             {
@@ -270,9 +270,9 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         _ = column.Item()
                                             .Text($"Invoices by {(this.statement.SearchByDueDate ? "due" : "created")} date.");
                                         _ = column.Item()
-                                            .Text($"Billed: ${this.statement.TotalBilled:N2}. Paid: ${this.statement.TotalPaid:N2} Balance: ${this.statement.TotalBilled - this.statement.TotalPaid:N2}.");
+                                            .Text($"Billed: ${this.statement.TotalBilled:N2}. Paid: ${this.statement.TotalPaid:N2}. Balance: ${this.statement.Balance:N2}.");
                                         _ = column.Item()
-                                            .Text($"Invoice count: {this.statement.Invoices.Count:N0}.");
+                                            .Text($"Invoice count: {this.statement.Invoices.Count:N0}. Payment count: {this.statement.Invoices.Sum(x => x.Payments?.Count ?? 0):N0}.");
                                     });
                                 });
 
@@ -311,13 +311,14 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         .BorderColor(Colors.Black);
                                 });
 
+                                static IContainer CellStyle(IContainer container)
+                                    => container.PaddingVertical(3);
+                                static IContainer RightCellStyle(IContainer container)
+                                    => container.PaddingVertical(3).AlignRight();
+
                                 // Individual invoices with payment sub-rows. Make sure to get correct width every 'row', else table will misalign.
                                 foreach (Invoice invoice in this.statement.Invoices)
                                 {
-                                    static IContainer CellStyle(IContainer container)
-                                        => container.PaddingVertical(3);
-                                    static IContainer RightCellStyle(IContainer container)
-                                        => container.PaddingVertical(3).AlignRight();
 
                                     // Invoice id
                                     _ = table.Cell().Element(CellStyle).Text(invoice.Id.ToString())
@@ -394,7 +395,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     {
                                         _ = column.Item().Text($"${this.statement.TotalBilled:N2}");
                                         _ = column.Item().Text($"${this.statement.TotalPaid:N2}");
-                                        _ = column.Item().Text($"${this.statement.TotalBilled - this.statement.TotalPaid:N2}").Bold();
+                                        _ = column.Item().Text($"${this.statement.Balance:N2}").Bold();
                                     });
                                 });
 

@@ -70,9 +70,13 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     Quantity = 1,
                     Price = createFromInvoice.Total,
                 });
+                string paymentDescription = createFromInvoice.Payments?.Count > 0
+                    ? string.Join(", ", createFromInvoice.Payments.OrderBy(x => x.PaymentDate).Select(x => $"{x.PaymentDate:yyyy-MM-dd} ${x.Amount:N2}"))
+                    : null;
                 invoice.Lines.Add(new()
                 {
                     Title = $"Payment received on {createFromInvoice.PaidDate:o}",
+                    Description = paymentDescription,
                     Quantity = 1,
                     Price = -createFromInvoice.Total,
                 });

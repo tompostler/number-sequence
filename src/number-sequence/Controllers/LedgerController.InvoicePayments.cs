@@ -79,6 +79,16 @@ namespace number_sequence.Controllers
             paymentRecord.Details = payment.Details;
             paymentRecord.ModifiedDate = DateTimeOffset.UtcNow;
 
+            // Re-derive PaidDate in case the edited payment's date changed when settlement occurred.
+            if (invoice.TotalPaid >= invoice.Total)
+            {
+                decimal cumulative = 0;
+                invoice.PaidDate = invoice.Payments
+                    .OrderBy(x => x.PaymentDate)
+                    .FirstOrDefault(x => (cumulative += x.Amount) >= invoice.Total)
+                    ?.PaymentDate;
+            }
+
             invoice.ModifiedDate = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
