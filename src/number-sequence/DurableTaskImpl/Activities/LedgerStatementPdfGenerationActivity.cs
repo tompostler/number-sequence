@@ -368,12 +368,7 @@ namespace number_sequence.DurableTaskImpl.Activities
 
                                         _ = table.Cell().Element(RightCellStyle).Text($"{payment.PaymentDate:MMM dd, yyyy}");
 
-                                        table.Cell().Element(RightCellStyle).Text(text =>
-                                        {
-                                            _ = text.Span("$ (");
-                                            _ = text.Span(payment.Amount.ToString("N2"));
-                                            _ = text.Span(")");
-                                        });
+                                        _ = table.Cell().Element(RightCellStyle).Text($"$ ({payment.Amount:N2})");
                                     }
                                 }
                             });

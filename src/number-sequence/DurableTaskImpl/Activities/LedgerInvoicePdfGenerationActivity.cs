@@ -368,41 +368,17 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     });
 
                                     // Line quantity
-                                    if (string.IsNullOrWhiteSpace(line.Unit))
-                                    {
-                                        _ = table.Cell().Element(RightCellStyle).Text($"{line.Quantity:N2}");
-                                    }
-                                    else
-                                    {
-                                        // We have a unit and should format the quantity differently
-                                        _ = table.Cell().Element(RightCellStyle).Text($"{line.Quantity:N2} {line.Unit}");
-                                    }
+                                    _ = table.Cell().Element(RightCellStyle).Text(
+                                        string.IsNullOrWhiteSpace(line.Unit) ? $"{line.Quantity:N2}" : $"{line.Quantity:N2} {line.Unit}");
 
                                     // Line price
-                                    table.Cell().Element(RightCellStyle).Text(text =>
-                                    {
-                                        _ = text.Span(line.Price.ToString("N2"));
-                                        if (!string.IsNullOrWhiteSpace(line.Unit))
-                                        {
-                                            _ = text.Span("/");
-                                            _ = text.Span(line.Unit);
-                                        }
-                                    });
+                                    _ = table.Cell().Element(RightCellStyle).Text(
+                                        string.IsNullOrWhiteSpace(line.Unit) ? $"{line.Price:N2}" : $"{line.Price:N2}/{line.Unit}");
 
                                     // Line amount
-                                    table.Cell().Element(RightCellStyle).Text(text =>
-                                    {
-                                        _ = text.Span("$ ");
-                                        if (line.Price < 0)
-                                        {
-                                            _ = text.Span("(");
-                                        }
-                                        _ = text.Span(Math.Abs(line.Quantity * line.Price).ToString("N2"));
-                                        if (line.Price < 0)
-                                        {
-                                            _ = text.Span(")");
-                                        }
-                                    });
+                                    _ = table.Cell().Element(RightCellStyle).Text(line.Price < 0
+                                        ? $"$ ({Math.Abs(line.Quantity * line.Price):N2})"
+                                        : $"$ {line.Quantity * line.Price:N2}");
                                 }
 
                                 // Payment rows
@@ -435,13 +411,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     _ = table.Cell().Element(RightCellStyle).Text(string.Empty);
 
                                     // Amount
-                                    table.Cell().Element(RightCellStyle).Text(text =>
-                                    {
-                                        _ = text.Span("$ ");
-                                        _ = text.Span("(");
-                                        _ = text.Span(payment.Amount.ToString("N2"));
-                                        _ = text.Span(")");
-                                    });
+                                    _ = table.Cell().Element(RightCellStyle).Text($"$ ({payment.Amount:N2})");
                                 }
                             });
 
