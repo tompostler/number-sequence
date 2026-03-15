@@ -85,13 +85,13 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = additionalBody.AppendLine($"Customer name: {invoice.Customer.Name}");
             _ = additionalBody.AppendLine($"Due date: {invoice.DueDate:MMMM dd, yyyy}");
             _ = additionalBody.AppendLine($"Total due: $ {invoice.Total:N2}");
-            if (invoice.Payments?.Count > 0)
+            if (invoice.Payments.Count > 0)
             {
                 _ = additionalBody.AppendLine($"Total paid: $ {invoice.TotalPaid:N2}");
                 _ = additionalBody.AppendLine($"Balance due: $ {invoice.Balance:N2}");
             }
             _ = additionalBody.AppendLine($"Line count: {invoice.Lines.Count}");
-            _ = additionalBody.AppendLine($"Payment count: {invoice.Payments?.Count ?? 0}");
+            _ = additionalBody.AppendLine($"Payment count: {invoice.Payments.Count}");
             EmailDocument emailDocument = new()
             {
                 Id = context.OrchestrationInstance.InstanceId,
@@ -272,7 +272,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                             .Text($"PDF created {DateTime.Now:MMMM dd, yyyy}.");
                                         _ = column.Item()
                                             .Text($"Total: ${this.invoice.Total:N2}.");
-                                        if (this.invoice.Payments?.Count > 0)
+                                        if (this.invoice.Payments.Count > 0)
                                         {
                                             _ = column.Item()
                                                 .Text($"Paid: ${this.invoice.TotalPaid:N2}.");
@@ -406,7 +406,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                 }
 
                                 // Payment rows
-                                foreach (InvoicePayment payment in this.invoice.Payments ?? [])
+                                foreach (InvoicePayment payment in this.invoice.Payments)
                                 {
                                     // Payment id
                                     _ = table.Cell().Element(CellStyle).Text($"P{payment.Id}")
@@ -454,7 +454,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                 {
                                     row.RelativeItem().Column(column =>
                                     {
-                                        _ = column.Item().Text(this.invoice.Payments?.Count > 0 ? "Balance Due" : "Total Due");
+                                        _ = column.Item().Text(this.invoice.Payments.Count > 0 ? "Balance Due" : "Total Due");
                                     });
                                     row.RelativeItem().AlignRight().Column(column =>
                                     {

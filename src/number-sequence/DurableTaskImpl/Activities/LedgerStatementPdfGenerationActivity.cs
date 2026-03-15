@@ -90,7 +90,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = additionalBody.AppendLine($"End due: {statement.InvoiceEndDate:MMMM dd, yyyy}.");
             _ = additionalBody.AppendLine($"Billed: ${statement.TotalBilled:N2}. Paid: ${statement.TotalPaid:N2}. Balance: ${statement.Balance:N2}.");
             _ = additionalBody.AppendLine($"Invoice count: {statement.Invoices.Count:N0}.");
-            _ = additionalBody.AppendLine($"Payment count: {statement.Invoices.Sum(x => x.Payments?.Count ?? 0):N0}.");
+            _ = additionalBody.AppendLine($"Payment count: {statement.Invoices.Sum(x => x.Payments.Count):N0}.");
             EmailDocument emailDocument = new()
             {
                 Id = context.OrchestrationInstance.InstanceId,
@@ -273,7 +273,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         _ = column.Item()
                                             .Text($"Billed: ${this.statement.TotalBilled:N2}. Paid: ${this.statement.TotalPaid:N2}. Balance: ${this.statement.Balance:N2}.");
                                         _ = column.Item()
-                                            .Text($"Invoice count: {this.statement.Invoices.Count:N0}. Payment count: {this.statement.Invoices.Sum(x => x.Payments?.Count ?? 0):N0}.");
+                                            .Text($"Invoice count: {this.statement.Invoices.Count:N0}. Payment count: {this.statement.Invoices.Sum(x => x.Payments.Count):N0}.");
                                     });
                                 });
 
@@ -347,7 +347,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     _ = table.Cell().Element(RightCellStyle).Text($"$ {invoice.Total:N2}");
 
                                     // Payment rows (one per payment, appearing after their invoice)
-                                    foreach (InvoicePayment payment in invoice.Payments ?? [])
+                                    foreach (InvoicePayment payment in invoice.Payments)
                                     {
                                         _ = table.Cell().Element(CellStyle).Text($"P{payment.Id}")
                                             .FontColor(Colors.Grey.Medium)
