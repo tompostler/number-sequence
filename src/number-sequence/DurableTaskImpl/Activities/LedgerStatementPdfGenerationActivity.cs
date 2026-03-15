@@ -91,7 +91,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = additionalBody.AppendLine($"Invoice count: {statement.Invoices.Count:N0}.");
             EmailDocument emailDocument = new()
             {
-                Id = friendlyId,
+                Id = context.OrchestrationInstance.InstanceId,
                 To = statement.Business.Contact,
                 Subject = subject,
                 AttachmentName = attachmentName,
