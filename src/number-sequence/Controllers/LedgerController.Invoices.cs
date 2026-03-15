@@ -1,4 +1,3 @@
-using DurableTask.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
@@ -48,6 +47,7 @@ namespace number_sequence.Controllers
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
+                .Include(x => x.Payments)
                 .Where(x => x.AccountName == this.User.Identity.Name)
                 .OrderByDescending(x => x.PaidDate ?? DateOnly.MaxValue)
                 .ThenByDescending(x => x.ModifiedDate)
@@ -67,6 +67,7 @@ namespace number_sequence.Controllers
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
+                .Include(x => x.Payments)
                 .SingleOrDefaultAsync(x => x.AccountName == this.User.Identity.Name && x.Id == id, cancellationToken);
             if (invoice == default)
             {
@@ -90,6 +91,7 @@ namespace number_sequence.Controllers
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
+                .Include(x => x.Payments)
                 .SingleOrDefaultAsync(x => x.AccountName == invoice.AccountName && x.Id == invoice.Id, cancellationToken);
             if (invoiceRecord == default)
             {
@@ -149,22 +151,13 @@ namespace number_sequence.Controllers
             invoiceRecord.Business = business;
             invoiceRecord.Customer = customer;
             invoiceRecord.Lines = invoiceLines;
-            invoiceRecord.PaidDate = invoice.PaidDate;
-            invoiceRecord.PaidDetails = invoice.PaidDetails;
             invoiceRecord.ReadyForProcessing = invoice.ReadyForProcessing;
             invoiceRecord.ProcessedAt = invoice.ProcessedAt;
             invoiceRecord.ReprocessRegularly = invoice.ReprocessRegularly;
 
             if ((invoiceRecord.ReadyForProcessing || invoiceRecord.ReprocessRegularly) && invoiceRecord.ProcessedAt == default)
             {
-                invoiceRecord.ProccessAttempt += 1;
-
-                TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
-                OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                    typeof(DurableTaskImpl.Orchestrators.LedgerInvoiceGenerationOrchestrator),
-                    instanceId: $"{invoiceRecord.FriendlyId}_invoice",
-                    invoiceRecord.Id);
-                this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
+                await this.TriggerInvoicePdfAsync(invoiceRecord, cancellationToken);
             }
 
             invoiceRecord.ModifiedDate = DateTimeOffset.UtcNow;

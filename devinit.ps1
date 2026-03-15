@@ -20,8 +20,8 @@ Write-Host;
 Write-Cyan 'Generating local settings....';
 $localSettings = [PSCustomObject]@{
     ApplicationInsights = [PSCustomObject]@{
-        # Disable in local.
-        ConnectionString = '';
+        # Dummy value to satisfy the SDK parser locally; no telemetry is sent without a real key.
+        ConnectionString = 'InstrumentationKey=00000000-0000-0000-0000-000000000000';
     };
     Email   = [PSCustomObject]@{
         ChiroBatchMap      = (Get-AzKeyVaultSecret -VaultName tompostler -Name email-chiro-batch-map -AsPlainText).Replace('\"', '"');

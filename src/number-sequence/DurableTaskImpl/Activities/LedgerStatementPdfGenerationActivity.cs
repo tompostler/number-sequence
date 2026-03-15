@@ -60,6 +60,8 @@ namespace number_sequence.DurableTaskImpl.Activities
                 .Include(x => x.Customer)
                 .Include(x => x.Invoices)
                     .ThenInclude(x => x.Lines)
+                .Include(x => x.Invoices)
+                    .ThenInclude(x => x.Payments)
                 .FirstOrDefaultAsync(x => x.Id == input && x.ReadyForProcessing && x.ProcessedAt == default, cancellationToken);
             if (statement == default)
             {
@@ -86,8 +88,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = additionalBody.AppendLine($"Invoices by {(statement.SearchByDueDate ? "due" : "created")} date.");
             _ = additionalBody.AppendLine($"Start date: {statement.InvoiceStartDate:MMMM dd, yyyy}.");
             _ = additionalBody.AppendLine($"End due: {statement.InvoiceEndDate:MMMM dd, yyyy}.");
-            _ = additionalBody.AppendLine($"Paid: ${statement.TotalPaid:N2}. Billed: ${statement.TotalBilled:N2}.");
-            _ = additionalBody.AppendLine($"Amount remaining: ${statement.TotalBilled - statement.TotalPaid:N2}.");
+            _ = additionalBody.AppendLine($"Billed: ${statement.TotalBilled:N2}. Paid: ${statement.TotalPaid:N2}. Balance: ${statement.TotalBilled - statement.TotalPaid:N2}.");
             _ = additionalBody.AppendLine($"Invoice count: {statement.Invoices.Count:N0}.");
             EmailDocument emailDocument = new()
             {
@@ -269,9 +270,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         _ = column.Item()
                                             .Text($"Invoices by {(this.statement.SearchByDueDate ? "due" : "created")} date.");
                                         _ = column.Item()
-                                            .Text($"Paid: ${this.statement.TotalPaid:N2}. Billed: ${this.statement.TotalBilled:N2}.");
-                                        _ = column.Item()
-                                            .Text($"Amount remaining: ${this.statement.TotalBilled - this.statement.TotalPaid:N2}.");
+                                            .Text($"Billed: ${this.statement.TotalBilled:N2}. Paid: ${this.statement.TotalPaid:N2} Balance: ${this.statement.TotalBilled - this.statement.TotalPaid:N2}.");
                                         _ = column.Item()
                                             .Text($"Invoice count: {this.statement.Invoices.Count:N0}.");
                                     });
@@ -283,41 +282,36 @@ namespace number_sequence.DurableTaskImpl.Activities
                                 table.ColumnsDefinition(columns =>
                                 {
                                     columns.RelativeColumn(1);
-                                    columns.RelativeColumn(8);
-                                    columns.RelativeColumn(3);
-                                    columns.RelativeColumn(3);
-                                    columns.RelativeColumn(3);
+                                    columns.RelativeColumn(9);
+                                    columns.RelativeColumn(2);
+                                    columns.RelativeColumn(2);
                                 });
 
                                 // Header, will be repeated on every page
                                 table.Header(header =>
                                 {
                                     _ = header.Cell()
-                                        .Text("Id")
+                                        .Text("#")
                                         .Bold();
                                     _ = header.Cell()
-                                        .Text("Invoice")
+                                        .Text("Description")
                                         .Bold();
                                     _ = header.Cell()
-                                        .Text("Created")
+                                        .Text("Date")
                                         .AlignRight()
                                         .Bold();
                                     _ = header.Cell()
-                                        .Text("Billed")
+                                        .Text("Amount")
                                         .AlignRight()
                                         .Bold();
                                     _ = header.Cell()
-                                        .Text("Paid")
-                                        .AlignRight()
-                                        .Bold();
-                                    _ = header.Cell()
-                                        .ColumnSpan(5)
+                                        .ColumnSpan(4)
                                         .PaddingVertical(4)
                                         .BorderBottom(0.5f)
                                         .BorderColor(Colors.Black);
                                 });
 
-                                // Individual invoices. Make sure to get correct width every 'row', else table will misalign.
+                                // Individual invoices with payment sub-rows. Make sure to get correct width every 'row', else table will misalign.
                                 foreach (Invoice invoice in this.statement.Invoices)
                                 {
                                     static IContainer CellStyle(IContainer container)
@@ -331,7 +325,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         .FontSize(baseFontSize * 0.9f)
                                         .LetterSpacing(-0.05f);
 
-                                    // Line item
+                                    // Invoice description
                                     table.Cell().Element(CellStyle).Text(text =>
                                     {
                                         _ = text.Span("Invoice");
@@ -350,15 +344,59 @@ namespace number_sequence.DurableTaskImpl.Activities
                                     // Invoice amount billed
                                     _ = table.Cell().Element(RightCellStyle).Text($"$ {invoice.Total:N2}");
 
-                                    // Invoice paid date
-                                    table.Cell().Element(RightCellStyle).Text(text =>
+                                    // Payment rows (one per payment, appearing after their invoice)
+                                    foreach (InvoicePayment payment in invoice.Payments ?? [])
                                     {
-                                        _ = invoice.PaidDate.HasValue
-                                            ? text.Span($"{invoice.PaidDate:MMM dd, yyyy}")
-                                            : text.Span("-");
-                                    });
+                                        _ = table.Cell().Element(CellStyle).Text($"P{payment.Id}")
+                                            .FontColor(Colors.Grey.Medium)
+                                            .FontSize(baseFontSize * 0.9f)
+                                            .LetterSpacing(-0.05f);
+
+                                        table.Cell().Element(CellStyle).Text(text =>
+                                        {
+                                            _ = text.Line("Payment");
+                                            if (!string.IsNullOrWhiteSpace(payment.Details))
+                                            {
+                                                _ = text.Span(payment.Details)
+                                                    .FontColor(Colors.Grey.Medium)
+                                                    .FontSize(baseFontSize * .9f)
+                                                    .Italic();
+                                            }
+                                        });
+
+                                        _ = table.Cell().Element(RightCellStyle).Text($"{payment.PaymentDate:MMM dd, yyyy}");
+
+                                        table.Cell().Element(RightCellStyle).Text(text =>
+                                        {
+                                            _ = text.Span("$ ( ");
+                                            _ = text.Span(payment.Amount.ToString("N2"));
+                                            _ = text.Span(")");
+                                        });
+                                    }
                                 }
                             });
+
+                            // Statement totals
+                            _ = column.Item().PaddingVertical(10).LineHorizontal(0.5f);
+
+                            column.Item()
+                                .DefaultTextStyle(TextStyle.Default.FontSize(baseFontSize * 1.2f))
+                                .Row(row =>
+                                {
+                                    row.RelativeItem(10);
+                                    row.RelativeItem(2).AlignRight().Column(column =>
+                                    {
+                                        _ = column.Item().Text("Total Billed");
+                                        _ = column.Item().Text("Total Paid");
+                                        _ = column.Item().Text("Balance").Bold();
+                                    });
+                                    row.RelativeItem(2).AlignRight().Column(column =>
+                                    {
+                                        _ = column.Item().Text($"${this.statement.TotalBilled:N2}");
+                                        _ = column.Item().Text($"${this.statement.TotalPaid:N2}");
+                                        _ = column.Item().Text($"${this.statement.TotalBilled - this.statement.TotalPaid:N2}").Bold();
+                                    });
+                                });
 
                         });
                     });

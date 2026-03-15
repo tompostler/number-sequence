@@ -36,13 +36,11 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         /// <summary>
         /// See <see cref="Business"/>.
         /// </summary>
-        [Required]
         public Business Business { get; set; }
 
         /// <summary>
         /// See <see cref="Customer"/>.
         /// </summary>
-        [Required]
         public Customer Customer { get; set; }
 
         /// <summary>
@@ -57,10 +55,10 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         public decimal TotalBilled => this.Invoices?.Sum(x => x.Total) ?? 0;
 
         /// <summary>
-        /// The total amount of the paid invoices.
+        /// The total amount paid across all payments on all invoices in the statement.
         /// </summary>
         [NotMapped]
-        public decimal TotalPaid => this.Invoices?.Where(x => x.PaidDate.HasValue).Sum(x => x.Total) ?? 0;
+        public decimal TotalPaid => this.Invoices?.Sum(x => x.TotalPaid) ?? 0;
 
         /// <summary>
         /// A human-friendly identifier combining the statement id and process attempt.

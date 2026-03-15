@@ -73,7 +73,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 invoice.Lines.Add(new()
                 {
                     Title = $"Payment received on {createFromInvoice.PaidDate:o}",
-                    Description = createFromInvoice.PaidDetails,
                     Quantity = 1,
                     Price = -createFromInvoice.Total,
                 });
@@ -139,18 +138,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             PrintInvoices(invoices.ToArray());
         }
 
-        private static async Task HandleMarkPaidAsync(long id, bool raw, Stamp stamp, Verbosity verbosity)
-        {
-            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            Contracts.Ledger.Invoice invoice = await client.Ledger.GetInvoiceAsync(id);
-
-            invoice.PaidDate = Input.GetDateOnly(nameof(invoice.PaidDate));
-            invoice.PaidDetails = Input.GetString(nameof(invoice.PaidDetails));
-
-            invoice = await client.Ledger.UpdateInvoiceAsync(invoice);
-            PrintSingleInvoice(invoice, raw);
-        }
-
         private static async Task HandleMarkReprocessRegularlyAsync(long id, bool raw, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
@@ -201,6 +188,19 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     nameof(Contracts.Ledger.InvoiceLine.Total),
                     nameof(Contracts.Ledger.InvoiceLine.CreatedDate),
                     nameof(Contracts.Ledger.InvoiceLine.ModifiedDate));
+
+                if (invoice.Payments?.Count > 0)
+                {
+                    Console.WriteLine($"Payments ({invoice.Payments.Count}):");
+                    Output.WriteTable(
+                        invoice.Payments,
+                        nameof(Contracts.Ledger.InvoicePayment.Id),
+                        nameof(Contracts.Ledger.InvoicePayment.PaymentDate),
+                        nameof(Contracts.Ledger.InvoicePayment.Details),
+                        nameof(Contracts.Ledger.InvoicePayment.Amount),
+                        nameof(Contracts.Ledger.InvoicePayment.CreatedDate),
+                        nameof(Contracts.Ledger.InvoicePayment.ModifiedDate));
+                }
             }
         }
 
@@ -216,6 +216,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     x.DueDate,
                     x.PaidDate,
                     x.Total,
+                    x.TotalPaid,
+                    x.Balance,
                     x.CreatedDate,
                     x.ModifiedDate,
                     x.ProcessedAt,
@@ -229,6 +231,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Ledger.Invoice.DueDate),
                 nameof(Contracts.Ledger.Invoice.PaidDate),
                 nameof(Contracts.Ledger.Invoice.Total),
+                nameof(Contracts.Ledger.Invoice.TotalPaid),
+                nameof(Contracts.Ledger.Invoice.Balance),
                 nameof(Contracts.Ledger.Invoice.CreatedDate),
                 nameof(Contracts.Ledger.Invoice.ModifiedDate),
                 nameof(Contracts.Ledger.Invoice.ProcessedAt),

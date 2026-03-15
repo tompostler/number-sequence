@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using number_sequence.DataAccess;
 
@@ -11,9 +12,11 @@ using number_sequence.DataAccess;
 namespace number_sequence.Migrations
 {
     [DbContext(typeof(NsContext))]
-    partial class NsContextModelSnapshot : ModelSnapshot
+    [Migration("20260315182019_InvoicePayments")]
+    partial class InvoicePayments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,7 +77,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("Accounts", (string)null);
+                    b.ToTable("Accounts");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Count", b =>
@@ -102,7 +105,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Account", "Name");
 
-                    b.ToTable("Counts", (string)null);
+                    b.ToTable("Counts");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.DailySequenceValue", b =>
@@ -138,7 +141,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Account", "Category", "EventDate");
 
-                    b.ToTable("DailySequenceValues", (string)null);
+                    b.ToTable("DailySequenceValues");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.DailySequenceValueConfig", b =>
@@ -179,7 +182,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Account", "Category");
 
-                    b.ToTable("DailySequenceValueConfigs", (string)null);
+                    b.ToTable("DailySequenceValueConfigs");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.DaysSince", b =>
@@ -228,7 +231,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DaysSinces", (string)null);
+                    b.ToTable("DaysSinces");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.DaysSinceEvent", b =>
@@ -263,7 +266,7 @@ namespace number_sequence.Migrations
 
                     b.HasIndex("DaysSinceId");
 
-                    b.ToTable("DaysSinceEvent", (string)null);
+                    b.ToTable("DaysSinceEvent");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Ledger.Business", b =>
@@ -315,7 +318,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("InvoiceBusinesses", (string)null);
+                    b.ToTable("InvoiceBusinesses");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Ledger.BusinessLogo", b =>
@@ -344,7 +347,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("BusinessId");
 
-                    b.ToTable("InvoiceBusinessLogos", (string)null);
+                    b.ToTable("InvoiceBusinessLogos");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Ledger.Customer", b =>
@@ -391,7 +394,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("InvoiceCustomers", (string)null);
+                    b.ToTable("InvoiceCustomers");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Ledger.Invoice", b =>
@@ -459,7 +462,7 @@ namespace number_sequence.Migrations
 
                     b.HasIndex("StatementId");
 
-                    b.ToTable("Invoices", (string)null);
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Ledger.InvoiceLine", b =>
@@ -555,7 +558,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("InvoiceLineDefaults", (string)null);
+                    b.ToTable("InvoiceLineDefaults");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Ledger.InvoicePayment", b =>
@@ -598,7 +601,7 @@ namespace number_sequence.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("InvoicePayments", (string)null);
+                    b.ToTable("InvoicePayments");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Ledger.Statement", b =>
@@ -653,7 +656,7 @@ namespace number_sequence.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Statements", (string)null);
+                    b.ToTable("Statements");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Redirect", b =>
@@ -690,7 +693,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Redirects", (string)null);
+                    b.ToTable("Redirects");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.Token", b =>
@@ -726,7 +729,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Account", "Name");
 
-                    b.ToTable("Tokens", (string)null);
+                    b.ToTable("Tokens");
                 });
 
             modelBuilder.Entity("number_sequence.Models.ChiroEmailBatch", b =>
@@ -754,7 +757,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ChiroEmailBatches", (string)null);
+                    b.ToTable("ChiroEmailBatches");
                 });
 
             modelBuilder.Entity("number_sequence.Models.EmailDocument", b =>
@@ -795,7 +798,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmailDocuments", (string)null);
+                    b.ToTable("EmailDocuments");
                 });
 
             modelBuilder.Entity("number_sequence.Models.PdfTemplate", b =>
@@ -836,7 +839,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PdfTemplates", (string)null);
+                    b.ToTable("PdfTemplates");
                 });
 
             modelBuilder.Entity("number_sequence.Models.PdfTemplateSpreadsheetRow", b =>
@@ -865,7 +868,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("DocumentId");
 
-                    b.ToTable("PdfTemplateSpreadsheetRows", (string)null);
+                    b.ToTable("PdfTemplateSpreadsheetRows");
                 });
 
             modelBuilder.Entity("number_sequence.Models.SynchronizedBackgroundService", b =>
@@ -882,7 +885,7 @@ namespace number_sequence.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("SynchronizedBackgroundServices", (string)null);
+                    b.ToTable("SynchronizedBackgroundServices");
                 });
 
             modelBuilder.Entity("TcpWtf.NumberSequence.Contracts.DaysSinceEvent", b =>

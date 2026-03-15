@@ -1,4 +1,3 @@
-using DurableTask.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
@@ -42,6 +41,7 @@ namespace number_sequence.Controllers
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
+                .Include(x => x.Payments)
                 .ToListAsync(cancellationToken);
             if (invoices.Count == 0)
             {
@@ -55,14 +55,7 @@ namespace number_sequence.Controllers
 
             if (statement.ReadyForProcessing && statement.ProcessedAt == default)
             {
-                statement.ProccessAttempt += 1;
-
-                TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
-                OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                    typeof(DurableTaskImpl.Orchestrators.LedgerStatementGenerationOrchestrator),
-                    instanceId: $"{statement.FriendlyId}_statement",
-                    statement.Id);
-                this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
+                await this.TriggerStatementPdfAsync(statement, cancellationToken);
             }
 
             statement.ModifiedDate = DateTimeOffset.UtcNow;
@@ -86,6 +79,8 @@ namespace number_sequence.Controllers
                     .ThenInclude(x => x.Customer)
                 .Include(x => x.Invoices)
                     .ThenInclude(x => x.Lines)
+                .Include(x => x.Invoices)
+                    .ThenInclude(x => x.Payments)
                 .Where(x => x.AccountName == this.User.Identity.Name)
                 .OrderByDescending(x => x.Id)
                 .Skip(skip)
@@ -105,6 +100,8 @@ namespace number_sequence.Controllers
                 .Include(x => x.Customer)
                 .Include(x => x.Invoices)
                     .ThenInclude(x => x.Lines)
+                .Include(x => x.Invoices)
+                    .ThenInclude(x => x.Payments)
                 .SingleOrDefaultAsync(x => x.AccountName == this.User.Identity.Name && x.Id == id, cancellationToken);
             if (statement == default)
             {
@@ -127,6 +124,8 @@ namespace number_sequence.Controllers
                 .Include(x => x.Customer)
                 .Include(x => x.Invoices)
                     .ThenInclude(x => x.Lines)
+                .Include(x => x.Invoices)
+                    .ThenInclude(x => x.Payments)
                 .SingleOrDefaultAsync(x => x.AccountName == this.User.Identity.Name && x.Id == id, cancellationToken);
             if (statementRecord == default)
             {
@@ -141,14 +140,7 @@ namespace number_sequence.Controllers
 
             if (statementRecord.ReadyForProcessing && statementRecord.ProcessedAt == default)
             {
-                statementRecord.ProccessAttempt += 1;
-
-                TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
-                OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                    typeof(DurableTaskImpl.Orchestrators.LedgerStatementGenerationOrchestrator),
-                    instanceId: $"{statementRecord.FriendlyId}_statement",
-                    statementRecord.Id);
-                this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
+                await this.TriggerStatementPdfAsync(statementRecord, cancellationToken);
             }
 
             statementRecord.ModifiedDate = DateTimeOffset.UtcNow;

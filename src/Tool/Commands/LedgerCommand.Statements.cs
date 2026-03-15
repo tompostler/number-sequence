@@ -85,6 +85,33 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             {
                 PrintInvoices(statement.Invoices.ToArray());
             }
+
+            List<Contracts.Ledger.InvoicePayment> allPayments = statement.Invoices?
+                .Where(x => x.Payments?.Count > 0)
+                .SelectMany(x => x.Payments)
+                .ToList() ?? [];
+            Console.WriteLine($"Payments ({allPayments.Count}):");
+            if (allPayments.Count > 0)
+            {
+                Output.WriteTable(
+                    allPayments.Select(x => new
+                    {
+                        InvoiceId = x.Invoice?.Id,
+                        x.Id,
+                        x.PaymentDate,
+                        x.Details,
+                        x.Amount,
+                        x.CreatedDate,
+                        x.ModifiedDate,
+                    }),
+                    "InvoiceId",
+                    nameof(Contracts.Ledger.InvoicePayment.Id),
+                    nameof(Contracts.Ledger.InvoicePayment.PaymentDate),
+                    nameof(Contracts.Ledger.InvoicePayment.Details),
+                    nameof(Contracts.Ledger.InvoicePayment.Amount),
+                    nameof(Contracts.Ledger.InvoicePayment.CreatedDate),
+                    nameof(Contracts.Ledger.InvoicePayment.ModifiedDate));
+            }
         }
 
         private static void PrintStatements(params Contracts.Ledger.Statement[] statements)

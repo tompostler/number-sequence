@@ -41,13 +41,11 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         /// <summary>
         /// See <see cref="Business"/>.
         /// </summary>
-        [Required]
         public Business Business { get; set; }
 
         /// <summary>
         /// See <see cref="Customer"/>.
         /// </summary>
-        [Required]
         public Customer Customer { get; set; }
 
         /// <summary>
@@ -56,21 +54,32 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         public IList<InvoiceLine> Lines { get; set; }
 
         /// <summary>
-        /// The date the invoice has been paid.
+        /// The payments applied to this invoice.
         /// </summary>
-        public DateOnly? PaidDate { get; set; }
+        public IList<InvoicePayment> Payments { get; set; }
 
         /// <summary>
-        /// Additional payment information, if desired.
+        /// The date the invoice has been fully paid. Set automatically when payments cover the total.
         /// </summary>
-        [MaxLength(64)]
-        public string PaidDetails { get; set; }
+        public DateOnly? PaidDate { get; set; }
 
         /// <summary>
         /// The total amount due on the invoice.
         /// </summary>
         [NotMapped]
         public decimal Total => this.Lines?.Sum(x => x.Total) ?? 0;
+
+        /// <summary>
+        /// The total amount paid across all payments.
+        /// </summary>
+        [NotMapped]
+        public decimal TotalPaid => this.Payments?.Sum(x => x.Amount) ?? 0;
+
+        /// <summary>
+        /// The remaining balance after payments.
+        /// </summary>
+        [NotMapped]
+        public decimal Balance => this.Total - this.TotalPaid;
 
         /// <summary>
         /// A human-friendly identifier combining the invoice id and process attempt.

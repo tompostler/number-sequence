@@ -633,25 +633,75 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
             invoiceCommand.Subcommands.Add(invoiceListCommand);
 
-            Command invoiceMarkPaidCommand = new("mark-paid", "Mark a specific invoice as paid.")
+            #region Invoice Payments
+
+            Command invoicePaymentCommand = new("payment", "Manage payments on an invoice.");
+            invoicePaymentCommand.Aliases.Add("p");
+
+            Argument<long> invoicePaymentIdArgument = new("paymentId") { Description = "The id of the payment." };
+
+            Command invoicePaymentAddCommand = new("add", "Add a payment to an existing invoice.")
             {
                 stampOption,
                 verbosityOption,
                 invoiceIdArgument,
                 rawOption,
             };
-            invoiceMarkPaidCommand.Aliases.Add("mp");
-            invoiceMarkPaidCommand.Aliases.Add("pay");
-            invoiceMarkPaidCommand.SetAction(
+            invoicePaymentAddCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
                     long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
                     bool raw = parseResult.GetValue(rawOption);
-                    return HandleMarkPaidAsync(invoiceId, raw, stamp, verbosity);
+                    return HandlePaymentAddAsync(invoiceId, raw, stamp, verbosity);
                 });
-            invoiceCommand.Subcommands.Add(invoiceMarkPaidCommand);
+
+            Command invoicePaymentEditCommand = new("edit", "Edit the date or details of an existing payment.")
+            {
+                stampOption,
+                verbosityOption,
+                invoiceIdArgument,
+                invoicePaymentIdArgument,
+                rawOption,
+            };
+            invoicePaymentEditCommand.Aliases.Add("update");
+            invoicePaymentEditCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
+                    long paymentId = parseResult.GetRequiredValue(invoicePaymentIdArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandlePaymentEditAsync(invoiceId, paymentId, raw, stamp, verbosity);
+                });
+
+            Command invoicePaymentRemoveCommand = new("remove", "Remove a payment from an existing invoice.")
+            {
+                stampOption,
+                verbosityOption,
+                invoiceIdArgument,
+                invoicePaymentIdArgument,
+                rawOption,
+            };
+            invoicePaymentRemoveCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long invoiceId = parseResult.GetRequiredValue(invoiceIdArgument);
+                    long paymentId = parseResult.GetRequiredValue(invoicePaymentIdArgument);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandlePaymentRemoveAsync(invoiceId, paymentId, raw, stamp, verbosity);
+                });
+
+            invoicePaymentCommand.Subcommands.Add(invoicePaymentAddCommand);
+            invoicePaymentCommand.Subcommands.Add(invoicePaymentEditCommand);
+            invoicePaymentCommand.Subcommands.Add(invoicePaymentRemoveCommand);
+            invoiceCommand.Subcommands.Add(invoicePaymentCommand);
+
+            #endregion // Invoice Payments
 
             Command invoiceMarkReprocessRegularlyCommand = new("mark-reprocess-regularly", "Mark a specific invoice to be automatically reprocessed to pdf every 14d if not marked as paid.")
             {

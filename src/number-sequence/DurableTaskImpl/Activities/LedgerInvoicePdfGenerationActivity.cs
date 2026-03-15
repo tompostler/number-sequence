@@ -59,6 +59,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                     .ThenInclude(x => x.Logo)
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
+                .Include(x => x.Payments)
                 .FirstOrDefaultAsync(x => x.Id == input && (x.ReadyForProcessing || x.ReprocessRegularly) && x.ProcessedAt == default, cancellationToken);
             if (invoice == default)
             {
@@ -84,6 +85,11 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = additionalBody.AppendLine($"Customer name: {invoice.Customer.Name}");
             _ = additionalBody.AppendLine($"Due date: {invoice.DueDate:MMMM dd, yyyy}");
             _ = additionalBody.AppendLine($"Total due: $ {invoice.Total:N2}");
+            if (invoice.Payments?.Count > 0)
+            {
+                _ = additionalBody.AppendLine($"Total paid: $ {invoice.TotalPaid:N2}");
+                _ = additionalBody.AppendLine($"Balance due: $ {invoice.Balance:N2}");
+            }
             _ = additionalBody.AppendLine($"Line count: {invoice.Lines.Count}");
             EmailDocument emailDocument = new()
             {
@@ -265,6 +271,13 @@ namespace number_sequence.DurableTaskImpl.Activities
                                             .Text($"PDF created {DateTime.Now:MMMM dd, yyyy}.");
                                         _ = column.Item()
                                             .Text($"Total: ${this.invoice.Total:N2}.");
+                                        if (this.invoice.Payments?.Count > 0)
+                                        {
+                                            _ = column.Item()
+                                                .Text($"Paid: ${this.invoice.TotalPaid:N2}.");
+                                            _ = column.Item()
+                                                .Text($"Balance: ${this.invoice.Balance:N2}.");
+                                        }
                                         _ = column.Item()
                                             .Text($"Line count: {this.invoice.Lines.Count:N0}.");
                                     });
@@ -328,13 +341,14 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         .BorderColor(Colors.Black);
                                 });
 
+                                static IContainer CellStyle(IContainer container)
+                                    => container.PaddingVertical(3);
+                                static IContainer RightCellStyle(IContainer container)
+                                    => container.PaddingVertical(3).AlignRight();
+
                                 // Individual lines. Make sure to get correct width every 'row', else table will misalign.
                                 foreach (InvoiceLine line in this.invoice.Lines)
                                 {
-                                    static IContainer CellStyle(IContainer container)
-                                        => container.PaddingVertical(3);
-                                    static IContainer RightCellStyle(IContainer container)
-                                        => container.PaddingVertical(3).AlignRight();
 
                                     // Line id
                                     _ = table.Cell().Element(CellStyle).Text(line.Id.ToString())
@@ -389,22 +403,61 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         }
                                     });
                                 }
+
+                                // Payment rows
+                                foreach (InvoicePayment payment in this.invoice.Payments ?? [])
+                                {
+                                    // Payment id
+                                    _ = table.Cell().Element(CellStyle).Text($"P{payment.Id}")
+                                        .FontColor(Colors.Grey.Medium)
+                                        .FontSize(baseFontSize * 0.9f)
+                                        .LetterSpacing(-0.05f);
+
+                                    // Payment item
+                                    table.Cell().Element(CellStyle).Text(text =>
+                                    {
+                                        _ = text.Span($"Payment on {payment.PaymentDate:MMM dd, yyyy}");
+                                        if (!string.IsNullOrWhiteSpace(payment.Details))
+                                        {
+                                            _ = text.Line(string.Empty);
+                                            _ = text.Span(payment.Details)
+                                                .FontColor(Colors.Grey.Medium)
+                                                .FontSize(baseFontSize * .9f)
+                                                .Italic();
+                                        }
+                                    });
+
+                                    // Quantity (blank)
+                                    _ = table.Cell().Element(RightCellStyle).Text(string.Empty);
+
+                                    // Price (blank)
+                                    _ = table.Cell().Element(RightCellStyle).Text(string.Empty);
+
+                                    // Amount
+                                    table.Cell().Element(RightCellStyle).Text(text =>
+                                    {
+                                        _ = text.Span("$ ");
+                                        _ = text.Span("(");
+                                        _ = text.Span(payment.Amount.ToString("N2"));
+                                        _ = text.Span(")");
+                                    });
+                                }
                             });
 
                             _ = column.Item().PaddingVertical(10).LineHorizontal(0.5f);
 
-                            // Total due
+                            // Total due / Balance due
                             column.Item()
                                 .DefaultTextStyle(TextStyle.Default.FontSize(baseFontSize * 1.5f).Bold())
                                 .Row(row =>
                                 {
                                     row.RelativeItem().Column(column =>
                                     {
-                                        _ = column.Item().Text("Total Due");
+                                        _ = column.Item().Text(this.invoice.Payments?.Count > 0 ? "Balance Due" : "Total Due");
                                     });
                                     row.RelativeItem().AlignRight().Column(column =>
                                     {
-                                        _ = column.Item().Text($"${this.invoice.Total:N2}");
+                                        _ = column.Item().Text($"${this.invoice.Balance:N2}");
                                     });
                                 });
 

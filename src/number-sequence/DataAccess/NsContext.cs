@@ -23,7 +23,9 @@ namespace number_sequence.DataAccess
         public DbSet<Business> InvoiceBusinesses { get; set; }
         public DbSet<BusinessLogo> InvoiceBusinessLogos { get; set; }
         public DbSet<Customer> InvoiceCustomers { get; set; }
+        public DbSet<InvoiceLine> InvoiceLines { get; set; }
         public DbSet<InvoiceLineDefault> InvoiceLineDefaults { get; set; }
+        public DbSet<InvoicePayment> InvoicePayments { get; set; }
         public DbSet<Statement> Statements { get; set; }
 
         public DbSet<ChiroEmailBatch> ChiroEmailBatches { get; set; }
@@ -77,6 +79,7 @@ namespace number_sequence.DataAccess
             _ = modelBuilder.HasSequence<long>("InvoiceCustomerIds");
             _ = modelBuilder.HasSequence<long>("InvoiceLineIds");
             _ = modelBuilder.HasSequence<long>("InvoiceLineDefaultIds");
+            _ = modelBuilder.HasSequence<long>("InvoicePaymentIds");
             _ = modelBuilder.HasSequence<long>("StatementIds");
 
             _ = modelBuilder.Entity<Invoice>()
@@ -151,6 +154,24 @@ namespace number_sequence.DataAccess
             _ = modelBuilder.Entity<InvoiceLine>()
                 .ToTable("InvoiceLines");
 
+            _ = modelBuilder.Entity<InvoicePayment>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoicePaymentIds");
+            _ = modelBuilder.Entity<InvoicePayment>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoicePayment>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<InvoicePayment>()
+                .Property(x => x.Amount)
+                .HasPrecision(18, 2);
+            _ = modelBuilder.Entity<InvoicePayment>()
+                .HasOne(x => x.Invoice)
+                .WithMany(x => x.Payments)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
             _ = modelBuilder.Entity<InvoiceLineDefault>()
                 .Property(x => x.Id)
                 .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoiceLineDefaultIds");
@@ -170,11 +191,24 @@ namespace number_sequence.DataAccess
             _ = modelBuilder.Entity<Invoice>()
                 .HasOne(x => x.Business)
                 .WithMany(x => x.Invoices)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
             _ = modelBuilder.Entity<Invoice>()
                 .HasOne(x => x.Customer)
                 .WithMany(x => x.Invoices)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            _ = modelBuilder.Entity<Statement>()
+                .HasOne(x => x.Business)
+                .WithMany()
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+            _ = modelBuilder.Entity<Statement>()
+                .HasOne(x => x.Customer)
+                .WithMany()
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
             #endregion // Ledger
 
