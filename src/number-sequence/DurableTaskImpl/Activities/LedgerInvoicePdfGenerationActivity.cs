@@ -91,6 +91,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 _ = additionalBody.AppendLine($"Balance due: $ {invoice.Balance:N2}");
             }
             _ = additionalBody.AppendLine($"Line count: {invoice.Lines.Count}");
+            _ = additionalBody.AppendLine($"Payment count: {invoice.Payments?.Count ?? 0}");
             EmailDocument emailDocument = new()
             {
                 Id = context.OrchestrationInstance.InstanceId,

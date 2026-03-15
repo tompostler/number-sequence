@@ -90,6 +90,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = additionalBody.AppendLine($"End due: {statement.InvoiceEndDate:MMMM dd, yyyy}.");
             _ = additionalBody.AppendLine($"Billed: ${statement.TotalBilled:N2}. Paid: ${statement.TotalPaid:N2}. Balance: ${statement.Balance:N2}.");
             _ = additionalBody.AppendLine($"Invoice count: {statement.Invoices.Count:N0}.");
+            _ = additionalBody.AppendLine($"Payment count: {statement.Invoices.Sum(x => x.Payments?.Count ?? 0):N0}.");
             EmailDocument emailDocument = new()
             {
                 Id = context.OrchestrationInstance.InstanceId,
@@ -369,7 +370,7 @@ namespace number_sequence.DurableTaskImpl.Activities
 
                                         table.Cell().Element(RightCellStyle).Text(text =>
                                         {
-                                            _ = text.Span("$ ( ");
+                                            _ = text.Span("$ (");
                                             _ = text.Span(payment.Amount.ToString("N2"));
                                             _ = text.Span(")");
                                         });
