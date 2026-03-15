@@ -311,7 +311,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                         .AlignRight()
                                         .Bold();
                                     _ = header.Cell()
-                                        .ColumnSpan(4)
+                                        .ColumnSpan(5)
                                         .PaddingVertical(4)
                                         .BorderBottom(0.5f)
                                         .BorderColor(Colors.Black);
