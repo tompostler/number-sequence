@@ -313,6 +313,24 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Gets a random Criminal Minds quote (from the show Criminal Minds).
+        /// </summary>
+        public async Task<string> GetCriminalMindsQuoteAsync(int? season = default, int? episode = default, CancellationToken cancellationToken = default)
+        {
+            string queryString = string.Empty;
+            if (season.HasValue) queryString += $"{(queryString.Length == 0 ? "?" : "&")}season={season}";
+            if (episode.HasValue) queryString += $"{(queryString.Length == 0 ? "?" : "&")}episode={episode}";
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/criminalminds" + queryString),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadJsonAsAsync<string>(cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a random number according to xkcd comic 221.
         /// </summary>
         public async Task<int> GetXkcdAsync(CancellationToken cancellationToken = default)

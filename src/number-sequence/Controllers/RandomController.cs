@@ -8,7 +8,7 @@ namespace number_sequence.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public sealed class RandomController : ControllerBase
+    public sealed partial class RandomController : ControllerBase
     {
         [HttpGet]
         public IActionResult Default(ulong min = 0, ulong max = 100)
