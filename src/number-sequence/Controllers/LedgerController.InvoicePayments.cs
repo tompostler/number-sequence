@@ -39,7 +39,7 @@ namespace number_sequence.Controllers
             invoice.ModifiedDate = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
-            if (invoice.ProcessedAt.HasValue || invoice.ReadyForProcessing || invoice.ReprocessRegularly)
+            if ((invoice.ProcessedAt.HasValue || invoice.ReadyForProcessing || invoice.ReprocessRegularly) && !invoice.PaidDate.HasValue)
             {
                 invoice.ReadyForProcessing = true;
                 invoice.ProcessedAt = default;
@@ -92,7 +92,7 @@ namespace number_sequence.Controllers
             invoice.ModifiedDate = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
-            if (invoice.ProcessedAt.HasValue || invoice.ReadyForProcessing || invoice.ReprocessRegularly)
+            if ((invoice.ProcessedAt.HasValue || invoice.ReadyForProcessing || invoice.ReprocessRegularly) && !invoice.PaidDate.HasValue)
             {
                 invoice.ReadyForProcessing = true;
                 invoice.ProcessedAt = default;
@@ -140,7 +140,7 @@ namespace number_sequence.Controllers
             invoice.ModifiedDate = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
-            if (invoice.ProcessedAt.HasValue || invoice.ReadyForProcessing || invoice.ReprocessRegularly)
+            if ((invoice.ProcessedAt.HasValue || invoice.ReadyForProcessing || invoice.ReprocessRegularly) && !invoice.PaidDate.HasValue)
             {
                 invoice.ReadyForProcessing = true;
                 invoice.ProcessedAt = default;
