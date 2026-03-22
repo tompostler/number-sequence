@@ -17,6 +17,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 stampOption,
                 verbosityOption,
             };
+            createCommand.AddCreateAliases();
             createCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -32,6 +33,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 verbosityOption,
                 nameArgument,
             };
+            deleteCommand.AddDeleteAliases();
             deleteCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -49,11 +51,11 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return Task.CompletedTask;
                 });
 
-            Command readCommand = new("read", "Inspects the token on disk.")
+            Command readCommand = new("read", "Reads the token on disk.")
             {
                 verbosityOption,
             };
-            readCommand.Aliases.Add("show");
+            readCommand.AddReadAliases();
             readCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -66,6 +68,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             {
                 verbosityOption,
             };
+            saveCommand.Aliases.Add("write");
+            saveCommand.Aliases.Add("w");
             saveCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {

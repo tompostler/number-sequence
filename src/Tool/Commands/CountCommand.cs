@@ -17,6 +17,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 stampOption,
                 verbosityOption,
             };
+            createCommand.AddCreateAliases();
             createCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -29,7 +30,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Option<bool> bareOption = new("--bare") { Description = "When used, will only return the count instead of the full count json object." };
             Option<bool> basesOption = new("--bases") { Description = "When used, will return the count object with all the bases." };
 
-            Command getCommand = new("get", "Get an existing count to see its properties.")
+            Command readCommand = new("read", "Read an existing count to see its properties.")
             {
                 stampOption,
                 verbosityOption,
@@ -37,8 +38,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 bareOption,
                 basesOption,
             };
-            getCommand.Aliases.Add("show");
-            getCommand.SetAction(
+            readCommand.AddReadAliases();
+            readCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -79,6 +80,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 bareOption,
                 basesOption,
             };
+            incrementByCommand.Aliases.Add("inc-by");
+            incrementByCommand.Aliases.Add("ib");
             incrementByCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -91,12 +94,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleIncrementByAsync(name, incrementByAmount, bare, bases, stamp, verbosity);
                 });
 
-            Command listCommand = new("list", "Get existing counts.")
+            Command listCommand = new("list", "List existing counts.")
             {
                 stampOption,
                 verbosityOption,
             };
-            listCommand.Aliases.Add("ls");
+            listCommand.AddListAliases();
             listCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -106,7 +109,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
 
             rootCommand.Subcommands.Add(createCommand);
-            rootCommand.Subcommands.Add(getCommand);
+            rootCommand.Subcommands.Add(readCommand);
             rootCommand.Subcommands.Add(incrementCommand);
             rootCommand.Subcommands.Add(incrementByCommand);
             rootCommand.Subcommands.Add(listCommand);

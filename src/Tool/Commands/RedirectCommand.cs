@@ -16,6 +16,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 stampOption,
                 verbosityOption,
             };
+            createCommand.AddCreateAliases();
             createCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -24,12 +25,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleCreateAsync(stamp, verbosity);
                 });
 
-            Command listCommand = new("list", "Get existing redirects.")
+            Command listCommand = new("list", "List existing redirects.")
             {
                 stampOption,
                 verbosityOption,
             };
-            listCommand.Aliases.Add("ls");
+            listCommand.AddListAliases();
             listCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {

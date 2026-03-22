@@ -38,6 +38,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 categoryArgument,
                 valueArgument,
             };
+            createCommand.AddCreateAliases();
             createCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -62,15 +63,15 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleCreateWithInputsAsync(stamp, verbosity);
                 });
 
-            Command getCommand = new("get", "Get an existing DSV to see its properties.")
+            Command readCommand = new("read", "Read an existing DSV to see its properties.")
             {
                 stampOption,
                 verbosityOption,
                 categoryArgument,
                 dateArgument,
             };
-            getCommand.Aliases.Add("show");
-            getCommand.SetAction(
+            readCommand.AddReadAliases();
+            readCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -80,7 +81,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleGetAsync(category, date, stamp, verbosity);
                 });
 
-            Command listCommand = new("list", "Get existing DSVs.")
+            Command listCommand = new("list", "List existing DSVs.")
             {
                 stampOption,
                 verbosityOption,
@@ -88,7 +89,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 takeAmountOption,
                 daysLookbackOption,
             };
-            listCommand.Aliases.Add("ls");
+            listCommand.AddListAliases();
             listCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -107,6 +108,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 categoryArgument,
                 dateArgument,
             };
+            updateCommand.AddUpdateAliases();
             updateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -119,7 +121,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             rootCommand.Subcommands.Add(createCommand);
             rootCommand.Subcommands.Add(createAskCommand);
-            rootCommand.Subcommands.Add(getCommand);
+            rootCommand.Subcommands.Add(readCommand);
             rootCommand.Subcommands.Add(listCommand);
             rootCommand.Subcommands.Add(updateCommand);
             return rootCommand;

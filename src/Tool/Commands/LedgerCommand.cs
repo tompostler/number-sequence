@@ -30,6 +30,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 stampOption,
                 verbosityOption,
             };
+            businessCreateCommand.AddCreateAliases();
             businessCreateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -38,15 +39,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleBusinessCreateAsync(stamp, verbosity);
                 });
 
-            Command businessGetCommand = new("get", "Get an existing business.")
+            Command businessReadCommand = new("read", "Read an existing business.")
             {
                 stampOption,
                 verbosityOption,
                 businessIdArgument,
             };
-            businessGetCommand.Aliases.Add("show");
-            businessGetCommand.Aliases.Add("read");
-            businessGetCommand.SetAction(
+            businessReadCommand.AddReadAliases();
+            businessReadCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -55,12 +55,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleBusinessGetAsync(businessId, stamp, verbosity);
                 });
 
-            Command businessListCommand = new("list", "Get existing businesses.")
+            Command businessListCommand = new("list", "List existing businesses.")
             {
                 stampOption,
                 verbosityOption,
             };
-            businessListCommand.Aliases.Add("ls");
+            businessListCommand.AddListAliases();
             businessListCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -79,6 +79,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 businessIdArgument,
                 logoFileInfoArgument,
             };
+            businessLogoCreateCommand.AddCreateAliases();
             businessLogoCreateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -89,13 +90,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleBusinessLogoCreateAsync(businessId, logoFileInfo, stamp, verbosity);
                 });
 
-            Command businessLogoUpdateCommand = new("update", "Replace the logo for an existing business.")
+            Command businessLogoUpdateCommand = new("update", "Update the logo for an existing business.")
             {
                 stampOption,
                 verbosityOption,
                 businessIdArgument,
                 logoFileInfoArgument,
             };
+            businessLogoUpdateCommand.AddUpdateAliases();
             businessLogoUpdateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -107,16 +109,15 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
 
             Argument<FileInfo> outputFileInfoArgument = new Argument<FileInfo>("output-path") { Description = "Path to write the downloaded image file." }.AcceptLegalFilePathsOnly();
-            Command businessLogoGetCommand = new("get", "Download the logo for an existing business.")
+            Command businessLogoReadCommand = new("read", "Download the logo for an existing business.")
             {
                 stampOption,
                 verbosityOption,
                 businessIdArgument,
                 outputFileInfoArgument,
             };
-            businessLogoGetCommand.Aliases.Add("show");
-            businessLogoGetCommand.Aliases.Add("read");
-            businessLogoGetCommand.SetAction(
+            businessLogoReadCommand.AddReadAliases();
+            businessLogoReadCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -132,6 +133,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 verbosityOption,
                 businessIdArgument,
             };
+            businessLogoDeleteCommand.AddDeleteAliases();
             businessLogoDeleteCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -143,12 +145,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             businessLogoCommand.Subcommands.Add(businessLogoCreateCommand);
             businessLogoCommand.Subcommands.Add(businessLogoUpdateCommand);
-            businessLogoCommand.Subcommands.Add(businessLogoGetCommand);
+            businessLogoCommand.Subcommands.Add(businessLogoReadCommand);
             businessLogoCommand.Subcommands.Add(businessLogoDeleteCommand);
             businessCommand.Subcommands.Add(businessLogoCommand);
 
             businessCommand.Subcommands.Add(businessCreateCommand);
-            businessCommand.Subcommands.Add(businessGetCommand);
+            businessCommand.Subcommands.Add(businessReadCommand);
             businessCommand.Subcommands.Add(businessListCommand);
             rootCommand.Subcommands.Add(businessCommand);
 
@@ -167,6 +169,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 stampOption,
                 verbosityOption,
             };
+            customerCreateCommand.AddCreateAliases();
             customerCreateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -175,14 +178,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleCustomerCreateAsync(stamp, verbosity);
                 });
 
-            Command customerEditCommand = new("edit", "Edit an existing customer.")
+            Command customerUpdateCommand = new("update", "Update an existing customer.")
             {
                 stampOption,
                 verbosityOption,
                 customerIdArgument,
             };
-            customerEditCommand.Aliases.Add("update");
-            customerEditCommand.SetAction(
+            customerUpdateCommand.AddUpdateAliases();
+            customerUpdateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -191,15 +194,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleCustomerEditAsync(customerId, stamp, verbosity);
                 });
 
-            Command customerGetCommand = new("get", "Get an existing customer.")
+            Command customerReadCommand = new("read", "Read an existing customer.")
             {
                 stampOption,
                 verbosityOption,
                 customerIdArgument,
             };
-            customerGetCommand.Aliases.Add("show");
-            customerGetCommand.Aliases.Add("read");
-            customerGetCommand.SetAction(
+            customerReadCommand.AddReadAliases();
+            customerReadCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -208,12 +210,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleCustomerGetAsync(customerId, stamp, verbosity);
                 });
 
-            Command customerListCommand = new("list", "Get existing customers.")
+            Command customerListCommand = new("list", "List existing customers.")
             {
                 stampOption,
                 verbosityOption,
             };
-            customerListCommand.Aliases.Add("ls");
+            customerListCommand.AddListAliases();
             customerListCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -223,8 +225,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
 
             customerCommand.Subcommands.Add(customerCreateCommand);
-            customerCommand.Subcommands.Add(customerEditCommand);
-            customerCommand.Subcommands.Add(customerGetCommand);
+            customerCommand.Subcommands.Add(customerUpdateCommand);
+            customerCommand.Subcommands.Add(customerReadCommand);
             customerCommand.Subcommands.Add(customerListCommand);
             rootCommand.Subcommands.Add(customerCommand);
 
@@ -243,6 +245,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 stampOption,
                 verbosityOption,
             };
+            statementCreateCommand.AddCreateAliases();
             statementCreateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -251,15 +254,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleStatementCreateAsync(stamp, verbosity);
                 });
 
-            Command statementGetCommand = new("get", "Get an existing statement.")
+            Command statementReadCommand = new("read", "Read an existing statement.")
             {
                 stampOption,
                 verbosityOption,
                 statementIdArgument,
             };
-            statementGetCommand.Aliases.Add("show");
-            statementGetCommand.Aliases.Add("read");
-            statementGetCommand.SetAction(
+            statementReadCommand.AddReadAliases();
+            statementReadCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -268,12 +270,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleStatementGetAsync(statementId, stamp, verbosity);
                 });
 
-            Command statementListCommand = new("list", "Get existing statements.")
+            Command statementListCommand = new("list", "List existing statements.")
             {
                 stampOption,
                 verbosityOption,
             };
-            statementListCommand.Aliases.Add("ls");
+            statementListCommand.AddListAliases();
             statementListCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -299,7 +301,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
 
             statementCommand.Subcommands.Add(statementCreateCommand);
-            statementCommand.Subcommands.Add(statementGetCommand);
+            statementCommand.Subcommands.Add(statementReadCommand);
             statementCommand.Subcommands.Add(statementListCommand);
             statementCommand.Subcommands.Add(statementProcessCommand);
             rootCommand.Subcommands.Add(statementCommand);
@@ -316,7 +318,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             #region Invoice Lines
 
             Command invoiceLineCommand = new("line", "Manage invoice lines.");
-            invoiceLineCommand.Aliases.Add("l");
+            invoiceLineCommand.Aliases.Add("ln");
 
             Argument<long> invoiceLineIdArgument = new("lineId") { Description = "The id of the line." };
             Argument<long> invoiceLineOtherIdArgument = new("lineOtherId") { Description = "The id of the other line." };
@@ -329,6 +331,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 invoiceIdArgument,
                 rawOption,
             };
+            invoiceLineCreateCommand.AddCreateAliases();
             invoiceLineCreateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -349,6 +352,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 rawOption,
             };
             invoiceLineDuplicateCommand.Aliases.Add("dupe");
+            invoiceLineDuplicateCommand.Aliases.Add("copy");
+            invoiceLineDuplicateCommand.Aliases.Add("cp");
             invoiceLineDuplicateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -361,7 +366,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleLineDuplicateAsync(invoiceId, lineId, targetId, raw, stamp, verbosity);
                 });
 
-            Command invoiceLineEditCommand = new("edit", "Edit an existing invoice line.")
+            Command invoiceLineUpdateCommand = new("update", "Updatw an existing invoice line.")
             {
                 stampOption,
                 verbosityOption,
@@ -369,8 +374,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 invoiceLineIdArgument,
                 rawOption,
             };
-            invoiceLineEditCommand.Aliases.Add("update");
-            invoiceLineEditCommand.SetAction(
+            invoiceLineUpdateCommand.AddUpdateAliases();
+            invoiceLineUpdateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -381,16 +386,15 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleLineEditAsync(invoiceId, lineId, raw, stamp, verbosity);
                 });
 
-            Command invoiceLineGetCommand = new("get", "Get an existing invoice line.")
+            Command invoiceLineReadCommand = new("read", "Read an existing invoice line.")
             {
                 stampOption,
                 verbosityOption,
                 invoiceIdArgument,
                 invoiceLineIdArgument,
             };
-            invoiceLineGetCommand.Aliases.Add("show");
-            invoiceLineGetCommand.Aliases.Add("read");
-            invoiceLineGetCommand.SetAction(
+            invoiceLineReadCommand.AddReadAliases();
+            invoiceLineReadCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -400,13 +404,13 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleLineGetAsync(invoiceId, lineId, stamp, verbosity);
                 });
 
-            Command invoiceLineListCommand = new("list", "Get existing invoice lines.")
+            Command invoiceLineListCommand = new("list", "List existing invoice lines.")
             {
                 stampOption,
                 verbosityOption,
                 invoiceIdArgument,
             };
-            invoiceLineListCommand.Aliases.Add("ls");
+            invoiceLineListCommand.AddListAliases();
             invoiceLineListCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -416,7 +420,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleLineListAsync(invoiceId, stamp, verbosity);
                 });
 
-            Command invoiceLineRemoveCommand = new("remove", "Remove an existing invoice line.")
+            Command invoiceLineDeleteCommand = new("delete", "Delete an existing invoice line.")
             {
                 stampOption,
                 verbosityOption,
@@ -424,7 +428,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 invoiceLineIdArgument,
                 rawOption,
             };
-            invoiceLineRemoveCommand.SetAction(
+            invoiceLineDeleteCommand.AddDeleteAliases();
+            invoiceLineDeleteCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -458,10 +463,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             invoiceLineCommand.Subcommands.Add(invoiceLineCreateCommand);
             invoiceLineCommand.Subcommands.Add(invoiceLineDuplicateCommand);
-            invoiceLineCommand.Subcommands.Add(invoiceLineEditCommand);
-            invoiceLineCommand.Subcommands.Add(invoiceLineGetCommand);
+            invoiceLineCommand.Subcommands.Add(invoiceLineUpdateCommand);
+            invoiceLineCommand.Subcommands.Add(invoiceLineReadCommand);
             invoiceLineCommand.Subcommands.Add(invoiceLineListCommand);
-            invoiceLineCommand.Subcommands.Add(invoiceLineRemoveCommand);
+            invoiceLineCommand.Subcommands.Add(invoiceLineDeleteCommand);
             invoiceLineCommand.Subcommands.Add(invoiceLineSwapCommand);
             invoiceCommand.Subcommands.Add(invoiceLineCommand);
 
@@ -479,6 +484,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 stampOption,
                 verbosityOption,
             };
+            invoiceLineDefaultCreateCommand.AddCreateAliases();
             invoiceLineDefaultCreateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -487,14 +493,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleLineDefaultCreateAsync(stamp, verbosity);
                 });
 
-            Command invoiceLineDefaultEditCommand = new("edit", "Edit an existing invoice line default.")
+            Command invoiceLineDefaultUpdateCommand = new("update", "Update an existing invoice line default.")
             {
                 stampOption,
                 verbosityOption,
                 invoiceLineDefaultIdArgument,
             };
-            invoiceLineDefaultEditCommand.Aliases.Add("update");
-            invoiceLineDefaultEditCommand.SetAction(
+            invoiceLineDefaultUpdateCommand.AddUpdateAliases();
+            invoiceLineDefaultUpdateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -503,15 +509,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleLineDefaultEditAsync(id, stamp, verbosity);
                 });
 
-            Command invoiceLineDefaultGetCommand = new("get", "Get an existing invoice line default.")
+            Command invoiceLineDefaultReadCommand = new("read", "Read an existing invoice line default.")
             {
                 stampOption,
                 verbosityOption,
                 invoiceLineDefaultIdArgument,
             };
-            invoiceLineDefaultGetCommand.Aliases.Add("show");
-            invoiceLineDefaultGetCommand.Aliases.Add("read");
-            invoiceLineDefaultGetCommand.SetAction(
+            invoiceLineDefaultReadCommand.AddReadAliases();
+            invoiceLineDefaultReadCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -520,12 +525,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleLineDefaultGetAsync(id, stamp, verbosity);
                 });
 
-            Command invoiceLineDefaultListCommand = new("list", "Get existing invoice line defaults.")
+            Command invoiceLineDefaultListCommand = new("list", "List existing invoice line defaults.")
             {
                 stampOption,
                 verbosityOption,
             };
-            invoiceLineDefaultListCommand.Aliases.Add("ls");
+            invoiceLineDefaultListCommand.AddListAliases();
             invoiceLineDefaultListCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -552,8 +557,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
 
             invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultCreateCommand);
-            invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultEditCommand);
-            invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultGetCommand);
+            invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultUpdateCommand);
+            invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultReadCommand);
             invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultListCommand);
             invoiceLineDefaultCommand.Subcommands.Add(invoiceLineDefaultSwapCommand);
             invoiceCommand.Subcommands.Add(invoiceLineDefaultCommand);
@@ -568,6 +573,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 idFromOption,
                 rawOption,
             };
+            createCommand.AddCreateAliases();
             createCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -579,15 +585,15 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
             invoiceCommand.Subcommands.Add(createCommand);
 
-            Command invoiceEditCommand = new("edit", "Edit an existing invoice.")
+            Command invoiceUpdateCommand = new("update", "Update an existing invoice.")
             {
                 stampOption,
                 verbosityOption,
                 invoiceIdArgument,
                 rawOption,
             };
-            invoiceEditCommand.Aliases.Add("update");
-            invoiceEditCommand.SetAction(
+            invoiceUpdateCommand.AddUpdateAliases();
+            invoiceUpdateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -596,18 +602,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleEditAsync(invoiceId, raw, stamp, verbosity);
                 });
-            invoiceCommand.Subcommands.Add(invoiceEditCommand);
+            invoiceCommand.Subcommands.Add(invoiceUpdateCommand);
 
-            Command invoiceGetCommand = new("get", "Get an existing invoice.")
+            Command invoiceReadCommand = new("read", "Read an existing invoice.")
             {
                 stampOption,
                 verbosityOption,
                 invoiceIdArgument,
                 rawOption,
             };
-            invoiceGetCommand.Aliases.Add("show");
-            invoiceGetCommand.Aliases.Add("read");
-            invoiceGetCommand.SetAction(
+            invoiceReadCommand.AddReadAliases();
+            invoiceReadCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -616,14 +621,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleGetAsync(invoiceId, raw, stamp, verbosity);
                 });
-            invoiceCommand.Subcommands.Add(invoiceGetCommand);
+            invoiceCommand.Subcommands.Add(invoiceReadCommand);
 
-            Command invoiceListCommand = new("list", "Get existing invoices.")
+            Command invoiceListCommand = new("list", "List existing invoices.")
             {
                 stampOption,
                 verbosityOption,
             };
-            invoiceListCommand.Aliases.Add("ls");
+            invoiceListCommand.AddListAliases();
             invoiceListCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -640,14 +645,15 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Argument<long> invoicePaymentIdArgument = new("paymentId") { Description = "The id of the payment." };
 
-            Command invoicePaymentAddCommand = new("add", "Add a payment to an existing invoice.")
+            Command invoicePaymentCreateCommand = new("Create", "Create a payment for an existing invoice.")
             {
                 stampOption,
                 verbosityOption,
                 invoiceIdArgument,
                 rawOption,
             };
-            invoicePaymentAddCommand.SetAction(
+            invoicePaymentCreateCommand.AddCreateAliases();
+            invoicePaymentCreateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -657,7 +663,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandlePaymentAddAsync(invoiceId, raw, stamp, verbosity);
                 });
 
-            Command invoicePaymentEditCommand = new("edit", "Edit the date or details of an existing payment.")
+            Command invoicePaymentUpdateCommand = new("update", "Update the date or details of an existing payment.")
             {
                 stampOption,
                 verbosityOption,
@@ -665,8 +671,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 invoicePaymentIdArgument,
                 rawOption,
             };
-            invoicePaymentEditCommand.Aliases.Add("update");
-            invoicePaymentEditCommand.SetAction(
+            invoicePaymentUpdateCommand.AddUpdateAliases();
+            invoicePaymentUpdateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -677,7 +683,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandlePaymentEditAsync(invoiceId, paymentId, raw, stamp, verbosity);
                 });
 
-            Command invoicePaymentRemoveCommand = new("remove", "Remove a payment from an existing invoice.")
+            Command invoicePaymentDeleteCommand = new("delete", "Delete a payment from an existing invoice.")
             {
                 stampOption,
                 verbosityOption,
@@ -685,7 +691,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 invoicePaymentIdArgument,
                 rawOption,
             };
-            invoicePaymentRemoveCommand.SetAction(
+            invoicePaymentDeleteCommand.AddDeleteAliases();
+            invoicePaymentDeleteCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -703,6 +710,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 rawOption,
             };
             invoicePaymentAddBulkCommand.Aliases.Add("bulk");
+            invoicePaymentAddBulkCommand.Aliases.Add("create-bulk");
             invoicePaymentAddBulkCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -712,9 +720,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandlePaymentAddBulkAsync(raw, stamp, verbosity);
                 });
 
-            invoicePaymentCommand.Subcommands.Add(invoicePaymentAddCommand);
-            invoicePaymentCommand.Subcommands.Add(invoicePaymentEditCommand);
-            invoicePaymentCommand.Subcommands.Add(invoicePaymentRemoveCommand);
+            invoicePaymentCommand.Subcommands.Add(invoicePaymentCreateCommand);
+            invoicePaymentCommand.Subcommands.Add(invoicePaymentUpdateCommand);
+            invoicePaymentCommand.Subcommands.Add(invoicePaymentDeleteCommand);
             invoicePaymentCommand.Subcommands.Add(invoicePaymentAddBulkCommand);
             invoiceCommand.Subcommands.Add(invoicePaymentCommand);
 

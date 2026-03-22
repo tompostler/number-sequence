@@ -19,6 +19,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 stampOption,
                 verbosityOption,
             };
+            createCommand.AddCreateAliases();
             createCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -28,14 +29,15 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
             rootCommand.Subcommands.Add(createCommand);
 
-            Command editCommand = new("edit", "Edit an existing days since.")
+            Command updateCommand = new("update", "Update an existing days since.")
             {
                 stampOption,
                 verbosityOption,
                 idArgument,
                 rawOption,
             };
-            editCommand.SetAction(
+            updateCommand.AddUpdateAliases();
+            updateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -44,17 +46,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleEditAsync(id, raw, stamp, verbosity);
                 });
-            rootCommand.Subcommands.Add(editCommand);
+            rootCommand.Subcommands.Add(updateCommand);
 
-            Command getCommand = new("get", "Get an existing days since.")
+            Command readCommand = new("read", "Read an existing days since.")
             {
                 stampOption,
                 verbosityOption,
                 idArgument,
                 rawOption,
             };
-            getCommand.Aliases.Add("show");
-            getCommand.SetAction(
+            readCommand.AddReadAliases();
+            readCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -63,14 +65,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     bool raw = parseResult.GetValue(rawOption);
                     return HandleGetAsync(id, raw, stamp, verbosity);
                 });
-            rootCommand.Subcommands.Add(getCommand);
+            rootCommand.Subcommands.Add(readCommand);
 
             Command listCommand = new("list", "Get existing days sinces.")
             {
                 stampOption,
                 verbosityOption,
             };
-            listCommand.Aliases.Add("ls");
+            listCommand.AddListAliases();
             listCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -91,6 +93,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 idArgument,
                 rawOption,
             };
+            eventCreateCommand.AddCreateAliases();
             eventCreateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -101,7 +104,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleEventCreateAsync(id, raw, stamp, verbosity);
                 });
 
-            Command eventEditCommand = new("edit", "Edit an existing days since event.")
+            Command eventUpdateCommand = new("update", "Update an existing days since event.")
             {
                 stampOption,
                 verbosityOption,
@@ -109,7 +112,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 eventIdArgument,
                 rawOption,
             };
-            eventEditCommand.SetAction(
+            eventUpdateCommand.AddUpdateAliases();
+            eventUpdateCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     Stamp stamp = parseResult.GetRequiredValue(stampOption);
@@ -121,7 +125,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
 
             eventCommand.Subcommands.Add(eventCreateCommand);
-            eventCommand.Subcommands.Add(eventEditCommand);
+            eventCommand.Subcommands.Add(eventUpdateCommand);
             rootCommand.Subcommands.Add(eventCommand);
 
 

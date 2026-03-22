@@ -16,6 +16,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 stampOption,
                 verbosityOption,
             };
+            createCommand.AddCreateAliases();
             createCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -25,14 +26,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
 
             Argument<string> accountNameArgument = new("name") { Description = "The name of the account." };
-            Command getCommand = new("get", "Get an existing account to see its properties.")
+            Command readCommand = new("read", "Read an existing account to see its properties.")
             {
                 stampOption,
                 verbosityOption,
                 accountNameArgument,
             };
-            getCommand.Aliases.Add("show");
-            getCommand.SetAction(
+            readCommand.AddReadAliases();
+            readCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
                     string name = parseResult.GetRequiredValue(accountNameArgument);
@@ -42,7 +43,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 });
 
             rootCommand.Subcommands.Add(createCommand);
-            rootCommand.Subcommands.Add(getCommand);
+            rootCommand.Subcommands.Add(readCommand);
             return rootCommand;
         }
 
