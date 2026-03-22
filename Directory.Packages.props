@@ -20,14 +20,14 @@
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.0.0" />
     <!-- Tests -->
-    <PackageVersion Include="FluentAssertions" Version="8.8.0" />
+    <PackageVersion Include="FluentAssertions" Version="8.9.0" />
     <PackageVersion Include="MSTest" Version="4.1.0" />
     <!-- Everything else -->
     <PackageVersion Include="Cronos" Version="0.11.1" />
     <PackageVersion Include="Google.Apis.Sheets.v4" Version="1.73.0.4061" />
-    <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.5.4" />
+    <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.6.0" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.9.50" />
-    <PackageVersion Include="QuestPDF" Version="2026.2.3" />
+    <PackageVersion Include="QuestPDF" Version="2026.2.4" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.2" />
     <PackageVersion Include="Unlimitedinf.Utilities" Version="5.1.5" />
     <PackageVersion Include="System.CommandLine" Version="2.0.5" />
