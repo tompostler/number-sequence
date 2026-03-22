@@ -40,7 +40,7 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         /// <summary>
         /// Additional payment information, if desired (e.g. payment method, reference number).
         /// </summary>
-        [MaxLength(64)]
+        [MaxLength(128)]
         public string Details { get; set; }
 
         /// <summary>

@@ -696,9 +696,26 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandlePaymentRemoveAsync(invoiceId, paymentId, raw, stamp, verbosity);
                 });
 
+            Command invoicePaymentAddBulkCommand = new("add-bulk", "Add payments for the full balance to multiple invoices at once with a shared payment date and details.")
+            {
+                stampOption,
+                verbosityOption,
+                rawOption,
+            };
+            invoicePaymentAddBulkCommand.Aliases.Add("bulk");
+            invoicePaymentAddBulkCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandlePaymentAddBulkAsync(raw, stamp, verbosity);
+                });
+
             invoicePaymentCommand.Subcommands.Add(invoicePaymentAddCommand);
             invoicePaymentCommand.Subcommands.Add(invoicePaymentEditCommand);
             invoicePaymentCommand.Subcommands.Add(invoicePaymentRemoveCommand);
+            invoicePaymentCommand.Subcommands.Add(invoicePaymentAddBulkCommand);
             invoiceCommand.Subcommands.Add(invoicePaymentCommand);
 
             #endregion // Invoice Payments
