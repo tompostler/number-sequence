@@ -13,6 +13,7 @@ namespace number_sequence.DataAccess
         public DbSet<Token> Tokens { get; set; }
 
         public DbSet<Count> Counts { get; set; }
+        public DbSet<CountEvent> CountEvents { get; set; }
 
         public DbSet<DailySequenceValue> DailySequenceValues { get; set; }
         public DbSet<DailySequenceValueConfig> DailySequenceValueConfigs { get; set; }
@@ -252,6 +253,22 @@ namespace number_sequence.DataAccess
             _ = modelBuilder.Entity<Count>()
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            _ = modelBuilder.HasSequence<long>("CountEventIds");
+            _ = modelBuilder.Entity<CountEvent>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.CountEventIds");
+            _ = modelBuilder.Entity<CountEvent>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<CountEvent>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<CountEvent>()
+                .HasOne(x => x.Count)
+                .WithMany(x => x.Events)
+                .HasForeignKey(x => new { x.Account, x.CountName })
+                .OnDelete(DeleteBehavior.Cascade);
 
             _ = modelBuilder.Entity<DailySequenceValue>()
                 .HasKey(x => new { x.Account, x.Category, x.EventDate });

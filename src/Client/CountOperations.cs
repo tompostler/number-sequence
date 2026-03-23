@@ -81,5 +81,45 @@ namespace TcpWtf.NumberSequence.Client
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<List<Count>>(cancellationToken);
         }
+
+        /// <summary>
+        /// Get events for an existing count, optionally filtered by date range.
+        /// </summary>
+        public async Task<List<CountEvent>> GetEventsAsync(string name, DateTimeOffset? from = null, DateTimeOffset? to = null, CancellationToken cancellationToken = default)
+        {
+            List<string> queryParams = new();
+            if (from.HasValue)
+            {
+                queryParams.Add($"from={Uri.EscapeDataString(from.Value.ToString("o"))}");
+            }
+            if (to.HasValue)
+            {
+                queryParams.Add($"to={Uri.EscapeDataString(to.Value.ToString("o"))}");
+            }
+            string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"counts/{name}/events{queryString}"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<CountEvent>>(cancellationToken);
+        }
+
+        /// <summary>
+        /// Update the overflow drops oldest events setting for an existing count.
+        /// </summary>
+        public async Task<Count> UpdateOverflowDropsOldestEventsAsync(string name, bool overflowDropsOldestEvents, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Put,
+                    $"counts/{name}/OverflowDropsOldestEvents")
+                {
+                    Content = overflowDropsOldestEvents.ToJsonContent()
+                },
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<Count>(cancellationToken);
+        }
     }
 }

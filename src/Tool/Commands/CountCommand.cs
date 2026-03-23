@@ -1,6 +1,5 @@
 ﻿using System.CommandLine;
 using TcpWtf.NumberSequence.Client;
-using TcpWtf.NumberSequence.Contracts;
 using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;
 
@@ -108,11 +107,54 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleListAsync(stamp, verbosity);
                 });
 
+            Option<DateTimeOffset?> fromOption = new("--from") { Description = "Filter events from this date (inclusive)." };
+            Option<DateTimeOffset?> toOption = new("--to") { Description = "Filter events to this date (inclusive)." };
+            Command eventsCommand = new("events", "List events for a count, optionally filtered by date range.")
+            {
+                stampOption,
+                verbosityOption,
+                countNameArgument,
+                fromOption,
+                toOption,
+            };
+            eventsCommand.AddListAliases();
+            eventsCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string name = parseResult.GetRequiredValue(countNameArgument);
+                    DateTimeOffset? from = parseResult.GetValue(fromOption);
+                    DateTimeOffset? to = parseResult.GetValue(toOption);
+                    return HandleEventsAsync(name, from, to, stamp, verbosity);
+                });
+
+            Argument<bool> overflowDropsOldestArgument = new("drops-oldest") { Description = "When true, oldest events are dropped. When false, increments are rejected." };
+            Command setOverflowCommand = new("set-overflow", "Set the overflow behavior for count events.")
+            {
+                stampOption,
+                verbosityOption,
+                countNameArgument,
+                overflowDropsOldestArgument,
+            };
+            setOverflowCommand.AddUpdateAliases();
+            setOverflowCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string name = parseResult.GetRequiredValue(countNameArgument);
+                    bool dropsOldest = parseResult.GetRequiredValue(overflowDropsOldestArgument);
+                    return HandleSetOverflowAsync(name, dropsOldest, stamp, verbosity);
+                });
+
             rootCommand.Subcommands.Add(createCommand);
             rootCommand.Subcommands.Add(readCommand);
             rootCommand.Subcommands.Add(incrementCommand);
             rootCommand.Subcommands.Add(incrementByCommand);
             rootCommand.Subcommands.Add(listCommand);
+            rootCommand.Subcommands.Add(eventsCommand);
+            rootCommand.Subcommands.Add(setOverflowCommand);
             return rootCommand;
         }
 
@@ -141,7 +183,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
             else if (bases)
             {
-                Console.WriteLine(CountWithBases.From(count).ToJsonString(indented: true));
+                Console.WriteLine(Contracts.CountWithBases.From(count).ToJsonString(indented: true));
             }
             else
             {
@@ -160,7 +202,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
             else if (bases)
             {
-                Console.WriteLine(CountWithBases.From(count).ToJsonString(indented: true));
+                Console.WriteLine(Contracts.CountWithBases.From(count).ToJsonString(indented: true));
             }
             else
             {
@@ -179,7 +221,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
             else if (bases)
             {
-                Console.WriteLine(CountWithBases.From(count).ToJsonString(indented: true));
+                Console.WriteLine(Contracts.CountWithBases.From(count).ToJsonString(indented: true));
             }
             else
             {
@@ -198,6 +240,25 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Count.Value),
                 nameof(Contracts.Count.CreatedDate),
                 nameof(Contracts.Count.ModifiedDate));
+        }
+
+        private static async Task HandleEventsAsync(string name, DateTimeOffset? from, DateTimeOffset? to, Stamp stamp, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
+            List<Contracts.CountEvent> events = await client.Count.GetEventsAsync(name, from, to);
+
+            Output.WriteTable(
+                events,
+                nameof(Contracts.CountEvent.CreatedDate),
+                nameof(Contracts.CountEvent.Value),
+                nameof(Contracts.CountEvent.IncrementAmount));
+        }
+
+        private static async Task HandleSetOverflowAsync(string name, bool dropsOldest, Stamp stamp, Verbosity verbosity)
+        {
+            NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
+            Contracts.Count count = await client.Count.UpdateOverflowDropsOldestEventsAsync(name, dropsOldest);
+            Console.WriteLine(count.ToJsonString(indented: true));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
 using number_sequence.Filters;
@@ -45,7 +45,8 @@ namespace number_sequence.Controllers
             {
                 Account = account.Name,
                 Name = count.Name.ToLower(),
-                Value = count.Value
+                Value = count.Value,
+                OverflowDropsOldestEvents = count.OverflowDropsOldestEvents
             };
 
             _ = nsContext.Counts.Add(toInsert);
@@ -84,22 +85,104 @@ namespace number_sequence.Controllers
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
+            return await this.IncrementCoreAsync(nsContext, name, 1, cancellationToken);
+        }
+
+        [HttpPut("{name}/{amount}")]
+        public async Task<IActionResult> IncrementByAmountAsync(string name, ulong amount, CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            return await this.IncrementCoreAsync(nsContext, name, amount, cancellationToken);
+        }
+
+        private async Task<IActionResult> IncrementCoreAsync(NsContext nsContext, string name, ulong amount, CancellationToken cancellationToken)
+        {
             Count count = await nsContext.Counts.SingleOrDefaultAsync(x => x.Account == this.User.Identity.Name && x.Name == name, cancellationToken);
             if (count == default)
             {
                 return this.NotFound($"Count with name [{name}] does not exist.");
             }
 
-            count.Value++;
+            // Check tier limit for events
+            Account account = await nsContext.Accounts.SingleAsync(x => x.Name == this.User.Identity.Name, cancellationToken);
+            int eventCount = await nsContext.CountEvents.CountAsync(x => x.Account == account.Name && x.CountName == name, cancellationToken);
+            int eventLimit = TierLimits.CountEventsPerCount[account.Tier];
+
+            if (eventCount >= eventLimit)
+            {
+                if (count.OverflowDropsOldestEvents)
+                {
+                    // Drop oldest events to make room
+                    int toRemove = eventCount - eventLimit + 1;
+                    List<CountEvent> oldest = await nsContext.CountEvents
+                        .Where(x => x.Account == account.Name && x.CountName == name)
+                        .OrderBy(x => x.CreatedDate)
+                        .Take(toRemove)
+                        .ToListAsync(cancellationToken);
+                    nsContext.CountEvents.RemoveRange(oldest);
+                }
+                else
+                {
+                    return this.Conflict($"Count event history is full ({eventCount}/{eventLimit}). Set {nameof(Count.OverflowDropsOldestEvents)} to true to automatically drop oldest events.");
+                }
+            }
+
+            count.Value += amount;
             count.ModifiedDate = DateTimeOffset.UtcNow;
+
+            // Record the event
+            _ = nsContext.CountEvents.Add(new CountEvent
+            {
+                Account = account.Name,
+                CountName = name,
+                Value = count.Value,
+                IncrementAmount = amount,
+            });
 
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
             return this.Ok(count);
         }
 
-        [HttpPut("{name}/{amount}")]
-        public async Task<IActionResult> IncrementByAmountAsync(string name, ulong amount, CancellationToken cancellationToken)
+        [HttpGet("{name}/events")]
+        public async Task<IActionResult> GetEventsAsync(string name, [FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            if (from.HasValue && to.HasValue && from.Value >= to.Value)
+            {
+                return this.BadRequest("The 'from' date must be before the 'to' date.");
+            }
+
+            bool exists = await nsContext.Counts.AnyAsync(x => x.Account == this.User.Identity.Name && x.Name == name, cancellationToken);
+            if (!exists)
+            {
+                return this.NotFound($"Count with name [{name}] does not exist.");
+            }
+
+            IQueryable<CountEvent> query = nsContext.CountEvents
+                .Where(x => x.Account == this.User.Identity.Name && x.CountName == name);
+            if (from.HasValue)
+            {
+                query = query.Where(x => x.CreatedDate >= from.Value);
+            }
+            if (to.HasValue)
+            {
+                query = query.Where(x => x.CreatedDate <= to.Value);
+            }
+
+            List<CountEvent> events = await query
+                .OrderBy(x => x.CreatedDate)
+                .ToListAsync(cancellationToken);
+
+            return this.Ok(events);
+        }
+
+        [HttpPut("{name}/OverflowDropsOldestEvents")]
+        public async Task<IActionResult> UpdateOverflowDropsOldestEventsAsync(string name, [FromBody] bool overflowDropsOldestEvents, CancellationToken cancellationToken)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
@@ -110,7 +193,7 @@ namespace number_sequence.Controllers
                 return this.NotFound($"Count with name [{name}] does not exist.");
             }
 
-            count.Value += amount;
+            count.OverflowDropsOldestEvents = overflowDropsOldestEvents;
             count.ModifiedDate = DateTimeOffset.UtcNow;
 
             _ = await nsContext.SaveChangesAsync(cancellationToken);

@@ -36,5 +36,16 @@ namespace TcpWtf.NumberSequence.Contracts
         /// When the count was last modified.
         /// </summary>
         public DateTimeOffset ModifiedDate { get; set; }
+
+        /// <summary>
+        /// When true, the oldest events will be dropped to make room for new ones when the event limit is reached.
+        /// When false (default), increments will be rejected with an error when the event limit is reached.
+        /// </summary>
+        public bool OverflowDropsOldestEvents { get; set; }
+
+        /// <summary>
+        /// The individual events that have been recorded for this count.
+        /// </summary>
+        public IList<CountEvent> Events { get; set; }
     }
 }

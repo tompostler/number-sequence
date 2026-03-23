@@ -28,6 +28,17 @@
         public static readonly IReadOnlyDictionary<AccountTier, int> CountsPerAccount = AccountsPerCreatedFrom;
 
         /// <summary>
+        /// Number of count events allowed per count is based on the account tier.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<AccountTier, int> CountEventsPerCount = new Dictionary<AccountTier, int>
+        {
+            [AccountTier.Small] = 1000 * AccountsPerCreatedFrom[AccountTier.Small],
+            [AccountTier.Medium] = 1000 * AccountsPerCreatedFrom[AccountTier.Medium],
+            [AccountTier.Large] = 1000 * AccountsPerCreatedFrom[AccountTier.Large],
+            [AccountTier.Infinite] = int.MaxValue,
+        };
+
+        /// <summary>
         /// Number of 'daily sequence value' categories allowed is based on the account tier.
         /// </summary>
         public static readonly IReadOnlyDictionary<AccountTier, int> DailySequenceValueCategoriesPerAccount = AccountsPerCreatedFrom;
@@ -37,9 +48,9 @@
         /// </summary>
         public static readonly IReadOnlyDictionary<AccountTier, int> DailySequenceValuesPerCategory = new Dictionary<AccountTier, int>
         {
-            [AccountTier.Small] = 30 * 12 * AccountsPerCreatedFrom[AccountTier.Small],
-            [AccountTier.Medium] = 30 * 12 * AccountsPerCreatedFrom[AccountTier.Medium],
-            [AccountTier.Large] = 30 * 12 * AccountsPerCreatedFrom[AccountTier.Large],
+            [AccountTier.Small] = 365 * AccountsPerCreatedFrom[AccountTier.Small],
+            [AccountTier.Medium] = 365 * AccountsPerCreatedFrom[AccountTier.Medium],
+            [AccountTier.Large] = 365 * AccountsPerCreatedFrom[AccountTier.Large],
             [AccountTier.Infinite] = int.MaxValue,
         };
 
