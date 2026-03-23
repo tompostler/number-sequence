@@ -50,6 +50,27 @@ jobs:
       projects: src/number-sequence.slnx
       arguments: '--no-restore --configuration Debug --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
 
+  - powershell: |
+      Add-Type -AssemblyName System.IO.Compression.FileSystem;
+      $nupkgPath = (Get-ChildItem '$(Build.ArtifactStagingDirectory)' -Filter 'TcpWtf.NumberSequence.Tool.*.nupkg' | Select-Object -First 1).FullName;
+      $sizeBefore = (Get-Item $nupkgPath).Length;
+      Write-Host "Size before trim: $([math]::Round($sizeBefore / 1MB, 2)) MB";
+      Write-Host "Trimming runtimes in: $nupkgPath";
+      
+      $zip = [System.IO.Compression.ZipFile]::Open($nupkgPath, 'Update');
+      $toRemove = @($zip.Entries | Where-Object {
+          $_.FullName -match '^tools/[^/]+/any/runtimes/' -and
+          $_.FullName -notmatch '^tools/[^/]+/any/runtimes/(linux-x64|win-x64)/'
+      });
+      Write-Host "Removing $($toRemove.Count) entries";
+      $toRemove | ForEach-Object { Write-Host "  $($_.FullName)"; $_.Delete() };
+      $zip.Dispose();
+
+      $sizeAfter = (Get-Item $nupkgPath).Length;
+      $pct = [math]::Round(($sizeBefore - $sizeAfter) / $sizeBefore * 100, 1);
+      Write-Host "Size after trim: $([math]::Round($sizeAfter / 1MB, 2)) MB ($pct% smaller)";
+    displayName: Trim runtimes from tool nupkg
+
   - task: DotNetCoreCLI@2
     displayName: Run unit tests
     inputs:
