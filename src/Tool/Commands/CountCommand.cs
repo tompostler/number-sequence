@@ -1,4 +1,5 @@
-﻿using System.CommandLine;
+﻿using ScottPlot;
+using System.CommandLine;
 using TcpWtf.NumberSequence.Client;
 using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;
@@ -109,6 +110,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Option<DateTimeOffset?> fromOption = new("--from") { Description = "Filter events from this date (inclusive)." };
             Option<DateTimeOffset?> toOption = new("--to") { Description = "Filter events to this date (inclusive)." };
+            Option<FileInfo> chartOption = new Option<FileInfo>("--chart") { Description = "Generate a PNG chart of the count value over time and save to the specified file path." }.AcceptLegalFileNamesOnly();
             Command eventsCommand = new("events", "List events for a count, optionally filtered by date range.")
             {
                 stampOption,
@@ -116,8 +118,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 countNameArgument,
                 fromOption,
                 toOption,
+                chartOption,
             };
-            eventsCommand.AddListAliases();
             eventsCommand.SetAction(
                 (parseResult, cancellationToken) =>
                 {
@@ -126,7 +128,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     string name = parseResult.GetRequiredValue(countNameArgument);
                     DateTimeOffset? from = parseResult.GetValue(fromOption);
                     DateTimeOffset? to = parseResult.GetValue(toOption);
-                    return HandleEventsAsync(name, from, to, stamp, verbosity);
+                    FileInfo chart = parseResult.GetValue(chartOption);
+                    return HandleEventsAsync(name, from, to, chart, stamp, verbosity);
                 });
 
             Argument<bool> overflowDropsOldestArgument = new("drops-oldest") { Description = "When true, oldest events are dropped. When false, increments are rejected." };
@@ -242,16 +245,43 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(Contracts.Count.ModifiedDate));
         }
 
-        private static async Task HandleEventsAsync(string name, DateTimeOffset? from, DateTimeOffset? to, Stamp stamp, Verbosity verbosity)
+        private static async Task HandleEventsAsync(string name, DateTimeOffset? from, DateTimeOffset? to, FileInfo chart, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             List<Contracts.CountEvent> events = await client.Count.GetEventsAsync(name, from, to);
 
-            Output.WriteTable(
-                events,
-                nameof(Contracts.CountEvent.CreatedDate),
-                nameof(Contracts.CountEvent.Value),
-                nameof(Contracts.CountEvent.IncrementAmount));
+            if (chart != null)
+            {
+                if (events.Count == 0)
+                {
+                    Console.WriteLine("No events to chart.");
+                    return;
+                }
+
+                Plot plot = new();
+                ScottPlot.Plottables.Scatter scatter = plot.Add.Scatter(events.Select(x => x.CreatedDate.LocalDateTime).ToList(), events.Select(x => x.Value).ToList());
+                scatter.LegendText = name;
+
+                _ = plot.Axes.DateTimeTicksBottom();
+                _ = plot.HideLegend();
+                plot.Axes.TightMargins();
+                plot.Axes.SetLimitsY(0, plot.Axes.GetLimits().Top);
+
+                plot.Title($"Count: {name}");
+                _ = plot.Add.Annotation($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", Alignment.UpperLeft);
+
+                chart.Delete();
+                _ = plot.SavePng(chart.FullName, 2560, 1440);
+                Console.WriteLine($"Wrote {chart.FullName}");
+            }
+            else
+            {
+                Output.WriteTable(
+                    events,
+                    nameof(Contracts.CountEvent.CreatedDate),
+                    nameof(Contracts.CountEvent.Value),
+                    nameof(Contracts.CountEvent.IncrementAmount));
+            }
         }
 
         private static async Task HandleSetOverflowAsync(string name, bool dropsOldest, Stamp stamp, Verbosity verbosity)
