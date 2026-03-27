@@ -22,7 +22,7 @@ namespace number_sequence.Middleware
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "Caught an unhandled exception!");
-                
+
                 if (httpContext.Response.HasStarted)
                 {
                     this.logger.LogError("Response in progress. Could not rewrite!");

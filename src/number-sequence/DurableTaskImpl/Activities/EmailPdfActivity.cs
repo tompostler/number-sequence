@@ -92,5 +92,5 @@ namespace number_sequence.DurableTaskImpl.Activities
             _ = await nsContext.SaveChangesAsync(cancellationToken);
             return default;
         }
-    } 
+    }
 }

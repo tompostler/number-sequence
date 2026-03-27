@@ -21,18 +21,14 @@ namespace number_sequence
             _ = services.AddMemoryCache();
             _ = services.AddHttpClient();
             _ = services
-                .AddControllers(options =>
-                {
-                    options.RespectBrowserAcceptHeader = true;
-                    options.OutputFormatters.Add(new Formatters.DaysSinceEventsTextHtmlOutputFormatter());
-                    options.OutputFormatters.Add(new Formatters.DaysSinceTextHtmlOutputFormatter());
-                })
+                .AddControllers()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
+            _ = services.AddRazorPages();
 
             _ = services.AddApplicationInsightsTelemetry();
 
@@ -107,7 +103,11 @@ namespace number_sequence
             _ = app.UseMiddleware<Middleware.ExceptionToStatusCodeMiddleware>();
             _ = app.UseMiddleware<Middleware.ServerMetadataMiddleware>();
 
-            _ = app.UseEndpoints(endpoints => _ = endpoints.MapControllers());
+            _ = app.UseEndpoints(endpoints =>
+            {
+                _ = endpoints.MapControllers();
+                _ = endpoints.MapRazorPages();
+            });
         }
     }
 }

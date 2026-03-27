@@ -117,7 +117,7 @@ namespace number_sequence.Controllers
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
-            
+
             DateOnly daysAgo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-daysLookback));
 
             List<DailySequenceValue> dsvs = await nsContext.DailySequenceValues
@@ -138,7 +138,7 @@ namespace number_sequence.Controllers
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
-            
+
             DateOnly daysAgo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-daysLookback));
 
             List<DailySequenceValue> dsvs = await nsContext.DailySequenceValues

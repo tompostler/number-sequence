@@ -26,6 +26,11 @@ namespace number_sequence.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id, CancellationToken cancellationToken)
         {
+            if (this.Request.Headers.Accept.ToString().Contains("text/html"))
+            {
+                return this.Redirect($"/ui/days-since/{id}");
+            }
+
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
@@ -47,6 +52,11 @@ namespace number_sequence.Controllers
         [HttpGet("{id}/history")]
         public async Task<IActionResult> GetHistory(string id, CancellationToken cancellationToken)
         {
+            if (this.Request.Headers.Accept.ToString().Contains("text/html"))
+            {
+                return this.Redirect($"/ui/days-since/{id}");
+            }
+
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 

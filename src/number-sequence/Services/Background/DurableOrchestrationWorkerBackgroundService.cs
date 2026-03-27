@@ -69,10 +69,7 @@ namespace number_sequence.Services.Background
 
                 _ = this.worker.AddTaskActivities(this.activities.ToArray());
                 this.logger.LogInformation($"Added {this.activities.Count()} activities: {string.Join(",", this.activities.Select(x => x.GetType().Name))}");
-                if (this.worker.TaskActivityDispatcher != null)
-                {
-                    this.worker.TaskActivityDispatcher.IncludeDetails = true;
-                }
+                this.worker.TaskActivityDispatcher?.IncludeDetails = true;
 
                 _ = await this.worker.StartAsync();
                 this.logger.LogInformation("Started worker");
