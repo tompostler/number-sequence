@@ -58,6 +58,8 @@ namespace number_sequence
             // Utilities
             //
 
+            _ = services.AddScoped<Services.TokenValidationService>();
+
             _ = services.AddSingleton<Utilities.Delays>();
             _ = services.AddSingleton<Utilities.Sentinals>();
 
@@ -102,6 +104,7 @@ namespace number_sequence
 
             _ = app.UseMiddleware<Middleware.ExceptionToStatusCodeMiddleware>();
             _ = app.UseMiddleware<Middleware.ServerMetadataMiddleware>();
+            _ = app.UseMiddleware<Middleware.TokenCookieMiddleware>();
 
             _ = app.UseEndpoints(endpoints =>
             {

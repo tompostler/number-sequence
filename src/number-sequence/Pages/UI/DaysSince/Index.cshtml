@@ -1,0 +1,38 @@
+@page "/ui/days-since"
+@model number_sequence.Pages.UI.DaysSince.IndexModel
+@{
+  ViewData["Title"] = "My Days Since";
+}
+
+<h2 class="mb-4">My Days Since</h2>
+
+@if (Model.DaysSinces.Count == 0)
+{
+  <p class="text-muted">No days since trackers yet.</p>
+}
+else
+{
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th class="text-nowrap text-center">Days since</th>
+        <th class="text-nowrap">Last occurrence</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var ds in Model.DaysSinces)
+      {
+        var dayCount = (int)(DateTime.UtcNow - ds.LastOccurrence.ToDateTime(new(), DateTimeKind.Utc)).TotalDays;
+        var dayWord = dayCount == 1 ? "day" : "days";
+        <tr>
+          <td><a href="/ui/days-since/@ds.Id">@ds.Id</a></td>
+          <td>@ds.FriendlyName</td>
+          <td class="text-nowrap text-center">@dayCount @dayWord</td>
+          <td class="text-nowrap">@ds.LastOccurrence.ToString("yyyy-MM-dd")</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace number_sequence.Filters
 {
@@ -17,10 +16,8 @@ namespace number_sequence.Filters
 
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
-            IMemoryCache memoryCache = serviceProvider.GetRequiredService<IMemoryCache>();
             ILogger<RequiresTokenFilter> logger = serviceProvider.GetRequiredService<ILogger<RequiresTokenFilter>>();
-
-            return new RequiresTokenFilter(this.requiredRole, memoryCache, logger);
+            return new RequiresTokenFilter(this.requiredRole, logger);
         }
     }
 }

@@ -1,0 +1,28 @@
+@page "/ui"
+@model number_sequence.Pages.UI.IndexModel
+@{
+  ViewData["Title"] = "Home";
+}
+
+<div class="row mb-4">
+  <div class="col">
+    <h2>ns.tcp.wtf</h2>
+    <p class="text-muted">Originally started as a basic number sequence utility, it's evolved to support any random web service utility that I want/need.</p>
+  </div>
+</div>
+
+<hr />
+
+<div class="row mt-4">
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Days Since</h5>
+        <p class="card-text">Create and manage days since alerts in the format of "X days since Y" where X is the number of days since the last occurrence and Y is what happened.</p>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/days-since">List</a>
+      </div>
+    </div>
+  </div>
+</div>

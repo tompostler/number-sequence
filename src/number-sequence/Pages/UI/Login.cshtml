@@ -1,0 +1,29 @@
+@page "/ui/login"
+@model number_sequence.Pages.UI.LoginModel
+@{
+  ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+    <h2 class="mb-4">Login</h2>
+
+    @if (Model.ErrorMessage != null)
+    {
+      <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    <form method="post">
+      <input type="hidden" asp-for="ReturnUrl" />
+      <div class="mb-3">
+        <label asp-for="AccountName" class="form-label">Account name</label>
+        <input asp-for="AccountName" class="form-control" autocomplete="username" />
+      </div>
+      <div class="mb-3">
+        <label asp-for="AccountKey" class="form-label">Account key</label>
+        <input asp-for="AccountKey" type="password" class="form-control" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+  </div>
+</div>
