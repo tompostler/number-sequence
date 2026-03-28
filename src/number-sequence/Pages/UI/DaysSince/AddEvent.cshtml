@@ -1,0 +1,29 @@
+@page "/ui/days-since/{id}/add-event"
+@model number_sequence.Pages.UI.DaysSince.AddEventModel
+@{
+  ViewData["Title"] = $"Add event - {Model.DaysSince.FriendlyName ?? Model.DaysSince.Id}";
+}
+
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <a href="/ui/days-since/@Model.DaysSince.Id" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+      <h2 class="mb-0">Add event</h2>
+    </div>
+    <p class="text-muted">@(Model.DaysSince.FriendlyName ?? Model.DaysSince.Id)</p>
+
+    <form method="post">
+      <div class="mb-3">
+        <label asp-for="Event.EventDate" class="form-label">Event date</label>
+        <input asp-for="Event.EventDate" type="date" class="form-control" />
+        <span asp-validation-for="Event.EventDate" class="text-danger small"></span>
+      </div>
+      <div class="mb-3">
+        <label asp-for="Event.Description" class="form-label">Description</label>
+        <input asp-for="Event.Description" class="form-control" maxlength="256" />
+        <span asp-validation-for="Event.Description" class="text-danger small"></span>
+      </div>
+      <button type="submit" class="btn btn-primary">Add event</button>
+    </form>
+  </div>
+</div>
