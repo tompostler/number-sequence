@@ -4,7 +4,10 @@
   ViewData["Title"] = "My Days Since";
 }
 
-<h2 class="mb-4">My Days Since</h2>
+<div class="d-flex align-items-center gap-3 mb-4">
+  <h2 class="mb-0">My Days Since</h2>
+  <a href="/ui/days-since/create" class="btn btn-sm btn-primary">Create</a>
+</div>
 
 @if (Model.DaysSinces.Count == 0)
 {

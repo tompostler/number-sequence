@@ -27,23 +27,32 @@ namespace TcpWtf.NumberSequence.Client
             ILogger<NsTcpWtfClient> logger,
             Func<ILogger, CancellationToken, Task<string>> tokenCallback,
             Stamp stamp = Stamp.Public)
+            : this(logger, tokenCallback, stamp switch
+            {
+                Stamp.LocalDev => new HttpClient(new HttpClientHandler() { ServerCertificateCustomValidationCallback = (_, _, _, _) => true }) { BaseAddress = new Uri("http://localhost:44320/") },
+                Stamp.Public => new HttpClient() { BaseAddress = new Uri("https://api.tcp.wtf/") },
+                _ => throw new ArgumentOutOfRangeException(nameof(stamp))
+            })
+        { }
+
+        /// <summary>
+        /// Create a client for loopback use within the server process.
+        /// </summary>
+        internal NsTcpWtfClient(
+            ILogger<NsTcpWtfClient> logger,
+            Func<ILogger, CancellationToken, Task<string>> tokenCallback,
+            Uri baseAddress)
+            : this(logger, tokenCallback, new HttpClient() { BaseAddress = baseAddress })
+        { }
+
+        private NsTcpWtfClient(
+            ILogger<NsTcpWtfClient> logger,
+            Func<ILogger, CancellationToken, Task<string>> tokenCallback,
+            HttpClient httpClient)
         {
             this.logger = logger;
             this.tokenCallback = tokenCallback;
-
-            Uri baseUri = stamp switch
-            {
-                Stamp.LocalDev => new Uri("http://localhost:44320/"),
-                Stamp.Public => new Uri("https://api.tcp.wtf/"),
-                _ => throw new ArgumentOutOfRangeException(nameof(stamp))
-            };
-
-            this.httpClient = new HttpClient() { BaseAddress = baseUri };
-            if (stamp == Stamp.LocalDev)
-            {
-                this.httpClient = new HttpClient(new HttpClientHandler() { ServerCertificateCustomValidationCallback = (_, _, _, _) => true }) { BaseAddress = baseUri };
-            }
-
+            this.httpClient = httpClient;
             this.clientName = Environment.MachineName;
 
             this.Account = new AccountOperations(this);

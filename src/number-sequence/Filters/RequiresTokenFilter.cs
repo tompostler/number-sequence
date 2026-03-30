@@ -89,10 +89,9 @@ namespace number_sequence.Filters
         {
             public TokenPrincipal(IIdentity identity, string[] roles)
                 : base(identity, roles)
-            {
-            }
+            { }
 
-            public TokenValue Token { get; set; }
+            public string RawToken { get; set; }
         }
     }
 }

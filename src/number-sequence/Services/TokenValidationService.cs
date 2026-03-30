@@ -73,7 +73,7 @@ namespace number_sequence.Services
             // Build principal
             this.logger.LogInformation($"Token is valid: {tokenValue.Account}/{tokenValue.Name}");
             Account account = await this.nsContext.Accounts.SingleAsync(x => x.Name == tokenValue.Account, cancellationToken);
-            principal = new RequiresTokenFilter.TokenPrincipal(new GenericIdentity(tokenValue.Account), (account.Roles ?? string.Empty).Split(';')) { Token = tokenValue };
+            principal = new RequiresTokenFilter.TokenPrincipal(new GenericIdentity(tokenValue.Account), (account.Roles ?? string.Empty).Split(';')) { RawToken = token };
 
             _ = this.memoryCache.Set(
                 token,

@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using QuestPDF.Drawing;
 using System.Text.Json.Serialization;
+using TcpWtf.NumberSequence.Client;
 
 namespace number_sequence
 {
@@ -29,9 +32,7 @@ namespace number_sequence
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
             _ = services.AddRazorPages();
-
             _ = services.AddApplicationInsightsTelemetry();
-
             _ = services.AddNsConfig(this.Configuration);
 
 
@@ -58,6 +59,24 @@ namespace number_sequence
             // Utilities
             //
 
+            // Singleton so the underlying HttpClient is reused across requests (avoids socket exhaustion).
+            // The token callback captures IHttpContextAccessor and reads the user lazily at call time.
+            // NOTE: The factory resolves IServerAddressesFeature to get the bound address. This works because the
+            //       singleton is first resolved on an HTTP request, after the server has finished binding. If this
+            //       client is ever injected into a hosted service that runs before the first request, Addresses may
+            //       still be empty and the factory will throw.
+            _ = services.AddSingleton(sp =>
+            {
+                IServerAddressesFeature addresses = sp.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
+                var baseAddress = new Uri(addresses.Addresses.First());
+                IHttpContextAccessor contextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+                return new NsTcpWtfClient(
+                    sp.GetRequiredService<ILogger<NsTcpWtfClient>>(),
+                    (_, _) => Task.FromResult((contextAccessor.HttpContext?.User as Filters.RequiresTokenFilter.TokenPrincipal)?.RawToken),
+                    baseAddress);
+            });
+
+            _ = services.AddHttpContextAccessor();
             _ = services.AddScoped<Services.TokenValidationService>();
 
             _ = services.AddSingleton<Utilities.Delays>();

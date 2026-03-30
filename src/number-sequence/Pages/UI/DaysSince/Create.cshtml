@@ -1,0 +1,41 @@
+@page "/ui/days-since/create"
+@model number_sequence.Pages.UI.DaysSince.CreateModel
+@{
+  ViewData["Title"] = "Create Days Since";
+}
+
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <a href="/ui/days-since" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+      <h2 class="mb-0">Create Days Since</h2>
+    </div>
+
+    @if (Model.ErrorMessage != null)
+    {
+      <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    <form method="post">
+      <div class="mb-3">
+        <label asp-for="DaysSince.Id" class="form-label">ID</label>
+        <input asp-for="DaysSince.Id" class="form-control" maxlength="36" />
+        <div class="form-text">3–36 characters. Used in the URL. Normalized to lowercase.</div>
+        <span asp-validation-for="DaysSince.Id" class="text-danger small"></span>
+      </div>
+      <div class="mb-3">
+        <label asp-for="DaysSince.FriendlyName" class="form-label">Friendly name <span class="text-muted">(optional)</span></label>
+        <input asp-for="DaysSince.FriendlyName" class="form-control" maxlength="20" />
+        <div class="form-text">Displayed in the tab title instead of the ID. Max 20 characters.</div>
+        <span asp-validation-for="DaysSince.FriendlyName" class="text-danger small"></span>
+      </div>
+      <div class="mb-3">
+        <label asp-for="DaysSince.Value" class="form-label">Value</label>
+        <input asp-for="DaysSince.Value" class="form-control" maxlength="80" />
+        <div class="form-text">The "Y" in "X days since Y". Split across up to 4 lines of 20 characters each by word boundaries.</div>
+        <span asp-validation-for="DaysSince.Value" class="text-danger small"></span>
+      </div>
+      <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+  </div>
+</div>

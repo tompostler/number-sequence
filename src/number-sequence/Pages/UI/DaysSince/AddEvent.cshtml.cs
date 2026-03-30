@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using number_sequence.DataAccess;
 using number_sequence.Filters;
+using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.Pages.UI.DaysSince
@@ -10,11 +9,11 @@ namespace number_sequence.Pages.UI.DaysSince
     [RequiresToken]
     public sealed class AddEventModel : PageModel
     {
-        private readonly NsContext nsContext;
+        private readonly NsTcpWtfClient nsClient;
 
-        public AddEventModel(NsContext nsContext)
+        public AddEventModel(NsTcpWtfClient nsClient)
         {
-            this.nsContext = nsContext;
+            this.nsClient = nsClient;
         }
 
         public TcpWtf.NumberSequence.Contracts.DaysSince DaysSince { get; private set; }
@@ -22,41 +21,69 @@ namespace number_sequence.Pages.UI.DaysSince
         [BindProperty]
         public DaysSinceEvent Event { get; set; }
 
+        public string ErrorMessage { get; private set; }
+
         public async Task<IActionResult> OnGetAsync(string id, CancellationToken cancellationToken)
         {
-            this.DaysSince = await this.nsContext.DaysSinces
-                .SingleOrDefaultAsync(x => x.Id == id && x.AccountName == this.User.Identity.Name, cancellationToken);
-
-            if (this.DaysSince == default)
+            TcpWtf.NumberSequence.Contracts.DaysSince daysSince;
+            try
+            {
+                daysSince = await this.nsClient.DaysSince.GetAsync(id, cancellationToken);
+            }
+            catch (NsTcpWtfClientException)
             {
                 return this.NotFound();
             }
 
+            if (daysSince.AccountName != this.User.Identity.Name)
+            {
+                return this.NotFound();
+            }
+
+            this.DaysSince = daysSince;
             this.Event = new DaysSinceEvent { EventDate = DateOnly.FromDateTime(DateTime.UtcNow) };
             return this.Page();
         }
 
         public async Task<IActionResult> OnPostAsync(string id, CancellationToken cancellationToken)
         {
-            this.DaysSince = await this.nsContext.DaysSinces
-                .Include(x => x.Events)
-                .SingleOrDefaultAsync(x => x.Id == id && x.AccountName == this.User.Identity.Name, cancellationToken);
-
-            if (this.DaysSince == default)
+            TcpWtf.NumberSequence.Contracts.DaysSince daysSince;
+            try
+            {
+                daysSince = await this.nsClient.DaysSince.GetAsync(id, cancellationToken);
+            }
+            catch (NsTcpWtfClientException)
             {
                 return this.NotFound();
             }
+
+            if (daysSince.AccountName != this.User.Identity.Name)
+            {
+                return this.NotFound();
+            }
+
+            this.DaysSince = daysSince;
 
             if (!this.ModelState.IsValid)
             {
                 return this.Page();
             }
 
-            this.DaysSince.Events.Add(this.Event);
-            this.DaysSince.LastOccurrence = this.DaysSince.Events.Max(x => x.EventDate);
-            this.DaysSince.ModifiedDate = DateTimeOffset.UtcNow;
+            // The GET response sets Value to the joined ValueLines. The controller rejects having
+            // both Value and ValueLine1 set, so clear Value and let the controller use ValueLine1-4.
+            daysSince.Value = null;
+            daysSince.Events ??= [];
+            daysSince.Events.Add(this.Event);
 
-            _ = await this.nsContext.SaveChangesAsync(cancellationToken);
+            try
+            {
+                _ = await this.nsClient.DaysSince.UpdateAsync(daysSince, cancellationToken);
+            }
+            catch (NsTcpWtfClientException ex)
+            {
+                this.ErrorMessage = ex.Message;
+                return this.Page();
+            }
 
             return this.Redirect($"/ui/days-since/{id}");
         }
