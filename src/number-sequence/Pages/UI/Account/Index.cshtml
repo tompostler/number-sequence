@@ -1,0 +1,83 @@
+@page "/ui/account"
+@model number_sequence.Pages.UI.Account.IndexModel
+@{
+  ViewData["Title"] = "My Account";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <h2 class="mb-0">My Account</h2>
+</div>
+
+@if (Model.Error != null)
+{
+  <div class="alert alert-danger">@Model.Error</div>
+}
+
+<div class="card mb-4">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Name</dt>
+      <dd class="col-sm-9">@Model.Account.Name</dd>
+      <dt class="col-sm-3">Tier</dt>
+      <dd class="col-sm-9">@Model.Account.Tier</dd>
+      @if (!string.IsNullOrEmpty(Model.Account.Roles))
+      {
+        <dt class="col-sm-3">Roles</dt>
+        <dd class="col-sm-9">@Model.Account.Roles</dd>
+      }
+      <dt class="col-sm-3">Created</dt>
+      <dd class="col-sm-9">@Model.Account.CreatedDate.ToString("yyyy-MM-dd")</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="d-flex align-items-center gap-3 mb-3">
+  <h4 class="mb-0">Tokens</h4>
+  <a href="/ui/account/create-token" class="btn btn-sm btn-primary">Create</a>
+</div>
+
+@if (Model.Tokens.Count == 0)
+{
+  <p class="text-muted">No tokens yet.</p>
+}
+else
+{
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th class="text-nowrap">Created</th>
+        <th class="text-nowrap">Expires</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var token in Model.Tokens)
+      {
+        var expired = token.ExpirationDate <= DateTimeOffset.UtcNow;
+        var expiringSoon = !expired && token.ExpirationDate <= DateTimeOffset.UtcNow.AddDays(7);
+        <tr>
+          <td>@token.Name</td>
+          <td class="text-nowrap">@token.CreatedDate.ToString("yyyy-MM-dd")</td>
+          <td class="text-nowrap">
+            @token.ExpirationDate.ToString("yyyy-MM-dd")
+            @if (expired)
+            {
+              <span class="badge bg-danger ms-1">Expired</span>
+            }
+            else if (expiringSoon)
+            {
+              <span class="badge bg-warning text-dark ms-1">Expiring soon</span>
+            }
+          </td>
+          <td>
+            <form method="post" asp-page-handler="Delete">
+              <input type="hidden" name="name" value="@token.Name" />
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

@@ -11,7 +11,7 @@ namespace number_sequence.Pages.UI
 {
     public sealed class LoginModel : PageModel
     {
-        private const string WebTokenName = "web";
+        public const string WebTokenName = "web";
 
         private readonly NsContext nsContext;
         private readonly ILogger<LoginModel> logger;
@@ -43,7 +43,7 @@ namespace number_sequence.Pages.UI
                 return this.Page();
             }
 
-            Account account = await this.nsContext.Accounts.SingleOrDefaultAsync(x => x.Name == this.AccountName, cancellationToken);
+            TcpWtf.NumberSequence.Contracts.Account account = await this.nsContext.Accounts.SingleOrDefaultAsync(x => x.Name == this.AccountName, cancellationToken);
             if (account == default || this.AccountKey.ComputeSHA256() != account.Key)
             {
                 this.ErrorMessage = "Invalid account name or key.";

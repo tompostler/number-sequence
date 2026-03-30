@@ -1,0 +1,40 @@
+@page "/ui/account/create-token"
+@model number_sequence.Pages.UI.Account.CreateTokenModel
+@{
+  ViewData["Title"] = "Create Token";
+}
+
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <a href="/ui/account" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+      <h2 class="mb-0">Create Token</h2>
+    </div>
+
+    @if (Model.ErrorMessage != null)
+    {
+      <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    <form method="post">
+      <div class="mb-3">
+        <label asp-for="Token.Name" class="form-label">Name</label>
+        <input asp-for="Token.Name" class="form-control" />
+        <div class="form-text">3–64 characters. Normalized to lowercase.</div>
+        <span asp-validation-for="Token.Name" class="text-danger small"></span>
+      </div>
+      <div class="mb-3">
+        <label asp-for="Token.ExpirationDate" class="form-label">Expiration date</label>
+        <input asp-for="Token.ExpirationDate" type="date" class="form-control" />
+        <span asp-validation-for="Token.ExpirationDate" class="text-danger small"></span>
+      </div>
+      <div class="mb-3">
+        <label asp-for="Token.Key" class="form-label">Account key</label>
+        <input asp-for="Token.Key" type="password" class="form-control" autocomplete="current-password" />
+        <div class="form-text">Your account password, used to authorize token creation.</div>
+        <span asp-validation-for="Token.Key" class="text-danger small"></span>
+      </div>
+      <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+  </div>
+</div>

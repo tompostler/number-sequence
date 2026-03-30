@@ -1,0 +1,35 @@
+@page "/ui/account/create"
+@model number_sequence.Pages.UI.Account.CreateModel
+@{
+  ViewData["Title"] = "Create Account";
+}
+
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <a href="/ui/login" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+      <h2 class="mb-0">Create Account</h2>
+    </div>
+
+    @if (Model.ErrorMessage != null)
+    {
+      <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    <form method="post">
+      <div class="mb-3">
+        <label asp-for="Account.Name" class="form-label">Name</label>
+        <input asp-for="Account.Name" class="form-control" autocomplete="username" />
+        <div class="form-text">3–64 characters. Normalized to lowercase.</div>
+        <span asp-validation-for="Account.Name" class="text-danger small"></span>
+      </div>
+      <div class="mb-3">
+        <label asp-for="Account.Key" class="form-label">Key</label>
+        <input asp-for="Account.Key" type="password" class="form-control" autocomplete="new-password" />
+        <div class="form-text">32–128 characters. This is your account password — save it somewhere safe.</div>
+        <span asp-validation-for="Account.Key" class="text-danger small"></span>
+      </div>
+      <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+  </div>
+</div>

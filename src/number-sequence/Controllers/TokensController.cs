@@ -38,6 +38,10 @@ namespace number_sequence.Controllers
             {
                 return this.Unauthorized($"Provided key did not match for account with name [{requestedToken.Account}].");
             }
+            if (string.Equals(requestedToken.Name, Pages.UI.LoginModel.WebTokenName, StringComparison.OrdinalIgnoreCase))
+            {
+                return this.BadRequest($"Token name [{Pages.UI.LoginModel.WebTokenName}] is reserved and cannot be used.");
+            }
 
             // Check if the token already exists.
             // If it's expired, then we can recreate it in place.
