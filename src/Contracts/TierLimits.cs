@@ -39,22 +39,6 @@
         };
 
         /// <summary>
-        /// Number of 'daily sequence value' categories allowed is based on the account tier.
-        /// </summary>
-        public static readonly IReadOnlyDictionary<AccountTier, int> DailySequenceValueCategoriesPerAccount = AccountsPerCreatedFrom;
-
-        /// <summary>
-        /// Number of 'daily sequence value' allowed per category is based on the account tier.
-        /// </summary>
-        public static readonly IReadOnlyDictionary<AccountTier, int> DailySequenceValuesPerCategory = new Dictionary<AccountTier, int>
-        {
-            [AccountTier.Small] = 365 * AccountsPerCreatedFrom[AccountTier.Small],
-            [AccountTier.Medium] = 365 * AccountsPerCreatedFrom[AccountTier.Medium],
-            [AccountTier.Large] = 365 * AccountsPerCreatedFrom[AccountTier.Large],
-            [AccountTier.Infinite] = int.MaxValue,
-        };
-
-        /// <summary>
         /// Number of 'days since' allowed is based on the account tier.
         /// </summary>
         public static readonly IReadOnlyDictionary<AccountTier, int> DaysSincePerAccount = AccountsPerCreatedFrom;

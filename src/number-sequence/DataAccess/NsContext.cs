@@ -15,9 +15,6 @@ namespace number_sequence.DataAccess
         public DbSet<Count> Counts { get; set; }
         public DbSet<CountEvent> CountEvents { get; set; }
 
-        public DbSet<DailySequenceValue> DailySequenceValues { get; set; }
-        public DbSet<DailySequenceValueConfig> DailySequenceValueConfigs { get; set; }
-
         public DbSet<DaysSince> DaysSinces { get; set; }
 
         public DbSet<Invoice> Invoices { get; set; }
@@ -269,42 +266,6 @@ namespace number_sequence.DataAccess
                 .WithMany(x => x.Events)
                 .HasForeignKey(x => new { x.Account, x.CountName })
                 .OnDelete(DeleteBehavior.Cascade);
-
-            _ = modelBuilder.Entity<DailySequenceValue>()
-                .HasKey(x => new { x.Account, x.Category, x.EventDate });
-            _ = modelBuilder.Entity<DailySequenceValue>()
-                .Property(x => x.CreatedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-            _ = modelBuilder.Entity<DailySequenceValue>()
-                .Property(x => x.ModifiedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-            _ = modelBuilder.Entity<DailySequenceValue>()
-                .Property(x => x.Value)
-                .HasPrecision(27, 5);
-            _ = modelBuilder.Entity<DailySequenceValue>()
-                .Property(x => x.OriginalValue)
-                .HasPrecision(27, 5);
-
-            _ = modelBuilder.Entity<DailySequenceValueConfig>()
-                .HasKey(x => new { x.Account, x.Category });
-            _ = modelBuilder.Entity<DailySequenceValueConfig>()
-                .Property(x => x.CreatedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-            _ = modelBuilder.Entity<DailySequenceValueConfig>()
-                .Property(x => x.ModifiedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-            _ = modelBuilder.Entity<DailySequenceValueConfig>()
-                .Property(x => x.NegativeDeltaMax)
-                .HasPrecision(27, 5);
-            _ = modelBuilder.Entity<DailySequenceValueConfig>()
-                .Property(x => x.NegativeDeltaMin)
-                .HasPrecision(27, 5);
-            _ = modelBuilder.Entity<DailySequenceValueConfig>()
-                .Property(x => x.PositiveDeltaMax)
-                .HasPrecision(27, 5);
-            _ = modelBuilder.Entity<DailySequenceValueConfig>()
-                .Property(x => x.PositiveDeltaMin)
-                .HasPrecision(27, 5);
 
             _ = modelBuilder.Entity<DaysSince>()
                 .Property(x => x.CreatedDate)

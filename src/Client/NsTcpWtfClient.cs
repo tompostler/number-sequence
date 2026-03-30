@@ -57,8 +57,6 @@ namespace TcpWtf.NumberSequence.Client
 
             this.Account = new AccountOperations(this);
             this.Count = new CountOperations(this);
-            this.DailySequenceValue = new DailySequenceValueOperations(this);
-            this.DailySequenceValueConfig = new DailySequenceValueConfigOperations(this);
             this.DaysSince = new DaysSinceOperations(this);
             this.History = new HistoryOperations(this);
             this.Ledger = new LedgerOperations(this);
@@ -78,16 +76,6 @@ namespace TcpWtf.NumberSequence.Client
         /// Count operations.
         /// </summary>
         public CountOperations Count { get; }
-
-        /// <summary>
-        /// Daily Sequence Value (DSV) operations.
-        /// </summary>
-        public DailySequenceValueOperations DailySequenceValue { get; }
-
-        /// <summary>
-        /// Daily Sequence Value Config (DSVC) operations.
-        /// </summary>
-        public DailySequenceValueConfigOperations DailySequenceValueConfig { get; }
 
         /// <summary>
         /// Days since operations.

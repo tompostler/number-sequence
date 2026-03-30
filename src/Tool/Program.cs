@@ -23,8 +23,6 @@ namespace TcpWtf.NumberSequence.Tool
 
             rootCommand.Subcommands.Add(AccountCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(CountCommand.Create(stampOption, verbosityOption));
-            rootCommand.Subcommands.Add(DailySequenceValueCommand.Create(stampOption, verbosityOption));
-            rootCommand.Subcommands.Add(DailySequenceValueConfigCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(DaysSinceCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(HistoryCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(LedgerCommand.Create(stampOption, verbosityOption));
