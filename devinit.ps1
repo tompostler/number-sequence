@@ -70,8 +70,8 @@ if ($confirm -eq 'y') {
     New-AzSqlDatabaseCopy -ResourceGroupName tompostler -ServerName tompostler -DatabaseName ns -CopyResourceGroupName tompostler -CopyServerName tompostler -CopyDatabaseName nslocal;
     Write-Host;
 
-    Write-Cyan 'Resizing nslocal sql database to GP_S_Gen5_1....';
-    Set-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal -RequestedServiceObjectiveName GP_S_Gen5_1 -AutoPauseDelayInMinutes 15;
+    Write-Cyan 'Resizing nslocal sql database to Basic....';
+    Set-AzSqlDatabase -ResourceGroupName tompostler -ServerName tompostler -DatabaseName nslocal -RequestedServiceObjectiveName Basic;
 
     Write-Yellow 'You will need to perform manual cleaning of the database for experimentation!';
 }
