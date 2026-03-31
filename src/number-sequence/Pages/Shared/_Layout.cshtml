@@ -1,10 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="auto">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>@ViewData["Title"] - ns.tcp.wtf</title>
+  <script>
+    var theme = localStorage.getItem('ns-theme') || 'auto';
+    document.documentElement.setAttribute('data-bs-theme', theme);
+  </script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .ns-theme-circle { display:inline-block; width:1rem; height:1rem; border-radius:50%; }
+    .ns-theme-circle.active { outline:2px solid #0d6efd; outline-offset:2px; }
+    a.ns-theme-item.active { text-decoration:underline; color:#0d6efd !important; }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
@@ -34,6 +43,15 @@
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="/ui/account">Account</a></li>
                 <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <div class="d-flex align-items-center gap-2 px-3 py-1">
+                    <span class="small text-muted">Theme</span>
+                    <a href="#" class="ns-theme-item small text-body text-decoration-none" data-theme="auto">Auto</a>
+                    <a href="#" class="ns-theme-item ns-theme-circle" data-theme="light" title="Light" style="background:#f8f9fa;border:1px solid #adb5bd"></a>
+                    <a href="#" class="ns-theme-item ns-theme-circle" data-theme="dark" title="Dark" style="background:#212529;border:1px solid #495057"></a>
+                  </div>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
                 <li><a class="dropdown-item" href="/ui/logout">Logout</a></li>
               </ul>
             </li>
@@ -51,6 +69,24 @@
   <div class="container">
     @RenderBody()
   </div>
+  <script>
+    (function () {
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('ns-theme', theme);
+        document.querySelectorAll('.ns-theme-item').forEach(function (el) {
+          el.classList.toggle('active', el.getAttribute('data-theme') === theme);
+        });
+      }
+      applyTheme(localStorage.getItem('ns-theme') || 'auto');
+      document.querySelectorAll('.ns-theme-item').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
+          applyTheme(el.getAttribute('data-theme'));
+        });
+      });
+    })();
+  </script>
 </body>
 
 </html>
