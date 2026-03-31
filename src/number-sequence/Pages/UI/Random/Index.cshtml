@@ -95,11 +95,50 @@
   <div class="col-12 col-md-6 col-lg-4 mb-3">
     <div class="card h-100">
       <div class="card-body">
+        <h6 class="card-title">Gibbs rule</h6>
+        <span id="gibbsResult">—</span>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="roll('random/gibbs', 'gibbsResult')">Quote</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
         <h6 class="card-title">Criminal Minds quote</h6>
         <span id="cmResult">—</span>
       </div>
       <div class="card-footer">
         <button class="btn btn-sm btn-outline-primary" onclick="roll('random/criminalminds', 'cmResult')">Quote</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">Philosophical razor</h6>
+        <span id="razorName" class="fw-semibold"></span>
+        <span id="razorAlias" class="text-muted small"></span>
+        <p id="razorValue" class="mt-1 mb-1">—</p>
+        <a id="razorRef" href="#" target="_blank" class="d-none small">Reference</a>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="rollRazor()">Quote</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-8 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">Wheel of Time intro</h6>
+        <span id="wotResult">—</span>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="roll('random/wot', 'wotResult')">Quote</button>
       </div>
     </div>
   </div>
@@ -126,8 +165,9 @@
         <textarea id="fromListInput" class="form-control form-control-sm mb-2" rows="3" placeholder="One item per line"></textarea>
         <span id="fromListResult">—</span>
       </div>
-      <div class="card-footer">
-        <button class="btn btn-sm btn-outline-primary" onclick="rollFromList()">Pick</button>
+      <div class="card-footer d-flex gap-2">
+        <button class="btn btn-sm btn-outline-primary" onclick="rollFromList()">Pick one</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="shuffleFromList()">Shuffle</button>
       </div>
     </div>
   </div>
@@ -140,7 +180,13 @@
     el.textContent = '…';
     try {
       const res = await fetch('/' + path);
-      el.textContent = (await res.text()).replace(/^"|"$/g, '');
+      const text = await res.text();
+      try {
+        const data = JSON.parse(text);
+        el.textContent = typeof data === 'string' ? data : String(data);
+      } catch {
+        el.textContent = text;
+      }
     } catch {
       el.textContent = 'Error';
     }
@@ -166,6 +212,24 @@
     img.classList.remove('d-none');
   }
 
+  async function rollRazor() {
+    const nameEl = document.getElementById('razorName');
+    const aliasEl = document.getElementById('razorAlias');
+    const valueEl = document.getElementById('razorValue');
+    const refEl = document.getElementById('razorRef');
+    nameEl.textContent = '…'; aliasEl.textContent = ''; valueEl.textContent = ''; refEl.classList.add('d-none');
+    try {
+      const res = await fetch('/random/razor');
+      const data = await res.json();
+      nameEl.textContent = data.name ?? '';
+      aliasEl.textContent = data.alias ? '(' + data.alias + ')' : '';
+      valueEl.textContent = data.value ?? '';
+      if (data.reference) { refEl.href = data.reference; refEl.classList.remove('d-none'); }
+    } catch {
+      nameEl.textContent = 'Error';
+    }
+  }
+
   async function rollFromList() {
     const lines = document.getElementById('fromListInput').value
       .split('\n').map(s => s.trim()).filter(s => s.length > 0);
@@ -174,5 +238,20 @@
       return;
     }
     await roll('random/from?' + lines.join(';'), 'fromListResult');
+  }
+
+  async function shuffleFromList() {
+    const lines = document.getElementById('fromListInput').value
+      .split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    const el = document.getElementById('fromListResult');
+    if (lines.length === 0) { el.textContent = 'Enter at least one item.'; return; }
+    el.textContent = '…';
+    try {
+      const res = await fetch('/random/fromlist?' + lines.join(';'));
+      const data = await res.json();
+      el.textContent = Array.isArray(data) ? data.join(', ') : String(data);
+    } catch {
+      el.textContent = 'Error';
+    }
   }
 </script>
