@@ -19,6 +19,12 @@
           <li class="nav-item">
             <a class="nav-link" href="/ui/days-since">Days Since</a>
           </li>
+          @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
+          {
+            <li class="nav-item">
+              <a class="nav-link" href="/ui/pdf-status">PDF Status</a>
+            </li>
+          }
         </ul>
         <ul class="navbar-nav ms-auto">
           @if (User.Identity?.IsAuthenticated == true)
