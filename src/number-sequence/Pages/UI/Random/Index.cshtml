@@ -1,0 +1,178 @@
+@page "/ui/random"
+@model number_sequence.Pages.UI.Random.IndexModel
+@{
+  ViewData["Title"] = "Random";
+}
+
+<h2 class="mb-4">Random</h2>
+
+<div class="row">
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">Number</h6>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <input type="number" id="numMin" value="0" class="form-control form-control-sm" style="width:6rem" />
+          <span>–</span>
+          <input type="number" id="numMax" value="100" class="form-control form-control-sm" style="width:6rem" />
+        </div>
+        <code id="numResult" class="fs-5">—</code>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="rollNumber()">Roll</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">GUID</h6>
+        <code id="guidResult" class="fs-6">—</code>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="roll('random/guid', 'guidResult')">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">Coin flip</h6>
+        <span id="coinResult" class="fs-5">—</span>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="roll('random/coin', 'coinResult')">Flip</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">Magic 8-ball</h6>
+        <span id="eightBallResult">—</span>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="roll('random/8ball', 'eightBallResult')">Ask</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">Name</h6>
+        <div class="d-flex gap-2 mb-2">
+          <select id="nameStyle" class="form-select form-select-sm">
+            <option value="random/name">Combined</option>
+            <option value="random/name/moby">Moby</option>
+            <option value="random/name/ubuntu">Ubuntu</option>
+          </select>
+        </div>
+        <code id="nameResult">—</code>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="rollName()">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">No</h6>
+        <span id="noResult">—</span>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="roll('random/no', 'noResult')">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">Criminal Minds quote</h6>
+        <span id="cmResult">—</span>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="roll('random/criminalminds', 'cmResult')">Quote</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">Identicon</h6>
+        <div class="mb-2">
+          <input type="text" id="identiconValue" placeholder="Seed (optional)" class="form-control form-control-sm" />
+        </div>
+        <img id="identiconImg" src="" alt="" class="d-none rounded" style="width:128px;height:128px" />
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="rollIdenticon()">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-title">Pick from list</h6>
+        <textarea id="fromListInput" class="form-control form-control-sm mb-2" rows="3" placeholder="One item per line"></textarea>
+        <span id="fromListResult">—</span>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="rollFromList()">Pick</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  async function roll(path, resultId) {
+    const el = document.getElementById(resultId);
+    el.textContent = '…';
+    try {
+      const res = await fetch('/' + path);
+      el.textContent = (await res.text()).replace(/^"|"$/g, '');
+    } catch {
+      el.textContent = 'Error';
+    }
+  }
+
+  async function rollNumber() {
+    const min = document.getElementById('numMin').value;
+    const max = document.getElementById('numMax').value;
+    await roll(`random?min=${min}&max=${max}`, 'numResult');
+  }
+
+  function rollName() {
+    const style = document.getElementById('nameStyle').value;
+    roll(style, 'nameResult');
+  }
+
+  function rollIdenticon() {
+    const value = document.getElementById('identiconValue').value.trim();
+    const bust = Date.now();
+    const src = '/random/identicon?format=png&_=' + bust + (value ? '&value=' + encodeURIComponent(value) : '');
+    const img = document.getElementById('identiconImg');
+    img.src = src;
+    img.classList.remove('d-none');
+  }
+
+  async function rollFromList() {
+    const lines = document.getElementById('fromListInput').value
+      .split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    if (lines.length === 0) {
+      document.getElementById('fromListResult').textContent = 'Enter at least one item.';
+      return;
+    }
+    await roll('random/from?' + lines.join(';'), 'fromListResult');
+  }
+</script>

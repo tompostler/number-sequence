@@ -17,7 +17,7 @@ namespace number_sequence.Pages.UI.Redirects
         }
 
         [BindProperty]
-        public Redirect Redirect { get; set; }
+        public new Redirect Redirect { get; set; }
 
         public string ErrorMessage { get; private set; }
 
@@ -36,7 +36,7 @@ namespace number_sequence.Pages.UI.Redirects
 
             try
             {
-                await this.nsClient.Redirect.CreateAsync(this.Redirect, cancellationToken);
+                _ = await this.nsClient.Redirect.CreateAsync(this.Redirect, cancellationToken);
             }
             catch (NsTcpWtfClientException ex)
             {
