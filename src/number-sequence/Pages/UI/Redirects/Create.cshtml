@@ -1,0 +1,40 @@
+@page "/ui/redirects/create"
+@model number_sequence.Pages.UI.Redirects.CreateModel
+@{
+  ViewData["Title"] = "Create Redirect";
+}
+
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <a href="/ui/redirects" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+      <h2 class="mb-0">Create Redirect</h2>
+    </div>
+
+    @if (Model.ErrorMessage != null)
+    {
+      <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    <form method="post">
+      <div class="mb-3">
+        <label asp-for="Redirect.Id" class="form-label">ID</label>
+        <input asp-for="Redirect.Id" class="form-control" />
+        <div class="form-text">3–36 characters. Used in the short URL: <code>ns.tcp.wtf/r/{id}</code>. Normalized to lowercase.</div>
+        <span asp-validation-for="Redirect.Id" class="text-danger small"></span>
+      </div>
+      <div class="mb-3">
+        <label asp-for="Redirect.Value" class="form-label">Target URL</label>
+        <input asp-for="Redirect.Value" type="url" class="form-control" />
+        <div class="form-text">Must be an absolute URL.</div>
+        <span asp-validation-for="Redirect.Value" class="text-danger small"></span>
+      </div>
+      <div class="mb-3">
+        <label asp-for="Redirect.Expiration" class="form-label">Expiration <span class="text-muted">(optional)</span></label>
+        <input asp-for="Redirect.Expiration" type="date" class="form-control" />
+        <span asp-validation-for="Redirect.Expiration" class="text-danger small"></span>
+      </div>
+      <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+  </div>
+</div>

@@ -17,6 +17,21 @@
   <div class="col-12 col-md-6 col-lg-4 mb-4">
     <div class="card h-100">
       <div class="card-body">
+        <h5 class="card-title">Account</h5>
+        <p class="card-text">Manage your account details and API tokens. New to the service? Create an account to get started.</p>
+      </div>
+      <div class="card-footer d-flex gap-2">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/account">View</a>
+        @if (User.Identity?.IsAuthenticated != true)
+        {
+          <a class="btn btn-sm btn-outline-secondary" href="/ui/account/create">Create account</a>
+        }
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
         <h5 class="card-title">Days Since</h5>
         <p class="card-text">Create and manage days since alerts in the format of "X days since Y" where X is the number of days since the last occurrence and Y is what happened.</p>
       </div>
@@ -28,12 +43,11 @@
   <div class="col-12 col-md-6 col-lg-4 mb-4">
     <div class="card h-100">
       <div class="card-body">
-        <h5 class="card-title">Account</h5>
-        <p class="card-text">Manage your account details and API tokens. New to the service? Create an account to get started.</p>
+        <h5 class="card-title">Redirects</h5>
+        <p class="card-text">Create and manage short URLs in the format of <code>ns.tcp.wtf/r/{id}</code> that redirect to a target URL.</p>
       </div>
-      <div class="card-footer d-flex gap-2">
-        <a class="btn btn-sm btn-outline-primary" href="/ui/account">View</a>
-        <a class="btn btn-sm btn-outline-secondary" href="/ui/account/create">Create account</a>
+      <div class="card-footer">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/redirects">List</a>
       </div>
     </div>
   </div>
