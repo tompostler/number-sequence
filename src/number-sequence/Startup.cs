@@ -68,7 +68,12 @@ namespace number_sequence
             _ = services.AddSingleton(sp =>
             {
                 IServerAddressesFeature addresses = sp.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
-                var baseAddress = new Uri(addresses.Addresses.First());
+                var listenUri = new Uri(addresses.Addresses.First());
+                // The server binds to an unspecified address (0.0.0.0 or [::]) which can't be used
+                // as an outgoing connection target — replace it with localhost.
+                var baseAddress = listenUri.Host is "0.0.0.0" or "::"
+                    ? new UriBuilder(listenUri) { Host = "localhost" }.Uri
+                    : listenUri;
                 IHttpContextAccessor contextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
                 return new NsTcpWtfClient(
                     sp.GetRequiredService<ILogger<NsTcpWtfClient>>(),
