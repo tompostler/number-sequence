@@ -107,6 +107,45 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Get a PNG chart of the count value over time, optionally filtered by date range.
+        /// Returns null if there are no events.
+        /// </summary>
+        public async Task<byte[]> GetChartAsync(string name, DateTimeOffset? from = null, DateTimeOffset? to = null, int width = 2560, int height = 1440, CancellationToken cancellationToken = default)
+        {
+            List<string> queryParams = new();
+            if (from.HasValue)
+            {
+                queryParams.Add($"from={Uri.EscapeDataString(from.Value.ToString("o"))}");
+            }
+            if (to.HasValue)
+            {
+                queryParams.Add($"to={Uri.EscapeDataString(to.Value.ToString("o"))}");
+            }
+            if (width != 2560)
+            {
+                queryParams.Add($"width={width}");
+            }
+            if (height != 1440)
+            {
+                queryParams.Add($"height={height}");
+            }
+            string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
+
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"counts/{name}/chart{queryString}"),
+                cancellationToken);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        }
+
+        /// <summary>
         /// Update the overflow drops oldest events setting for an existing count.
         /// </summary>
         public async Task<Count> UpdateOverflowDropsOldestEventsAsync(string name, bool overflowDropsOldestEvents, CancellationToken cancellationToken = default)

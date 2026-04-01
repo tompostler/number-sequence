@@ -1,0 +1,39 @@
+@page "/ui/counts"
+@model number_sequence.Pages.UI.Counts.IndexModel
+@{
+  ViewData["Title"] = "My Counts";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <h2 class="mb-0">My Counts</h2>
+  <a href="/ui/counts/create" class="btn btn-sm btn-primary">Create</a>
+</div>
+
+@if (Model.Counts.Count == 0)
+{
+  <p class="text-muted">No counts yet.</p>
+}
+else
+{
+  <table class="table table-striped table-sm w-auto">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th class="text-nowrap">Value</th>
+        <th class="text-nowrap">Created</th>
+        <th class="text-nowrap">Modified</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var c in Model.Counts)
+      {
+        <tr>
+          <td><a href="/ui/counts/@c.Name">@c.Name</a></td>
+          <td class="text-nowrap">@c.Value</td>
+          <td class="text-nowrap">@c.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
+          <td class="text-nowrap">@c.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

@@ -181,6 +181,61 @@ namespace number_sequence.Controllers
             return this.Ok(events);
         }
 
+        [HttpGet("{name}/chart")]
+        public async Task<IActionResult> GetChartAsync(string name, [FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, [FromQuery] int width = 2560, [FromQuery] int height = 1440, CancellationToken cancellationToken = default)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            bool exists = await nsContext.Counts.AnyAsync(x => x.Account == this.User.Identity.Name && x.Name == name, cancellationToken);
+            if (!exists)
+            {
+                return this.NotFound($"Count with name [{name}] does not exist.");
+            }
+
+            IQueryable<CountEvent> query = nsContext.CountEvents
+                .Where(x => x.Account == this.User.Identity.Name && x.CountName == name);
+            if (from.HasValue)
+            {
+                query = query.Where(x => x.CreatedDate >= from.Value);
+            }
+            if (to.HasValue)
+            {
+                query = query.Where(x => x.CreatedDate <= to.Value);
+            }
+
+            List<CountEvent> events = await query
+                .OrderBy(x => x.CreatedDate)
+                .ToListAsync(cancellationToken);
+
+            if (width < 100 || width > 2560 || height < 100 || height > 1440)
+            {
+                return this.BadRequest($"Width must be 100–2560 and height must be 100–1440.");
+            }
+
+            if (events.Count == 0)
+            {
+                return this.NoContent();
+            }
+
+            ScottPlot.Plot plot = new();
+            ScottPlot.Plottables.Scatter scatter = plot.Add.Scatter(
+                events.Select(x => x.CreatedDate.UtcDateTime).ToList(),
+                events.Select(x => x.Value).ToList());
+            scatter.LegendText = name;
+
+            _ = plot.Axes.DateTimeTicksBottom();
+            _ = plot.HideLegend();
+            plot.Axes.TightMargins();
+            plot.Axes.SetLimitsY(0, plot.Axes.GetLimits().Top);
+
+            plot.Title($"Count: {name}");
+            _ = plot.Add.Annotation($"Generated {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC", ScottPlot.Alignment.UpperLeft);
+
+            byte[] bytes = plot.GetImage(width, height).GetImageBytes();
+            return this.File(bytes, "image/png");
+        }
+
         [HttpPut("{name}/OverflowDropsOldestEvents")]
         public async Task<IActionResult> UpdateOverflowDropsOldestEventsAsync(string name, [FromBody] bool overflowDropsOldestEvents, CancellationToken cancellationToken)
         {

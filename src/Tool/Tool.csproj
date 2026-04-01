@@ -15,8 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ScottPlot" />
-    <PackageReference Include="System.CommandLine" />
+<PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
   <ItemGroup>

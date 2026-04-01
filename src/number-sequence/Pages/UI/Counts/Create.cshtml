@@ -1,0 +1,36 @@
+@page "/ui/counts/create"
+@model number_sequence.Pages.UI.Counts.CreateModel
+@{
+  ViewData["Title"] = "Create Count";
+}
+
+<h2 class="mb-4">Create Count</h2>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="col-12 col-md-6">
+  <form method="post">
+    <div class="mb-3">
+      <label asp-for="Count.Name" class="form-label">Name</label>
+      <input asp-for="Count.Name" class="form-control" placeholder="my-counter" />
+      <span asp-validation-for="Count.Name" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="Count.Value" class="form-label">Initial value</label>
+      <input asp-for="Count.Value" class="form-control" type="number" min="0" />
+      <span asp-validation-for="Count.Value" class="text-danger small"></span>
+    </div>
+    <div class="mb-3 form-check">
+      <input asp-for="Count.OverflowDropsOldestEvents" class="form-check-input" />
+      <label asp-for="Count.OverflowDropsOldestEvents" class="form-check-label">Overflow drops oldest events</label>
+      <div class="form-text">When the event limit is reached, drop the oldest events instead of rejecting new increments.</div>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Create</button>
+      <a href="/ui/counts" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>

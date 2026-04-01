@@ -1,5 +1,4 @@
-﻿using ScottPlot;
-using System.CommandLine;
+﻿using System.CommandLine;
 using TcpWtf.NumberSequence.Client;
 using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;
@@ -248,34 +247,23 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         private static async Task HandleEventsAsync(string name, DateTimeOffset? from, DateTimeOffset? to, FileInfo chart, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            List<Contracts.CountEvent> events = await client.Count.GetEventsAsync(name, from, to);
 
             if (chart != null)
             {
-                if (events.Count == 0)
+                byte[] bytes = await client.Count.GetChartAsync(name, from, to);
+                if (bytes == null)
                 {
                     Console.WriteLine("No events to chart.");
                     return;
                 }
 
-                Plot plot = new();
-                ScottPlot.Plottables.Scatter scatter = plot.Add.Scatter(events.Select(x => x.CreatedDate.LocalDateTime).ToList(), events.Select(x => x.Value).ToList());
-                scatter.LegendText = name;
-
-                _ = plot.Axes.DateTimeTicksBottom();
-                _ = plot.HideLegend();
-                plot.Axes.TightMargins();
-                plot.Axes.SetLimitsY(0, plot.Axes.GetLimits().Top);
-
-                plot.Title($"Count: {name}");
-                _ = plot.Add.Annotation($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", Alignment.UpperLeft);
-
                 chart.Delete();
-                _ = plot.SavePng(chart.FullName, 2560, 1440);
+                File.WriteAllBytes(chart.FullName, bytes);
                 Console.WriteLine($"Wrote {chart.FullName}");
             }
             else
             {
+                List<Contracts.CountEvent> events = await client.Count.GetEventsAsync(name, from, to);
                 Output.WriteTable(
                     events,
                     nameof(Contracts.CountEvent.CreatedDate),
