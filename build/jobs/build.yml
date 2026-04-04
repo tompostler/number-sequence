@@ -6,6 +6,12 @@ jobs:
 
   steps:
 
+  - pwsh: |
+      Get-ChildItem -Path Env: | ForEach-Object {
+        Write-Host "$($_.Name) = $($_.Value)";
+      }
+    displayName: Show env vars
+
   - task: UseDotNet@2
     displayName: Use net10
     inputs:
