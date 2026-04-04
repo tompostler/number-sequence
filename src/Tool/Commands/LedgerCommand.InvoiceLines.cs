@@ -38,8 +38,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 Price = Input.GetDecimal(nameof(invoiceLine.Price), defaultVal: invoiceLineDefault?.Price ?? 0),
             };
 
-            invoice.Lines.Add(invoiceLine);
-            invoice = await client.Ledger.UpdateInvoiceAsync(invoice);
+            invoice = await client.Ledger.CreateInvoiceLineAsync(invoiceId, invoiceLine);
             PrintSingleInvoice(invoice, raw);
         }
 
@@ -79,7 +78,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             invoiceLine.Unit = Input.GetString(nameof(invoiceLine.Unit), invoiceLine.Unit);
             invoiceLine.Price = Input.GetDecimal(nameof(invoiceLine.Price), defaultVal: invoiceLine.Price);
 
-            invoice = await client.Ledger.UpdateInvoiceAsync(invoice);
+            invoice = await client.Ledger.UpdateInvoiceLineAsync(invoiceId, id, invoiceLine);
             PrintSingleInvoice(invoice, raw);
         }
 
@@ -117,10 +116,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Contracts.Ledger.Invoice invoice = await client.Ledger.GetInvoiceAsync(invoiceId);
             Contracts.Ledger.InvoiceLine invoiceLine = invoice.Lines.Single(x => x.Id == id);
-            _ = invoice.Lines.Remove(invoiceLine);
             Console.WriteLine(invoiceLine.ToJsonString(indented: true));
 
-            invoice = await client.Ledger.UpdateInvoiceAsync(invoice);
+            invoice = await client.Ledger.DeleteInvoiceLineAsync(invoiceId, id);
             PrintSingleInvoice(invoice, raw);
         }
 
