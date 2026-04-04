@@ -79,6 +79,69 @@ namespace number_sequence.Controllers
             }
         }
 
+        [HttpPut("invoices/{id}/process")]
+        public async Task<IActionResult> UpdateInvoiceForProcessAsync(long id, CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            Invoice invoiceRecord = await nsContext.Invoices
+                .Include(x => x.Business)
+                .Include(x => x.Customer)
+                .Include(x => x.Lines)
+                .Include(x => x.Payments)
+                .SingleOrDefaultAsync(x => x.AccountName == this.User.Identity.Name && x.Id == id, cancellationToken);
+            if (invoiceRecord == default)
+            {
+                return this.NotFound();
+            }
+
+            invoiceRecord.ReadyForProcessing = true;
+            invoiceRecord.ProcessedAt = default;
+
+            invoiceRecord.ModifiedDate = DateTimeOffset.UtcNow;
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+
+            await this.TriggerInvoicePdfAsync(invoiceRecord, cancellationToken);
+
+            invoiceRecord.ModifiedDate = DateTimeOffset.UtcNow;
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+
+            return this.Ok(invoiceRecord);
+        }
+
+        [HttpPut("invoices/{id}/ReprocessRegularly")]
+        public async Task<IActionResult> UpdateInvoiceReprocessRegularlyAsync(long id, CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            Invoice invoiceRecord = await nsContext.Invoices
+                .Include(x => x.Business)
+                .Include(x => x.Customer)
+                .Include(x => x.Lines)
+                .Include(x => x.Payments)
+                .SingleOrDefaultAsync(x => x.AccountName == this.User.Identity.Name && x.Id == id, cancellationToken);
+            if (invoiceRecord == default)
+            {
+                return this.NotFound();
+            }
+
+            invoiceRecord.ReprocessRegularly = true;
+            invoiceRecord.ReadyForProcessing = true;
+            invoiceRecord.ProcessedAt = default;
+
+            invoiceRecord.ModifiedDate = DateTimeOffset.UtcNow;
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+
+            await this.TriggerInvoicePdfAsync(invoiceRecord, cancellationToken);
+
+            invoiceRecord.ModifiedDate = DateTimeOffset.UtcNow;
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+
+            return this.Ok(invoiceRecord);
+        }
+
         [HttpPut("invoices")]
         public async Task<IActionResult> UpdateAsync([FromBody] Invoice invoice, CancellationToken cancellationToken)
         {

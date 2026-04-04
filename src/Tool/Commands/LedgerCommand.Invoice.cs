@@ -145,23 +145,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
         private static async Task HandleMarkReprocessRegularlyAsync(long id, bool raw, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            Contracts.Ledger.Invoice invoice = await client.Ledger.GetInvoiceAsync(id);
-
-            invoice.ReprocessRegularly = true;
-
-            invoice = await client.Ledger.UpdateInvoiceAsync(invoice);
+            Contracts.Ledger.Invoice invoice = await client.Ledger.UpdateInvoiceReprocessRegularlyAsync(id);
             PrintSingleInvoice(invoice, raw);
         }
 
         private static async Task HandleProcessAsync(long id, bool raw, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            Contracts.Ledger.Invoice invoice = await client.Ledger.GetInvoiceAsync(id);
-
-            invoice.ReadyForProcessing = true;
-            invoice.ProcessedAt = default;
-
-            invoice = await client.Ledger.UpdateInvoiceAsync(invoice);
+            Contracts.Ledger.Invoice invoice = await client.Ledger.UpdateInvoiceForProcessAsync(id);
             PrintSingleInvoice(invoice, raw);
         }
 

@@ -47,6 +47,32 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Mark an existing invoice ready for PDF processing.
+        /// </summary>
+        public async Task<Invoice> UpdateInvoiceForProcessAsync(long id, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Put,
+                    $"ledger/invoices/{id}/process"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<Invoice>(cancellationToken);
+        }
+
+        /// <summary>
+        /// Mark an existing invoice to reprocess regularly (and trigger an immediate process).
+        /// </summary>
+        public async Task<Invoice> UpdateInvoiceReprocessRegularlyAsync(long id, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Put,
+                    $"ledger/invoices/{id}/ReprocessRegularly"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<Invoice>(cancellationToken);
+        }
+
+        /// <summary>
         /// Update an existing invoice.
         /// </summary>
         public async Task<Invoice> UpdateInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
