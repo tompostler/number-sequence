@@ -1,0 +1,44 @@
+@page "/ui/ledger/invoices/{id:long}/add-payment"
+@model number_sequence.Pages.UI.Ledger.Invoices.AddPaymentModel
+@{
+  ViewData["Title"] = "Add Payment";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger/invoices/@Model.Invoice.Id" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">Add Payment</h2>
+  <span class="text-muted">@Model.Invoice.FriendlyId@(Model.Invoice.Title != null ? $": {Model.Invoice.Title}" : "")</span>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="mb-3 text-muted small">
+  Current balance: <strong>@Model.Invoice.Balance.ToString("C")</strong>
+</div>
+
+<div class="col-12 col-md-6">
+  <form method="post">
+    <div class="mb-3">
+      <label asp-for="Payment.Amount" class="form-label">Amount</label>
+      <input asp-for="Payment.Amount" class="form-control" type="number" step="any" />
+      <span asp-validation-for="Payment.Amount" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="Payment.PaymentDate" class="form-label">Payment date</label>
+      <input asp-for="Payment.PaymentDate" class="form-control" type="date" />
+      <span asp-validation-for="Payment.PaymentDate" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="Payment.Details" class="form-label">Details</label>
+      <input asp-for="Payment.Details" class="form-control" placeholder="e.g. check #1234, wire transfer" />
+      <span asp-validation-for="Payment.Details" class="text-danger small"></span>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Add</button>
+      <a href="/ui/ledger/invoices/@Model.Invoice.Id" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>

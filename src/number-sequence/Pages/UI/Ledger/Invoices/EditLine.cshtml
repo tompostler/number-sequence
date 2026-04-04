@@ -1,0 +1,52 @@
+@page "/ui/ledger/invoices/{id:long}/lines/{lineId:long}/edit"
+@model number_sequence.Pages.UI.Ledger.Invoices.EditLineModel
+@{
+  ViewData["Title"] = "Edit Line";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger/invoices/@Model.Invoice.Id" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">Edit Line</h2>
+  <span class="text-muted">@Model.Invoice.FriendlyId@(Model.Invoice.Title != null ? $": {Model.Invoice.Title}" : "")</span>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="col-12 col-md-8 col-lg-6">
+  <form method="post">
+    <div class="mb-3">
+      <label asp-for="Line.Title" class="form-label">Title</label>
+      <input asp-for="Line.Title" class="form-control" />
+      <span asp-validation-for="Line.Title" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="Line.Description" class="form-label">Description</label>
+      <input asp-for="Line.Description" class="form-control" />
+      <span asp-validation-for="Line.Description" class="text-danger small"></span>
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col">
+        <label asp-for="Line.Quantity" class="form-label">Quantity</label>
+        <input asp-for="Line.Quantity" class="form-control" type="number" step="any" />
+        <span asp-validation-for="Line.Quantity" class="text-danger small"></span>
+      </div>
+      <div class="col">
+        <label asp-for="Line.Unit" class="form-label">Unit</label>
+        <input asp-for="Line.Unit" class="form-control" placeholder="per unit" />
+        <span asp-validation-for="Line.Unit" class="text-danger small"></span>
+      </div>
+      <div class="col">
+        <label asp-for="Line.Price" class="form-label">Price</label>
+        <input asp-for="Line.Price" class="form-control" type="number" step="any" />
+        <span asp-validation-for="Line.Price" class="text-danger small"></span>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a href="/ui/ledger/invoices/@Model.Invoice.Id" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>

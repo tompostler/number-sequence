@@ -1,0 +1,25 @@
+@page "/ui/ledger/customers/{id:long}"
+@model number_sequence.Pages.UI.Ledger.Customers.DetailModel
+@{
+  ViewData["Title"] = Model.Customer?.Name ?? "Customer";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger/customers" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">@Model.Customer.Name</h2>
+  <a href="/ui/ledger/customers/@Model.Customer.Id/edit" class="btn btn-sm btn-outline-primary">Edit</a>
+</div>
+
+<dl>
+  <dt class="text-muted small">Address</dt>
+  <dd>
+    @Model.Customer.AddressLine1<br />
+    @Model.Customer.AddressLine2
+  </dd>
+  <dt class="text-muted small">Contact</dt>
+  <dd>@Model.Customer.Contact</dd>
+  <dt class="text-muted small">Created</dt>
+  <dd>@Model.Customer.CreatedDate.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+  <dt class="text-muted small">Modified</dt>
+  <dd>@Model.Customer.ModifiedDate.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+</dl>

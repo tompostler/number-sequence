@@ -1,0 +1,100 @@
+@page "/ui/ledger/statements/{id:long}"
+@model number_sequence.Pages.UI.Ledger.Statements.DetailModel
+@{
+  ViewData["Title"] = "Statement";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger/statements" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">Statement</h2>
+  <span class="text-muted">@Model.Statement.FriendlyId</span>
+  @if (Model.Statement.ProcessedAt.HasValue)
+  {
+    <span class="badge bg-secondary">PDF</span>
+  }
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="row mb-4">
+  <div class="col-12 col-md-6">
+    <dl class="row mb-0">
+      <dt class="col-sm-4">Business</dt>
+      <dd class="col-sm-8">@Model.Statement.Business.Name</dd>
+      <dt class="col-sm-4">Customer</dt>
+      <dd class="col-sm-8">@Model.Statement.Customer.Name</dd>
+      <dt class="col-sm-4">Period</dt>
+      <dd class="col-sm-8">@Model.Statement.InvoiceStartDate.ToString("yyyy-MM-dd") – @Model.Statement.InvoiceEndDate.ToString("yyyy-MM-dd")</dd>
+      <dt class="col-sm-4">Search by</dt>
+      <dd class="col-sm-8">@(Model.Statement.SearchByDueDate ? "Due date" : "Created date")</dd>
+      <dt class="col-sm-4">Billed</dt>
+      <dd class="col-sm-8">@Model.Statement.TotalBilled.ToString("C")</dd>
+      <dt class="col-sm-4">Paid</dt>
+      <dd class="col-sm-8">@Model.Statement.TotalPaid.ToString("C")</dd>
+      <dt class="col-sm-4">Balance</dt>
+      <dd class="col-sm-8"><strong>@Model.Statement.Balance.ToString("C")</strong></dd>
+      <dt class="col-sm-4">Created</dt>
+      <dd class="col-sm-8">@Model.Statement.CreatedDate.ToString("yyyy-MM-dd HH:mm")</dd>
+      <dt class="col-sm-4">Modified</dt>
+      <dd class="col-sm-8">@Model.Statement.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</dd>
+      @if (Model.Statement.ProcessedAt.HasValue)
+      {
+        <dt class="col-sm-4">Processed</dt>
+        <dd class="col-sm-8">@Model.Statement.ProcessedAt.Value.ToString("yyyy-MM-dd HH:mm")</dd>
+      }
+    </dl>
+  </div>
+  <div class="col-12 col-md-6 mt-3 mt-md-0">
+    <form method="post" asp-page-handler="Process">
+      <button type="submit" class="btn btn-sm btn-outline-primary">Trigger PDF</button>
+    </form>
+  </div>
+</div>
+
+@if (Model.Statement.Invoices == null || Model.Statement.Invoices.Count == 0)
+{
+  <p class="text-muted">No invoices in this statement period.</p>
+}
+else
+{
+  <h5>Invoices</h5>
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th class="text-nowrap">Due Date</th>
+        <th class="text-nowrap text-end">Total</th>
+        <th class="text-nowrap text-end">Paid</th>
+        <th class="text-nowrap text-end">Balance</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var inv in Model.Statement.Invoices)
+      {
+        <tr>
+          <td class="text-nowrap"><a href="/ui/ledger/invoices/@inv.Id">@inv.FriendlyId</a></td>
+          <td>@inv.Title</td>
+          <td class="text-nowrap">@inv.DueDate.ToString("yyyy-MM-dd")</td>
+          <td class="text-nowrap text-end">@inv.Total.ToString("C")</td>
+          <td class="text-nowrap text-end">@inv.TotalPaid.ToString("C")</td>
+          <td class="text-nowrap text-end">@inv.Balance.ToString("C")</td>
+          <td class="text-nowrap">
+            @if (inv.PaidDate.HasValue)
+            {
+              <span class="badge bg-success">Paid</span>
+            }
+            @if (inv.ProcessedAt.HasValue)
+            {
+              <span class="badge bg-secondary">PDF</span>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

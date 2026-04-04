@@ -1,0 +1,51 @@
+@page "/ui/ledger/line-defaults/{id:long}/edit"
+@model number_sequence.Pages.UI.Ledger.LineDefaults.EditModel
+@{
+  ViewData["Title"] = "Edit Line Default";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger/line-defaults" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">Edit Line Default</h2>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="col-12 col-md-6">
+  <form method="post">
+    <div class="mb-3">
+      <label asp-for="LineDefault.Title" class="form-label">Title</label>
+      <input asp-for="LineDefault.Title" class="form-control" />
+      <span asp-validation-for="LineDefault.Title" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="LineDefault.Description" class="form-label">Description</label>
+      <input asp-for="LineDefault.Description" class="form-control" />
+      <span asp-validation-for="LineDefault.Description" class="text-danger small"></span>
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col">
+        <label asp-for="LineDefault.Quantity" class="form-label">Quantity</label>
+        <input asp-for="LineDefault.Quantity" class="form-control" type="number" step="any" />
+        <span asp-validation-for="LineDefault.Quantity" class="text-danger small"></span>
+      </div>
+      <div class="col">
+        <label asp-for="LineDefault.Unit" class="form-label">Unit</label>
+        <input asp-for="LineDefault.Unit" class="form-control" placeholder="per unit" />
+        <span asp-validation-for="LineDefault.Unit" class="text-danger small"></span>
+      </div>
+      <div class="col">
+        <label asp-for="LineDefault.Price" class="form-label">Price</label>
+        <input asp-for="LineDefault.Price" class="form-control" type="number" step="any" />
+        <span asp-validation-for="LineDefault.Price" class="text-danger small"></span>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a href="/ui/ledger/line-defaults" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>

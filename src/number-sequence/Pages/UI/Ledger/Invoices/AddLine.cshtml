@@ -1,0 +1,82 @@
+@page "/ui/ledger/invoices/{id:long}/add-line"
+@model number_sequence.Pages.UI.Ledger.Invoices.AddLineModel
+@{
+  ViewData["Title"] = "Add Line";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger/invoices/@Model.Invoice.Id" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">Add Line</h2>
+  <span class="text-muted">@Model.Invoice.FriendlyId@(Model.Invoice.Title != null ? $": {Model.Invoice.Title}" : "")</span>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="col-12 col-md-8 col-lg-6">
+  <form method="post">
+    @if (Model.LineDefaults.Count > 0)
+    {
+      var defaultsJson = System.Text.Json.JsonSerializer.Serialize(Model.LineDefaults.ToDictionary(
+        d => d.Id.ToString(),
+        d => new { d.Title, d.Description, d.Quantity, d.Unit, d.Price }));
+      <div class="mb-3">
+        <label class="form-label">From default <span class="text-muted small">(optional — pre-fills fields below)</span></label>
+        <select class="form-select" id="lineDefaultSelect">
+          <option value="">— none —</option>
+          @foreach (var d in Model.LineDefaults)
+          {
+            <option value="@d.Id">@d.Title (@d.Quantity × @d.Price.ToString("C"))</option>
+          }
+        </select>
+      </div>
+      <script>
+        (function () {
+          var defaults = @Html.Raw(defaultsJson);
+          document.getElementById('lineDefaultSelect').addEventListener('change', function () {
+            var d = defaults[this.value];
+            if (!d) return;
+            document.getElementById('Line_Title').value = d.Title || '';
+            document.getElementById('Line_Description').value = d.Description || '';
+            document.getElementById('Line_Quantity').value = d.Quantity;
+            document.getElementById('Line_Unit').value = d.Unit || '';
+            document.getElementById('Line_Price').value = d.Price;
+          });
+        })();
+      </script>
+    }
+    <div class="mb-3">
+      <label asp-for="Line.Title" class="form-label">Title</label>
+      <input asp-for="Line.Title" class="form-control" />
+      <span asp-validation-for="Line.Title" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="Line.Description" class="form-label">Description</label>
+      <input asp-for="Line.Description" class="form-control" />
+      <span asp-validation-for="Line.Description" class="text-danger small"></span>
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col">
+        <label asp-for="Line.Quantity" class="form-label">Quantity</label>
+        <input asp-for="Line.Quantity" class="form-control" type="number" step="any" />
+        <span asp-validation-for="Line.Quantity" class="text-danger small"></span>
+      </div>
+      <div class="col">
+        <label asp-for="Line.Unit" class="form-label">Unit</label>
+        <input asp-for="Line.Unit" class="form-control" placeholder="per unit" />
+        <span asp-validation-for="Line.Unit" class="text-danger small"></span>
+      </div>
+      <div class="col">
+        <label asp-for="Line.Price" class="form-label">Price</label>
+        <input asp-for="Line.Price" class="form-control" type="number" step="any" />
+        <span asp-validation-for="Line.Price" class="text-danger small"></span>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Add</button>
+      <a href="/ui/ledger/invoices/@Model.Invoice.Id" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>

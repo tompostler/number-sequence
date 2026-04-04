@@ -1,0 +1,69 @@
+@page "/ui/ledger"
+@model number_sequence.Pages.UI.Ledger.IndexModel
+@{
+  ViewData["Title"] = "Ledger";
+}
+
+<div class="row mb-4">
+  <div class="col">
+    <h2>Ledger</h2>
+  </div>
+</div>
+
+<div class="row mt-2">
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Invoices</h5>
+        <p class="card-text">Create and manage invoices with line items and payments.</p>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/ledger/invoices">List</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Statements</h5>
+        <p class="card-text">Generate statements summarizing invoices for a business and customer over a date range.</p>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/ledger/statements">List</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Line Defaults</h5>
+        <p class="card-text">Define reusable invoice line item templates to speed up invoice creation.</p>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/ledger/line-defaults">List</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Businesses</h5>
+        <p class="card-text">Manage your business entities used on invoices and statements.</p>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/ledger/businesses">List</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Customers</h5>
+        <p class="card-text">Manage your customers who receive invoices and statements.</p>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/ledger/customers">List</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,80 @@
+@page "/ui/ledger/invoices"
+@model number_sequence.Pages.UI.Ledger.Invoices.IndexModel
+@{
+  ViewData["Title"] = "Invoices";
+  int prevSkip = Math.Max(0, Model.Skip - 20);
+  int nextSkip = Model.Skip + 20;
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">Invoices</h2>
+  <a href="/ui/ledger/invoices/create" class="btn btn-sm btn-primary">Create</a>
+</div>
+
+@if (Model.Invoices.Count == 0)
+{
+  <p class="text-muted">No invoices yet.</p>
+}
+else
+{
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Business</th>
+        <th>Customer</th>
+        <th class="text-nowrap">Due</th>
+        <th class="text-nowrap text-end">Total</th>
+        <th class="text-nowrap text-end">Total Paid</th>
+        <th class="text-nowrap text-end">Balance</th>
+        <th class="text-nowrap">Created</th>
+        <th class="text-nowrap">Modified</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var inv in Model.Invoices)
+      {
+        <tr>
+          <td class="text-nowrap"><a href="/ui/ledger/invoices/@inv.Id">@inv.FriendlyId</a></td>
+          <td>@inv.Title</td>
+          <td class="text-nowrap">@inv.Business.Name</td>
+          <td class="text-nowrap">@inv.Customer.Name</td>
+          <td class="text-nowrap">@inv.DueDate.ToString("yyyy-MM-dd")</td>
+          <td class="text-nowrap text-end">@inv.Total.ToString("C")</td>
+          <td class="text-nowrap text-end">@inv.TotalPaid.ToString("C")</td>
+          <td class="text-nowrap text-end">@inv.Balance.ToString("C")</td>
+          <td class="text-nowrap">@inv.CreatedDate.ToString("yyyy-MM-dd")</td>
+          <td class="text-nowrap">@inv.ModifiedDate.ToString("yyyy-MM-dd")</td>
+          <td class="text-nowrap">
+            @if (inv.PaidDate.HasValue)
+            {
+              <span class="badge bg-success">Paid</span>
+            }
+            @if (inv.ProcessedAt.HasValue)
+            {
+              <span class="badge bg-secondary">PDF</span>
+            }
+            @if (inv.ReprocessRegularly)
+            {
+              <span class="badge bg-info text-dark">Auto</span>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <div class="d-flex gap-2 mt-2">
+    @if (Model.Skip > 0)
+    {
+      <a href="/ui/ledger/invoices?Skip=@prevSkip" class="btn btn-sm btn-outline-secondary">&larr; Prev</a>
+    }
+    @if (Model.HasMore)
+    {
+      <a href="/ui/ledger/invoices?Skip=@nextSkip" class="btn btn-sm btn-outline-secondary">Next &rarr;</a>
+    }
+  </div>
+}

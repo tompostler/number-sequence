@@ -1,0 +1,181 @@
+@page "/ui/ledger/invoices/{id:long}"
+@model number_sequence.Pages.UI.Ledger.Invoices.DetailModel
+@{
+  ViewData["Title"] = Model.Invoice?.FriendlyId ?? "Invoice";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger/invoices" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  @if (Model.Invoice.Title != null)
+  {
+    <h2 class="mb-0">@Model.Invoice.FriendlyId@(Model.Invoice.Title != null ? $": {Model.Invoice.Title}" : "")</h2>
+  }
+  else
+  {
+    <h2 class="mb-0">@Model.Invoice.FriendlyId</h2>
+  }
+  <a href="/ui/ledger/invoices/@Model.Invoice.Id/edit" class="btn btn-sm btn-outline-primary">Edit</a>
+  <form method="post" asp-page-handler="Process">
+    <button type="submit" class="btn btn-sm btn-outline-secondary">Trigger PDF</button>
+  </form>
+  @if (!Model.Invoice.ReprocessRegularly)
+  {
+    <form method="post" asp-page-handler="ReprocessRegularly">
+      <button type="submit" class="btn btn-sm btn-outline-secondary">Mark reprocess regularly</button>
+    </form>
+  }
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="row g-3 mb-4">
+  <div class="col-auto">
+    <dl class="mb-0">
+      <dt class="text-muted small">Business</dt>
+      <dd><a href="/ui/ledger/businesses/@Model.Invoice.Business.Id">@Model.Invoice.Business.Name</a></dd>
+      <dt class="text-muted small">Customer</dt>
+      <dd><a href="/ui/ledger/customers/@Model.Invoice.Customer.Id">@Model.Invoice.Customer.Name</a></dd>
+      <dt class="text-muted small">Due date</dt>
+      <dd class="mb-0">@Model.Invoice.DueDate.ToString("yyyy-MM-dd")</dd>
+    </dl>
+  </div>
+  <div class="col-auto">
+    <dl class="mb-0">
+      @if (!string.IsNullOrEmpty(Model.Invoice.Description))
+      {
+        <dt class="text-muted small">Description</dt>
+        <dd>@Model.Invoice.Description</dd>
+      }
+      <dt class="text-muted small">Status</dt>
+      <dd>
+        @if (Model.Invoice.PaidDate.HasValue)
+        {
+          <span class="badge bg-success">Paid @Model.Invoice.PaidDate.Value.ToString("yyyy-MM-dd")</span>
+        }
+        else
+        {
+          <span class="badge bg-warning text-dark">Unpaid</span>
+        }
+        @if (Model.Invoice.ProcessedAt.HasValue)
+        {
+          <span class="badge bg-secondary ms-1">PDF @Model.Invoice.ProcessedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
+        }
+        @if (Model.Invoice.ReprocessRegularly)
+        {
+          <span class="badge bg-info text-dark ms-1">Auto-reprocess</span>
+        }
+      </dd>
+      <dt class="text-muted small">Created</dt>
+      <dd>@Model.Invoice.CreatedDate.ToString("yyyy-MM-dd")</dd>
+      <dt class="text-muted small">Modified</dt>
+      <dd>@Model.Invoice.ModifiedDate.ToString("yyyy-MM-dd")</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="d-flex align-items-center gap-3 mb-2">
+  <h5 class="mb-0">Lines (@(Model.Invoice.Lines?.Count ?? 0))</h5>
+  <a href="/ui/ledger/invoices/@Model.Invoice.Id/add-line" class="btn btn-sm btn-outline-primary">Add line</a>
+</div>
+
+@if (Model.Invoice.Lines is { Count: > 0 })
+{
+  <table class="table table-sm mb-1">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th class="text-nowrap text-end">Qty</th>
+        @if (Model.Invoice.Lines.Any(x => !string.IsNullOrEmpty(x.Unit)))
+        {
+          <th>Unit</th>
+        }
+        <th class="text-nowrap text-end">Price</th>
+        <th class="text-nowrap text-end">Total</th>
+        <th class="text-nowrap">Created (UTC)</th>
+        <th class="text-nowrap">Modified (UTC)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var line in Model.Invoice.Lines)
+      {
+        <tr>
+          <td>
+            @line.Title
+            @if (!string.IsNullOrEmpty(line.Description))
+            {
+              <div class="text-muted small">@line.Description</div>
+            }
+          </td>
+          <td class="text-nowrap text-end">@line.Quantity</td>
+          @if (Model.Invoice.Lines.Any(x => !string.IsNullOrEmpty(x.Unit)))
+          {
+            <td class="text-muted small">@line.Unit</td>
+          }
+          <td class="text-nowrap text-end">@line.Price.ToString("C")</td>
+          <td class="text-nowrap text-end">@line.Total.ToString("C")</td>
+          <td class="text-nowrap text-end">@line.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
+          <td class="text-nowrap text-end">@line.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</td>
+          <td class="text-nowrap">
+            <a href="/ui/ledger/invoices/@Model.Invoice.Id/lines/@line.Id/edit"
+               class="btn btn-sm btn-outline-secondary">Edit</a>
+            <form method="post" asp-page-handler="DeleteLine" class="d-inline">
+              <input type="hidden" name="lineId" value="@line.Id" />
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <div class="text-end fw-bold mb-4">Total: @Model.Invoice.Total.ToString("C")</div>
+}
+else
+{
+  <p class="text-muted mb-4">No lines yet.</p>
+}
+
+<div class="d-flex align-items-center gap-3 mb-2">
+  <h5 class="mb-0">Payments (@(Model.Invoice.Payments?.Count ?? 0))</h5>
+  <a href="/ui/ledger/invoices/@Model.Invoice.Id/add-payment" class="btn btn-sm btn-outline-primary">Add payment</a>
+</div>
+
+@if (Model.Invoice.Payments is { Count: > 0 })
+{
+  <table class="table table-sm w-auto mb-1">
+    <thead>
+      <tr>
+        <th class="text-nowrap">Date</th>
+        <th>Details</th>
+        <th class="text-nowrap text-end">Amount</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var pmt in Model.Invoice.Payments.OrderBy(x => x.PaymentDate))
+      {
+        <tr>
+          <td class="text-nowrap">@pmt.PaymentDate.ToString("yyyy-MM-dd")</td>
+          <td>@pmt.Details</td>
+          <td class="text-nowrap text-end">@pmt.Amount.ToString("C")</td>
+          <td class="text-nowrap">
+            <form method="post" asp-page-handler="DeletePayment" class="d-inline">
+              <input type="hidden" name="paymentId" value="@pmt.Id" />
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <div class="text-end fw-bold">Total paid: @Model.Invoice.TotalPaid.ToString("C")</div>
+  <div class="text-end @(Model.Invoice.Balance > 0 ? "text-danger" : "text-success") fw-bold mb-4">Balance:
+    @Model.Invoice.Balance.ToString("C")</div>
+  }
+else
+  {
+    <p class="text-muted">No payments yet.</p>
+  }

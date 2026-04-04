@@ -1,0 +1,49 @@
+@page "/ui/ledger/businesses/{id:long}/edit"
+@model number_sequence.Pages.UI.Ledger.Businesses.EditModel
+@{
+  ViewData["Title"] = "Edit Business";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger/businesses/@Model.Business.Id" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">Edit Business</h2>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="col-12 col-md-6">
+  <form method="post">
+    <div class="mb-3">
+      <label asp-for="Business.Name" class="form-label">Name</label>
+      <input asp-for="Business.Name" class="form-control" />
+      <span asp-validation-for="Business.Name" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="Business.PayableName" class="form-label">Payable name</label>
+      <input asp-for="Business.PayableName" class="form-control" />
+      <span asp-validation-for="Business.PayableName" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="Business.AddressLine1" class="form-label">Address line 1</label>
+      <input asp-for="Business.AddressLine1" class="form-control" />
+      <span asp-validation-for="Business.AddressLine1" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="Business.AddressLine2" class="form-label">Address line 2</label>
+      <input asp-for="Business.AddressLine2" class="form-control" />
+      <span asp-validation-for="Business.AddressLine2" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+      <label asp-for="Business.Contact" class="form-label">Contact</label>
+      <input asp-for="Business.Contact" class="form-control" />
+      <span asp-validation-for="Business.Contact" class="text-danger small"></span>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a href="/ui/ledger/businesses/@Model.Business.Id" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>

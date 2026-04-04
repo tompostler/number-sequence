@@ -1,0 +1,55 @@
+@page "/ui/ledger/statements"
+@model number_sequence.Pages.UI.Ledger.Statements.IndexModel
+@{
+  ViewData["Title"] = "Statements";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">Statements</h2>
+  <a href="/ui/ledger/statements/create" class="btn btn-sm btn-primary">Create</a>
+</div>
+
+@if (Model.Statements.Count == 0)
+{
+  <p class="text-muted">No statements yet.</p>
+}
+else
+{
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Business</th>
+        <th>Customer</th>
+        <th class="text-nowrap">Period</th>
+        <th class="text-nowrap text-end">Billed</th>
+        <th class="text-nowrap text-end">Balance</th>
+        <th class="text-nowrap">Created</th>
+        <th class="text-nowrap">Modified</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var s in Model.Statements)
+      {
+        <tr>
+          <td class="text-nowrap"><a href="/ui/ledger/statements/@s.Id">@s.FriendlyId</a></td>
+          <td class="text-nowrap">@s.Business.Name</td>
+          <td class="text-nowrap">@s.Customer.Name</td>
+          <td class="text-nowrap">@s.InvoiceStartDate.ToString("yyyy-MM-dd") – @s.InvoiceEndDate.ToString("yyyy-MM-dd")</td>
+          <td class="text-nowrap text-end">@s.TotalBilled.ToString("C")</td>
+          <td class="text-nowrap text-end">@s.Balance.ToString("C")</td>
+          <td class="text-nowrap">@s.CreatedDate.ToString("yyyy-MM-dd")</td>
+          <td class="text-nowrap">@s.ModifiedDate.ToString("yyyy-MM-dd")</td>
+          <td class="text-nowrap">
+            @if (s.ProcessedAt.HasValue)
+            {
+              <span class="badge bg-secondary">PDF</span>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

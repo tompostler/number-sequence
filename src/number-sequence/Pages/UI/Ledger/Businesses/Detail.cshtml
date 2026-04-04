@@ -1,0 +1,53 @@
+@page "/ui/ledger/businesses/{id:long}"
+@model number_sequence.Pages.UI.Ledger.Businesses.DetailModel
+@{
+  ViewData["Title"] = Model.Business?.Name ?? "Business";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/ui/ledger/businesses" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+  <h2 class="mb-0">@Model.Business.Name</h2>
+  <a href="/ui/ledger/businesses/@Model.Business.Id/edit" class="btn btn-sm btn-outline-primary">Edit</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="row g-4 mb-4">
+  <div class="col-auto">
+    <dl class="mb-0">
+      <dt class="text-muted small">Payable name</dt>
+      <dd>@Model.Business.PayableName</dd>
+      <dt class="text-muted small">Address</dt>
+      <dd>
+        @Model.Business.AddressLine1<br />
+        @Model.Business.AddressLine2
+      </dd>
+      <dt class="text-muted small">Contact</dt>
+      <dd>@Model.Business.Contact</dd>
+      <dt class="text-muted small">Created</dt>
+      <dd class="mb-0">@Model.Business.CreatedDate.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+      <dt class="text-muted small">Modified</dt>
+      <dd class="mb-0">@Model.Business.ModifiedDate.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+    </dl>
+  </div>
+  <div class="col-auto">
+    <dt class="text-muted small mb-2">Logo</dt>
+    @if (Model.HasLogo)
+    {
+      <div class="mb-2">
+        <img src="/ui/ledger/businesses/@Model.Business.Id/logo" class="img-fluid" style="max-height:8rem" alt="Business logo" />
+      </div>
+      <form method="post" asp-page-handler="DeleteLogo" class="d-inline">
+        <button type="submit" class="btn btn-sm btn-outline-danger">Delete logo</button>
+      </form>
+      <span class="text-muted small ms-2">or upload a replacement:</span>
+    }
+    <form method="post" asp-page-handler="Logo" enctype="multipart/form-data" class="d-flex align-items-center gap-2 mt-2">
+      <input type="file" name="file" accept="image/gif,image/jpeg,image/png,image/webp" class="form-control form-control-sm" style="max-width:20rem" />
+      <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">@(Model.HasLogo ? "Replace" : "Upload")</button>
+    </form>
+  </div>
+</div>
