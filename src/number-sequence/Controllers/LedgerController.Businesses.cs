@@ -61,6 +61,7 @@ namespace number_sequence.Controllers
             }
 
             businessRecord.Name = business.Name;
+            businessRecord.PayableName = business.PayableName;
             businessRecord.AddressLine1 = business.AddressLine1;
             businessRecord.AddressLine2 = business.AddressLine2;
             businessRecord.Contact = business.Contact;
