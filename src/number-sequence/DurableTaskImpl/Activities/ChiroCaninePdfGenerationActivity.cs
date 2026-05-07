@@ -1,4 +1,4 @@
-﻿using DurableTask.Core;
+using DurableTask.Core;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -10,14 +10,12 @@ using QuestPDF;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using System.Globalization;
-using Unlimitedinf.Utilities.Extensions;
+using System.Text.Json;
 
 namespace number_sequence.DurableTaskImpl.Activities
 {
-    public sealed class ChiroCaninePdfGenerationActivity : AsyncTaskActivity<long, string>
+    public sealed class ChiroCaninePdfGenerationActivity : AsyncTaskActivity<string, string>
     {
-        private readonly GoogleSheetDataAccess googleSheetDataAccess;
         private readonly NsStorage nsStorage;
         private readonly IServiceProvider serviceProvider;
         private readonly Sentinals sentinals;
@@ -25,14 +23,12 @@ namespace number_sequence.DurableTaskImpl.Activities
         private readonly TelemetryClient telemetryClient;
 
         public ChiroCaninePdfGenerationActivity(
-            GoogleSheetDataAccess googleSheetDataAccess,
             NsStorage nsStorage,
             IServiceProvider serviceProvider,
             Sentinals sentinals,
             ILogger<ChiroCaninePdfGenerationActivity> logger,
             TelemetryClient telemetryClient)
         {
-            this.googleSheetDataAccess = googleSheetDataAccess;
             this.nsStorage = nsStorage;
             this.serviceProvider = serviceProvider;
             this.sentinals = sentinals;
@@ -40,7 +36,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             this.telemetryClient = telemetryClient;
         }
 
-        protected override async Task<string> ExecuteAsync(TaskContext context, long input)
+        protected override async Task<string> ExecuteAsync(TaskContext context, string rowId)
         {
             // Basic setup
             using IOperationHolder<RequestTelemetry> op = this.telemetryClient.StartOperation<RequestTelemetry>(
@@ -54,290 +50,25 @@ namespace number_sequence.DurableTaskImpl.Activities
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            // Get the template information.
-            PdfTemplate template = await nsContext.PdfTemplates.FirstOrDefaultAsync(x => x.Id == NsStorage.C.PT.ChiroCanine, cancellationToken);
-            if (template == default)
+            // Fetch the record and check for double-processing.
+            ChiroRecord record = await nsContext.ChiroRecords.SingleAsync(x => x.RowId == rowId, cancellationToken);
+            if (record.ProcessedAt.HasValue)
             {
-                throw new InvalidOperationException("No template defined.");
+                throw new InvalidOperationException($"ChiroRecord {record.RowId} was already processed at {record.ProcessedAt:u}");
             }
 
-            // Get the data from the spreadsheet. The first row is the headers (or a previously processed row).
-            string spreadsheetRange = template.SpreadsheetRange.Replace("1", input.ToString());
-            this.logger.LogInformation($"Skipping {input} known rows and querying range {spreadsheetRange}");
-            IList<IList<object>> data = await this.googleSheetDataAccess.GetAsync(template.SpreadsheetId, spreadsheetRange, cancellationToken);
-            IList<object> headers = data[0];
-            data = data.Skip(1).ToList();
+            ChiroInput chiroInput = JsonSerializer.Deserialize<ChiroInput>(record.InputJson);
+            this.logger.LogInformation($"Processing ChiroRecord {record.RowId} for {chiroInput.PatientName} / {chiroInput.OwnerName}.");
 
-            // Only on reset or initial deployment, no data.
-            if (!data.Any())
+            // Build the owner name (clinic prefix applied here before PDF generation).
+            string ownerName = chiroInput.OwnerName;
+            if (!string.IsNullOrWhiteSpace(chiroInput.ClinicAbbreviation))
             {
-                throw new InvalidOperationException("No rows of data.");
+                ownerName = chiroInput.ClinicAbbreviation + " - " + ownerName;
             }
-
-            // See if we've already processed it.
-            string[] row = data.First().Select(x => x as string).ToArray();
-            string id = string.Join('|', row).ComputeSHA256();
-            PdfTemplateSpreadsheetRow pdfTemplateRow = await nsContext.PdfTemplateSpreadsheetRows
-                .SingleOrDefaultAsync(x => x.SpreadsheetId == template.SpreadsheetId && x.RowId == id, cancellationToken);
-            if (pdfTemplateRow != default)
-            {
-                throw new InvalidOperationException($"Data row {id} ({input + 1}) was created at {pdfTemplateRow.RowCreatedAt:u} and recorded at {pdfTemplateRow.ProcessedAt:u}");
-            }
-            else
-            {
-                this.logger.LogInformation($"Data row {id} ({input + 1}) is new. Setting up for processing.");
-                pdfTemplateRow = new()
-                {
-                    SpreadsheetId = template.SpreadsheetId,
-                    RowId = id,
-                    DocumentId = context.OrchestrationInstance.InstanceId,
-                    RowCreatedAt = new DateTimeOffset(DateTime.ParseExact(row[0], "M/d/yyyy H:mm:ss", CultureInfo.InvariantCulture), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time").BaseUtcOffset).ToUniversalTime(),
-                };
-                _ = nsContext.PdfTemplateSpreadsheetRows.Add(pdfTemplateRow);
-            }
-
-            string customAppend(string existing, string prefix, int index)
-            {
-                try
-                {
-                    if (index >= row.Length)
-                    {
-                        return string.Empty;
-                    }
-                    else if (!string.IsNullOrWhiteSpace(row[index]))
-                    {
-                        return (string.IsNullOrWhiteSpace(existing) ? string.Empty : ", ")
-                            + $"{prefix} {row[index]}".Trim();
-                    }
-                    else
-                    {
-                        return string.Empty;
-
-                    }
-                }
-                catch
-                {
-                    this.logger.LogInformation(new { existing, prefix, index, rowLength = row.Length, row = row.ToJsonString() }.ToJsonString());
-                    throw;
-                }
-            }
-
-            // Create and populate the data.
-            ChiroCaninePdfDocument pdf = new();
-
-            // Parse the data row into meaningful replacement values
-            // Index, Column label in spreadsheet, Description
-            //  0  A Submission timestamp
-            // 80 CC Email Address
-            string emailSubmitter = row.Length > 80 ? row[80]?.Trim() : string.Empty;
-            if (!string.IsNullOrWhiteSpace(emailSubmitter) && !string.IsNullOrWhiteSpace(template.AllowedSubmitterEmails))
-            {
-                // Historically, old rows did not have the email captured.
-                // So only check for allowed submitters if both have a value.
-                if (template.AllowedSubmitterEmails.Contains(emailSubmitter))
-                {
-                    this.logger.LogInformation($"{emailSubmitter} is allowed to use this form.");
-                }
-                else
-                {
-                    this.logger.LogWarning($"{emailSubmitter} is not allowed to use this form.");
-                    _ = await nsContext.SaveChangesAsync(cancellationToken);
-                    return default;
-                }
-            }
-
-            // Intake info
-            //  1  B Patient Name
-            //  2  C Owner Name
-            //  3  D Date of Service
-            //  4  E CC email(s)
-            // 81 CD Clinic Abbreviation
-            pdf.PatientName = row[1]?.Trim();
-            pdf.OwnerName = row[2]?.Trim();
-            pdf.DateOfService = DateTimeOffset.Parse(row[3]);
-            string[] ccEmail = row[4].Split(new[] { ',', ';' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            string clinicAbbreviation = row.Length > 81 ? row[81]?.Trim() : string.Empty;
-            if (!string.IsNullOrWhiteSpace(clinicAbbreviation))
-            {
-                pdf.OwnerName = clinicAbbreviation + " - " + pdf.OwnerName;
-            }
-
-            // Head
-            //  5  F Other notes
-            //  6  G Occiput
-            //  7  H TMJ
-            pdf.Head += customAppend(pdf.Head, "Occiput", 6);
-            pdf.Head += customAppend(pdf.Head, "TMJ", 7);
-            pdf.Head += customAppend(pdf.Head, string.Empty, 5);
-
-            // Cervical
-            //  8  I Other Notes
-            //  9  J C1
-            // 10  K C2
-            // 11  L C3
-            // 12  M C4
-            // 13  N C5
-            // 14  O C6
-            // 15  P C7
-            pdf.Cervical += customAppend(pdf.Cervical, "C1", 9);
-            pdf.Cervical += customAppend(pdf.Cervical, "C2", 10);
-            pdf.Cervical += customAppend(pdf.Cervical, "C3", 11);
-            pdf.Cervical += customAppend(pdf.Cervical, "C4", 12);
-            pdf.Cervical += customAppend(pdf.Cervical, "C5", 13);
-            pdf.Cervical += customAppend(pdf.Cervical, "C6", 14);
-            pdf.Cervical += customAppend(pdf.Cervical, "C7", 15);
-            pdf.Cervical += customAppend(pdf.Cervical, string.Empty, 8);
-
-            // Thoracic
-            // 16  Q Other Notes
-            // 17  R T1
-            // 18  S T2
-            // 19  T T3
-            // 20  U T4
-            // 21  V T5
-            // 22  W T6
-            // 23  X T7
-            // 24  Y T8
-            // 25  Z T9
-            // 26 AA T10
-            // 27 AB T11
-            // 28 AC T12
-            // 29 AD T13
-            // 43 AR Sternum
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T1", 17);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T2", 18);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T3", 19);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T4", 20);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T5", 21);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T6", 22);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T7", 23);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T8", 24);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T9", 25);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T10", 26);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T11", 27);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T12", 28);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "T13", 29);
-            pdf.Thoracic += customAppend(pdf.Thoracic, "Sternum", 43);
-            pdf.Thoracic += customAppend(pdf.Thoracic, string.Empty, 16);
-
-            // Ribs
-            // 30 AE R1
-            // 31 AF R2
-            // 32 AG R3
-            // 33 AH R4
-            // 34 AI R5
-            // 35 AJ R6
-            // 36 AK R7
-            // 37 AL R8
-            // 38 AM R9
-            // 39 AN R10
-            // 40 AO R11
-            // 41 AP R12
-            // 42 AQ R13
-            pdf.Ribs += customAppend(pdf.Ribs, "R1", 30);
-            pdf.Ribs += customAppend(pdf.Ribs, "R2", 31);
-            pdf.Ribs += customAppend(pdf.Ribs, "R3", 32);
-            pdf.Ribs += customAppend(pdf.Ribs, "R4", 33);
-            pdf.Ribs += customAppend(pdf.Ribs, "R5", 34);
-            pdf.Ribs += customAppend(pdf.Ribs, "R6", 35);
-            pdf.Ribs += customAppend(pdf.Ribs, "R7", 36);
-            pdf.Ribs += customAppend(pdf.Ribs, "R8", 37);
-            pdf.Ribs += customAppend(pdf.Ribs, "R9", 38);
-            pdf.Ribs += customAppend(pdf.Ribs, "R10", 39);
-            pdf.Ribs += customAppend(pdf.Ribs, "R11", 40);
-            pdf.Ribs += customAppend(pdf.Ribs, "R12", 41);
-            pdf.Ribs += customAppend(pdf.Ribs, "R13", 42);
-
-            // Lumbar
-            // 44 AS Other notes
-            // 45 AT L1
-            // 46 AU L2
-            // 47 AV L3
-            // 48 AW L4
-            // 49 AX L5
-            // 50 AY L6
-            // 51 AZ L7
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L1", 45);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L2", 46);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L3", 47);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L4", 48);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L5", 49);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L6", 50);
-            pdf.Lumbar += customAppend(pdf.Lumbar, "L7", 51);
-            pdf.Lumbar += customAppend(pdf.Lumbar, string.Empty, 44);
-
-            // Sacrum
-            // 52 BA Other notes
-            // 53 BB Base
-            // 54 BC Apex
-            // Pelvic
-            // 55 BD Other notes
-            // 56 BE Left
-            // 57 BF Right
-            // 58 BG Traction
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Base", 53);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Apex", 54);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Sacrum", 52);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Left", 56);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Right", 57);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, string.Empty, 58);
-            pdf.PelvicSacral += customAppend(pdf.PelvicSacral, "Pelvis", 55);
-
-            // Left forelimb
-            // 59 BH Other notes
-            // 60 BI Scapula
-            // 61 BJ Humorous
-            // 62 BK Ulna
-            // 63 BL Radius
-            // 64 BM Carpus
-            // 65 BN Metatarsals/Phalanges
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Scapula", 60);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Humorous", 61);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Ulna", 62);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Radius", 63);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Carpus", 64);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, "Metatarsals/Phalanges", 65);
-            pdf.LeftForelimb += customAppend(pdf.LeftForelimb, string.Empty, 59);
-
-            // Right forelimb
-            // 66 BO Other notes
-            // 67 BP Scapula
-            // 68 BQ Humorous
-            // 69 BR Ulna
-            // 70 BS Radius
-            // 71 BT Carpus
-            // 72 BU Metatarsals/Phalanges
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Scapula", 67);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Humorous", 68);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Ulna", 69);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Radius", 70);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Carpus", 71);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, "Metatarsals/Phalanges", 72);
-            pdf.RightForelimb += customAppend(pdf.RightForelimb, string.Empty, 66);
-
-            // Left rear limb
-            // 73 BV Other notes
-            // 74 BW Raw response
-            pdf.LeftRearLimb += customAppend(pdf.LeftRearLimb, string.Empty, 74);
-            pdf.LeftRearLimb += customAppend(pdf.LeftRearLimb, string.Empty, 73);
-
-            // Right rear limb
-            // 75 BX Other notes
-            // 76 BY Raw response
-            pdf.RightRearLimb += customAppend(pdf.RightRearLimb, string.Empty, 76);
-            pdf.RightRearLimb += customAppend(pdf.RightRearLimb, string.Empty, 75);
-
-            // Coccygeal
-            // 77 BZ Other notes
-            // 78 CA Coccygeal
-            pdf.Coccygeal += customAppend(pdf.Coccygeal, "Coccygeal", 78);
-            pdf.Coccygeal += customAppend(pdf.Coccygeal, string.Empty, 77);
-
-            // Extended other notes
-            // 79 CB Raw response
-            pdf.Other = row.Length > 79 ? row[79]?.Trim() : string.Empty;
 
             // Generate the PDF
+            ChiroCaninePdfDocument pdf = new(chiroInput, ownerName);
             MemoryStream ms = new();
             using (IDisposable disposable = this.logger.BeginScope("Generating PDF"))
             {
@@ -347,44 +78,28 @@ namespace number_sequence.DurableTaskImpl.Activities
             }
 
             // Add the email request
-            string subject = default;
-            if (!string.IsNullOrWhiteSpace(template.SubjectTemplate))
-            {
-                subject = template.SubjectTemplate
-                    .Replace("((DateOfService))", pdf.DateOfService.ToString("yyyy-MM-dd"))
-                    .Replace("((OwnerName))", pdf.OwnerName)
-                    .Replace("((PatientName))", pdf.PatientName)
-                    ;
-            }
-            string attachmentName = default;
-            if (!string.IsNullOrWhiteSpace(template.AttachmentNameTemplate))
-            {
-                attachmentName = new(
-                    template.AttachmentNameTemplate
-                    .Replace("((DateOfService))", pdf.DateOfService.ToString("yyyy-MM-dd"))
-                    .Replace("((OwnerName))", pdf.OwnerName)
-                    .Replace("((PatientName))", pdf.PatientName)
-                    .Select(x => (char.IsLetterOrDigit(x) || x == '-' || x == '_') ? x : '-')
-                    .ToArray()
-                    );
-            }
+            string subject = $"[Chiro - Canine] {ownerName} - {chiroInput.PatientName}";
+            string attachmentName = new(
+                $"{chiroInput.DateOfService:yyyy-MM-dd}_{ownerName}_{chiroInput.PatientName}"
+                .Select(x => (char.IsLetterOrDigit(x) || x == '-' || x == '_') ? x : '-')
+                .ToArray());
             EmailDocument emailDocument = new()
             {
                 Id = context.OrchestrationInstance.InstanceId,
-                To = template.EmailTo,
-                CC = string.Join(';', ccEmail),
+                To = chiroInput.ToEmail,
+                CC = string.Join(';', chiroInput.CcEmails),
                 Subject = subject,
                 AttachmentName = attachmentName,
             };
             _ = nsContext.EmailDocuments.Add(emailDocument);
 
             // Optionally add the batch email request.
-            if (!string.IsNullOrWhiteSpace(clinicAbbreviation))
+            if (!string.IsNullOrWhiteSpace(chiroInput.ClinicAbbreviation))
             {
                 _ = nsContext.ChiroEmailBatches.Add(new()
                 {
                     Id = context.OrchestrationInstance.InstanceId,
-                    ClinicAbbreviation = clinicAbbreviation,
+                    ClinicAbbreviation = chiroInput.ClinicAbbreviation,
                     AttachmentName = attachmentName,
                 });
             }
@@ -394,28 +109,136 @@ namespace number_sequence.DurableTaskImpl.Activities
             this.logger.LogInformation($"Uploading to {pdfBlobClient.Uri.AbsoluteUri.Split('?').First()}");
             _ = await pdfBlobClient.UploadAsync(ms, overwrite: true, cancellationToken);
 
+            record.ProcessedAt = DateTimeOffset.UtcNow;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
             return default;
         }
 
         private sealed class ChiroCaninePdfDocument : IDocument
         {
-            public string PatientName { get; set; }
-            public string OwnerName { get; set; }
-            public DateTimeOffset DateOfService { get; set; }
+            public string PatientName { get; }
+            public string OwnerName { get; }
+            public DateTimeOffset DateOfService { get; }
 
-            public string Head { get; set; } = string.Empty;
-            public string Cervical { get; set; } = string.Empty;
-            public string Thoracic { get; set; } = string.Empty;
-            public string Ribs { get; set; } = string.Empty;
-            public string Lumbar { get; set; } = string.Empty;
-            public string PelvicSacral { get; set; } = string.Empty;
-            public string LeftForelimb { get; set; } = string.Empty;
-            public string RightForelimb { get; set; } = string.Empty;
-            public string LeftRearLimb { get; set; } = string.Empty;
-            public string RightRearLimb { get; set; } = string.Empty;
-            public string Coccygeal { get; set; } = string.Empty;
-            public string Other { get; set; } = string.Empty;
+            public string Head { get; } = string.Empty;
+            public string Cervical { get; } = string.Empty;
+            public string Thoracic { get; } = string.Empty;
+            public string Ribs { get; } = string.Empty;
+            public string Lumbar { get; } = string.Empty;
+            public string PelvicSacral { get; } = string.Empty;
+            public string LeftForelimb { get; } = string.Empty;
+            public string RightForelimb { get; } = string.Empty;
+            public string LeftRearLimb { get; } = string.Empty;
+            public string RightRearLimb { get; } = string.Empty;
+            public string Coccygeal { get; } = string.Empty;
+            public string Other { get; } = string.Empty;
+
+            public ChiroCaninePdfDocument(ChiroInput input, string ownerName)
+            {
+                static string append(string existing, string prefix, string value) =>
+                    !string.IsNullOrWhiteSpace(value)
+                        ? (string.IsNullOrWhiteSpace(existing) ? string.Empty : ", ") + $"{prefix} {value}".Trim()
+                        : string.Empty;
+
+                this.PatientName = input.PatientName;
+                this.OwnerName = ownerName;
+                this.DateOfService = input.DateOfService;
+
+                string head = string.Empty;
+                head += append(head, "Occiput", input.HeadOcciput);
+                head += append(head, "TMJ", input.HeadTmj);
+                head += append(head, string.Empty, input.HeadNotes);
+                this.Head = head;
+
+                string cervical = string.Empty;
+                for (int i = 0; i < input.Cervical.Length; i++)
+                {
+                    cervical += append(cervical, $"C{i + 1}", input.Cervical[i]);
+                }
+
+                cervical += append(cervical, string.Empty, input.CervicalNotes);
+                this.Cervical = cervical;
+
+                string thoracic = string.Empty;
+                for (int i = 0; i < input.Thoracic.Length; i++)
+                {
+                    thoracic += append(thoracic, $"T{i + 1}", input.Thoracic[i]);
+                }
+
+                thoracic += append(thoracic, "Sternum", input.Sternum);
+                thoracic += append(thoracic, string.Empty, input.ThoracicNotes);
+                this.Thoracic = thoracic;
+
+                string ribs = string.Empty;
+                for (int i = 0; i < input.Ribs.Length; i++)
+                {
+                    ribs += append(ribs, $"R{i + 1}", input.Ribs[i]);
+                }
+
+                this.Ribs = ribs;
+
+                string lumbar = string.Empty;
+                for (int i = 0; i < input.Lumbar.Length; i++)
+                {
+                    lumbar += append(lumbar, $"L{i + 1}", input.Lumbar[i]);
+                }
+
+                if (input.LumbarIntertransverse != null)
+                {
+                    lumbar += append(lumbar, "L3/L4 Intertransverse", input.LumbarIntertransverse[0]);
+                    lumbar += append(lumbar, "L4/L5 Intertransverse", input.LumbarIntertransverse[1]);
+                    lumbar += append(lumbar, "L5/L6 Intertransverse", input.LumbarIntertransverse[2]);
+                }
+                lumbar += append(lumbar, string.Empty, input.LumbarNotes);
+                this.Lumbar = lumbar;
+
+                string pelvicSacral = string.Empty;
+                pelvicSacral += append(pelvicSacral, "Base", input.SacrumBase);
+                pelvicSacral += append(pelvicSacral, "Apex", input.SacrumApex);
+                pelvicSacral += append(pelvicSacral, "Sacrum", input.SacrumNotes);
+                pelvicSacral += append(pelvicSacral, "Left", input.PelvicLeft);
+                pelvicSacral += append(pelvicSacral, "Right", input.PelvicRight);
+                pelvicSacral += append(pelvicSacral, string.Empty, input.PelvicTraction);
+                pelvicSacral += append(pelvicSacral, "Pelvis", input.PelvicNotes);
+                this.PelvicSacral = pelvicSacral;
+
+                string leftForelimb = string.Empty;
+                leftForelimb += append(leftForelimb, "Scapula", input.LeftForelimbScapula);
+                leftForelimb += append(leftForelimb, "Humorous", input.LeftForelimbHumerus);
+                leftForelimb += append(leftForelimb, "Ulna", input.LeftForelimbUlna);
+                leftForelimb += append(leftForelimb, "Radius", input.LeftForelimbRadius);
+                leftForelimb += append(leftForelimb, "Carpus", input.LeftForelimbCarpus);
+                leftForelimb += append(leftForelimb, "Metatarsals/Phalanges", input.LeftForelimbMetatarsalsPhalanges);
+                leftForelimb += append(leftForelimb, string.Empty, input.LeftForelimbNotes);
+                this.LeftForelimb = leftForelimb;
+
+                string rightForelimb = string.Empty;
+                rightForelimb += append(rightForelimb, "Scapula", input.RightForelimbScapula);
+                rightForelimb += append(rightForelimb, "Humorous", input.RightForelimbHumerus);
+                rightForelimb += append(rightForelimb, "Ulna", input.RightForelimbUlna);
+                rightForelimb += append(rightForelimb, "Radius", input.RightForelimbRadius);
+                rightForelimb += append(rightForelimb, "Carpus", input.RightForelimbCarpus);
+                rightForelimb += append(rightForelimb, "Metatarsals/Phalanges", input.RightForelimbMetatarsalsPhalanges);
+                rightForelimb += append(rightForelimb, string.Empty, input.RightForelimbNotes);
+                this.RightForelimb = rightForelimb;
+
+                string leftRearLimb = string.Empty;
+                leftRearLimb += append(leftRearLimb, string.Empty, input.LeftRearLimb);
+                leftRearLimb += append(leftRearLimb, string.Empty, input.LeftRearLimbNotes);
+                this.LeftRearLimb = leftRearLimb;
+
+                string rightRearLimb = string.Empty;
+                rightRearLimb += append(rightRearLimb, string.Empty, input.RightRearLimb);
+                rightRearLimb += append(rightRearLimb, string.Empty, input.RightRearLimbNotes);
+                this.RightRearLimb = rightRearLimb;
+
+                string coccygeal = string.Empty;
+                coccygeal += append(coccygeal, "Coccygeal", input.Coccygeal);
+                coccygeal += append(coccygeal, string.Empty, input.CoccygealNotes);
+                this.Coccygeal = coccygeal;
+
+                this.Other = input.Other;
+            }
 
             public void Compose(IDocumentContainer container)
             {

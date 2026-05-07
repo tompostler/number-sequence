@@ -27,11 +27,11 @@ namespace number_sequence.Controllers
 
             DateTimeOffset daysAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
 
-            List<Models.PdfTemplateSpreadsheetRow> pdfTemplateSpreadsheetRows = await nsContext.PdfTemplateSpreadsheetRows
-                                                                                                .Where(r => r.ProcessedAt > daysAgo)
-                                                                                                .OrderByDescending(r => r.ProcessedAt)
-                                                                                                .Take(takeAmount)
-                                                                                                .ToListAsync();
+            List<Models.ChiroRecord> chiroRecords = await nsContext.ChiroRecords
+                                                                    .Where(r => r.RecordedAt > daysAgo)
+                                                                    .OrderByDescending(r => r.RecordedAt)
+                                                                    .Take(takeAmount)
+                                                                    .ToListAsync();
             List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
                                                                         .Where(r => r.CreatedDate > daysAgo)
                                                                         .OrderByDescending(r => r.CreatedDate)
@@ -85,20 +85,20 @@ namespace number_sequence.Controllers
             }
 
             const string dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
-            string templateSpreadsheetRowsTimeSpanFormat = determineTimeSpanFormat(pdfTemplateSpreadsheetRows.Select(x => x.ProcessedAt.Subtract(x.RowCreatedAt ?? x.ProcessedAt)));
+            string chiroRecordsTimeSpanFormat = determineTimeSpanFormat(chiroRecords.Select(x => x.RecordedAt.Subtract(x.DataEnteredAt)));
             string emailDocumentTimeSpanFormat = determineTimeSpanFormat(emailDocuments.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
             string chiroBatchTimeSpanFormat = determineTimeSpanFormat(chiroBatches.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
 
             PdfStatus pdfStatus = new()
             {
-                TemplateSpreadsheetRows = pdfTemplateSpreadsheetRows.Select(
-                    x => new PdfStatus.TemplateSpreadsheetRow
+                ChiroRecords = chiroRecords.Select(
+                    x => new PdfStatus.ChiroRecord
                     {
-                        RowId = x.RowId,
-                        DocumentId = x.DocumentId,
-                        RowCreatedAt = x.RowCreatedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
-                        ProcessedAt = x.ProcessedAt.AddHours(hoursOffset).ToString(dateTimeFormat),
-                        Delay = x.ProcessedAt.Subtract(x.RowCreatedAt ?? x.ProcessedAt).ToString(templateSpreadsheetRowsTimeSpanFormat),
+                        Id = x.RowId,
+                        DataEnteredAt = x.DataEnteredAt.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        RecordedAt = x.RecordedAt.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        Delay = x.RecordedAt.Subtract(x.DataEnteredAt).ToString(chiroRecordsTimeSpanFormat),
                     })
                     .ToList(),
                 EmailDocuments = emailDocuments.Select(

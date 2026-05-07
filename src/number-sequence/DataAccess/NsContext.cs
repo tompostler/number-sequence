@@ -27,9 +27,9 @@ namespace number_sequence.DataAccess
         public DbSet<Statement> Statements { get; set; }
 
         public DbSet<ChiroEmailBatch> ChiroEmailBatches { get; set; }
+        public DbSet<ChiroRecord> ChiroRecords { get; set; }
         public DbSet<EmailDocument> EmailDocuments { get; set; }
         public DbSet<PdfTemplate> PdfTemplates { get; set; }
-        public DbSet<PdfTemplateSpreadsheetRow> PdfTemplateSpreadsheetRows { get; set; }
 
         public DbSet<Redirect> Redirects { get; set; }
 
@@ -219,6 +219,12 @@ namespace number_sequence.DataAccess
                 .Property(x => x.CreatedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
+            _ = modelBuilder.Entity<ChiroRecord>()
+                .HasKey(x => x.RowId);
+            _ = modelBuilder.Entity<ChiroRecord>()
+                .Property(x => x.RecordedAt)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
             _ = modelBuilder.Entity<EmailDocument>()
                 .HasKey(x => x.Id);
 
@@ -231,13 +237,6 @@ namespace number_sequence.DataAccess
 
             _ = modelBuilder.Entity<PdfTemplate>()
                 .Property(x => x.CreatedDate)
-                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-            _ = modelBuilder.Entity<PdfTemplateSpreadsheetRow>()
-                .HasKey(x => x.DocumentId);
-
-            _ = modelBuilder.Entity<PdfTemplateSpreadsheetRow>()
-                .Property(x => x.ProcessedAt)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
             #endregion // Pdf

@@ -80,4 +80,8 @@ else {
 }
 Write-Host;
 
+Write-Cyan 'Running dotnet tool restore....';
+dotnet tool restore;
+Write-Host;
+
 Write-Host -ForegroundColor Green 'Done!';

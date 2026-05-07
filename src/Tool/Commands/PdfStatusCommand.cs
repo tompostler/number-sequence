@@ -45,14 +45,14 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Console.WriteLine();
 
-            Console.WriteLine($"{nameof(PdfStatus.TemplateSpreadsheetRows)} ({pdfStatus.TemplateSpreadsheetRows.Count}):");
+            Console.WriteLine($"{nameof(PdfStatus.ChiroRecords)} ({pdfStatus.ChiroRecords.Count}):");
             Output.WriteTable(
-                pdfStatus.TemplateSpreadsheetRows,
-                nameof(PdfStatus.TemplateSpreadsheetRow.RowId),
-                nameof(PdfStatus.TemplateSpreadsheetRow.DocumentId),
-                nameof(PdfStatus.TemplateSpreadsheetRow.RowCreatedAt),
-                nameof(PdfStatus.TemplateSpreadsheetRow.ProcessedAt),
-                nameof(PdfStatus.TemplateSpreadsheetRow.Delay));
+                pdfStatus.ChiroRecords,
+                nameof(PdfStatus.ChiroRecord.Id),
+                nameof(PdfStatus.ChiroRecord.DataEnteredAt),
+                nameof(PdfStatus.ChiroRecord.RecordedAt),
+                nameof(PdfStatus.ChiroRecord.ProcessedAt),
+                nameof(PdfStatus.ChiroRecord.Delay));
 
             Console.WriteLine($"{nameof(PdfStatus.EmailDocuments)} ({pdfStatus.EmailDocuments.Count}):");
             Output.WriteTable(

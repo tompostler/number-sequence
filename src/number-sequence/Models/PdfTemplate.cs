@@ -25,12 +25,6 @@ namespace number_sequence.Models
         [MaxLength(128)]
         public string AllowedSubmitterEmails { get; set; }
 
-        [MaxLength(128)]
-        public string SubjectTemplate { get; set; }
-
-        [MaxLength(128)]
-        public string AttachmentNameTemplate { get; set; }
-
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
     }

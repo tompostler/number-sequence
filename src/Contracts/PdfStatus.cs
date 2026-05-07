@@ -6,11 +6,11 @@
     public sealed class PdfStatus
     {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-        public sealed class TemplateSpreadsheetRow
+        public sealed class ChiroRecord
         {
-            public string RowId { get; set; }
-            public string DocumentId { get; set; }
-            public string RowCreatedAt { get; set; }
+            public string Id { get; set; }
+            public string DataEnteredAt { get; set; }
+            public string RecordedAt { get; set; }
             public string ProcessedAt { get; set; }
             public string Delay { get; set; }
         }
@@ -33,7 +33,7 @@
             public string Delay { get; set; }
         }
 
-        public List<TemplateSpreadsheetRow> TemplateSpreadsheetRows { get; set; }
+        public List<ChiroRecord> ChiroRecords { get; set; }
         public List<EmailDocument> EmailDocuments { get; set; }
         public List<ChiroBatch> ChiroBatches { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
