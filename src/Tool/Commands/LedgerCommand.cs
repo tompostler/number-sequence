@@ -236,7 +236,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             #region Statement
 
             Command statementCommand = new("statement", "Manage statements (a collection of invoices for a customer over a date range).");
-            statementCommand.Aliases.Add("s");
+            statementCommand.Aliases.Add("st");
 
             Argument<long> statementIdArgument = new("statementId") { Description = "The id of the statement." };
 
