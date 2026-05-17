@@ -117,6 +117,7 @@ namespace number_sequence.Controllers
                     {
                         Id = x.Id,
                         Clinic = x.ClinicAbbreviation,
+                        CC = x.CcEmail,
                         AttachmentName = x.AttachmentName,
                         CreatedDate = x.CreatedDate.AddHours(hoursOffset).ToString(dateTimeFormat),
                         ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),

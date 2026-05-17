@@ -27,6 +27,7 @@
         {
             public string Id { get; set; }
             public string Clinic { get; set; }
+            public string CC { get; set; }
             public string AttachmentName { get; set; }
             public string CreatedDate { get; set; }
             public string ProcessedAt { get; set; }

@@ -46,7 +46,7 @@ namespace number_sequence.DataAccess
         public BlobClient GetBlobClient(ChiroEmailBatch record)
         {
             BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(C.CN.Pdf);
-            return blobContainerClient.GetBlobClient($"{(record.CreatedDate == default ? DateTimeOffset.UtcNow : record.CreatedDate).Year}/{EnsureEndsWithPdf(record.AttachmentName ?? record.Id)}");
+            return blobContainerClient.GetBlobClient($"{(record.CreatedDate == default ? DateTimeOffset.UtcNow : record.CreatedDate).Year}/{EnsureEndsWithPdf(record.AttachmentName)}");
         }
 
         private static string EnsureEndsWithPdf(string input) => input.EndsWith(".pdf") ? input : input + ".pdf";

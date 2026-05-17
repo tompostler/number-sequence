@@ -69,6 +69,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 pdfStatus.ChiroBatches,
                 nameof(PdfStatus.ChiroBatch.Id),
                 nameof(PdfStatus.ChiroBatch.Clinic),
+                nameof(PdfStatus.ChiroBatch.CC),
                 nameof(PdfStatus.ChiroBatch.AttachmentName),
                 nameof(PdfStatus.ChiroBatch.CreatedDate),
                 nameof(PdfStatus.ChiroBatch.ProcessedAt),

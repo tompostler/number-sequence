@@ -212,8 +212,14 @@ namespace number_sequence.DataAccess
 
             #region Pdf
 
+            _ = modelBuilder.HasSequence<long>("ChiroEmailBatchIds").StartsAt(500);
+
             _ = modelBuilder.Entity<ChiroEmailBatch>()
                 .HasKey(x => x.Id);
+
+            _ = modelBuilder.Entity<ChiroEmailBatch>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("CAST(NEXT VALUE FOR dbo.ChiroEmailBatchIds AS nvarchar(20))");
 
             _ = modelBuilder.Entity<ChiroEmailBatch>()
                 .Property(x => x.CreatedDate)

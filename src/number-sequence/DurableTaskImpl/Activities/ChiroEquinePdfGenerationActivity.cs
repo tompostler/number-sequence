@@ -88,7 +88,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             {
                 Id = context.OrchestrationInstance.InstanceId,
                 To = chiroInput.ToEmail,
-                CC = string.Join(';', chiroInput.CcEmails),
+                // CC moved to batch processing to handle clients with multiple patients.
                 Subject = subject,
                 AttachmentName = attachmentName,
             };
@@ -99,8 +99,17 @@ namespace number_sequence.DurableTaskImpl.Activities
             {
                 _ = nsContext.ChiroEmailBatches.Add(new()
                 {
-                    Id = context.OrchestrationInstance.InstanceId,
                     ClinicAbbreviation = chiroInput.ClinicAbbreviation,
+                    AttachmentName = attachmentName,
+                });
+            }
+
+            // Optionally add the batch email request for CC.
+            foreach (string ccEmail in chiroInput.CcEmails ?? [])
+            {
+                _ = nsContext.ChiroEmailBatches.Add(new()
+                {
+                    CcEmail = ccEmail,
                     AttachmentName = attachmentName,
                 });
             }
