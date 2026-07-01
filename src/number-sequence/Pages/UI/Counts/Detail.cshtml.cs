@@ -35,7 +35,7 @@ namespace number_sequence.Pages.UI.Counts
                 return this.NotFound();
             }
 
-            this.Events = await this.nsClient.Count.GetEventsAsync(name, cancellationToken: cancellationToken);
+            this.Events = await this.nsClient.Count.GetEventsAsync(name, take: 100, cancellationToken: cancellationToken);
             return this.Page();
         }
 
@@ -92,7 +92,7 @@ namespace number_sequence.Pages.UI.Counts
             try
             {
                 this.Count = await this.nsClient.Count.GetAsync(name, cancellationToken);
-                this.Events = await this.nsClient.Count.GetEventsAsync(name, cancellationToken: cancellationToken);
+                this.Events = await this.nsClient.Count.GetEventsAsync(name, take: 100, cancellationToken: cancellationToken);
             }
             catch (NsTcpWtfClientException) { }
         }

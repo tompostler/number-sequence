@@ -147,7 +147,7 @@ namespace number_sequence.Controllers
         }
 
         [HttpGet("{name}/events")]
-        public async Task<IActionResult> GetEventsAsync(string name, [FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetEventsAsync(string name, [FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, [FromQuery] int skip = 0, [FromQuery] int take = 1000, CancellationToken cancellationToken = default)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
@@ -155,6 +155,11 @@ namespace number_sequence.Controllers
             if (from.HasValue && to.HasValue && from.Value >= to.Value)
             {
                 return this.BadRequest("The 'from' date must be before the 'to' date.");
+            }
+
+            if (take > 1000)
+            {
+                return this.BadRequest("The 'take' parameter must not exceed 1000.");
             }
 
             bool exists = await nsContext.Counts.AnyAsync(x => x.Account == this.User.Identity.Name && x.Name == name, cancellationToken);
@@ -175,7 +180,9 @@ namespace number_sequence.Controllers
             }
 
             List<CountEvent> events = await query
-                .OrderBy(x => x.CreatedDate)
+                .OrderByDescending(x => x.Id)
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync(cancellationToken);
 
             return this.Ok(events);

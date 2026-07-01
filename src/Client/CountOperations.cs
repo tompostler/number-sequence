@@ -83,9 +83,9 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
-        /// Get events for an existing count, optionally filtered by date range.
+        /// Get events for an existing count, optionally filtered by date range. Results are ordered newest first. Max 1000 per request.
         /// </summary>
-        public async Task<List<CountEvent>> GetEventsAsync(string name, DateTimeOffset? from = null, DateTimeOffset? to = null, CancellationToken cancellationToken = default)
+        public async Task<List<CountEvent>> GetEventsAsync(string name, DateTimeOffset? from = null, DateTimeOffset? to = null, int skip = 0, int take = 1000, CancellationToken cancellationToken = default)
         {
             List<string> queryParams = new();
             if (from.HasValue)
@@ -95,6 +95,14 @@ namespace TcpWtf.NumberSequence.Client
             if (to.HasValue)
             {
                 queryParams.Add($"to={Uri.EscapeDataString(to.Value.ToString("o"))}");
+            }
+            if (skip != 0)
+            {
+                queryParams.Add($"skip={skip}");
+            }
+            if (take != 1000)
+            {
+                queryParams.Add($"take={take}");
             }
             string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
 
