@@ -1,0 +1,47 @@
+@page "/ui/chiro"
+@model number_sequence.Pages.UI.Chiro.IndexModel
+@{
+  ViewData["Title"] = "Chiro";
+}
+
+<div class="row mb-4">
+  <div class="col">
+    <h2>Chiro</h2>
+  </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.SubmittedSpecies))
+{
+  <div class="alert alert-success">
+    Submitted the @Model.SubmittedSpecies record. The pdf is being generated and will be emailed shortly.
+    @if (!string.IsNullOrWhiteSpace(Model.SubmittedRowId))
+    {
+      <span class="text-muted small d-block">Record @Model.SubmittedRowId</span>
+    }
+  </div>
+}
+
+<div class="row mt-2">
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Canine</h5>
+        <p class="card-text">Record a canine adjustment and generate the pdf.</p>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/chiro/canine">New record</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Equine</h5>
+        <p class="card-text">Record an equine adjustment and generate the pdf.</p>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-sm btn-outline-primary" href="/ui/chiro/equine">New record</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -11,6 +11,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System.Text.Json;
+using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.DurableTaskImpl.Activities
 {

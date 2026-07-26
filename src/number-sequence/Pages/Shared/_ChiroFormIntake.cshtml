@@ -1,0 +1,45 @@
+@using number_sequence.Pages.UI.Chiro
+@model ChiroFormModel
+
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-12 col-md-6 mb-3">
+        <label asp-for="PatientName" class="form-label">Patient Name</label>
+        <input asp-for="PatientName" class="form-control" maxlength="128" />
+        <span asp-validation-for="PatientName" class="text-danger small"></span>
+      </div>
+      <div class="col-12 col-md-6 mb-3">
+        <label asp-for="OwnerName" class="form-label">Owner Name</label>
+        <input asp-for="OwnerName" class="form-control" maxlength="128" />
+        <span asp-validation-for="OwnerName" class="text-danger small"></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12 col-md-4 mb-3">
+        <label asp-for="DateOfService" class="form-label">Date of Service</label>
+        <input asp-for="DateOfService" class="form-control" type="date" />
+        <span asp-validation-for="DateOfService" class="text-danger small"></span>
+      </div>
+      <div class="col-12 col-md-4 mb-3">
+        <label asp-for="ClinicAbbreviation" class="form-label">Additional Clinic Recipient</label>
+        <select asp-for="ClinicAbbreviation" class="form-select">
+          <option value="">(none)</option>
+          @foreach (string clinic in Model.ClinicChoices)
+          {
+            <option value="@clinic">@clinic</option>
+          }
+        </select>
+      </div>
+      <div class="col-12 col-md-4 mb-3">
+        <label asp-for="AdditionalRecipient" class="form-label">Additional Recipient</label>
+        <input asp-for="AdditionalRecipient" class="form-control" />
+        <div class="form-text">Comma or semicolon separated email addresses.</div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label asp-for="ExtendedOtherNotes" class="form-label">Extended Other Notes</label>
+      <textarea asp-for="ExtendedOtherNotes" class="form-control" rows="3"></textarea>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using number_sequence.Models;
 using number_sequence.Services;
 using System.Security.Principal;
 

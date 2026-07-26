@@ -1,0 +1,40 @@
+@using number_sequence.Pages.UI.Chiro
+@model ChiroCheckboxGrid
+@{
+  string idPrefix = Model.Name.ToLowerInvariant();
+}
+
+<div class="mb-3">
+  <div class="form-label fw-semibold">@Model.Label</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-borderless align-middle mb-0 w-auto">
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          @foreach (string column in Model.Columns)
+          {
+            <th scope="col" class="fw-normal small text-muted text-nowrap text-center">@column</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (int r = 0; r < Model.Rows.Length; r++)
+        {
+          string row = Model.Rows[r];
+          <tr>
+            <th scope="row" class="fw-normal text-nowrap">@row</th>
+            @for (int c = 0; c < Model.Columns.Length; c++)
+            {
+              string value = row + ChiroForm.GridSeparator + Model.Columns[c];
+              string id = $"{idPrefix}-{r}-{c}";
+              <td class="text-center">
+                <input class="form-check-input m-0" type="checkbox" id="@id" name="@Model.Name" value="@value" checked="@(Model.Selected?.Contains(value) == true)" />
+                <label class="visually-hidden" for="@id">@row @Model.Columns[c]</label>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

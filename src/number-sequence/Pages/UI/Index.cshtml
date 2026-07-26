@@ -29,6 +29,20 @@
       </div>
     </div>
   </div>
+  @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro))
+  {
+    <div class="col-12 col-md-6 col-lg-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">Chiro</h5>
+          <p class="card-text">Record chiro adjustments by species and generate the pdf for the clinic and owner.</p>
+        </div>
+        <div class="card-footer">
+          <a class="btn btn-sm btn-outline-primary" href="/ui/chiro">Open</a>
+        </div>
+      </div>
+    </div>
+  }
   <div class="col-12 col-md-6 col-lg-4 mb-4">
     <div class="card h-100">
       <div class="card-body">

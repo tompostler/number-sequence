@@ -1,17 +1,35 @@
-namespace number_sequence.Models
+using System.ComponentModel.DataAnnotations;
+
+namespace TcpWtf.NumberSequence.Contracts
 {
+    /// <summary>
+    /// A single chiro record, as submitted by a form and as serialized for pdf generation.
+    /// Shared by every species; fields that only apply to some species are left null by the others.
+    /// </summary>
     public sealed class ChiroInput
     {
-        // Tracking / submission metadata
+        // Tracking / submission metadata. Always assigned by the service; anything sent by a caller is discarded.
         public DateTimeOffset RowCreatedAt { get; set; }
         public string EmailSubmitter { get; set; }
 
         // Patient / visit
+        [Required]
+        [MaxLength(128)]
         public string PatientName { get; set; }
+
+        [Required]
+        [MaxLength(128)]
         public string OwnerName { get; set; }
+
+        [Required]
         public DateTimeOffset DateOfService { get; set; }
+
+        /// <summary>Assigned by the service from the pdf template.</summary>
         public string ToEmail { get; set; }
+
         public string[] CcEmails { get; set; }
+
+        [MaxLength(16)]
         public string ClinicAbbreviation { get; set; }
 
         // Head

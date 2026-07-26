@@ -8,6 +8,7 @@ using number_sequence.Models;
 using number_sequence.Utilities;
 using System.Globalization;
 using System.Text.Json;
+using TcpWtf.NumberSequence.Contracts;
 using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.Services.Background.GoogleSheetPdfGeneration

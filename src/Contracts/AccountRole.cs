@@ -6,6 +6,11 @@
     public static class AccountRoles
     {
         /// <summary>
+        /// The account has access to the chiro record entry forms.
+        /// </summary>
+        public const string Chiro = nameof(Chiro);
+
+        /// <summary>
         /// The account has access to the ledger features.
         /// </summary>
         public const string Ledger = nameof(Ledger);

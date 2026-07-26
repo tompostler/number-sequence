@@ -26,6 +26,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <!-- net10 changed the implementation of 'dotnet watch' which is exposing a collision on the way NBGV speeds up build time. -->
+  <!-- With only a handful of projects, the build time is not a big deal, so disable the cache to avoid the collision. -->
+  <PropertyGroup>
+    <NBGV_CacheMode>None</NBGV_CacheMode>
+  </PropertyGroup>
 
   <!-- Packaging Metadata -->
   <PropertyGroup>

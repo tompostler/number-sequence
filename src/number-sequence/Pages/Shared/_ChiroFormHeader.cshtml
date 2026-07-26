@@ -1,0 +1,37 @@
+@model number_sequence.Pages.UI.Chiro.ChiroFormHeader
+
+<div id="chiro-sticky" class="sticky-top bg-body pt-3 pb-2 mb-4 border-bottom" style="z-index:1020;">
+  <div class="d-flex align-items-center gap-3 mb-2">
+    <a href="@Model.BackUrl" class="btn btn-sm btn-outline-secondary">&larr; Back</a>
+    <h2 class="mb-0">@Model.Species</h2>
+  </div>
+  <div class="d-flex flex-wrap gap-2 small">
+    @foreach ((string anchor, string label) in Model.Sections)
+    {
+      <a class="btn btn-sm btn-outline-secondary" href="#@anchor">@label</a>
+    }
+  </div>
+</div>
+
+@* Anchor jumps must clear the sticky header, whose height changes as the jump buttons wrap, so measure it live. *@
+<style>
+  [id].card { scroll-margin-top: var(--chiro-sticky-h, 7rem); }
+
+  /*
+    The wide checkbox grids scroll horizontally inside their own .table-responsive wrapper. A card is a
+    column flexbox, so a grid's intrinsic (min-content) width is resolved at the .card level and leaks past
+    the wrapper, inflating the page's scroll width and leaving dead space to the right on narrow screens.
+    Clipping the card's horizontal overflow contains it without touching the grid's own inner scroll.
+  */
+  form .card { overflow-x: clip; }
+</style>
+<script>
+  (function () {
+    var header = document.getElementById('chiro-sticky');
+    function setOffset() {
+      document.documentElement.style.setProperty('--chiro-sticky-h', (header.offsetHeight + 8) + 'px');
+    }
+    setOffset();
+    window.addEventListener('resize', setOffset);
+  })();
+</script>

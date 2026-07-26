@@ -8,6 +8,8 @@
 
     <Description>Contracts for the ns.tcp.wtf project.</Description>
     <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <!-- Still ship the xml docs, but don't require a doc comment on every public member. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
