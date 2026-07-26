@@ -17,9 +17,10 @@ jobs:
     inputs:
       useGlobalJson: true
 
-  - pwsh: |
-      dotnet tool install nbgv --global --version 3.9.*;
-      nbgv cloud --all-vars;
+  - pwsh: dotnet tool restore
+    displayName: Restore dotnet tools
+
+  - pwsh: dotnet nbgv cloud --all-vars
     displayName: nbgv
 
   - task: Cache@2
