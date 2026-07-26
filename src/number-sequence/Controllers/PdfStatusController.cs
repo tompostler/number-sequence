@@ -6,7 +6,7 @@ using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.Controllers
 {
-    [ApiController, Route("[controller]"), RequiresToken(AccountRoles.PdfStatus)]
+    [ApiController, Route("[controller]"), RequiresToken]
     public sealed class PdfStatusController : ControllerBase
     {
         private readonly IServiceProvider serviceProvider;
@@ -27,25 +27,38 @@ namespace number_sequence.Controllers
 
             DateTimeOffset daysAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
 
-            List<Models.ChiroRecord> chiroRecords = await nsContext.ChiroRecords
-                                                                    .Where(r => r.RecordedAt > daysAgo)
-                                                                    .OrderByDescending(r => r.RecordedAt)
-                                                                    .Take(takeAmount)
-                                                                    .ToListAsync();
-            List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
-                                                                        .Where(r => r.CreatedDate > daysAgo)
-                                                                        .OrderByDescending(r => r.CreatedDate)
-                                                                        .Take(takeAmount)
-                                                                        .ToListAsync();
-            List<Models.ChiroEmailBatch> chiroBatches = await nsContext.ChiroEmailBatches
-                                                                        .Where(r => r.CreatedDate > daysAgo)
-                                                                        .OrderByDescending(r => r.CreatedDate)
-                                                                        .Take(takeAmount)
-                                                                        .ToListAsync();
+            List<Models.ChiroRecord> chiroRecords = [];
+            List<Models.ChiroEmailBatch> chiroBatches = [];
+            List <Models.EmailDocument> emailDocuments = [];
+
+            bool hasChiroAccess = this.User.IsInRole(AccountRoles.Chiro) || this.User.IsInRole(AccountRoles.PdfStatus);
+            bool hasEmailAccess = this.User.IsInRole(AccountRoles.PdfStatus);
+
+            if (hasChiroAccess)
+            {
+                chiroRecords = await nsContext.ChiroRecords
+                                                .Where(r => r.RecordedAt > daysAgo)
+                                                .OrderByDescending(r => r.RecordedAt)
+                                                .Take(takeAmount)
+                                                .ToListAsync();
+                chiroBatches = await nsContext.ChiroEmailBatches
+                                                .Where(r => r.CreatedDate > daysAgo)
+                                                .OrderByDescending(r => r.CreatedDate)
+                                                .Take(takeAmount)
+                                                .ToListAsync();
+            }
+            if (hasEmailAccess)
+            {
+                emailDocuments = await nsContext.EmailDocuments
+                                                .Where(r => r.CreatedDate > daysAgo)
+                                                .OrderByDescending(r => r.CreatedDate)
+                                                .Take(takeAmount)
+                                                .ToListAsync();
+            }
 
             static string determineTimeSpanFormat(IEnumerable<TimeSpan> spans)
             {
-                TimeSpan largest = spans.Max();
+                TimeSpan largest = spans.Any() ? spans.Max() : TimeSpan.Zero;
                 if (largest.TotalDays >= 10)
                 {
                     return @"dd\.hh\:mm\:ss";

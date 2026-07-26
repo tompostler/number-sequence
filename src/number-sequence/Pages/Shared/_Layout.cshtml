@@ -49,7 +49,7 @@
               <a class="nav-link" href="/ui/ledger">Ledger</a>
             </li>
           }
-          @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
+          @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
           {
             <li class="nav-item">
               <a class="nav-link" href="/ui/pdf-status">PDF Status</a>
