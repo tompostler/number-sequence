@@ -28,38 +28,27 @@ namespace number_sequence.Controllers
             this.logger = logger;
         }
 
-        [HttpPost("canine")]
-        public async Task<IActionResult> PostCanineAsync([FromBody] ChiroInput input, CancellationToken cancellationToken)
+        [HttpPost("{species}")]
+        public async Task<IActionResult> PostAsync(ChiroSpecies species, [FromBody] ChiroInput input, CancellationToken cancellationToken)
         {
-            string validationMessage = ValidateLengths(input, thoracic: 13, ribs: 13, lumbar: 7, lumbarIntertransverse: 0);
-            return validationMessage != default
-                ? this.BadRequest(validationMessage)
-                : await this.SubmitAsync(
-                    NsStorage.C.PT.ChiroCanine,
-                    typeof(DurableTaskImpl.Orchestrators.ChiroCanineGenerationOrchestrator),
-                    input,
-                    cancellationToken);
-        }
+            if (!ChiroSpeciesDefinition.TryGet(species, out ChiroSpeciesDefinition definition))
+            {
+                return this.BadRequest($"{species} is not a supported species.");
+            }
 
-        [HttpPost("equine")]
-        public async Task<IActionResult> PostEquineAsync([FromBody] ChiroInput input, CancellationToken cancellationToken)
-        {
-            string validationMessage = ValidateLengths(input, thoracic: 18, ribs: 18, lumbar: 6, lumbarIntertransverse: 3);
+            string validationMessage = ValidateLengths(input, definition);
             return validationMessage != default
                 ? this.BadRequest(validationMessage)
-                : await this.SubmitAsync(
-                    NsStorage.C.PT.ChiroEquine,
-                    typeof(DurableTaskImpl.Orchestrators.ChiroEquineGenerationOrchestrator),
-                    input,
-                    cancellationToken);
+                : await this.SubmitAsync(definition, input, cancellationToken);
         }
 
         /// <summary>
-        /// The array lengths are species-specific and the pdf generation activities index into them without
+        /// The array lengths are species-specific and the pdf generation activity indexes into them without
         /// null checks, so reject anything that doesn't line up before it gets recorded.
-        /// A <paramref name="lumbarIntertransverse"/> of 0 means the species does not have that data.
+        /// A <see cref="ChiroSpeciesDefinition.LumbarIntertransverseCount"/> of 0 means the species does not
+        /// have that data.
         /// </summary>
-        private static string ValidateLengths(ChiroInput input, int thoracic, int ribs, int lumbar, int lumbarIntertransverse)
+        private static string ValidateLengths(ChiroInput input, ChiroSpeciesDefinition definition)
         {
             const int cervical = 7;
 
@@ -69,28 +58,29 @@ namespace number_sequence.Controllers
                     : $"{name} must have exactly {expected} entries but had {(actual == default ? "none" : actual.Length.ToString())}.";
 
             string message = check(nameof(input.Cervical), input.Cervical, cervical)
-                ?? check(nameof(input.Thoracic), input.Thoracic, thoracic)
-                ?? check(nameof(input.Ribs), input.Ribs, ribs)
-                ?? check(nameof(input.Lumbar), input.Lumbar, lumbar);
+                ?? check(nameof(input.Thoracic), input.Thoracic, definition.ThoracicCount)
+                ?? check(nameof(input.Ribs), input.Ribs, definition.RibsCount)
+                ?? check(nameof(input.Lumbar), input.Lumbar, definition.LumbarCount);
 
             if (message != default)
             {
                 return message;
             }
 
-            return lumbarIntertransverse == 0
+            return definition.LumbarIntertransverseCount == 0
                 ? input.LumbarIntertransverse == default
                     ? default
                     : $"{nameof(input.LumbarIntertransverse)} does not apply to this species and must be omitted."
-                : check(nameof(input.LumbarIntertransverse), input.LumbarIntertransverse, lumbarIntertransverse);
+                : check(nameof(input.LumbarIntertransverse), input.LumbarIntertransverse, definition.LumbarIntertransverseCount);
         }
 
         private async Task<IActionResult> SubmitAsync(
-            string templateId,
-            Type orchestratorType,
+            ChiroSpeciesDefinition definition,
             ChiroInput input,
             CancellationToken cancellationToken)
         {
+            string templateId = definition.TemplateId;
+
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
@@ -105,6 +95,7 @@ namespace number_sequence.Controllers
             input.RowCreatedAt = DateTimeOffset.UtcNow;
             input.EmailSubmitter = this.User.Identity.Name;
             input.ToEmail = template.EmailTo;
+            input.Species = definition.Species;
 
             // Matches the shape of the id the google sheet ingestion computes so that MakeHumanFriendly behaves the same.
             string rowId = $"ui|{templateId}|{input.EmailSubmitter}|{input.RowCreatedAt:O}|{Guid.NewGuid()}".ComputeSHA256();
@@ -129,7 +120,7 @@ namespace number_sequence.Controllers
 
             TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
             OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                orchestratorType,
+                typeof(DurableTaskImpl.Orchestrators.ChiroGenerationOrchestrator),
                 instanceId: $"{rowId.MakeHumanFriendly()}_{template.Id}",
                 record.RowId);
             this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");

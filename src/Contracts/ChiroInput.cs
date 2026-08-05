@@ -12,6 +12,9 @@ namespace TcpWtf.NumberSequence.Contracts
         public DateTimeOffset RowCreatedAt { get; set; }
         public string EmailSubmitter { get; set; }
 
+        /// <summary>Assigned by the service from the route.</summary>
+        public ChiroSpecies Species { get; set; }
+
         // Patient / visit
         [Required]
         [MaxLength(128)]

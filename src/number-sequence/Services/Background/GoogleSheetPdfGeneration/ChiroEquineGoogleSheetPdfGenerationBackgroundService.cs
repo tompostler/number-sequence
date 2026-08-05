@@ -93,6 +93,7 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
                 {
                     RowCreatedAt = new DateTimeOffset(DateTime.ParseExact(row[0], "M/d/yyyy H:mm:ss", CultureInfo.InvariantCulture), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time").BaseUtcOffset).ToUniversalTime(),
                     EmailSubmitter = safeGet(row, 92),
+                    Species = ChiroSpecies.Equine,
 
                     PatientName = safeGet(row, 1),
                     OwnerName = safeGet(row, 2),
@@ -191,7 +192,7 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
 
                 TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
                 OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
-                    typeof(DurableTaskImpl.Orchestrators.ChiroEquineGenerationOrchestrator),
+                    typeof(DurableTaskImpl.Orchestrators.ChiroGenerationOrchestrator),
                     instanceId: $"{id.MakeHumanFriendly()}_{template.Id}",
                     record.RowId);
                 this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");

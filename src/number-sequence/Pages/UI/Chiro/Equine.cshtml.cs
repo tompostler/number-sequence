@@ -218,7 +218,7 @@ namespace number_sequence.Pages.UI.Chiro
 
             try
             {
-                ChiroInputCreated created = await this.NsClient.Chiro.SubmitEquineAsync(input, cancellationToken);
+                ChiroInputCreated created = await this.NsClient.Chiro.SubmitAsync(ChiroSpecies.Equine, input, cancellationToken);
                 return this.Redirect($"/ui/chiro?submitted=equine&rowId={created.RowId}");
             }
             catch (NsTcpWtfClientException ex)

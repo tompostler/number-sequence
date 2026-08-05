@@ -1,13 +1,16 @@
-﻿using DurableTask.Core;
+using DurableTask.Core;
 
 namespace number_sequence.DurableTaskImpl.Orchestrators
 {
-    public sealed class ChiroCanineGenerationOrchestrator : TaskOrchestration<string, string>
+    /// <summary>
+    /// Shared by every species; the activity reads the species off of the recorded input.
+    /// </summary>
+    public sealed class ChiroGenerationOrchestrator : TaskOrchestration<string, string>
     {
         public override async Task<string> RunTask(OrchestrationContext context, string rowId)
         {
             _ = await context.ScheduleWithRetry<string>(
-                typeof(Activities.ChiroCaninePdfGenerationActivity),
+                typeof(Activities.ChiroPdfGenerationActivity),
                 ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
                 rowId);
 

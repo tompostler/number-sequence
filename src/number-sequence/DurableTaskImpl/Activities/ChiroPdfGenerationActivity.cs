@@ -15,19 +15,23 @@ using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.DurableTaskImpl.Activities
 {
-    public sealed class ChiroEquinePdfGenerationActivity : AsyncTaskActivity<string, string>
+    /// <summary>
+    /// Shared by every species. Everything that differs between them lives on the
+    /// <see cref="ChiroSpeciesDefinition"/> resolved from the recorded input.
+    /// </summary>
+    public sealed class ChiroPdfGenerationActivity : AsyncTaskActivity<string, string>
     {
         private readonly NsStorage nsStorage;
         private readonly IServiceProvider serviceProvider;
         private readonly Sentinals sentinals;
-        private readonly ILogger<ChiroEquinePdfGenerationActivity> logger;
+        private readonly ILogger<ChiroPdfGenerationActivity> logger;
         private readonly TelemetryClient telemetryClient;
 
-        public ChiroEquinePdfGenerationActivity(
+        public ChiroPdfGenerationActivity(
             NsStorage nsStorage,
             IServiceProvider serviceProvider,
             Sentinals sentinals,
-            ILogger<ChiroEquinePdfGenerationActivity> logger,
+            ILogger<ChiroPdfGenerationActivity> logger,
             TelemetryClient telemetryClient)
         {
             this.nsStorage = nsStorage;
@@ -52,15 +56,15 @@ namespace number_sequence.DurableTaskImpl.Activities
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             // Fetch the record and check for double-processing.
-            ChiroRecord record = await nsContext.ChiroRecords
-                .SingleAsync(x => x.RowId == rowId, cancellationToken);
+            ChiroRecord record = await nsContext.ChiroRecords.SingleAsync(x => x.RowId == rowId, cancellationToken);
             if (record.ProcessedAt.HasValue)
             {
                 throw new InvalidOperationException($"ChiroRecord {record.RowId} was already processed at {record.ProcessedAt:u}");
             }
 
             ChiroInput chiroInput = JsonSerializer.Deserialize<ChiroInput>(record.InputJson);
-            this.logger.LogInformation($"Processing ChiroRecord {record.RowId} for {chiroInput.PatientName} / {chiroInput.OwnerName}.");
+            ChiroSpeciesDefinition species = ChiroSpeciesDefinition.Get(chiroInput.Species);
+            this.logger.LogInformation($"Processing {species.DisplayName} ChiroRecord {record.RowId} for {chiroInput.PatientName} / {chiroInput.OwnerName}.");
 
             // Build the owner name (clinic prefix applied here before PDF generation).
             string ownerName = chiroInput.OwnerName;
@@ -70,7 +74,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             }
 
             // Generate the PDF
-            ChiroEquinePdfDocument pdf = new(chiroInput, ownerName);
+            ChiroPdfDocument pdf = new(chiroInput, ownerName);
             MemoryStream ms = new();
             using (IDisposable disposable = this.logger.BeginScope("Generating PDF"))
             {
@@ -80,7 +84,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             }
 
             // Add the email request
-            string subject = $"[Chiro - Equine] {ownerName} - {chiroInput.PatientName}";
+            string subject = $"[Chiro - {species.DisplayName}] {ownerName} - {chiroInput.PatientName}";
             string attachmentName = new(
                 $"{chiroInput.DateOfService:yyyy-MM-dd}_{ownerName}_{chiroInput.PatientName}"
                 .Select(x => (char.IsLetterOrDigit(x) || x == '-' || x == '_') ? x : '-')
@@ -125,8 +129,9 @@ namespace number_sequence.DurableTaskImpl.Activities
             return default;
         }
 
-        private sealed class ChiroEquinePdfDocument : IDocument
+        private sealed class ChiroPdfDocument : IDocument
         {
+            public ChiroSpecies Species { get; }
             public string PatientName { get; }
             public string OwnerName { get; }
             public DateTimeOffset DateOfService { get; }
@@ -144,13 +149,14 @@ namespace number_sequence.DurableTaskImpl.Activities
             public string Coccygeal { get; } = string.Empty;
             public string Other { get; } = string.Empty;
 
-            public ChiroEquinePdfDocument(ChiroInput input, string ownerName)
+            public ChiroPdfDocument(ChiroInput input, string ownerName)
             {
                 static string append(string existing, string prefix, string value) =>
                     !string.IsNullOrWhiteSpace(value)
                         ? (string.IsNullOrWhiteSpace(existing) ? string.Empty : ", ") + $"{prefix} {value}".Trim()
                         : string.Empty;
 
+                this.Species = input.Species;
                 this.PatientName = input.PatientName;
                 this.OwnerName = ownerName;
                 this.DateOfService = input.DateOfService;
@@ -308,7 +314,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                                 .PaddingBottom(7)
                                 .AlignCenter()
                                 .MaxWidth(5, Unit.Inch)
-                                .Image(Resources.ChiroEquineDiagram);
+                                .Image(Resources.ChiroDiagram(this.Species));
 
                             // Table of records
                             column.Item().Table(table =>

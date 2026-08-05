@@ -213,7 +213,7 @@ namespace number_sequence.Pages.UI.Chiro
 
             try
             {
-                ChiroInputCreated created = await this.NsClient.Chiro.SubmitCanineAsync(input, cancellationToken);
+                ChiroInputCreated created = await this.NsClient.Chiro.SubmitAsync(ChiroSpecies.Canine, input, cancellationToken);
                 return this.Redirect($"/ui/chiro?submitted=canine&rowId={created.RowId}");
             }
             catch (NsTcpWtfClientException ex)

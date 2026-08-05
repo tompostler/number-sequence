@@ -19,13 +19,9 @@ namespace number_sequence.DurableTaskImpl
                 .AddSingleton<TaskOrchestration, Orchestrators.LedgerStatementGenerationOrchestrator>()
                 .AddSingleton<TaskActivity, Activities.LedgerStatementPdfGenerationActivity>()
 
-                // Chiro (canine) generation
-                .AddSingleton<TaskOrchestration, Orchestrators.ChiroCanineGenerationOrchestrator>()
-                .AddSingleton<TaskActivity, Activities.ChiroCaninePdfGenerationActivity>()
-
-                // Chiro (equine) generation
-                .AddSingleton<TaskOrchestration, Orchestrators.ChiroEquineGenerationOrchestrator>()
-                .AddSingleton<TaskActivity, Activities.ChiroEquinePdfGenerationActivity>()
+                // Chiro generation, shared by every species
+                .AddSingleton<TaskOrchestration, Orchestrators.ChiroGenerationOrchestrator>()
+                .AddSingleton<TaskActivity, Activities.ChiroPdfGenerationActivity>()
 
                 // Shared activities
                 .AddSingleton<TaskActivity, Activities.EmailPdfActivity>()

@@ -15,23 +15,14 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
-        /// Submit a canine record for pdf generation.
+        /// Submit a record for pdf generation.
         /// </summary>
-        public Task<ChiroInputCreated> SubmitCanineAsync(ChiroInput input, CancellationToken cancellationToken = default)
-            => this.SubmitAsync("canine", input, cancellationToken);
-
-        /// <summary>
-        /// Submit an equine record for pdf generation.
-        /// </summary>
-        public Task<ChiroInputCreated> SubmitEquineAsync(ChiroInput input, CancellationToken cancellationToken = default)
-            => this.SubmitAsync("equine", input, cancellationToken);
-
-        private async Task<ChiroInputCreated> SubmitAsync(string species, ChiroInput input, CancellationToken cancellationToken)
+        public async Task<ChiroInputCreated> SubmitAsync(ChiroSpecies species, ChiroInput input, CancellationToken cancellationToken = default)
         {
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Post,
-                    $"chiro/{species}")
+                    $"chiro/{species}".ToLowerInvariant())
                 {
                     Content = input.ToJsonContent()
                 },
