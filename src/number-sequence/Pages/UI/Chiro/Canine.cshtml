@@ -12,7 +12,9 @@
   <div class="alert alert-danger">@Model.ErrorMessage</div>
 }
 
-<form method="post">
+@await Html.PartialAsync("_ChiroTranscript", Model)
+
+<form method="post" asp-page-handler="Submit">
   @await Html.PartialAsync("_ChiroFormIntake", Model)
 
   <div class="card mb-4" id="head">

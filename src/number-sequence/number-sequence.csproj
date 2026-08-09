@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Anthropic" />
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="Cronos" />
     <PackageReference Include="Google.Apis.Sheets.v4" />

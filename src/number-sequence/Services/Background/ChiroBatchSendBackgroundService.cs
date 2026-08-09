@@ -69,12 +69,14 @@ namespace number_sequence.Services.Background
                                     .ToDictionary(x => x.Key, x => x.ToList());
             foreach (KeyValuePair<string, List<ChiroEmailBatch>> batchByClinic in batchesByClinic)
             {
-                if (!this.emailOptions.ChiroBatchMapParsed.TryGetValue(batchByClinic.Key, out string toEmail))
+                if (!this.emailOptions.ChiroBatchMapParsed.TryGetValue(batchByClinic.Key, out Options.ChiroClinic clinic))
                 {
                     this.logger.LogError($"Clinic abbreviation [{batchByClinic.Key}] is not found in {nameof(this.emailOptions.ChiroBatchMap)}");
                     continue;
                 }
-                else if (batchesByEmail.TryGetValue(toEmail, out List<ChiroEmailBatch> existingBatches))
+
+                string toEmail = clinic.Email;
+                if (batchesByEmail.TryGetValue(toEmail, out List<ChiroEmailBatch> existingBatches))
                 {
                     this.logger.LogInformation($"Adding {batchByClinic.Value.Count} records from {batchByClinic.Key} to existing {toEmail} batch with {existingBatches.Count} records.");
                     existingBatches.AddRange(batchByClinic.Value);

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using number_sequence.Filters;
+using number_sequence.Services;
+using number_sequence.Utilities;
 using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
 
@@ -9,9 +11,12 @@ namespace number_sequence.Pages.UI.Chiro
     [RequiresToken(AccountRoles.Chiro)]
     public sealed class CanineModel : ChiroFormModel
     {
-        public CanineModel(NsTcpWtfClient nsClient, IOptions<Options.Email> emailOptions)
+        private readonly ChiroDictationParser parser;
+
+        public CanineModel(NsTcpWtfClient nsClient, IOptions<Options.Email> emailOptions, ChiroDictationParser parser)
             : base(nsClient, emailOptions)
         {
+            this.parser = parser;
         }
 
         #region Choices
@@ -49,7 +54,106 @@ namespace number_sequence.Pages.UI.Chiro
 
         public static readonly string[] CoccygealChoices = ["traction", "thrust", "manipulation"];
 
+        /// <summary>
+        /// Joints the doctor assesses at every visit, so their mobilizations are recorded unless the dictation named
+        /// one of that joint's own options. Phalange mobilization is a standard evaluation and stands regardless of
+        /// any digit findings, which are a separate observation rather than a contradiction of it.
+        /// </summary>
+        public static readonly string[] RearLimbStandingSites = ["Coxo-Femoral", "Phalange"];
+
         #endregion
+
+        /// <summary>
+        /// The same arrays the page renders from, described for the dictation parser. Every name is a
+        /// <c>nameof</c> of the property it fills, so the parser's schema and the checkboxes cannot disagree.
+        /// </summary>
+        public static readonly ChiroVocabulary Vocabulary = new()
+        {
+            Species = ChiroSpecies.Canine,
+            Regions =
+            [
+                ChiroVocabularyRegion.Of(
+                    "head and cervical",
+                    [
+                        new(nameof(HeadOcciput), "Head occiput", HeadOcciputChoices, nameof(HeadNotes)),
+                        new(nameof(HeadTmj), "Head TMJ", HeadTmjChoices, nameof(HeadNotes)),
+                        new(nameof(CervicalC1), "C1", CervicalC1Choices, nameof(CervicalNotes)),
+                    ],
+                    [
+                        new(nameof(CervicalSpine), "Cervical spine", CervicalSpineRows, CervicalSpineColumns, nameof(CervicalNotes)),
+                    ],
+                    [
+                        new(nameof(HeadNotes), "Head other notes"),
+                        new(nameof(CervicalNotes), "Cervical other notes"),
+                        new(nameof(ExtendedOtherNotes), "General other notes about the visit"),
+                    ]),
+                ChiroVocabularyRegion.Of(
+                    "thoracic and ribs",
+                    [
+                        new(nameof(Sternum), "Sternum", SternumChoices, nameof(ThoracicNotes)),
+                    ],
+                    [
+                        new(nameof(ThoracicSpine), "Thoracic spine", ThoracicSpineRows, ThoracicSpineColumns, nameof(ThoracicNotes)),
+                        new(nameof(Ribs), "Ribs", RibsRows, RibsColumns, nameof(ThoracicNotes)),
+                    ],
+                    [
+                        new(nameof(ThoracicNotes), "Thoracic and rib other notes"),
+                    ]),
+                ChiroVocabularyRegion.Of(
+                    "lumbar, sacrum and pelvis",
+                    [
+                        new(nameof(PelvisTraction), "Pelvis traction", PelvisTractionChoices, nameof(PelvicNotes)),
+                    ],
+                    [
+                        new(nameof(LumbarSpine), "Lumbar spine", LumbarSpineRows, LumbarSpineColumns, nameof(LumbarNotes)),
+                        new(nameof(Sacrum), "Sacrum", SacrumRows, SacrumColumns, nameof(SacrumNotes)),
+                        new(nameof(Pelvis), "Pelvis", PelvisRows, PelvisColumns, nameof(PelvicNotes)),
+                    ],
+                    [
+                        new(nameof(LumbarNotes), "Lumbar other notes"),
+                        new(nameof(SacrumNotes), "Sacrum other notes"),
+                        new(nameof(PelvicNotes), "Pelvis other notes"),
+                    ]),
+                ChiroVocabularyRegion.Of(
+                    "forelimbs",
+                    [
+                        new(nameof(LeftForelimbScapula), "Left forelimb scapula", ForelimbScapulaChoices, nameof(LeftForelimbNotes)),
+                        new(nameof(LeftForelimbHumorous), "Left forelimb humerus", ForelimbHumorousChoices, nameof(LeftForelimbNotes)),
+                        new(nameof(LeftForelimbUlna), "Left forelimb ulna", ForelimbUlnaChoices, nameof(LeftForelimbNotes)),
+                        new(nameof(LeftForelimbRadius), "Left forelimb radius", ForelimbRadiusChoices, nameof(LeftForelimbNotes)),
+                        new(nameof(LeftForelimbCarpus), "Left forelimb carpus", ForelimbCarpusChoices, nameof(LeftForelimbNotes)),
+                        new(nameof(LeftForelimbMetatarsalsPhalanges), "Left forelimb digits", ForelimbMetatarsalsPhalangesChoices, nameof(LeftForelimbNotes)),
+                        new(nameof(RightForelimbScapula), "Right forelimb scapula", ForelimbScapulaChoices, nameof(RightForelimbNotes)),
+                        new(nameof(RightForelimbHumorous), "Right forelimb humerus", ForelimbHumorousChoices, nameof(RightForelimbNotes)),
+                        new(nameof(RightForelimbUlna), "Right forelimb ulna", ForelimbUlnaChoices, nameof(RightForelimbNotes)),
+                        new(nameof(RightForelimbRadius), "Right forelimb radius", ForelimbRadiusChoices, nameof(RightForelimbNotes)),
+                        new(nameof(RightForelimbCarpus), "Right forelimb carpus", ForelimbCarpusChoices, nameof(RightForelimbNotes)),
+                        new(nameof(RightForelimbMetatarsalsPhalanges), "Right forelimb digits", ForelimbMetatarsalsPhalangesChoices, nameof(RightForelimbNotes)),
+                    ],
+                    [],
+                    [
+                        new(nameof(LeftForelimbNotes), "Left forelimb other notes"),
+                        new(nameof(RightForelimbNotes), "Right forelimb other notes"),
+                    ]),
+                ChiroVocabularyRegion.Of(
+                    "rear limbs and coccygeal",
+                    [
+                        new(nameof(LeftRearLimb), "Left rear limb", RearLimbChoices, nameof(LeftRearLimbNotes), RearLimbStandingSites),
+                        new(nameof(RightRearLimb), "Right rear limb", RearLimbChoices, nameof(RightRearLimbNotes), RearLimbStandingSites),
+                        new(nameof(Coccygeal), "Coccygeal", CoccygealChoices, nameof(CoccygealNotes)),
+                    ],
+                    [],
+                    [
+                        new(nameof(LeftRearLimbNotes), "Left rear limb other notes"),
+                        new(nameof(RightRearLimbNotes), "Right rear limb other notes"),
+                        new(nameof(CoccygealNotes), "Coccygeal other notes"),
+                    ],
+                    [
+                        "Select a coxofemoral option only when the dictation names cranial or caudal for it. A bare \"coxofemoral mobilization\" with no direction needs nothing from you; it is recorded automatically.",
+                        "Do not guess a side. If the dictation does not say left or right, leave both rear limbs empty; unmentioned limbs are filled in afterwards.",
+                    ]),
+            ],
+        };
 
         #region Bound form fields
 
@@ -139,7 +243,33 @@ namespace number_sequence.Pages.UI.Chiro
 
         #endregion
 
-        public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
+        /// <summary>
+        /// Prefills the form from a dictation. Deliberately does not submit: the draft is a starting point for the
+        /// person who was in the room, not a record.
+        /// </summary>
+        public async Task<IActionResult> OnPostParseAsync(CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(this.Transcript))
+            {
+                this.ErrorMessage = "Paste a dictation transcript before parsing.";
+                return this.Page();
+            }
+
+            try
+            {
+                ChiroParseResult result = await this.parser.ParseAsync(Vocabulary, this.Transcript, cancellationToken);
+                this.ApplyParse(Vocabulary, result);
+            }
+            catch (Exception ex)
+            {
+                // Any parse failure has to leave a usable form behind; filling it in by hand is still the fallback.
+                this.ErrorMessage = $"Could not parse the dictation, so the form is unchanged: {ex.Message}";
+            }
+
+            return this.Page();
+        }
+
+        public async Task<IActionResult> OnPostSubmitAsync(CancellationToken cancellationToken)
         {
             if (!this.ModelState.IsValid)
             {

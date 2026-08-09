@@ -20,6 +20,7 @@ jobs:
       csmFile: $(Build.SourcesDirectory)/deployment/templates/AppServiceSettings.json
       csmParametersFile: $(Build.SourcesDirectory)/deployment/parameters/Empty.json
       overrideParameters: >-
+        -claudeApiKey "$(claude-api-key)"
         -emailChiroBatchMap "$(email-chiro-batch-map)"
         -emailChiroBatchUri "$(email-chiro-batch-uri)"
         -emailServer "$(email-server)"

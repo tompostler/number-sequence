@@ -9,6 +9,7 @@
   <ItemGroup>
     <!-- dotnet -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
+    <PackageVersion Include="Anthropic" Version="12.40.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.10" />
@@ -23,13 +24,13 @@
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.1.2" />
     <!-- Tests -->
     <PackageVersion Include="FluentAssertions" Version="8.10.0" />
-    <PackageVersion Include="MSTest" Version="4.3.2" />
+    <PackageVersion Include="MSTest" Version="4.3.3" />
     <!-- Everything else -->
     <PackageVersion Include="Cronos" Version="0.13.0" />
     <PackageVersion Include="Google.Apis.Sheets.v4" Version="1.75.0.4178" />
     <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.7.0" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.91" />
-    <PackageVersion Include="QuestPDF" Version="2026.7.1" />
+    <PackageVersion Include="QuestPDF" Version="2026.7.2" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
     <PackageVersion Include="Unlimitedinf.Utilities" Version="5.1.7" />
     <PackageVersion Include="ScottPlot" Version="5.1.59" />

@@ -1,3 +1,7 @@
+using number_sequence.Services;
+using number_sequence.Utilities;
+using System.Reflection;
+
 namespace number_sequence.Pages.UI.Chiro
 {
     /// <summary>
@@ -38,6 +42,62 @@ namespace number_sequence.Pages.UI.Chiro
             return rows
                 .Select(row => string.Join(", ", selectedByRow[row].OrderBy(column => Array.IndexOf(columns, column))))
                 .ToArray();
+        }
+
+        /// <summary>
+        /// Writes a parsed draft onto a species form.
+        /// <para>
+        /// Reflection rather than a per-species switch: every name in a <see cref="ChiroVocabulary"/> comes from a
+        /// <c>nameof</c> on the bound property it describes, so the lookup cannot go stale, and a new species needs
+        /// no changes here.
+        /// </para>
+        /// </summary>
+        public static void ApplyParse(object model, ChiroVocabulary vocabulary, ChiroParseResult result)
+        {
+            Type type = model.GetType();
+
+            void Set(string name, object value)
+            {
+                PropertyInfo property = type.GetProperty(name)
+                    ?? throw new InvalidOperationException($"{type.Name} has no [{name}] property, but its vocabulary names one.");
+                property.SetValue(model, value);
+            }
+
+            foreach (ChiroVocabularyGroup group in vocabulary.Groups)
+            {
+                if (result.GroupSelections.TryGetValue(group.Name, out string[] selected))
+                {
+                    Set(group.Name, selected);
+                }
+            }
+
+            foreach (ChiroVocabularyGrid grid in vocabulary.Grids)
+            {
+                if (!result.GridSelections.TryGetValue(grid.Name, out IReadOnlyDictionary<string, string[]> rows))
+                {
+                    continue;
+                }
+
+                // Back to the flat "row|column" shape the checkboxes post, in declared order.
+                List<string> flattened = [];
+                foreach (string row in grid.Rows)
+                {
+                    if (rows.TryGetValue(row, out string[] columns))
+                    {
+                        flattened.AddRange(columns.Select(x => row + GridSeparator + x));
+                    }
+                }
+
+                Set(grid.Name, flattened.ToArray());
+            }
+
+            foreach (ChiroVocabularyNote note in vocabulary.Notes)
+            {
+                if (result.Notes.TryGetValue(note.Name, out string text) && !string.IsNullOrWhiteSpace(text))
+                {
+                    Set(note.Name, text);
+                }
+            }
         }
 
         /// <summary>

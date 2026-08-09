@@ -50,7 +50,10 @@ $localSettings = [PSCustomObject]@{
         # Dummy value to satisfy the SDK parser locally; no telemetry is sent without a real key.
         ConnectionString = 'InstrumentationKey=00000000-0000-0000-0000-000000000000';
     };
-    Email   = [PSCustomObject]@{
+    Claude              = [PSCustomObject]@{
+        ApiKey = (Get-Secret 'claude-api-key');
+    };
+    Email               = [PSCustomObject]@{
         ChiroBatchMap      = (Get-Secret 'email-chiro-batch-map').Replace('\"', '"');
         ChiroBatchUri      = (Get-Secret 'email-chiro-batch-uri');
         Server             = (Get-Secret 'email-server');
@@ -59,17 +62,17 @@ $localSettings = [PSCustomObject]@{
         Password           = (Get-Secret 'email-password');
         LocalDevToOverride = (git config --get user.email);
     };
-    Google  = [PSCustomObject]@{
+    Google              = [PSCustomObject]@{
         Credentials = (Get-Secret 'google-dr-chiro-credentials').Replace('\"', '"');
     };
-    Sql     = [PSCustomObject]@{
+    Sql                 = [PSCustomObject]@{
         ConnectionString = (
             'Server=tcp:tompostler.database.windows.net,1433;Initial Catalog=nslocal;Persist Security Info=False;' `
                 + 'User ID=sqladmin;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Password=' `
                 + (Get-Secret 'tompostler-sqladmin-password') `
                 + ';');
     };
-    Storage = [PSCustomObject]@{
+    Storage             = [PSCustomObject]@{
         ConnectionString = (
             'DefaultEndpointsProtocol=https;AccountName=nstcpwtflocal;AccountKey=' `
                 + (az storage account keys list --resource-group tcp-wtf-hosting --account-name nstcpwtflocal --query '[1].value' --output tsv) `

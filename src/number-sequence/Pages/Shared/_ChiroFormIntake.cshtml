@@ -25,9 +25,9 @@
         <label asp-for="ClinicAbbreviation" class="form-label">Additional Clinic Recipient</label>
         <select asp-for="ClinicAbbreviation" class="form-select">
           <option value="">(none)</option>
-          @foreach (string clinic in Model.ClinicChoices)
+          @foreach (KeyValuePair<string, number_sequence.Options.ChiroClinic> clinic in Model.Clinics)
           {
-            <option value="@clinic">@clinic</option>
+            <option value="@clinic.Key">@clinic.Key — @clinic.Value.Name</option>
           }
         </select>
       </div>

@@ -109,6 +109,7 @@ namespace number_sequence
             // Misc
             //
 
+            _ = services.AddSingleton<Services.ChiroDictationParser>();
             FontManager.RegisterFont(Resources.ComputerModernRomanFont);
         }
 

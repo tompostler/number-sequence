@@ -1,0 +1,68 @@
+@using number_sequence.Pages.UI.Chiro
+@model ChiroFormModel
+
+@* Deliberately its own form. Keeping the transcript out of the record form means pressing enter while editing a
+   field cannot trigger a re-parse over the top of hand entered changes.
+
+   Both forms name their handler on the form itself. Without that, a form posts to the current url, and after a
+   parse the current url still carries ?handler=Parse, so the submit button would re-enter the parser. *@
+<form method="post" asp-page-handler="Parse" id="chiro-transcript-form">
+  <div class="card mb-4">
+    <div class="card-header">Dictation</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="Transcript" class="form-label">Transcript</label>
+        <textarea asp-for="Transcript" class="form-control" rows="6" placeholder="Paste the dictation transcript here."></textarea>
+        <div class="form-text">Fills in the form below so you can check it. Nothing is recorded until you review it and press Submit.</div>
+      </div>
+      <button type="submit" class="btn btn-outline-primary" id="chiro-parse-button">
+        <span class="spinner-border spinner-border-sm d-none" id="chiro-parse-spinner" aria-hidden="true"></span>
+        <span id="chiro-parse-label">Parse</span>
+      </button>
+      <span class="form-text ms-2 d-none" id="chiro-parse-hint">Reading the dictation. This can take a while &mdash; stay on the page.</span>
+    </div>
+  </div>
+</form>
+
+@* The parse is a full page post back, so without this the page looks inert for however long the model takes and
+   the button stays clickable. Disabling it also stops a second parse racing the first. *@
+<script>
+  (function () {
+    const form = document.getElementById('chiro-transcript-form');
+    const button = document.getElementById('chiro-parse-button');
+    const spinner = document.getElementById('chiro-parse-spinner');
+    const label = document.getElementById('chiro-parse-label');
+    const hint = document.getElementById('chiro-parse-hint');
+
+    form.addEventListener('submit', function () {
+      // Deferred a tick: disabling a submit button from inside its own submit event cancels the post in some
+      // browsers.
+      window.setTimeout(function () {
+        button.disabled = true;
+        spinner.classList.remove('d-none');
+        hint.classList.remove('d-none');
+        label.textContent = 'Parsing';
+      }, 0);
+    });
+  })();
+</script>
+
+@if (Model.ParseFlags.Count > 0)
+{
+  <div class="alert alert-warning">
+    <div class="fw-semibold mb-2">@Model.ParseFlags.Count thing(s) to check before submitting</div>
+    <ul class="mb-0">
+      @foreach (number_sequence.Services.ChiroParseFlag flag in Model.ParseFlags)
+      {
+        <li>
+          <span class="fw-semibold">&ldquo;@flag.SourceText&rdquo;</span>
+          @if (!string.IsNullOrWhiteSpace(flag.Section))
+          {
+            <span class="badge text-bg-secondary">@flag.Section</span>
+          }
+          &mdash; @flag.Reason
+        </li>
+      }
+    </ul>
+  </div>
+}
