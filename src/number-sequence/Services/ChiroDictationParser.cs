@@ -177,6 +177,7 @@ namespace number_sequence.Services
             _ = prompt.AppendLine("## The input is speech to text");
             _ = prompt.AppendLine("It contains recognition errors. Prefer a veterinary chiropractic reading over a literal one:");
             _ = prompt.AppendLine("\"cairo\" is almost always \"chiro\"; \"post\" is \"posterior\"; \"t4\" is \"T4\"; \"on the front\" means the forelimb.");
+            _ = prompt.AppendLine("\"hypermobility\" is always \"hypomobility\": the transcription software mishears it and there is no such finding.");
             _ = prompt.AppendLine("Terms you will see: PI and AS (pelvis), SCP (spinous/mammillary process), coxofemoral, cranial, caudal, ventral, dorsal, medial, lateral.");
             _ = prompt.AppendLine("Punctuation is unreliable. A side stated once carries across the items that follow it in the same phrase,");
             _ = prompt.AppendLine("so \"left digits 2, 3 on the front\" is digits 2 and 3 of the LEFT forelimb.");

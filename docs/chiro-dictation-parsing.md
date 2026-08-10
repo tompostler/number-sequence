@@ -71,6 +71,8 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
   notes and must never tick a box.
 - **The transcript is speech-to-text and contains recognition errors.** `cairo` is `chiro`; `post` is `posterior`;
   "on the front" means the forelimb. A side stated once carries across the items following it in the same phrase.
+  `hypermobility` is always `hypomobility` — the transcription software reliably mishears it, and no such finding
+  exists. The same phantom option was in Scribenote's template and is what put a hypermobility entry on its list.
 
 ## Where things live
 
@@ -127,12 +129,9 @@ consequence failure, because getting it wrong ticks something that did not happe
   in the same breath ("rib 6 right rib 6 left dorsal"), so the fix would be a carry rule rather than an expansion.
   Not implemented: it is a claim about how the doctor dictates, and if a run of ribs ever has genuinely different
   directions, carrying would silently record the wrong one. Detection plus a flag is good enough for now.
-- **Canine rear limb stops at digit 4.** A dictation saying "digits 4 and 5 on the back" has nowhere to put digit 5.
-  Real dewclaw, or a transcription slip?
-- **Equine has never been run against a real transcript.** It shares all the machinery, but its vocabulary
-  (DALMA, Pastern, proximal Sesamoid, intertransverse) has not been exercised.
-- **`ChiroVocabulary.Glossary` is empty on both species.** It is the place for species-specific terminology as it
-  turns up; the section is omitted from the prompt while empty.
+- **`ChiroVocabulary.Glossary` is empty on both species and currently unused.** Kept because species-specific
+  terminology is expected to turn up; the section is omitted from the prompt while empty, so it costs nothing until
+  it does. Remove it if it is still empty a long way from here.
 - **Notes cross-contamination.** Each region sees the whole transcript, and a phrase with no home in that region's
   questions used to land in its notes — coxofemoral text in `PelvicNotes`, tail traction in `SacrumNotes`. Addressed
   by telling each region its notes fields are not a catch-all. Worth watching; if it recurs, the next lever is not
