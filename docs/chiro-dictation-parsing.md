@@ -69,11 +69,12 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
   hip was looked at, so the mutual-exclusion rule only applies where the bare word `mobilization` is the question's
   only mobilization option.
 - **An underspecified finding means all of its variants — but only on some questions.** "Carpal hypomobility" with
-  no anterior, accessory or distal means every carpal hypomobility option for that side. A rib named without a
-  direction does **not**: it means the one of dorsal, cranial or caudal that the dictation elided, usually stated
-  for a neighbouring rib. So this is opted into per question via `ExpandsWhenUnqualified`, which appends the
-  instruction to that property's schema description, rather than being a rule in the shared prompt. Ribs are
-  checked by hand for now.
+  no anterior, accessory or distal means every carpal hypomobility option for that side. Opted into per question via
+  `ExpandsWhenUnqualified`, which appends the instruction to that property's schema description rather than stating
+  it as a shared rule.
+- **A rib is different: it takes a default, not an expansion.** "Rib 11 right" with no direction means `right
+  dorsal`. Expanding it to dorsal, cranial and caudal would invent three findings from one phrase, which is why the
+  expansion rule is per question rather than general. Carried as a hint on the thoracic region.
 - **An intended-but-not-performed adjustment is not a finding.** Resisted, deferred, or not tolerated goes in the
   notes and must never tick a box.
 - **The transcript is speech-to-text and contains recognition errors.** `cairo` is `chiro`; `post` is `posterior`;
@@ -139,10 +140,11 @@ consequence failure, because getting it wrong ticks something that did not happe
 
 ## Open questions
 
-- **Ribs are deliberately manual.** A rib named without a direction is usually eliding one stated for a neighbour
-  in the same breath ("rib 6 right rib 6 left dorsal"), so the fix would be a carry rule rather than an expansion.
-  Not implemented: it is a claim about how the doctor dictates, and if a run of ribs ever has genuinely different
-  directions, carrying would silently record the wrong one. Detection plus a flag is good enough for now.
+- **Ribs no longer need a carry rule, probably.** The thought was that a rib named without a direction was eliding
+  one stated for a neighbour in the same breath ("rib 6 right rib 6 left dorsal"), and that carrying it forward
+  would fix it. The dorsal default gets the same answer without guessing at dictation style. It would only diverge
+  where a run states a non-dorsal direction once and means it for several ribs; watch for that before building
+  anything.
 - **`ChiroVocabulary.Glossary` is empty on both species and currently unused.** Kept because species-specific
   terminology is expected to turn up; the section is omitted from the prompt while empty, so it costs nothing until
   it does. Remove it if it is still empty a long way from here.

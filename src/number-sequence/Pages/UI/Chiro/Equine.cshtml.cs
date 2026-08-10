@@ -107,6 +107,9 @@ namespace number_sequence.Pages.UI.Chiro
                     ],
                     [
                         new(nameof(ThoracicNotes), "Thoracic and rib other notes"),
+                    ],
+                    [
+                        "A rib given a side but no direction is dorsal: \"rib 11 right\" is \"right dorsal\". Use cranial or caudal only where the dictation says so.",
                     ]),
                 ChiroVocabularyRegion.Of(
                     "lumbar, sacrum and pelvis",
