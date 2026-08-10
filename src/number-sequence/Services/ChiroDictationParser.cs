@@ -56,8 +56,8 @@ namespace number_sequence.Services
             Stopwatch overall = Stopwatch.StartNew();
 
             // The intake fields belong to exactly one region so that two requests cannot answer the patient name
-            // differently. The first region is the natural home: a dictation states who it is about before it starts
-            // listing findings.
+            // differently. The first region is the one about the visit rather than about a part of the animal,
+            // which is where a patient name, a date and a clinic belong.
             RegionParse[] parses = await Task.WhenAll(
                 vocabulary.Regions.Select((region, index) =>
                     this.ParseRegionAsync(vocabulary, region, index == 0, transcript, clinics, cancellationToken)));
@@ -165,13 +165,29 @@ namespace number_sequence.Services
             _ = prompt.AppendLine("The user message is one visit's dictation. Fill in the form for that visit and nothing else.");
             _ = prompt.AppendLine();
 
+            bool recordsFindings = region.Groups.Count > 0 || region.Grids.Count > 0;
+
             _ = prompt.AppendLine("## Your part of the form");
-            _ = prompt.AppendLine($"You are filling in the {region.Name} fields only. The dictation covers the whole visit, so most of it will");
-            _ = prompt.AppendLine("be about areas you are not being asked about. Ignore those parts completely rather than trying to fit them");
-            _ = prompt.AppendLine("into a field you do have. Other requests are handling them.");
-            _ = prompt.AppendLine("This applies to the notes fields too. A notes field is for its own area, not a catch-all: only write there");
-            _ = prompt.AppendLine("if the words are about that specific area. Anatomy that belongs to another part of the body is not yours,");
-            _ = prompt.AppendLine("however well it would fit. Leave a notes field null rather than filling it with something out of scope.");
+            if (recordsFindings)
+            {
+                _ = prompt.AppendLine($"You are filling in the {region.Name} fields only. The dictation covers the whole visit, so most of it will");
+                _ = prompt.AppendLine("be about areas you are not being asked about. Ignore those parts completely rather than trying to fit them");
+                _ = prompt.AppendLine("into a field you do have. Other requests are handling them.");
+                _ = prompt.AppendLine("This applies to the notes fields too. A notes field is for its own area, not a catch-all: only write there");
+                _ = prompt.AppendLine("if the words are about that specific area. Anatomy that belongs to another part of the body is not yours,");
+                _ = prompt.AppendLine("however well it would fit. Leave a notes field null rather than filling it with something out of scope.");
+            }
+            else
+            {
+                _ = prompt.AppendLine("You are not recording adjustments. Every spinal and limb finding is handled by other requests, so pass");
+                _ = prompt.AppendLine("over all of them however specific they sound. Your part is everything else the dictation says about the");
+                _ = prompt.AppendLine("visit: why the animal came in, what the owner reported, how it behaved, other conditions or treatments");
+                _ = prompt.AppendLine("mentioned, and the plan going forward such as a recheck or a follow up.");
+                _ = prompt.AppendLine("This is the one place that catches what the rest of the form has no field for, so err towards keeping a");
+                _ = prompt.AppendLine("remark rather than dropping it. Write it in the dictation's own words, and leave the field null only when");
+                _ = prompt.AppendLine("the dictation really is nothing but a list of adjustments.");
+            }
+
             _ = prompt.AppendLine();
 
             _ = prompt.AppendLine("## The input is speech to text");
@@ -183,18 +199,21 @@ namespace number_sequence.Services
             _ = prompt.AppendLine("so \"left digits 2, 3 on the front\" is digits 2 and 3 of the LEFT forelimb.");
             _ = prompt.AppendLine();
 
-            _ = prompt.AppendLine("## Report only what was said");
-            _ = prompt.AppendLine("The dictation names findings, not everything examined. Leave every question the dictation does not mention");
-            _ = prompt.AppendLine("empty, and omit unmentioned spinal levels from the lists entirely. Filling those in is handled after you,");
-            _ = prompt.AppendLine("so guessing at them only introduces errors. Never select an arbitrary option to avoid an empty question.");
-            _ = prompt.AppendLine();
+            if (recordsFindings)
+            {
+                _ = prompt.AppendLine("## Report only what was said");
+                _ = prompt.AppendLine("The dictation names findings, not everything examined. Leave every question the dictation does not mention");
+                _ = prompt.AppendLine("empty, and omit unmentioned spinal levels from the lists entirely. Filling those in is handled after you,");
+                _ = prompt.AppendLine("so guessing at them only introduces errors. Never select an arbitrary option to avoid an empty question.");
+                _ = prompt.AppendLine();
 
-            _ = prompt.AppendLine("## What \"mobilization\" means");
-            _ = prompt.AppendLine("Mobilization records that a site was assessed and needed no adjustment. It is therefore never correct");
-            _ = prompt.AppendLine("alongside an actual finding for the same level: if a level was adjusted, it was not left alone. It also never");
-            _ = prompt.AppendLine("carries across a list. Select it only where the dictation names it for that specific level, and never as an");
-            _ = prompt.AppendLine("inference. Levels the dictation says nothing about are filled in after you, so leave them out entirely.");
-            _ = prompt.AppendLine();
+                _ = prompt.AppendLine("## What \"mobilization\" means");
+                _ = prompt.AppendLine("Mobilization records that a site was assessed and needed no adjustment. It is therefore never correct");
+                _ = prompt.AppendLine("alongside an actual finding for the same level: if a level was adjusted, it was not left alone. It also never");
+                _ = prompt.AppendLine("carries across a list. Select it only where the dictation names it for that specific level, and never as an");
+                _ = prompt.AppendLine("inference. Levels the dictation says nothing about are filled in after you, so leave them out entirely.");
+                _ = prompt.AppendLine();
+            }
 
             _ = prompt.AppendLine("## Things that did not happen");
             _ = prompt.AppendLine("If the dictation says something was resisted, deferred, not tolerated, or not performed, do NOT select it.");

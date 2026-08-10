@@ -34,7 +34,7 @@ model, because the server only ever sees the resulting selections and cannot tel
 without a qualifier from a specific option deliberately chosen. Those rules live in the prompt of necessity, not by
 preference — if a rule can be decided from the selections alone, it belongs in `Resolve`.
 
-**The form is parsed in five regions, concurrently.** Not a tuning choice — one request for the whole form compiles
+**The form is parsed in six regions, concurrently.** Not a tuning choice — one request for the whole form compiles
 a grammar the API rejects:
 
 > The compiled grammar is too large, which would cause performance issues.
@@ -42,6 +42,13 @@ a grammar the API rejects:
 The whole-form schema was 11,563 chars. Per region it is 2.7–4.7 KB, with forelimbs the largest. Keep a region
 under roughly 6 KB. The happy side effect is that a parse takes about as long as the slowest region rather than the
 sum of all of them.
+
+Five regions cover the animal. The sixth, "visit and plan", has no questions at all — it exists because the other
+five are told to ignore everything outside their own area and that notes fields are not a catch-all, which is what
+stops coxofemoral text landing in `PelvicNotes`. `ExtendedOtherNotes` is a catch-all by definition, so asking a
+region to honour both rules at once made it hit-and-miss. It now has a request whose prompt is the inverse: pass
+over every finding, keep everything else. That request also carries the intake fields, which are likewise about the
+visit rather than about a part of the animal.
 
 **Flags are transient.** They are the human's review list, never persisted, never in the PDF. They exist so that
 checking a parse means reading three or four items rather than re-reading ninety checkboxes against the transcript.
@@ -100,6 +107,13 @@ nothing else. The compiler cannot see that link, so a renamed bound property wil
 }
 ```
 
+## Data handling
+
+Transcripts contain patient and owner names. They are sent to the Anthropic API, and they are logged at Information,
+which means Application Insights in production. Both are deliberate and considered equivalent in scope: Scribenote
+already records and transcribes the visit, so neither is a new category of exposure. Clinic emails are the one thing
+held back — only abbreviations and clinic names are put in the prompt.
+
 ## Tuning
 
 Model and effort are constants at the top of `ChiroDictationParser`. Currently `claude-sonnet-5` at `Medium`.
@@ -136,6 +150,3 @@ consequence failure, because getting it wrong ticks something that did not happe
   questions used to land in its notes — coxofemoral text in `PelvicNotes`, tail traction in `SacrumNotes`. Addressed
   by telling each region its notes fields are not a catch-all. Worth watching; if it recurs, the next lever is not
   showing each region the full transcript, at the cost of the laterality context it needs.
-- **Transcripts go to Anthropic**, patient and owner names included, and are logged at Information, which means
-  Application Insights in production. Scribenote already receives the audio, so it is not a new category of
-  exposure, but the logging is a deliberate choice and can be gated to development.

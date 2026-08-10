@@ -72,6 +72,15 @@ namespace number_sequence.Pages.UI.Chiro
             Species = ChiroSpecies.Canine,
             Regions =
             [
+                // First, so it is the one carrying the intake fields: this is the request about the visit rather
+                // than about any part of the animal, which is where a patient name and a date belong.
+                ChiroVocabularyRegion.Of(
+                    "visit and plan",
+                    [],
+                    [],
+                    [
+                        new(nameof(ExtendedOtherNotes), "Everything about the visit that is not an adjustment: reason for the visit, owner reports, behaviour, other conditions, and the plan"),
+                    ]),
                 ChiroVocabularyRegion.Of(
                     "head and cervical",
                     [
@@ -85,7 +94,6 @@ namespace number_sequence.Pages.UI.Chiro
                     [
                         new(nameof(HeadNotes), "Head other notes"),
                         new(nameof(CervicalNotes), "Cervical other notes"),
-                        new(nameof(ExtendedOtherNotes), "General other notes about the visit"),
                     ]),
                 ChiroVocabularyRegion.Of(
                     "thoracic and ribs",
