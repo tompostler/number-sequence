@@ -72,12 +72,19 @@ namespace number_sequence.Utilities
     /// when the same question carries findings for other sites. A question covering several joints needs this
     /// because an adjustment to one joint says nothing about whether the others were looked at.
     /// </param>
+    /// <param name="ExpandsWhenUnqualified">
+    /// Whether naming this finding without the qualifier its options require means all of them. True of a carpus,
+    /// where "carpal hypomobility" with no anterior or accessory means both. Emphatically not true everywhere: a rib
+    /// named without a direction means one of dorsal, cranial or caudal that the dictation elided, not all three,
+    /// so this is opted into per question rather than stated as a general rule.
+    /// </param>
     public sealed record ChiroVocabularyGroup(
         string Name,
         string Label,
         string[] Choices,
         string NotesName,
-        string[] StandingSites = null)
+        string[] StandingSites = null,
+        bool ExpandsWhenUnqualified = false)
     {
         public string[] StandingSites { get; init; } = StandingSites ?? [];
     }

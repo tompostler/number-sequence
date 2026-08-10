@@ -29,6 +29,11 @@ restating it. This was learned the hard way twice: Scribenote's equivalent rule 
 and an early version of our prompt had the model inferring mobilization across a run-on list of levels that had in
 fact been adjusted.
 
+The exception is a rule whose trigger is linguistic. Expanding an underspecified finding has to be done by the
+model, because the server only ever sees the resulting selections and cannot tell "carpal hypomobility" said
+without a qualifier from a specific option deliberately chosen. Those rules live in the prompt of necessity, not by
+preference — if a rule can be decided from the selections alone, it belongs in `Resolve`.
+
 **The form is parsed in five regions, concurrently.** Not a tuning choice — one request for the whole form compiles
 a grammar the API rejects:
 
@@ -56,6 +61,12 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
 - **A question covering several joints is not all-or-nothing.** Adjusting the digits says nothing about whether the
   hip was looked at, so the mutual-exclusion rule only applies where the bare word `mobilization` is the question's
   only mobilization option.
+- **An underspecified finding means all of its variants — but only on some questions.** "Carpal hypomobility" with
+  no anterior, accessory or distal means every carpal hypomobility option for that side. A rib named without a
+  direction does **not**: it means the one of dorsal, cranial or caudal that the dictation elided, usually stated
+  for a neighbouring rib. So this is opted into per question via `ExpandsWhenUnqualified`, which appends the
+  instruction to that property's schema description, rather than being a rule in the shared prompt. Ribs are
+  checked by hand for now.
 - **An intended-but-not-performed adjustment is not a finding.** Resisted, deferred, or not tolerated goes in the
   notes and must never tick a box.
 - **The transcript is speech-to-text and contains recognition errors.** `cairo` is `chiro`; `post` is `posterior`;
@@ -112,6 +123,10 @@ consequence failure, because getting it wrong ticks something that did not happe
 
 ## Open questions
 
+- **Ribs are deliberately manual.** A rib named without a direction is usually eliding one stated for a neighbour
+  in the same breath ("rib 6 right rib 6 left dorsal"), so the fix would be a carry rule rather than an expansion.
+  Not implemented: it is a claim about how the doctor dictates, and if a run of ribs ever has genuinely different
+  directions, carrying would silently record the wrong one. Detection plus a flag is good enough for now.
 - **Canine rear limb stops at digit 4.** A dictation saying "digits 4 and 5 on the back" has nowhere to put digit 5.
   Real dewclaw, or a transcription slip?
 - **Equine has never been run against a real transcript.** It shares all the machinery, but its vocabulary

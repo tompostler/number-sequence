@@ -41,10 +41,16 @@ namespace number_sequence.Utilities
 
             foreach (ChiroVocabularyGroup group in region.Groups)
             {
+                // Carried on the property rather than in the prompt so it reaches the one question it is true of.
+                // As a shared rule it would tell the model to invent three rib findings out of one elided direction.
+                string description = group.ExpandsWhenUnqualified
+                    ? $"{group.Label}. Empty unless the dictation mentions it. If it is named without the qualifier these options require, select every option matching what was said rather than choosing one of them."
+                    : $"{group.Label}. Empty unless the dictation mentions it.";
+
                 properties[group.Name] = new JsonObject
                 {
                     ["type"] = "array",
-                    ["description"] = $"{group.Label}. Empty unless the dictation mentions it.",
+                    ["description"] = description,
                     ["items"] = new JsonObject { ["enum"] = ToJsonArray(group.Choices) },
                 };
             }
