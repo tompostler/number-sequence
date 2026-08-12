@@ -19,6 +19,8 @@ namespace number_sequence.Utilities
         public const string ClinicAbbreviationKey = "ClinicAbbreviation";
         public const string FlagsKey = "Flags";
 
+        private const string TechniqueOne = "technique 1";
+
         /// <summary>
         /// Builds the schema for one region. The whole form at once compiles a grammar the api rejects, so the
         /// intake fields ride on a single region rather than being repeated: two requests answering the same
@@ -41,16 +43,10 @@ namespace number_sequence.Utilities
 
             foreach (ChiroVocabularyGroup group in region.Groups)
             {
-                // Carried on the property rather than in the prompt so it reaches the one question it is true of.
-                // As a shared rule it would tell the model to invent three rib findings out of one elided direction.
-                string description = group.ExpandsWhenUnqualified
-                    ? $"{group.Label}. Empty unless the dictation mentions it. If it is named without the qualifier these options require, select every option matching what was said rather than choosing one of them."
-                    : $"{group.Label}. Empty unless the dictation mentions it.";
-
                 properties[group.Name] = new JsonObject
                 {
                     ["type"] = "array",
-                    ["description"] = description,
+                    ["description"] = Describe(group.Label, group.Choices, group.ExpandsWhenUnqualified),
                     ["items"] = new JsonObject { ["enum"] = ToJsonArray(group.Choices) },
                 };
             }
@@ -63,7 +59,7 @@ namespace number_sequence.Utilities
                 properties[grid.Name] = new JsonObject
                 {
                     ["type"] = "array",
-                    ["description"] = $"{grid.Label}. Include an entry only for a level the dictation actually mentions.",
+                    ["description"] = $"{grid.Label}. Include an entry only for a level the dictation actually mentions.{TechniqueRule(grid.Columns)}",
                     ["items"] = new JsonObject
                     {
                         ["type"] = "object",
@@ -127,6 +123,29 @@ namespace number_sequence.Utilities
 
             return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(schema.ToJsonString());
         }
+
+        /// <summary>
+        /// Rules that hold for one question rather than for the form go on the property, so they reach the question
+        /// they are true of and no other. As shared prompt text the expansion rule told the model to invent three
+        /// rib findings out of one elided direction.
+        /// </summary>
+        private static string Describe(string label, string[] choices, bool expandsWhenUnqualified)
+        {
+            string expansion = expandsWhenUnqualified
+                ? " If it is named without the qualifier these options require, select every option matching what was said rather than choosing one of them."
+                : string.Empty;
+
+            return $"{label}. Empty unless the dictation mentions it.{expansion}{TechniqueRule(choices)}";
+        }
+
+        /// <summary>
+        /// Derived from the choices rather than declared, so a question that gains or loses a numbered technique
+        /// carries the rule without anyone remembering to say so.
+        /// </summary>
+        private static string TechniqueRule(string[] choices)
+            => Array.Exists(choices, x => x.Contains(TechniqueOne, StringComparison.OrdinalIgnoreCase))
+                ? " These options are numbered by technique. The dictation states a number only for technique 2 and above, so a finding named without one is technique 1."
+                : string.Empty;
 
         /// <summary>
         /// Structured outputs require every property to be listed as required, so "not set" has to be expressible

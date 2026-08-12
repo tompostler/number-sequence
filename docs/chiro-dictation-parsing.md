@@ -72,6 +72,10 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
   no anterior, accessory or distal means every carpal hypomobility option for that side. Opted into per question via
   `ExpandsWhenUnqualified`, which appends the instruction to that property's schema description rather than stating
   it as a shared rule.
+- **A numbered technique defaults to technique 1.** The dictation says "external rotation", not "external rotation
+  technique 1"; a number is stated only when it is 2 or above. Not declared per question — `ChiroSchemaBuilder`
+  looks for a choice containing `technique 1` and appends the rule to that property, so a question that gains or
+  loses a numbered technique carries the rule without anyone remembering to say so.
 - **A rib is different: it takes a default, not an expansion.** "Rib 11 right" with no direction means `right
   dorsal`. Expanding it to dorsal, cranial and caudal would invent three findings from one phrase, which is why the
   expansion rule is per question rather than general. Carried as a hint on the thoracic region.
