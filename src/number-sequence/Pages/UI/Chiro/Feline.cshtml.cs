@@ -8,15 +8,15 @@ using TcpWtf.NumberSequence.Contracts;
 namespace number_sequence.Pages.UI.Chiro
 {
     [RequiresToken(AccountRoles.Chiro)]
-    public sealed class CanineModel : SmallAnimalChiroFormModel
+    public sealed class FelineModel : SmallAnimalChiroFormModel
     {
-        public CanineModel(NsTcpWtfClient nsClient, IOptions<Options.Email> emailOptions, ChiroDictationParser parser)
+        public FelineModel(NsTcpWtfClient nsClient, IOptions<Options.Email> emailOptions, ChiroDictationParser parser)
             : base(nsClient, emailOptions, parser)
         {
         }
 
-        private static readonly ChiroVocabulary CanineVocabulary = BuildVocabulary(ChiroSpecies.Canine);
+        private static readonly ChiroVocabulary FelineVocabulary = BuildVocabulary(ChiroSpecies.Feline);
 
-        public override ChiroVocabulary Vocabulary => CanineVocabulary;
+        public override ChiroVocabulary Vocabulary => FelineVocabulary;
     }
 }

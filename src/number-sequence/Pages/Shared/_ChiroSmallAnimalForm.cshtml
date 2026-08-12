@@ -1,0 +1,152 @@
+@using number_sequence.Pages.UI.Chiro
+@model SmallAnimalChiroFormModel
+
+@* The whole body of the canine and feline pages, which are the same form. Typed against the shared base rather
+   than either page model, so the field names it renders are the ones both pages bind. Each page is left with
+   nothing but its route, title, and species. *@
+
+@if (Model.ErrorMessage != null)
+{
+  <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+@await Html.PartialAsync("_ChiroTranscript", Model)
+
+<form method="post" asp-page-handler="Submit">
+  @await Html.PartialAsync("_ChiroFormIntake", Model)
+
+  <div class="card mb-4" id="head">
+    <div class="card-header">Head</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="HeadNotes" class="form-label">Head Other Notes</label>
+        <input asp-for="HeadNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Head Occiput", Name = nameof(Model.HeadOcciput), Choices = SmallAnimalChiroFormModel.HeadOcciputChoices, Selected = Model.HeadOcciput })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Head TMJ", Name = nameof(Model.HeadTmj), Choices = SmallAnimalChiroFormModel.HeadTmjChoices, Selected = Model.HeadTmj })
+    </div>
+  </div>
+
+  <div class="card mb-4" id="cervical">
+    <div class="card-header">Cervical</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="CervicalNotes" class="form-label">Cervical Other Notes</label>
+        <input asp-for="CervicalNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "C1", Name = nameof(Model.CervicalC1), Choices = SmallAnimalChiroFormModel.CervicalC1Choices, Selected = Model.CervicalC1 })
+      @await Html.PartialAsync("_ChiroCheckboxGrid", new ChiroCheckboxGrid { Label = "Cervical Spine", Name = nameof(Model.CervicalSpine), Rows = SmallAnimalChiroFormModel.CervicalSpineRows, Columns = SmallAnimalChiroFormModel.CervicalSpineColumns, Selected = Model.CervicalSpine })
+    </div>
+  </div>
+
+  <div class="card mb-4" id="thoracic">
+    <div class="card-header">Thoracic</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="ThoracicNotes" class="form-label">Thoracic Other Notes</label>
+        <input asp-for="ThoracicNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGrid", new ChiroCheckboxGrid { Label = "Thoracic Spine", Name = nameof(Model.ThoracicSpine), Rows = SmallAnimalChiroFormModel.ThoracicSpineRows, Columns = SmallAnimalChiroFormModel.ThoracicSpineColumns, Selected = Model.ThoracicSpine })
+      @await Html.PartialAsync("_ChiroCheckboxGrid", new ChiroCheckboxGrid { Label = "Ribs", Name = nameof(Model.Ribs), Rows = SmallAnimalChiroFormModel.RibsRows, Columns = SmallAnimalChiroFormModel.RibsColumns, Selected = Model.Ribs })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Sternum", Name = nameof(Model.Sternum), Choices = SmallAnimalChiroFormModel.SternumChoices, Selected = Model.Sternum })
+    </div>
+  </div>
+
+  <div class="card mb-4" id="lumbar">
+    <div class="card-header">Lumbar</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="LumbarNotes" class="form-label">Lumbar Other Notes</label>
+        <input asp-for="LumbarNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGrid", new ChiroCheckboxGrid { Label = "Lumbar Spine", Name = nameof(Model.LumbarSpine), Rows = SmallAnimalChiroFormModel.LumbarSpineRows, Columns = SmallAnimalChiroFormModel.LumbarSpineColumns, Selected = Model.LumbarSpine })
+    </div>
+  </div>
+
+  <div class="card mb-4" id="sacrum-pelvis">
+    <div class="card-header">Sacrum / Pelvis</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="SacrumNotes" class="form-label">Sacrum Other Notes</label>
+        <input asp-for="SacrumNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGrid", new ChiroCheckboxGrid { Label = "Sacrum", Name = nameof(Model.Sacrum), Rows = SmallAnimalChiroFormModel.SacrumRows, Columns = SmallAnimalChiroFormModel.SacrumColumns, Selected = Model.Sacrum })
+      <div class="mb-3">
+        <label asp-for="PelvicNotes" class="form-label">Pelvis Other Notes</label>
+        <input asp-for="PelvicNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGrid", new ChiroCheckboxGrid { Label = "Pelvis", Name = nameof(Model.Pelvis), Rows = SmallAnimalChiroFormModel.PelvisRows, Columns = SmallAnimalChiroFormModel.PelvisColumns, Selected = Model.Pelvis })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Pelvis Traction", Name = nameof(Model.PelvisTraction), Choices = SmallAnimalChiroFormModel.PelvisTractionChoices, Selected = Model.PelvisTraction })
+    </div>
+  </div>
+
+  <div class="card mb-4" id="left-forelimb">
+    <div class="card-header">Left Forelimb</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="LeftForelimbNotes" class="form-label">Left Forelimb Other Notes</label>
+        <input asp-for="LeftForelimbNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Left Forelimb Scapula", Name = nameof(Model.LeftForelimbScapula), Choices = SmallAnimalChiroFormModel.ForelimbScapulaChoices, Selected = Model.LeftForelimbScapula })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Left Forelimb Humorous", Name = nameof(Model.LeftForelimbHumorous), Choices = SmallAnimalChiroFormModel.ForelimbHumorousChoices, Selected = Model.LeftForelimbHumorous })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Left Forelimb Ulna", Name = nameof(Model.LeftForelimbUlna), Choices = SmallAnimalChiroFormModel.ForelimbUlnaChoices, Selected = Model.LeftForelimbUlna })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Left Forelimb Radius", Name = nameof(Model.LeftForelimbRadius), Choices = SmallAnimalChiroFormModel.ForelimbRadiusChoices, Selected = Model.LeftForelimbRadius })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Left Forelimb Carpus", Name = nameof(Model.LeftForelimbCarpus), Choices = SmallAnimalChiroFormModel.ForelimbCarpusChoices, Selected = Model.LeftForelimbCarpus })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Left Forelimb Metatarsals/Phalanges", Name = nameof(Model.LeftForelimbMetatarsalsPhalanges), Choices = SmallAnimalChiroFormModel.ForelimbMetatarsalsPhalangesChoices, Selected = Model.LeftForelimbMetatarsalsPhalanges })
+    </div>
+  </div>
+
+  <div class="card mb-4" id="right-forelimb">
+    <div class="card-header">Right Forelimb</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="RightForelimbNotes" class="form-label">Right Forelimb Other Notes</label>
+        <input asp-for="RightForelimbNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Right Forelimb Scapula", Name = nameof(Model.RightForelimbScapula), Choices = SmallAnimalChiroFormModel.ForelimbScapulaChoices, Selected = Model.RightForelimbScapula })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Right Forelimb Humorous", Name = nameof(Model.RightForelimbHumorous), Choices = SmallAnimalChiroFormModel.ForelimbHumorousChoices, Selected = Model.RightForelimbHumorous })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Right Forelimb Ulna", Name = nameof(Model.RightForelimbUlna), Choices = SmallAnimalChiroFormModel.ForelimbUlnaChoices, Selected = Model.RightForelimbUlna })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Right Forelimb Radius", Name = nameof(Model.RightForelimbRadius), Choices = SmallAnimalChiroFormModel.ForelimbRadiusChoices, Selected = Model.RightForelimbRadius })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Right Forelimb Carpus", Name = nameof(Model.RightForelimbCarpus), Choices = SmallAnimalChiroFormModel.ForelimbCarpusChoices, Selected = Model.RightForelimbCarpus })
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Right Forelimb Metatarsals/Phalanges", Name = nameof(Model.RightForelimbMetatarsalsPhalanges), Choices = SmallAnimalChiroFormModel.ForelimbMetatarsalsPhalangesChoices, Selected = Model.RightForelimbMetatarsalsPhalanges })
+    </div>
+  </div>
+
+  <div class="card mb-4" id="left-rear-limb">
+    <div class="card-header">Left Rear Limb</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="LeftRearLimbNotes" class="form-label">Left Rear Limb Other Notes</label>
+        <input asp-for="LeftRearLimbNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Left Rear Limb", Name = nameof(Model.LeftRearLimb), Choices = SmallAnimalChiroFormModel.RearLimbChoices, Selected = Model.LeftRearLimb })
+    </div>
+  </div>
+
+  <div class="card mb-4" id="right-rear-limb">
+    <div class="card-header">Right Rear Limb</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="RightRearLimbNotes" class="form-label">Right Rear Limb Other Notes</label>
+        <input asp-for="RightRearLimbNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Right Rear Limb", Name = nameof(Model.RightRearLimb), Choices = SmallAnimalChiroFormModel.RearLimbChoices, Selected = Model.RightRearLimb })
+    </div>
+  </div>
+
+  <div class="card mb-4" id="coccygeal">
+    <div class="card-header">Coccygeal / Other Notes</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label asp-for="CoccygealNotes" class="form-label">Coccygeal / Other Notes</label>
+        <input asp-for="CoccygealNotes" class="form-control" />
+      </div>
+      @await Html.PartialAsync("_ChiroCheckboxGroup", new ChiroCheckboxGroup { Label = "Coccygeal", Name = nameof(Model.Coccygeal), Choices = SmallAnimalChiroFormModel.CoccygealChoices, Selected = Model.Coccygeal })
+    </div>
+  </div>
+
+  <div class="mb-5">
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <a href="/ui/chiro" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>

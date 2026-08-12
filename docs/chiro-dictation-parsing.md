@@ -93,9 +93,17 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
 | `Utilities/ChiroVocabulary.cs` | Describes a species form: regions, questions, choices, notes, standing sites, glossary |
 | `Utilities/ChiroSchemaBuilder.cs` | Generates one region's JSON schema from that description |
 | `Services/ChiroDictationParser.cs` | The parallel requests, the prompt, revalidation, the clinical rules, merge, pricing |
-| `Pages/UI/Chiro/{Canine,Equine}.cshtml.cs` | Choice arrays, the `Vocabulary` built from them, both post handlers |
+| `Pages/UI/Chiro/SmallAnimalChiroFormModel.cs` | Choice arrays, `BuildVocabulary`, bound fields, both post handlers — shared by canine and feline |
+| `Pages/UI/Chiro/{Canine,Feline}.cshtml.cs` | A species and its vocabulary, nothing else |
+| `Pages/UI/Chiro/Equine.cshtml.cs` | The same, for a form that genuinely differs |
 | `Pages/UI/Chiro/ChiroForm.cs` | `ApplyParse`, which writes a draft onto a page model by property name |
 | `Pages/Shared/_ChiroTranscript.cshtml` | Textarea, Parse button, spinner, flag list |
+
+**Canine and feline are the same form.** Not similar — identical, down to the rib count. They share a page model
+and a Razor partial, and each page supplies only its `ChiroSpecies`; a parsing rule added to one is in the other by
+construction. That is the whole reason for the split, having already had to make every rule change twice for canine
+and equine. It is not a general base class: equine keeps its own model, and a future species should get its own
+rather than growing conditionals here. Sharing is right only where there is nothing to condition on.
 
 Every name in a `ChiroVocabulary` is a `nameof` of the bound property it fills. `ApplyParse` resolves them by
 reflection, which is what keeps the parser species-agnostic — a new species needs a `Vocabulary` and a handler,

@@ -1,0 +1,11 @@
+@page "/ui/chiro/feline"
+@using number_sequence.Pages.UI.Chiro
+@model number_sequence.Pages.UI.Chiro.FelineModel
+@{
+  ViewData["Title"] = "Chiro - Feline";
+}
+
+@* The form itself is shared with canine, which is the same form. Anything that is not the species belongs in
+   _ChiroSmallAnimalForm so the two cannot drift. *@
+@await Html.PartialAsync("_ChiroFormHeader", new ChiroFormHeader { Species = "Feline" })
+@await Html.PartialAsync("_ChiroSmallAnimalForm", Model)

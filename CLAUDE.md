@@ -41,6 +41,9 @@ break things if forgotten:
 
 - **The species form's choice arrays are the source of truth.** The model's schema is generated from them. Never
   hand-maintain a second copy of the vocabulary anywhere — that is the drift bug the whole design exists to avoid.
+- **Canine and feline share `SmallAnimalChiroFormModel` and `_ChiroSmallAnimalForm.cshtml`** because their forms
+  are identical. Equine is separate and still needs every rule change applied to it by hand. Do not generalize the
+  shared model to cover a species that actually differs.
 - **Clinical rules belong in `Resolve`, not the prompt.** Defaulting, mobilization exclusivity, and standing sites
   are rules, not judgements. The model has been observed getting all three wrong when asked.
 - **One request per region, six regions.** The whole form in one request exceeds the API's compiled grammar limit.

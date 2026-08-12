@@ -41,6 +41,17 @@ namespace number_sequence.Utilities
                 },
                 new()
                 {
+                    // Same counts as canine because it is the same form; the two pages share a model for that reason.
+                    Species = ChiroSpecies.Feline,
+                    TemplateId = NsStorage.C.PT.ChiroFeline,
+                    DisplayName = "Feline",
+                    ThoracicCount = 13,
+                    RibsCount = 13,
+                    LumbarCount = 7,
+                    LumbarIntertransverseCount = 0,
+                },
+                new()
+                {
                     Species = ChiroSpecies.Equine,
                     TemplateId = NsStorage.C.PT.ChiroEquine,
                     DisplayName = "Equine",

@@ -13,5 +13,6 @@ namespace TcpWtf.NumberSequence.Contracts
 
         Canine,
         Equine,
+        Feline,
     }
 }

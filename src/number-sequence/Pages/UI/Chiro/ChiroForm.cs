@@ -6,7 +6,8 @@ namespace number_sequence.Pages.UI.Chiro
 {
     /// <summary>
     /// Shared rendering and mapping helpers for the species-specific chiro forms.
-    /// There is deliberately no shared form model; each species owns its own fields and choices.
+    /// A species owns its own fields and choices unless its form is identical to another's, which is why canine and
+    /// feline share <see cref="SmallAnimalChiroFormModel"/> and equine does not.
     /// </summary>
     public static class ChiroForm
     {
