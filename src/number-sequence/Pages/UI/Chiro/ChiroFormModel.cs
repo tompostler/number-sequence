@@ -58,6 +58,14 @@ namespace number_sequence.Pages.UI.Chiro
         /// </summary>
         public IReadOnlyList<ChiroParseFlag> ParseFlags { get; private set; } = [];
 
+        /// <summary>
+        /// What the last parse took and cost, shown under the transcript. Null until a parse has run, and gone
+        /// again on the next page load; it describes the request, not the record.
+        /// </summary>
+        public ChiroParseUsage ParseUsage { get; private set; }
+
+        public long ParseElapsedMilliseconds { get; private set; }
+
         public string ErrorMessage { get; protected set; }
 
         public virtual IActionResult OnGet()
@@ -94,6 +102,8 @@ namespace number_sequence.Pages.UI.Chiro
 
             ChiroForm.ApplyParse(this, vocabulary, result);
             this.ParseFlags = result.Flags;
+            this.ParseUsage = result.Usage;
+            this.ParseElapsedMilliseconds = result.ElapsedMilliseconds;
 
             // Tag helpers render from ModelState in preference to the model, and ModelState still holds whatever was
             // posted. Without this the page would come back showing the pre-parse values.

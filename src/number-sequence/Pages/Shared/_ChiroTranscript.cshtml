@@ -20,6 +20,20 @@
         <span id="chiro-parse-label">Parse</span>
       </button>
       <span class="form-text ms-2 d-none" id="chiro-parse-hint">Reading the dictation. This can take a while &mdash; stay on the page.</span>
+      @if (Model.ParseUsage != null)
+      {
+        @* Cost is worked out from the rates in ChiroDictationParser, not returned by the api, so it is only as
+           current as those constants. *@
+        <div class="form-text mt-2">
+          Parsed in @((Model.ParseElapsedMilliseconds / 1000d).ToString("0.0"))s
+          &middot; @Model.ParseUsage.TotalTokens.ToString("N0") tokens
+          (@Model.ParseUsage.InputTokens.ToString("N0") in,
+          @Model.ParseUsage.CacheWriteTokens.ToString("N0") cache write,
+          @Model.ParseUsage.CacheReadTokens.ToString("N0") cache read,
+          @Model.ParseUsage.OutputTokens.ToString("N0") out)
+          &middot; about @Model.ParseUsage.Cost.ToString("C4")
+        </div>
+      }
     </div>
   </div>
 </form>

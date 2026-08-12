@@ -92,7 +92,7 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
 |---|---|
 | `Utilities/ChiroVocabulary.cs` | Describes a species form: regions, questions, choices, notes, standing sites, glossary |
 | `Utilities/ChiroSchemaBuilder.cs` | Generates one region's JSON schema from that description |
-| `Services/ChiroDictationParser.cs` | The five parallel requests, the prompt, revalidation, the clinical rules, merge |
+| `Services/ChiroDictationParser.cs` | The parallel requests, the prompt, revalidation, the clinical rules, merge, pricing |
 | `Pages/UI/Chiro/{Canine,Equine}.cshtml.cs` | Choice arrays, the `Vocabulary` built from them, both post handlers |
 | `Pages/UI/Chiro/ChiroForm.cs` | `ApplyParse`, which writes a draft onto a page model by property name |
 | `Pages/Shared/_ChiroTranscript.cshtml` | Textarea, Parse button, spinner, flag list |
@@ -123,16 +123,24 @@ held back — only abbreviations and clinic names are put in the prompt.
 
 Model and effort are constants at the top of `ChiroDictationParser`. Currently `claude-sonnet-5` at `Medium`.
 
-Cost is negligible — roughly a cent or two per parse — so latency is the only reason to change anything. Read it
-off the logs, which report per region and overall:
+**Cost is computed, not reported.** The api returns token counts and nothing about money, so the four rates sit
+next to `Model` as constants and `Price` turns a response's usage into dollars. They are list price per million
+tokens, with cache write at 1.25x input and cache read at 0.1x. Two things follow: **the rates have to move
+whenever `Model` moves**, because a stale rate makes the figure quietly wrong rather than failing; and the
+introductory pricing some models launch with is deliberately not encoded, since list price ages into being right
+and an introductory rate ages into being wrong. The number is an estimate, and the page says "about".
+
+It lands in two places. The page shows a line under the transcript after each parse, and the logs report per
+region and overall:
 
 ```
 [forelimbs] requesting. System prompt 2402 chars, schema 4729 chars, 12 groups, 0 grids, 2 notes.
-[forelimbs] parsed in 3140ms. Stop reason end_turn. Input 38, cache write 0, cache read 1893, output 141.
-Parsed Canine dictation across 5 regions in 4210ms total.
+[forelimbs] parsed in 3140ms. Stop reason end_turn. Input 38, cache write 0, cache read 1893, output 141. Cost $0.0027.
+Parsed Canine dictation across 5 regions in 4210ms total. 12431 tokens, $0.0184.
 ```
 
-Total is the slowest region. If one region dominates, splitting that region beats changing model — forelimbs is the
+Cost is the sum across regions; elapsed is the slowest region. The first parse after a deploy pays cache writes on
+every region and costs several times a warm one, so judge a config by a repeat run. If one region dominates, splitting that region beats changing model — forelimbs is the
 obvious candidate and divides cleanly into left and right.
 
 `claude-haiku-4-5` is the cheap option but is **not** a one-constant change: `effort` is unsupported there and will

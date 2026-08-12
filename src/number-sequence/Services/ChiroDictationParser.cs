@@ -30,6 +30,16 @@ namespace number_sequence.Services
         private const string Model = "claude-sonnet-5";
         private static readonly Effort ParseEffort = Effort.Medium;
 
+        // The api reports tokens, never money, so the rates have to live next to the model they belong to. List
+        // price in dollars per million tokens; cache write bills at 1.25x the input rate and cache read at 0.1x.
+        // A rate left stale after a model change makes the number quietly wrong rather than failing, so move these
+        // whenever Model moves. claude-sonnet-5 also has introductory pricing of 2.00/10.00 through 2026-08-31,
+        // which is not encoded: list price ages into being right, an introductory rate ages into being wrong.
+        private const decimal InputRatePerMillion = 3.00m;
+        private const decimal OutputRatePerMillion = 15.00m;
+        private const decimal CacheWriteRatePerMillion = InputRatePerMillion * 1.25m;
+        private const decimal CacheReadRatePerMillion = InputRatePerMillion * 0.10m;
+
         private readonly AnthropicClient client;
         private readonly Options.Email emailOptions;
         private readonly ILogger<ChiroDictationParser> logger;
@@ -63,9 +73,13 @@ namespace number_sequence.Services
                     this.ParseRegionAsync(vocabulary, region, index == 0, transcript, clinics, cancellationToken)));
 
             overall.Stop();
-            this.logger.LogInformation($"Parsed {vocabulary.Species} dictation across {parses.Length} regions in {overall.ElapsedMilliseconds}ms total.");
 
-            return Merge(parses);
+            ChiroParseResult result = Merge(parses, overall.ElapsedMilliseconds);
+            this.logger.LogInformation(
+                $"Parsed {vocabulary.Species} dictation across {parses.Length} regions in {overall.ElapsedMilliseconds}ms total. "
+                + $"{result.Usage.TotalTokens} tokens, {result.Usage.Cost:C4}.");
+
+            return result;
         }
 
         private async Task<RegionParse> ParseRegionAsync(
@@ -138,15 +152,17 @@ namespace number_sequence.Services
                 .FirstOrDefault()
                 ?? throw new InvalidOperationException($"The model returned no content for the {region.Name} region.");
 
+            ChiroParseUsage usage = Price(response.Usage);
+
             // Output tokens are what this call's latency actually tracks, so both are logged together: tuning the
             // model or the effort without knowing which of the two moved is guesswork.
             this.logger.LogInformation(
                 $"[{region.Name}] parsed in {stopwatch.ElapsedMilliseconds}ms. Stop reason {response.StopReason}. "
-                + $"Input {response.Usage.InputTokens}, cache write {response.Usage.CacheCreationInputTokens}, "
-                + $"cache read {response.Usage.CacheReadInputTokens}, output {response.Usage.OutputTokens}.");
+                + $"Input {usage.InputTokens}, cache write {usage.CacheWriteTokens}, "
+                + $"cache read {usage.CacheReadTokens}, output {usage.OutputTokens}. Cost {usage.Cost:C4}.");
             this.logger.LogInformation($"[{region.Name}] response json:{Environment.NewLine}{json}");
 
-            return Interpret(json, region, includeIntake);
+            return Interpret(json, region, includeIntake) with { Usage = usage };
         }
 
         /// <summary>
@@ -379,7 +395,23 @@ namespace number_sequence.Services
             };
         }
 
-        private static ChiroParseResult Merge(RegionParse[] parses)
+        private static ChiroParseUsage Price(Usage usage)
+        {
+            long input = usage.InputTokens;
+            long cacheWrite = usage.CacheCreationInputTokens ?? 0;
+            long cacheRead = usage.CacheReadInputTokens ?? 0;
+            long output = usage.OutputTokens;
+
+            decimal cost = ((input * InputRatePerMillion)
+                + (cacheWrite * CacheWriteRatePerMillion)
+                + (cacheRead * CacheReadRatePerMillion)
+                + (output * OutputRatePerMillion))
+                / 1_000_000m;
+
+            return new ChiroParseUsage(input, cacheWrite, cacheRead, output, cost);
+        }
+
+        private static ChiroParseResult Merge(RegionParse[] parses, long elapsedMilliseconds)
         {
             Dictionary<string, string[]> groups = [];
             Dictionary<string, IReadOnlyDictionary<string, string[]>> grids = [];
@@ -408,6 +440,9 @@ namespace number_sequence.Services
 
             return new ChiroParseResult
             {
+                ElapsedMilliseconds = elapsedMilliseconds,
+                // Regions run concurrently, so this is the total spent rather than the wall time above.
+                Usage = parses.Aggregate(ChiroParseUsage.None, (running, parse) => running + parse.Usage),
                 // Only the intake region answers these, so first non null wins without any conflict to resolve.
                 PatientName = parses.Select(x => x.PatientName).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)),
                 OwnerName = parses.Select(x => x.OwnerName).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)),
@@ -514,9 +549,13 @@ namespace number_sequence.Services
                 ? element.GetString()
                 : null;
 
-        /// <summary>One region's answers, before they are merged back into a single draft.</summary>
-        private sealed class RegionParse
+        /// <summary>
+        /// One region's answers, before they are merged back into a single draft. A record so that the caller can
+        /// attach what the call cost without <see cref="Interpret"/> having to know anything about billing.
+        /// </summary>
+        private sealed record RegionParse
         {
+            public ChiroParseUsage Usage { get; init; } = ChiroParseUsage.None;
             public string PatientName { get; init; }
             public string OwnerName { get; init; }
             public DateOnly? DateOfService { get; init; }
@@ -549,6 +588,37 @@ namespace number_sequence.Services
         public required IReadOnlyDictionary<string, string> Notes { get; init; }
 
         public required IReadOnlyList<ChiroParseFlag> Flags { get; init; }
+
+        /// <summary>Wall time for the whole parse, which is about the slowest region rather than the sum.</summary>
+        public long ElapsedMilliseconds { get; init; }
+
+        /// <summary>Every region's tokens added up, and what they cost.</summary>
+        public ChiroParseUsage Usage { get; init; } = ChiroParseUsage.None;
+    }
+
+    /// <summary>
+    /// What a parse spent. The api returns token counts only, so <see cref="Cost"/> is worked out here from the
+    /// rates published for the model in use, and is an estimate to the extent those rates are kept current.
+    /// </summary>
+    /// <param name="Cost">In us dollars.</param>
+    public sealed record ChiroParseUsage(
+        long InputTokens,
+        long CacheWriteTokens,
+        long CacheReadTokens,
+        long OutputTokens,
+        decimal Cost)
+    {
+        public static readonly ChiroParseUsage None = new(0, 0, 0, 0, 0m);
+
+        public long TotalTokens => this.InputTokens + this.CacheWriteTokens + this.CacheReadTokens + this.OutputTokens;
+
+        public static ChiroParseUsage operator +(ChiroParseUsage left, ChiroParseUsage right)
+            => new(
+                left.InputTokens + right.InputTokens,
+                left.CacheWriteTokens + right.CacheWriteTokens,
+                left.CacheReadTokens + right.CacheReadTokens,
+                left.OutputTokens + right.OutputTokens,
+                left.Cost + right.Cost);
     }
 
     /// <param name="SourceText">The words from the dictation that caused the flag.</param>
