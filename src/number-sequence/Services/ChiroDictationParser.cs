@@ -77,7 +77,7 @@ namespace number_sequence.Services
             ChiroParseResult result = Merge(parses, overall.ElapsedMilliseconds);
             this.logger.LogInformation(
                 $"Parsed {vocabulary.Species} dictation across {parses.Length} regions in {overall.ElapsedMilliseconds}ms total. "
-                + $"{result.Usage.TotalTokens} tokens, {result.Usage.Cost:C4}.");
+                + $"{result.Usage.TotalTokens} tokens, {result.Usage.CostDisplay}.");
 
             return result;
         }
@@ -159,7 +159,7 @@ namespace number_sequence.Services
             this.logger.LogInformation(
                 $"[{region.Name}] parsed in {stopwatch.ElapsedMilliseconds}ms. Stop reason {response.StopReason}. "
                 + $"Input {usage.InputTokens}, cache write {usage.CacheWriteTokens}, "
-                + $"cache read {usage.CacheReadTokens}, output {usage.OutputTokens}. Cost {usage.Cost:C4}.");
+                + $"cache read {usage.CacheReadTokens}, output {usage.OutputTokens}. Cost {usage.CostDisplay}.");
             this.logger.LogInformation($"[{region.Name}] response json:{Environment.NewLine}{json}");
 
             return Interpret(json, region, includeIntake) with { Usage = usage };
@@ -611,6 +611,13 @@ namespace number_sequence.Services
         public static readonly ChiroParseUsage None = new(0, 0, 0, 0, 0m);
 
         public long TotalTokens => this.InputTokens + this.CacheWriteTokens + this.CacheReadTokens + this.OutputTokens;
+
+        /// <summary>
+        /// The rates are quoted in us dollars, so the symbol is part of the value and not a formatting choice. The
+        /// "C" format takes its symbol from the ambient culture, which renders a placeholder on a host with no
+        /// locale set (any linux box without LANG) and the wrong currency entirely on one with a different locale.
+        /// </summary>
+        public string CostDisplay => $"${this.Cost.ToString("F4", CultureInfo.InvariantCulture)}";
 
         public static ChiroParseUsage operator +(ChiroParseUsage left, ChiroParseUsage right)
             => new(

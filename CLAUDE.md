@@ -25,6 +25,15 @@ stopped. Recovery is `dotnet build --no-incremental`.
   sizes, and anything not reconstructible from source. Do not log things that are generated from source, such as a
   prompt or a schema — sizes are enough.
 
+## Deployment
+
+App settings live in [`deployment/templates/AppServiceSettings.json`](deployment/templates/AppServiceSettings.json).
+That resource replaces the **whole** appsettings collection on every deploy, so a setting added in the portal is
+gone at the next one. Add it to the template.
+
+`LANG` is set there deliberately. The plan is Linux, and .NET on a host with no `LANG` falls back to the invariant
+culture, which renders `.ToString("C")` as `¤12.34` — the ledger UI is full of those.
+
 ## Chiro dictation parsing
 
 Full design notes: [`docs/chiro-dictation-parsing.md`](docs/chiro-dictation-parsing.md). Constraints that will
@@ -34,7 +43,7 @@ break things if forgotten:
   hand-maintain a second copy of the vocabulary anywhere — that is the drift bug the whole design exists to avoid.
 - **Clinical rules belong in `Resolve`, not the prompt.** Defaulting, mobilization exclusivity, and standing sites
   are rules, not judgements. The model has been observed getting all three wrong when asked.
-- **One request per region, five regions.** The whole form in one request exceeds the API's compiled grammar limit.
+- **One request per region, six regions.** The whole form in one request exceeds the API's compiled grammar limit.
   Keep a region's schema under roughly 6 KB.
 - **Both chiro form handlers are named** (`OnPostParseAsync`, `OnPostSubmitAsync`) and both `<form>` tags carry an
   explicit `asp-page-handler`. There is no default handler on purpose: a form with no `action` posts to the current

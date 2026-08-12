@@ -66,6 +66,7 @@
         "Email__Username": "[parameters('emailUsername')]",
         "Email__Password": "[parameters('emailPassword')]",
         "Google__Credentials": "[parameters('googleCredentials')]",
+        "LANG": "en_US.UTF-8",
         "Sql__ConnectionString": "[variables('sqlConnectionString')]",
         "Storage__ConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
         "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "7",

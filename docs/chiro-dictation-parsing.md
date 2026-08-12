@@ -128,7 +128,10 @@ next to `Model` as constants and `Price` turns a response's usage into dollars. 
 tokens, with cache write at 1.25x input and cache read at 0.1x. Two things follow: **the rates have to move
 whenever `Model` moves**, because a stale rate makes the figure quietly wrong rather than failing; and the
 introductory pricing some models launch with is deliberately not encoded, since list price ages into being right
-and an introductory rate ages into being wrong. The number is an estimate, and the page says "about".
+and an introductory rate ages into being wrong. The number is an estimate, and the page says "about". It is
+rendered by `CostDisplay` rather than the `C` format, because the amount is dollars by definition: `C` takes its
+symbol from the ambient culture, which is a `¤` placeholder on a host with no `LANG` set and the wrong currency
+outright on one with a different locale.
 
 It lands in two places. The page shows a line under the transcript after each parse, and the logs report per
 region and overall:
