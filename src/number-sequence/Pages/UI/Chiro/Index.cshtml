@@ -14,6 +14,10 @@
 {
   <div class="alert alert-success">
     Submitted the @Model.SubmittedSpecies record. The pdf is being generated and will be emailed shortly.
+    @if (!string.IsNullOrWhiteSpace(Model.SubmittedDocument))
+    {
+      <span class="d-block mt-1">Attachment <code>@(Model.SubmittedDocument).pdf</code></span>
+    }
     @if (!string.IsNullOrWhiteSpace(Model.SubmittedRowId))
     {
       <span class="text-muted small d-block">Record @Model.SubmittedRowId</span>

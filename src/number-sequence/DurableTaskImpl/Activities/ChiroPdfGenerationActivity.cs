@@ -66,12 +66,8 @@ namespace number_sequence.DurableTaskImpl.Activities
             ChiroSpeciesDefinition species = ChiroSpeciesDefinition.Get(chiroInput.Species);
             this.logger.LogInformation($"Processing {species.DisplayName} ChiroRecord {record.RowId} for {chiroInput.PatientName} / {chiroInput.OwnerName}.");
 
-            // Build the owner name (clinic prefix applied here before PDF generation).
-            string ownerName = chiroInput.OwnerName;
-            if (!string.IsNullOrWhiteSpace(chiroInput.ClinicAbbreviation))
-            {
-                ownerName = chiroInput.ClinicAbbreviation + " - " + ownerName;
-            }
+            // Shared with the submitting page, which shows the doctor this name before the pdf exists.
+            string ownerName = ChiroDocumentNaming.OwnerName(chiroInput);
 
             // Generate the PDF
             ChiroPdfDocument pdf = new(chiroInput, ownerName);
@@ -85,10 +81,7 @@ namespace number_sequence.DurableTaskImpl.Activities
 
             // Add the email request
             string subject = $"[Chiro - {species.DisplayName}] {ownerName} - {chiroInput.PatientName}";
-            string attachmentName = new(
-                $"{chiroInput.DateOfService:yyyy-MM-dd}_{ownerName}_{chiroInput.PatientName}"
-                .Select(x => (char.IsLetterOrDigit(x) || x == '-' || x == '_') ? x : '-')
-                .ToArray());
+            string attachmentName = ChiroDocumentNaming.AttachmentName(chiroInput);
             EmailDocument emailDocument = new()
             {
                 Id = context.OrchestrationInstance.InstanceId,

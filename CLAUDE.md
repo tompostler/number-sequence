@@ -51,5 +51,7 @@ break things if forgotten:
 - **Both chiro form handlers are named** (`OnPostParseAsync`, `OnPostSubmitAsync`) and both `<form>` tags carry an
   explicit `asp-page-handler`. There is no default handler on purpose: a form with no `action` posts to the current
   URL including its query string, so after a parse the stale `?handler=Parse` routed Submit into the parser.
+- **The pdf filename comes from `ChiroDocumentNaming`**, used by both the generation activity and the submitting
+  page, which shows the doctor the name before the pdf exists. Two copies would be two filenames.
 - **`ChiroVocabulary` names are `nameof` of bound properties**, resolved by reflection in `ChiroForm.ApplyParse`.
   Renaming a bound property without updating the vocabulary fails at runtime, not at build.

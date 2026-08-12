@@ -18,6 +18,15 @@ namespace number_sequence.Pages.UI.Chiro
         public const char GridSeparator = '|';
 
         /// <summary>
+        /// What a species form hands the index page to describe what was just submitted. TempData rather than the
+        /// query string it used to be: the document name contains the patient and owner, and a url is written to
+        /// request logs and browser history where a one-shot cookie is not.
+        /// </summary>
+        public const string SubmittedSpeciesKey = "ChiroSubmittedSpecies";
+        public const string SubmittedRowIdKey = "ChiroSubmittedRowId";
+        public const string SubmittedDocumentKey = "ChiroSubmittedDocument";
+
+        /// <summary>
         /// Multi-select answers are recorded as a single comma-separated string, matching how google sheets
         /// serializes them, so that pdfs generated from either ingestion path are identical.
         /// </summary>
