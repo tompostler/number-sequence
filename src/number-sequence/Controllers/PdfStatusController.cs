@@ -97,8 +97,11 @@ namespace number_sequence.Controllers
                 }
             }
 
+            static TimeSpan chiroRecordDelay(Models.ChiroRecord record)
+                => (record.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(record.DataEnteredAt);
+
             const string dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
-            string chiroRecordsTimeSpanFormat = determineTimeSpanFormat(chiroRecords.Select(x => x.RecordedAt.Subtract(x.DataEnteredAt)));
+            string chiroRecordsTimeSpanFormat = determineTimeSpanFormat(chiroRecords.Select(chiroRecordDelay));
             string emailDocumentTimeSpanFormat = determineTimeSpanFormat(emailDocuments.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
             string chiroBatchTimeSpanFormat = determineTimeSpanFormat(chiroBatches.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
 
@@ -111,7 +114,7 @@ namespace number_sequence.Controllers
                         DataEnteredAt = x.DataEnteredAt.AddHours(hoursOffset).ToString(dateTimeFormat),
                         RecordedAt = x.RecordedAt.AddHours(hoursOffset).ToString(dateTimeFormat),
                         ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
-                        Delay = x.RecordedAt.Subtract(x.DataEnteredAt).ToString(chiroRecordsTimeSpanFormat),
+                        Delay = chiroRecordDelay(x).ToString(chiroRecordsTimeSpanFormat),
                     })
                     .ToList(),
                 EmailDocuments = emailDocuments.Select(
