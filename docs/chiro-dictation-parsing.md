@@ -65,6 +65,12 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
 - **Some sites are assessed at every visit** regardless of what was dictated. On the rear limb these are the
   coxofemoral (both cranial and caudal, unless the dictation names a direction) and the phalanges (always, whatever
   the digit findings say). Declared as `StandingSites` on the group.
+- **A cat's limbs are not.** A dog gets a full workup, so an unmentioned limb was assessed and needed nothing. A cat
+  gets worked on where it tolerates being worked on, so the same silence means the limb was not done. Feline limb
+  questions therefore set `DefaultsToMobilization: false` and carry no standing sites: nothing is recorded unless it
+  was dictated, and a feline mobilization has to be said out loud to appear. The spine and head default on both
+  species. Applied in `BuildVocabulary` through a `Limb` helper, so the exception is visible at every question it
+  touches rather than hidden in a species check inside the parser.
 - **A question covering several joints is not all-or-nothing.** Adjusting the digits says nothing about whether the
   hip was looked at, so the mutual-exclusion rule only applies where the bare word `mobilization` is the question's
   only mobilization option.
@@ -104,6 +110,10 @@ and a Razor partial, and each page supplies only its `ChiroSpecies`; a parsing r
 construction. That is the whole reason for the split, having already had to make every rule change twice for canine
 and equine. It is not a general base class: equine keeps its own model, and a future species should get its own
 rather than growing conditionals here. Sharing is right only where there is nothing to condition on.
+
+The one thing that does vary is limb defaulting, which is why `BuildVocabulary` takes a species rather than being a
+constant. Keep that the only branch. A second one is the signal that the two forms have stopped being the same form
+and want splitting again.
 
 Every name in a `ChiroVocabulary` is a `nameof` of the bound property it fills. `ApplyParse` resolves them by
 reflection, which is what keeps the parser species-agnostic — a new species needs a `Vocabulary` and a handler,

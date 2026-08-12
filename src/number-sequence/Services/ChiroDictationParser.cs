@@ -327,7 +327,7 @@ namespace number_sequence.Services
             foreach (ChiroVocabularyGroup group in region.Groups)
             {
                 string[] selected = Keep(root, group.Name, group.Choices, group.Label, group.NotesName, Salvage);
-                groups[group.Name] = Resolve(selected, group.Choices, group.StandingSites);
+                groups[group.Name] = Resolve(selected, group.Choices, group.StandingSites, group.DefaultsToMobilization);
             }
 
             Dictionary<string, IReadOnlyDictionary<string, string[]>> grids = [];
@@ -474,13 +474,15 @@ namespace number_sequence.Services
         /// observed inferring mobilization across a run-on list of levels that were in fact adjusted.
         /// </para>
         /// </summary>
-        private static string[] Resolve(string[] selected, string[] choices, string[] standingSites)
+        private static string[] Resolve(string[] selected, string[] choices, string[] standingSites, bool defaultsToMobilization = true)
         {
             string[] mobilizations = [.. choices.Where(IsMobilization)];
 
             if (selected.Length == 0)
             {
-                return mobilizations;
+                // A question that is not assessed as a matter of course says nothing when the dictation says
+                // nothing, so it stays empty rather than claiming the site was looked at.
+                return defaultsToMobilization ? mobilizations : [];
             }
 
             // Where the bare word is the only mobilization option it marks the whole question as needing nothing,

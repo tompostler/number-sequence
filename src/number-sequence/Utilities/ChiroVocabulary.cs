@@ -78,13 +78,20 @@ namespace number_sequence.Utilities
     /// named without a direction means one of dorsal, cranial or caudal that the dictation elided, not all three,
     /// so this is opted into per question rather than stated as a general rule.
     /// </param>
+    /// <param name="DefaultsToMobilization">
+    /// Whether a question the dictation never mentions means its mobilization options, ie that the site is assessed
+    /// at every visit whether or not it is dictated. True nearly everywhere. False on the feline limbs, where a cat
+    /// is only worked on where it tolerates being worked on, so an unmentioned limb means nothing was done rather
+    /// than that nothing was needed.
+    /// </param>
     public sealed record ChiroVocabularyGroup(
         string Name,
         string Label,
         string[] Choices,
         string NotesName,
         string[] StandingSites = null,
-        bool ExpandsWhenUnqualified = false)
+        bool ExpandsWhenUnqualified = false,
+        bool DefaultsToMobilization = true)
     {
         public string[] StandingSites { get; init; } = StandingSites ?? [];
     }

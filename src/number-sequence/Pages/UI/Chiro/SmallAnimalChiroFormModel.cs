@@ -86,7 +86,51 @@ namespace number_sequence.Pages.UI.Chiro
         /// <c>nameof</c> of the property it fills, so the parser's schema and the checkboxes cannot disagree.
         /// </summary>
         protected static ChiroVocabulary BuildVocabulary(ChiroSpecies species)
-            => new()
+        {
+            // A dog gets a full workup every visit, so a limb the dictation never mentions was still assessed and
+            // found to need nothing. A cat gets worked on where it lets you, so the same silence means the limb was
+            // not done at all. The spine keeps the default for both; this is only about the limbs.
+            bool limbsAreAssessedEveryVisit = species != ChiroSpecies.Feline;
+
+            ChiroVocabularyGroup Limb(
+                string name,
+                string label,
+                string[] choices,
+                string notesName,
+                string[] standingSites = null,
+                bool expandsWhenUnqualified = false)
+                => new(
+                    name,
+                    label,
+                    choices,
+                    notesName,
+                    limbsAreAssessedEveryVisit ? standingSites : [],
+                    expandsWhenUnqualified,
+                    limbsAreAssessedEveryVisit);
+
+            // The coxofemoral rule only exists to stop the model duplicating what the server records for it. Where
+            // nothing is recorded automatically there is nothing to keep out of its way, and saying a limb is filled
+            // in afterwards would be a lie.
+            string[] forelimbHints = limbsAreAssessedEveryVisit
+                ? []
+                :
+                [
+                    "Record a limb only where the dictation says something about it. Nothing is added afterwards, so a limb that was assessed and needed nothing has to be dictated as a mobilization to be recorded.",
+                ];
+
+            string[] rearLimbHints = limbsAreAssessedEveryVisit
+                ?
+                [
+                    "Select a coxofemoral option only when the dictation names cranial or caudal for it. A bare \"coxofemoral mobilization\" with no direction needs nothing from you; both directions are recorded automatically.",
+                    "Do not guess a side. If the dictation does not say left or right, leave both rear limbs empty; unmentioned limbs are filled in afterwards.",
+                ]
+                :
+                [
+                    "Record a limb only where the dictation says something about it. Nothing is added afterwards, so an unmentioned limb stays empty and a limb that was assessed and needed nothing has to be dictated as a mobilization to be recorded.",
+                    "Do not guess a side. If the dictation does not say left or right, leave both rear limbs empty.",
+                ];
+
+            return new()
             {
                 Species = species,
                 Regions =
@@ -147,29 +191,30 @@ namespace number_sequence.Pages.UI.Chiro
                     ChiroVocabularyRegion.Of(
                         "forelimbs",
                         [
-                            new(nameof(LeftForelimbScapula), "Left forelimb scapula", ForelimbScapulaChoices, nameof(LeftForelimbNotes)),
-                            new(nameof(LeftForelimbHumorous), "Left forelimb humerus", ForelimbHumorousChoices, nameof(LeftForelimbNotes)),
-                            new(nameof(LeftForelimbUlna), "Left forelimb ulna", ForelimbUlnaChoices, nameof(LeftForelimbNotes)),
-                            new(nameof(LeftForelimbRadius), "Left forelimb radius", ForelimbRadiusChoices, nameof(LeftForelimbNotes)),
-                            new(nameof(LeftForelimbCarpus), "Left forelimb carpus", ForelimbCarpusChoices, nameof(LeftForelimbNotes), ExpandsWhenUnqualified: true),
-                            new(nameof(LeftForelimbMetatarsalsPhalanges), "Left forelimb digits", ForelimbMetatarsalsPhalangesChoices, nameof(LeftForelimbNotes)),
-                            new(nameof(RightForelimbScapula), "Right forelimb scapula", ForelimbScapulaChoices, nameof(RightForelimbNotes)),
-                            new(nameof(RightForelimbHumorous), "Right forelimb humerus", ForelimbHumorousChoices, nameof(RightForelimbNotes)),
-                            new(nameof(RightForelimbUlna), "Right forelimb ulna", ForelimbUlnaChoices, nameof(RightForelimbNotes)),
-                            new(nameof(RightForelimbRadius), "Right forelimb radius", ForelimbRadiusChoices, nameof(RightForelimbNotes)),
-                            new(nameof(RightForelimbCarpus), "Right forelimb carpus", ForelimbCarpusChoices, nameof(RightForelimbNotes), ExpandsWhenUnqualified: true),
-                            new(nameof(RightForelimbMetatarsalsPhalanges), "Right forelimb digits", ForelimbMetatarsalsPhalangesChoices, nameof(RightForelimbNotes)),
+                            Limb(nameof(LeftForelimbScapula), "Left forelimb scapula", ForelimbScapulaChoices, nameof(LeftForelimbNotes)),
+                            Limb(nameof(LeftForelimbHumorous), "Left forelimb humerus", ForelimbHumorousChoices, nameof(LeftForelimbNotes)),
+                            Limb(nameof(LeftForelimbUlna), "Left forelimb ulna", ForelimbUlnaChoices, nameof(LeftForelimbNotes)),
+                            Limb(nameof(LeftForelimbRadius), "Left forelimb radius", ForelimbRadiusChoices, nameof(LeftForelimbNotes)),
+                            Limb(nameof(LeftForelimbCarpus), "Left forelimb carpus", ForelimbCarpusChoices, nameof(LeftForelimbNotes), expandsWhenUnqualified: true),
+                            Limb(nameof(LeftForelimbMetatarsalsPhalanges), "Left forelimb digits", ForelimbMetatarsalsPhalangesChoices, nameof(LeftForelimbNotes)),
+                            Limb(nameof(RightForelimbScapula), "Right forelimb scapula", ForelimbScapulaChoices, nameof(RightForelimbNotes)),
+                            Limb(nameof(RightForelimbHumorous), "Right forelimb humerus", ForelimbHumorousChoices, nameof(RightForelimbNotes)),
+                            Limb(nameof(RightForelimbUlna), "Right forelimb ulna", ForelimbUlnaChoices, nameof(RightForelimbNotes)),
+                            Limb(nameof(RightForelimbRadius), "Right forelimb radius", ForelimbRadiusChoices, nameof(RightForelimbNotes)),
+                            Limb(nameof(RightForelimbCarpus), "Right forelimb carpus", ForelimbCarpusChoices, nameof(RightForelimbNotes), expandsWhenUnqualified: true),
+                            Limb(nameof(RightForelimbMetatarsalsPhalanges), "Right forelimb digits", ForelimbMetatarsalsPhalangesChoices, nameof(RightForelimbNotes)),
                         ],
                         [],
                         [
                             new(nameof(LeftForelimbNotes), "Left forelimb other notes"),
                             new(nameof(RightForelimbNotes), "Right forelimb other notes"),
-                        ]),
+                        ],
+                        forelimbHints),
                     ChiroVocabularyRegion.Of(
                         "rear limbs and coccygeal",
                         [
-                            new(nameof(LeftRearLimb), "Left rear limb", RearLimbChoices, nameof(LeftRearLimbNotes), RearLimbStandingSites),
-                            new(nameof(RightRearLimb), "Right rear limb", RearLimbChoices, nameof(RightRearLimbNotes), RearLimbStandingSites),
+                            Limb(nameof(LeftRearLimb), "Left rear limb", RearLimbChoices, nameof(LeftRearLimbNotes), RearLimbStandingSites),
+                            Limb(nameof(RightRearLimb), "Right rear limb", RearLimbChoices, nameof(RightRearLimbNotes), RearLimbStandingSites),
                             new(nameof(Coccygeal), "Coccygeal", CoccygealChoices, nameof(CoccygealNotes)),
                         ],
                         [],
@@ -178,12 +223,10 @@ namespace number_sequence.Pages.UI.Chiro
                             new(nameof(RightRearLimbNotes), "Right rear limb other notes"),
                             new(nameof(CoccygealNotes), "Coccygeal other notes"),
                         ],
-                        [
-                            "Select a coxofemoral option only when the dictation names cranial or caudal for it. A bare \"coxofemoral mobilization\" with no direction needs nothing from you; both directions are recorded automatically.",
-                            "Do not guess a side. If the dictation does not say left or right, leave both rear limbs empty; unmentioned limbs are filled in afterwards.",
-                        ]),
+                        rearLimbHints),
                 ],
             };
+        }
 
         #region Bound form fields
 
