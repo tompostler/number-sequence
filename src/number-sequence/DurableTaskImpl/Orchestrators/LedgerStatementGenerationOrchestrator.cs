@@ -8,12 +8,12 @@ namespace number_sequence.DurableTaskImpl.Orchestrators
         {
             _ = await context.ScheduleWithRetry<string>(
                 typeof(Activities.LedgerStatementPdfGenerationActivity),
-                ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
+                ServiceProviderOrchestrationExtensions.DefaultExponentialRetryOptions,
                 input);
 
             _ = await context.ScheduleWithRetry<string>(
                 typeof(Activities.EmailPdfActivity),
-                ServiceProviderOrchestrationExtensions.DefaultLightExponentialRetryOptions,
+                ServiceProviderOrchestrationExtensions.DefaultExponentialRetryOptions,
                 context.OrchestrationInstance.InstanceId);
 
             return default;

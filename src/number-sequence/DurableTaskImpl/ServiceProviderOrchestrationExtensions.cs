@@ -27,6 +27,11 @@ namespace number_sequence.DurableTaskImpl
                 .AddSingleton<TaskActivity, Activities.EmailPdfActivity>()
             ;
 
-        public static RetryOptions DefaultLightExponentialRetryOptions => new(TimeSpan.FromSeconds(5), 3) { BackoffCoefficient = 1.7 };
+        public static RetryOptions DefaultExponentialRetryOptions => new(firstRetryInterval: TimeSpan.FromSeconds(5), maxNumberOfAttempts: 6)
+        {
+            BackoffCoefficient = 1.9,
+            MaxRetryInterval = TimeSpan.FromMinutes(3),
+            RetryTimeout = TimeSpan.FromMinutes(20),
+        };
     }
 }
