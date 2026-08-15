@@ -102,6 +102,7 @@ namespace number_sequence
             //
 
             _ = DurableTaskImpl.ServiceProviderOrchestrationExtensions.AddDurableOrchestrations(services);
+            _ = services.AddHostedService<Services.Background.DurableOrchestrationPurgerBackgroundService>();
             _ = services.AddHostedService<Services.Background.DurableOrchestrationWorkerBackgroundService>();
 
 
