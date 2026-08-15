@@ -85,6 +85,13 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
 - **A rib is different: it takes a default, not an expansion.** "Rib 11 right" with no direction means `right
   dorsal`. Expanding it to dorsal, cranial and caudal would invent three findings from one phrase, which is why the
   expansion rule is per question rather than general. Carried as a hint on the thoracic region.
+- **"Withers" is equine for the first seven thoracic levels, used as a second numbering.** "Withers 4 left" is T4
+  left; the number after the word is the level, not an offset into some other scale. A bare "withers" with no
+  number is description — "she has some withers issues" is history, and expanding it to seven findings would be
+  seven adjustments nobody performed. The model was already mostly getting both halves from its own anatomy
+  knowledge; it is stated so the form does not depend on that. The count is `EquineModel.WithersThoracicCount`, the
+  example number is `WithersExampleLevel`, and both index `ThoracicSpineRows`, so the glossary cannot name a row
+  the grid does not have.
 - **An intended-but-not-performed adjustment is not a finding.** Resisted, deferred, or not tolerated goes in the
   notes and must never tick a box.
 - **The transcript is speech-to-text and contains recognition errors.** `cairo` is `chiro`; `post` is `posterior`;
@@ -178,9 +185,11 @@ consequence failure, because getting it wrong ticks something that did not happe
   would fix it. The dorsal default gets the same answer without guessing at dictation style. It would only diverge
   where a run states a non-dorsal direction once and means it for several ribs; watch for that before building
   anything.
-- **`ChiroVocabulary.Glossary` is empty on both species and currently unused.** Kept because species-specific
-  terminology is expected to turn up; the section is omitted from the prompt while empty, so it costs nothing until
-  it does. Remove it if it is still empty a long way from here.
+- **`ChiroVocabulary.Glossary` now carries "withers" on equine, and nothing on the small animals.** The section is
+  omitted from the prompt while empty, so an empty one costs nothing. A term goes here rather than in a region hint
+  when it can be said anywhere in the dictation: "withers" turns up in a plan or a forelimb description as readily
+  as in the thoracic run, and every region knowing the word is also what keeps the phrase out of whichever notes
+  field happened to hear it.
 - **Notes cross-contamination.** Each region sees the whole transcript, and a phrase with no home in that region's
   questions used to land in its notes — coxofemoral text in `PelvicNotes`, tail traction in `SacrumNotes`. Addressed
   by telling each region its notes fields are not a catch-all. Worth watching; if it recurs, the next lever is not

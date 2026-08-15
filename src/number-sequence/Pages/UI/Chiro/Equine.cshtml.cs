@@ -30,6 +30,19 @@ namespace number_sequence.Pages.UI.Chiro
 
         public static readonly string[] ThoracicSpineRows = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12", "T13", "T14", "T15", "T16", "T17", "T18"];
         public static readonly string[] ThoracicSpineColumns = ["mobilization", "left", "right", "posterior"];
+
+        /// <summary>
+        /// How many of the thoracic levels a dictation can call withers, counted from the first. Anatomy rather than
+        /// a form choice, so it is a number here and the levels themselves are read off
+        /// <see cref="ThoracicSpineRows"/>.
+        /// </summary>
+        public const int WithersThoracicCount = 7;
+
+        /// <summary>
+        /// A withers level partway along, so the glossary's example is not the boundary one. Only exists so the
+        /// spoken number and the row it maps to come from a single place and cannot disagree.
+        /// </summary>
+        private const int WithersExampleLevel = 4;
         public static readonly string[] RibsRows = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "R16", "R17", "R18"];
         public static readonly string[] RibsColumns = ["left dorsal", "left cranial", "left caudal", "right dorsal", "right cranial", "right caudal"];
         public static readonly string[] SternumChoices = ["left", "right"];
@@ -71,6 +84,16 @@ namespace number_sequence.Pages.UI.Chiro
         public static readonly ChiroVocabulary Vocabulary = new()
         {
             Species = ChiroSpecies.Equine,
+
+            // Said in any region, not just the thoracic one: "some withers issues" turns up in the history as
+            // readily as "withers 4 left" does in the adjustment run. Telling every request what the word means is
+            // also what keeps the phrase out of whichever notes field happened to hear it.
+            Glossary =
+            [
+                $"\"Withers\" is a second way of naming the first {WithersThoracicCount} thoracic levels, {ThoracicSpineRows[0]} through {ThoracicSpineRows[WithersThoracicCount - 1]}. The number that follows it is the level: \"withers {WithersExampleLevel} left\" is {ThoracicSpineRows[WithersExampleLevel - 1]} left, exactly as if it had been dictated that way.",
+                "The withers named without a number is describing the area, not adjusting it. Select nothing for it; it is a remark and belongs in notes if anywhere.",
+            ],
+
             Regions =
             [
                 // First, so it is the one carrying the intake fields: this is the request about the visit rather
