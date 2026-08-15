@@ -85,13 +85,13 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
 - **A rib is different: it takes a default, not an expansion.** "Rib 11 right" with no direction means `right
   dorsal`. Expanding it to dorsal, cranial and caudal would invent three findings from one phrase, which is why the
   expansion rule is per question rather than general. Carried as a hint on the thoracic region.
-- **"Withers" is equine for the first seven thoracic levels, used as a second numbering.** "Withers 4 left" is T4
-  left; the number after the word is the level, not an offset into some other scale. A bare "withers" with no
-  number is description — "she has some withers issues" is history, and expanding it to seven findings would be
-  seven adjustments nobody performed. The model was already mostly getting both halves from its own anatomy
-  knowledge; it is stated so the form does not depend on that. The count is `EquineModel.WithersThoracicCount`, the
-  example number is `WithersExampleLevel`, and both index `ThoracicSpineRows`, so the glossary cannot name a row
-  the grid does not have.
+- **"Withers" is equine for the thoracic spine, interchangeably and level for level.** "Withers 4 left" is T4 left;
+  the number after the word is the level, over the whole run and not just the front of it. A bare "withers" with no
+  number is description — "she has some withers issues" is history, and turning it into findings would be
+  adjustments nobody performed. The model was already mostly getting both halves from its own anatomy knowledge; it
+  is stated so the form does not depend on that. The endpoints and the worked example are all indexes into
+  `ThoracicSpineRows` (`EquineModel.WithersExampleLevel` for the latter), so the glossary cannot name a row the
+  grid does not have.
 - **The date of service may come back as `MM-dd`.** Nobody says the year out loud, and demanding `yyyy-MM-dd`
   meant a spoken month and day either came back null or came back with a guessed year. The schema now permits
   either shape and tells the model not to guess; `ChiroDictationParser.ReadDateOfService` supplies the current

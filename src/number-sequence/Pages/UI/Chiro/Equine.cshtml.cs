@@ -32,15 +32,8 @@ namespace number_sequence.Pages.UI.Chiro
         public static readonly string[] ThoracicSpineColumns = ["mobilization", "left", "right", "posterior"];
 
         /// <summary>
-        /// How many of the thoracic levels a dictation can call withers, counted from the first. Anatomy rather than
-        /// a form choice, so it is a number here and the levels themselves are read off
-        /// <see cref="ThoracicSpineRows"/>.
-        /// </summary>
-        public const int WithersThoracicCount = 7;
-
-        /// <summary>
-        /// A withers level partway along, so the glossary's example is not the boundary one. Only exists so the
-        /// spoken number and the row it maps to come from a single place and cannot disagree.
+        /// The thoracic level the withers glossary works through as its example. Only exists so the spoken number
+        /// and the <see cref="ThoracicSpineRows"/> row it maps to come from one place and cannot disagree.
         /// </summary>
         private const int WithersExampleLevel = 4;
         public static readonly string[] RibsRows = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "R16", "R17", "R18"];
@@ -90,7 +83,7 @@ namespace number_sequence.Pages.UI.Chiro
             // also what keeps the phrase out of whichever notes field happened to hear it.
             Glossary =
             [
-                $"\"Withers\" is a second way of naming the first {WithersThoracicCount} thoracic levels, {ThoracicSpineRows[0]} through {ThoracicSpineRows[WithersThoracicCount - 1]}. The number that follows it is the level: \"withers {WithersExampleLevel} left\" is {ThoracicSpineRows[WithersExampleLevel - 1]} left, exactly as if it had been dictated that way.",
+                $"\"Withers\" is another word for the thoracic spine, level for level and across the whole run from {ThoracicSpineRows[0]} to {ThoracicSpineRows[^1]}. The number that follows it is the level: \"withers {WithersExampleLevel} left\" is {ThoracicSpineRows[WithersExampleLevel - 1]} left, exactly as if it had been dictated that way.",
                 "The withers named without a number is describing the area, not adjusting it. Select nothing for it; it is a remark and belongs in notes if anywhere.",
             ],
 
