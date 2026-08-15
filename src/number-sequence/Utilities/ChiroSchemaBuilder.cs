@@ -37,7 +37,7 @@ namespace number_sequence.Utilities
             {
                 properties[PatientNameKey] = NullableString("The patient (animal) name. Null if not stated.");
                 properties[OwnerNameKey] = NullableString("The owner's name. Null if not stated. Do not infer an owner from a breed, a clinic, or an event name.");
-                properties[DateOfServiceKey] = NullableString("Date of service as yyyy-MM-dd. Null unless the dictation states the date of this visit. A future appointment date is not the date of service.");
+                properties[DateOfServiceKey] = NullableString("Date of service as yyyy-MM-dd, or MM-dd if the dictation gives a month and day but no year. Do not guess a year. Null unless the dictation states the date of this visit. A future appointment date is not the date of service.");
                 properties[ClinicAbbreviationKey] = ClinicSchema(clinicAbbreviations);
             }
 

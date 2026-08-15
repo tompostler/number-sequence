@@ -130,6 +130,10 @@ namespace number_sequence.Pages.UI.Chiro
 
         public static readonly IReadOnlyList<(string Anchor, string Label)> DefaultSections = new[]
         {
+            // The two cards above the exam. They scroll off first and are the ones worth coming back to, since the
+            // dictation is what the rest of the page is being checked against.
+            ("dictation", "Dictation"),
+            ("patient", "Patient"),
             ("head", "Head"),
             ("cervical", "Cervical"),
             ("thoracic", "Thoracic"),

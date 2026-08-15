@@ -92,6 +92,11 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
   knowledge; it is stated so the form does not depend on that. The count is `EquineModel.WithersThoracicCount`, the
   example number is `WithersExampleLevel`, and both index `ThoracicSpineRows`, so the glossary cannot name a row
   the grid does not have.
+- **The date of service may come back as `MM-dd`.** Nobody says the year out loud, and demanding `yyyy-MM-dd`
+  meant a spoken month and day either came back null or came back with a guessed year. The schema now permits
+  either shape and tells the model not to guess; `ChiroDictationParser.ReadDateOfService` supplies the current
+  year. Deliberately not solved by putting today's date in the prompt — what year it is is the one fact the model
+  cannot know and the server can.
 - **An intended-but-not-performed adjustment is not a finding.** Resisted, deferred, or not tolerated goes in the
   notes and must never tick a box.
 - **The transcript is speech-to-text and contains recognition errors.** `cairo` is `chiro`; `post` is `posterior`;

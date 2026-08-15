@@ -379,20 +379,34 @@ namespace number_sequence.Services
             {
                 PatientName = includeIntake ? ReadString(root, ChiroSchemaBuilder.PatientNameKey) : null,
                 OwnerName = includeIntake ? ReadString(root, ChiroSchemaBuilder.OwnerNameKey) : null,
-                DateOfService = includeIntake && DateOnly.TryParseExact(
-                    ReadString(root, ChiroSchemaBuilder.DateOfServiceKey),
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out DateOnly dateOfService)
-                        ? dateOfService
-                        : null,
+                DateOfService = includeIntake
+                    ? ReadDateOfService(ReadString(root, ChiroSchemaBuilder.DateOfServiceKey))
+                    : null,
                 ClinicAbbreviation = includeIntake ? ReadString(root, ChiroSchemaBuilder.ClinicAbbreviationKey) : null,
                 Groups = groups,
                 Grids = grids,
                 Notes = notes.ToDictionary(x => x.Key, x => x.Value.Count == 0 ? null : string.Join(" ", x.Value)),
                 Flags = flags,
             };
+        }
+
+        /// <summary>
+        /// Nobody says the year out loud, so the model is allowed to answer <c>MM-dd</c> and the year is supplied
+        /// here. Filling it server side rather than telling the model what today is keeps the one fact the model
+        /// cannot know out of a prompt it would otherwise have to be trusted with.
+        /// </summary>
+        private static DateOnly? ReadDateOfService(string value)
+        {
+            if (DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly stated))
+            {
+                return stated;
+            }
+
+            // Parsing a year-less date already defaults to the current year, but the whole point of this branch is
+            // that year, so it is stated rather than inherited.
+            return DateOnly.TryParseExact(value, "MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly partial)
+                ? new DateOnly(DateTime.Now.Year, partial.Month, partial.Day)
+                : null;
         }
 
         private static ChiroParseUsage Price(Usage usage)

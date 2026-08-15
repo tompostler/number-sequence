@@ -7,7 +7,7 @@
    Both forms name their handler on the form itself. Without that, a form posts to the current url, and after a
    parse the current url still carries ?handler=Parse, so the submit button would re-enter the parser. *@
 <form method="post" asp-page-handler="Parse" id="chiro-transcript-form">
-  <div class="card mb-4">
+  <div class="card mb-4" id="dictation">
     <div class="card-header">Dictation</div>
     <div class="card-body">
       <div class="mb-3">
