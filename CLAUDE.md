@@ -25,6 +25,21 @@ stopped. Recovery is `dotnet build --no-incremental`.
   sizes, and anything not reconstructible from source. Do not log things that are generated from source, such as a
   prompt or a schema — sizes are enough.
 
+## Documenting a feature
+
+**A feature is not done until its docs are written.** Do it in the same turn as the code, before reporting done —
+not as a follow-up offer. Two places, and they hold different things:
+
+- **`docs/<feature>.md`** — the full design notes. Why it is shaped this way, what the constraints were, what was
+  tried and rejected, and the flow through the pieces. New feature gets a new file; a change to an existing feature
+  edits that feature's file. [`docs/chiro-dictation-parsing.md`](docs/chiro-dictation-parsing.md) is the pattern.
+- **This file** — a one-line pointer to the design notes, followed only by the constraints that will break things
+  if forgotten. Keep it short; everything here is read on every single session, so it competes with everything else.
+
+Write what is not reconstructible from the source: decisions, limits found the hard way, the coupling between two
+files that nothing in either file mentions. Do not restate class structure, method lists, or anything a reader gets
+faster by opening the file. `README.md` is build and release badges only — it is not the place for any of this.
+
 ## Deployment
 
 App settings live in [`deployment/templates/AppServiceSettings.json`](deployment/templates/AppServiceSettings.json).
