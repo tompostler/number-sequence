@@ -1,6 +1,7 @@
 {
   "version": "7.6",
   "versionHeightOffset": -1, // Offset to make it so the first version after a rev ends with a zero.
+  "gitCommitIdShortFixedLength": 5, // Default is 10, which is heavily verbose for this repo.
   "publicReleaseRefSpec": [
     "^refs/heads/main$"
   ]
