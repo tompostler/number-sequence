@@ -33,10 +33,17 @@
             public string ProcessedAt { get; set; }
             public string Delay { get; set; }
         }
+        public sealed class ChiroBatchPendingCount
+        {
+            public string Clinic { get; set; }
+            public string CC { get; set; }
+            public int Count { get; set; }
+        }
 
         public List<ChiroRecord> ChiroRecords { get; set; }
         public List<EmailDocument> EmailDocuments { get; set; }
         public List<ChiroBatch> ChiroBatches { get; set; }
+        public List<ChiroBatchPendingCount> ChiroBatchPendingCounts { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

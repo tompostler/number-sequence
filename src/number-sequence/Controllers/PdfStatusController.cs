@@ -29,6 +29,7 @@ namespace number_sequence.Controllers
 
             List<Models.ChiroRecord> chiroRecords = [];
             List<Models.ChiroEmailBatch> chiroBatches = [];
+            List<Models.ChiroEmailBatch> pendingChiroBatches = [];
             List <Models.EmailDocument> emailDocuments = [];
 
             bool hasChiroAccess = this.User.IsInRole(AccountRoles.Chiro) || this.User.IsInRole(AccountRoles.PdfStatus);
@@ -45,6 +46,11 @@ namespace number_sequence.Controllers
                                                 .Where(r => r.CreatedDate > daysAgo)
                                                 .OrderByDescending(r => r.CreatedDate)
                                                 .Take(takeAmount)
+                                                .ToListAsync();
+
+                // Not bound by daysLookback/takeAmount - a stuck straggler outside that window should still show up.
+                pendingChiroBatches = await nsContext.ChiroEmailBatches
+                                                .Where(r => r.ProcessedAt == null)
                                                 .ToListAsync();
             }
             if (hasEmailAccess)
@@ -139,6 +145,16 @@ namespace number_sequence.Controllers
                         ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
                         Delay = (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate).ToString(chiroBatchTimeSpanFormat),
                     })
+                    .ToList(),
+                ChiroBatchPendingCounts = pendingChiroBatches
+                    .GroupBy(x => (x.ClinicAbbreviation, x.CcEmail))
+                    .Select(g => new PdfStatus.ChiroBatchPendingCount
+                    {
+                        Clinic = g.Key.ClinicAbbreviation,
+                        CC = g.Key.CcEmail,
+                        Count = g.Count(),
+                    })
+                    .OrderByDescending(x => x.Count)
                     .ToList(),
             };
 

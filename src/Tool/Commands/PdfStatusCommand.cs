@@ -74,6 +74,13 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.ChiroBatch.CreatedDate),
                 nameof(PdfStatus.ChiroBatch.ProcessedAt),
                 nameof(PdfStatus.ChiroBatch.Delay));
+
+            Console.WriteLine($"{nameof(PdfStatus.ChiroBatchPendingCounts)} ({pdfStatus.ChiroBatchPendingCounts.Count}):");
+            Output.WriteTable(
+                pdfStatus.ChiroBatchPendingCounts,
+                nameof(PdfStatus.ChiroBatchPendingCount.Clinic),
+                nameof(PdfStatus.ChiroBatchPendingCount.CC),
+                nameof(PdfStatus.ChiroBatchPendingCount.Count));
         }
     }
 }

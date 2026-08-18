@@ -70,3 +70,10 @@ break things if forgotten:
   page, which shows the doctor the name before the pdf exists. Two copies would be two filenames.
 - **`ChiroVocabulary` names are `nameof` of bound properties**, resolved by reflection in `ChiroForm.ApplyParse`.
   Renaming a bound property without updating the vocabulary fails at runtime, not at build.
+
+## PDF status page
+
+Full design notes: [`docs/pdf-status.md`](docs/pdf-status.md). Constraint that will break things if forgotten:
+
+- **The pending-count section deliberately ignores `daysLookback`/`takeAmount`.** It exists specifically to
+  surface stragglers the windowed list views hide.
