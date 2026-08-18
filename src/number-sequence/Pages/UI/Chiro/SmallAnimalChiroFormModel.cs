@@ -157,6 +157,13 @@ namespace number_sequence.Pages.UI.Chiro
                         [
                             new(nameof(HeadNotes), "Head other notes"),
                             new(nameof(CervicalNotes), "Cervical other notes"),
+                        ],
+                        [
+                            // One spoken phrase covering two of the four options, and the word "bilateral" in the
+                            // option name reads like it rules the side out, so left alone the model picks one or the
+                            // other. The options are indexed rather than written out so the rule cannot name a
+                            // choice the checkboxes do not have.
+                            $"An occiput given both a side and a superior or inferior is both options: \"occiput superior right\" is \"{HeadOcciputChoices[1]}\" and \"{HeadOcciputChoices[2]}\" together. \"Bilateral\" is part of that option's name and does not contradict the side that was said. Select only what was said, so a side on its own stays a side on its own.",
                         ]),
                     ChiroVocabularyRegion.Of(
                         "thoracic and ribs",

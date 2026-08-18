@@ -92,6 +92,13 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
   is stated so the form does not depend on that. The endpoints and the worked example are all indexes into
   `ThoracicSpineRows` (`EquineModel.WithersExampleLevel` for the latter), so the glossary cannot name a row the
   grid does not have.
+- **"Occiput superior right" is two options, not one.** The side and the plane are separate choices on the same
+  question, so that phrase is `cranial right` plus `bilateral superior` — `right` plus `bilateral superior` on
+  equine, which names its sides without the `cranial`. The `bilateral` in the option name is what makes this worth
+  stating: it reads as contradicting the side that was just said, and the model picks one or the other. Carried as
+  a hint on the head and cervical region of both vocabularies, written against `HeadOcciputChoices[1]` and `[2]` so
+  each species gets its own wording and neither can name a choice the checkboxes lack. A side with no plane, or a
+  plane with no side, still means only what was said.
 - **The date of service may come back as `MM-dd`.** Nobody says the year out loud, and demanding `yyyy-MM-dd`
   meant a spoken month and day either came back null or came back with a guessed year. The schema now permits
   either shape and tells the model not to guess; `ChiroDictationParser.ReadDateOfService` supplies the current
