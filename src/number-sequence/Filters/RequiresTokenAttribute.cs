@@ -1,15 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace number_sequence.Filters
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
     public sealed class RequiresTokenAttribute : Attribute, IFilterFactory
     {
-        private readonly string requiredRole;
+        private readonly string[] requiredRoles;
 
-        public RequiresTokenAttribute(string requiredRole = default)
+        /// <summary>
+        /// If multiple roles are given, the account needs only one of them (OR, not AND) to pass.
+        /// </summary>
+        public RequiresTokenAttribute(params string[] requiredRoles)
         {
-            this.requiredRole = requiredRole;
+            this.requiredRoles = requiredRoles;
         }
 
         public bool IsReusable => true;
@@ -17,7 +20,7 @@ namespace number_sequence.Filters
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             ILogger<RequiresTokenFilter> logger = serviceProvider.GetRequiredService<ILogger<RequiresTokenFilter>>();
-            return new RequiresTokenFilter(this.requiredRole, logger);
+            return new RequiresTokenFilter(this.requiredRoles, logger);
         }
     }
 }

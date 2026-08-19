@@ -6,7 +6,7 @@ using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.Pages.UI.PdfStatus
 {
-    [RequiresToken(AccountRoles.PdfStatus)]
+    [RequiresToken(AccountRoles.Chiro, AccountRoles.PdfStatus)]
     public sealed class IndexModel : PageModel
     {
         private readonly NsTcpWtfClient nsClient;

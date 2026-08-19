@@ -9,12 +9,12 @@ namespace number_sequence.Filters
     {
         public const string TokenCookieName = "ns-token";
 
-        private readonly string requiredRole;
+        private readonly string[] requiredRoles;
         private readonly ILogger<RequiresTokenFilter> logger;
 
-        public RequiresTokenFilter(string requiredRole, ILogger<RequiresTokenFilter> logger)
+        public RequiresTokenFilter(string[] requiredRoles, ILogger<RequiresTokenFilter> logger)
         {
-            this.requiredRole = requiredRole;
+            this.requiredRoles = requiredRoles;
             this.logger = logger;
         }
 
@@ -74,10 +74,11 @@ namespace number_sequence.Filters
                 return;
             }
 
-            if (!string.IsNullOrEmpty(this.requiredRole) && !principal.IsInRole(this.requiredRole))
+            if (this.requiredRoles?.Length > 0 && !this.requiredRoles.Any(principal.IsInRole))
             {
-                this.logger.LogWarning($"Account does not have the {this.requiredRole} role.");
-                context.Result = Unauthorized(context, $"Account is missing the {this.requiredRole} role.");
+                string rolesDescription = string.Join(" or ", this.requiredRoles);
+                this.logger.LogWarning($"Account does not have the {rolesDescription} role.");
+                context.Result = Unauthorized(context, $"Account is missing the {rolesDescription} role.");
                 return;
             }
 

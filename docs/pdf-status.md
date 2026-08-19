@@ -17,3 +17,13 @@ both on the same row — so grouping by the pair is equivalent to grouping by de
 This section is what should be checked first when `ChiroBatchSendBackgroundService` looks like
 it isn't draining a clinic's queue: it shows the true backlog per destination independent of the
 list-view paging.
+
+## Access
+
+The page accepts either the `Chiro` or `PdfStatus` role (`[RequiresToken(AccountRoles.Chiro,
+AccountRoles.PdfStatus)]`) — `RequiresTokenAttribute`/`RequiresTokenFilter` treat multiple roles as
+OR, not AND. `PdfStatusController` then re-checks role per section: `Chiro` sees the chiro
+records/batches/pending-counts tables, `PdfStatus` additionally sees email documents. A
+`Chiro`-only account passing the page-level check but failing a section's role check gets an empty
+table with "No access." instead of the data, per the `User.IsInRole` checks already in
+`Index.cshtml`.
