@@ -6,6 +6,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
 using number_sequence.Utilities;
+using System.Diagnostics;
 
 namespace number_sequence.Services.Background
 {
@@ -48,6 +49,7 @@ namespace number_sequence.Services.Background
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             const int batchSize = 25;
+            var sw = Stopwatch.StartNew();
 
             List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
                                                             .Where(x => x.FileLength == 0 && x.ProcessedAt != null && x.CreatedDate < QuestPdfCutover)
@@ -64,7 +66,7 @@ namespace number_sequence.Services.Background
                 }
             }
 
-            this.logger.LogInformation($"Migrated {migrated}/{emailDocuments.Count} pdfs out of the latex container.");
+            this.logger.LogInformation($"Migrated {migrated}/{emailDocuments.Count} pdfs out of the latex container after {sw.Elapsed}.");
 
             _ = await nsContext.SaveChangesAsync(cancellationToken);
         }
