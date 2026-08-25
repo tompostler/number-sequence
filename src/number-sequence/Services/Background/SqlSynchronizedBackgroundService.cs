@@ -57,7 +57,7 @@ namespace number_sequence.Services.Background
                     // We have a previous record and we should wait before executing again
                     if (lastExecution != default && DateTimeOffset.UtcNow < nextExecution)
                     {
-                        this.logger.LogInformation($"Last execution of {this.GetType().FullName} was {DateTimeOffset.UtcNow - lastExecution.LastExecuted} ago when the interval is [{this.Interval}] and the crons are [{string.Join("],[", this.Crons)}]. Next execution is expected at {nextExecution:u}");
+                        this.logger.LogInformation($"Last execution of {this.GetType().FullName} was {DateTimeOffset.UtcNow - lastExecution.LastExecuted} ago when the interval is [{this.Interval}] and the crons are [{string.Join("],[", this.Crons ?? [])}]. Next execution is expected at {nextExecution:u}");
                         TimeSpan timeUntilNextExpectedExecution = nextExecution - DateTimeOffset.UtcNow;
                         var durationToSleep = TimeSpan.FromMinutes(Math.Max(5, timeUntilNextExpectedExecution.TotalMinutes));
                         this.logger.LogInformation($"Determined we should sleep for {durationToSleep}");
