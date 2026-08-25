@@ -49,6 +49,11 @@ gone at the next one. Add it to the template.
 `LANG` is set there deliberately. The plan is Linux, and .NET on a host with no `LANG` falls back to the invariant
 culture, which renders `.ToString("C")` as `¤12.34` — the ledger UI is full of those.
 
+`WEBSITE_RUN_FROM_PACKAGE` is set to `1` so the deploy's zip is mounted read-only and swapped atomically instead of
+extracted file-by-file — code lands all at once instead of whenever App Service gets around to each file. This is
+the local-zip variant, not the run-from-URL variant: no storage account or SAS involved, since the existing
+`AzureRmWebAppDeployment@4` zip-deploy step already ships the zip to Kudu.
+
 ## Chiro dictation parsing
 
 Full design notes: [`docs/chiro-dictation-parsing.md`](docs/chiro-dictation-parsing.md). Constraints that will

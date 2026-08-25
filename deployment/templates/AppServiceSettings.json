@@ -70,6 +70,7 @@
         "Sql__ConnectionString": "[variables('sqlConnectionString')]",
         "Storage__ConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
         "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "7",
+        "WEBSITE_RUN_FROM_PACKAGE": "1",
         "WEBSITES_ENABLE_APP_SERVICE_STORAGE": "false"
       }
     }
