@@ -35,6 +35,10 @@ namespace number_sequence
             _ = services.AddApplicationInsightsTelemetry();
             _ = services.AddNsConfig(this.Configuration);
 
+            // A bug in one of the background services shouldn't take the whole web process down with it.
+            // Each service already guards against exceptions, so this is for anything that slips through.
+            _ = services.Configure<HostOptions>(options => options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore);
+
 
             //
             // Data Access
