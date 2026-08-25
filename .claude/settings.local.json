@@ -3,7 +3,8 @@
     "allow": [
       "Bash(dotnet build:*)",
       "PowerShell(dotnet build *)",
-      "Bash(git status *)"
+      "Bash(git status *)",
+      "Bash(git log *)"
     ]
   }
 }

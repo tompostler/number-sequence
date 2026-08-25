@@ -30,6 +30,25 @@ retried on every run indefinitely. That's intentional given the low volume here 
 a separate "gave up" marker - see [`SqlSynchronizedBackgroundService`](../src/number-sequence/Services/Background/SqlSynchronizedBackgroundService.cs)
 for the run-once-per-cron-tick machinery this and the other background services share.
 
+## Latex pdf migration
+
+The `FileLength` backfill surfaced a second, older gap: `EmailDocument` rows processed before the 2024-09-15
+QuestPDF cutover (commit `7163fe1`) were never copied into the `pdf` blob container in the first place. Before
+that date, `EmailPdfForLatexBackgroundService` (removed in `70da9ae`) attached the pdf straight out of the retired
+`latex` container's `{id}/output/{id}.pdf` path and never wrote a copy into `pdf`, so `FileLengthBackfillBackgroundService`
+correctly gets a 404 for these and can never fill them in on its own.
+
+`LatexPdfMigrationBackgroundService` closes that gap: for `EmailDocument` rows with `FileLength == 0`, a set
+`ProcessedAt`, and `CreatedDate` before the cutover, it does a same-account `SyncCopyFromUriAsync` from
+`NsStorage.GetLegacyLatexPdfBlobClient` into the normal `pdf` location, then reads the copy's size back for
+`FileLength`. The cutover date isn't a performance filter — it's load-bearing: `ChiroEmailBatch` postdates the
+QuestPDF switch entirely, so it's never a candidate and isn't queried here, and any *post*-cutover row with
+`FileLength == 0` is a real bug that this service must not paper over by matching it.
+
+This is a one-time migration for a fixed, closed set of historical rows, not evergreen infrastructure like the
+`FileLength` backfill above — it, `NsStorage.GetLegacyLatexPdfBlobClient`, and its `Startup.cs` registration should
+be deleted together (a single revert) once its query stops matching anything.
+
 ## Access
 
 The page accepts either the `Chiro` or `PdfStatus` role (`[RequiresToken(AccountRoles.Chiro,
