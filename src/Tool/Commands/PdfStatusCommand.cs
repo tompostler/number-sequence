@@ -69,8 +69,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Output.WriteTable(
                 pdfStatus.ChiroBatches,
                 nameof(PdfStatus.ChiroBatch.Id),
-                nameof(PdfStatus.ChiroBatch.Clinic),
-                nameof(PdfStatus.ChiroBatch.CC),
+                nameof(PdfStatus.ChiroBatch.Recipient),
                 nameof(PdfStatus.ChiroBatch.AttachmentName),
                 nameof(PdfStatus.ChiroBatch.FileLength),
                 nameof(PdfStatus.ChiroBatch.CreatedDate),
@@ -80,8 +79,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Console.WriteLine($"{nameof(PdfStatus.ChiroBatchPendingCounts)} ({pdfStatus.ChiroBatchPendingCounts.Count}):");
             Output.WriteTable(
                 pdfStatus.ChiroBatchPendingCounts,
-                nameof(PdfStatus.ChiroBatchPendingCount.Clinic),
-                nameof(PdfStatus.ChiroBatchPendingCount.CC),
+                nameof(PdfStatus.ChiroBatchPendingCount.Recipient),
                 nameof(PdfStatus.ChiroBatchPendingCount.Count),
                 nameof(PdfStatus.ChiroBatchPendingCount.TotalFileLength));
         }

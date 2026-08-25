@@ -144,8 +144,7 @@ namespace number_sequence.Controllers
                     x => new PdfStatus.ChiroBatch
                     {
                         Id = x.Id,
-                        Clinic = x.ClinicAbbreviation,
-                        CC = x.CcEmail,
+                        Recipient = x.ClinicAbbreviation ?? x.CcEmail,
                         AttachmentName = x.AttachmentName,
                         FileLength = formatFileLength(x.FileLength),
                         CreatedDate = x.CreatedDate.AddHours(hoursOffset).ToString(dateTimeFormat),
@@ -154,11 +153,10 @@ namespace number_sequence.Controllers
                     })
                     .ToList(),
                 ChiroBatchPendingCounts = pendingChiroBatches
-                    .GroupBy(x => (x.ClinicAbbreviation, x.CcEmail))
+                    .GroupBy(x => x.ClinicAbbreviation ?? x.CcEmail)
                     .Select(g => new PdfStatus.ChiroBatchPendingCount
                     {
-                        Clinic = g.Key.ClinicAbbreviation,
-                        CC = g.Key.CcEmail,
+                        Recipient = g.Key,
                         Count = g.Count(),
                         TotalFileLength = formatFileLength(g.Sum(x => x.FileLength)),
                     })
