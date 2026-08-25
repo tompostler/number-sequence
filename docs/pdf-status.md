@@ -18,6 +18,18 @@ This section is what should be checked first when `ChiroBatchSendBackgroundServi
 it isn't draining a clinic's queue: it shows the true backlog per destination independent of the
 list-view paging.
 
+## FileLength backfill
+
+`FileLengthBackfillBackgroundService` fills in `FileLength` on `EmailDocument`/`ChiroEmailBatch` rows that predate
+the column. It treats `FileLength == 0` as "needs backfilling" rather than tracking a separate flag — safe because
+a real generated pdf is never zero bytes, and both models default the column to `0`. It reads the size straight off
+the blob already in storage (`NsStorage.GetBlobClient`) instead of recomputing anything.
+
+It's best-effort: a blob that 404s (e.g. aged out of retention) is logged and left at `0`, which means it's
+retried on every run indefinitely. That's intentional given the low volume here rather than worth the complexity of
+a separate "gave up" marker - see [`SqlSynchronizedBackgroundService`](../src/number-sequence/Services/Background/SqlSynchronizedBackgroundService.cs)
+for the run-once-per-cron-tick machinery this and the other background services share.
+
 ## Access
 
 The page accepts either the `Chiro` or `PdfStatus` role (`[RequiresToken(AccountRoles.Chiro,
