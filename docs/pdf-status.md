@@ -18,36 +18,13 @@ This section is what should be checked first when `ChiroBatchSendBackgroundServi
 it isn't draining a clinic's queue: it shows the true backlog per destination independent of the
 list-view paging.
 
-## FileLength backfill
+## FileLength
 
-`FileLengthBackfillBackgroundService` fills in `FileLength` on `EmailDocument`/`ChiroEmailBatch` rows that predate
-the column. It treats `FileLength == 0` as "needs backfilling" rather than tracking a separate flag — safe because
-a real generated pdf is never zero bytes, and both models default the column to `0`. It reads the size straight off
-the blob already in storage (`NsStorage.GetBlobClient`) instead of recomputing anything.
-
-It's best-effort: a blob that 404s (e.g. aged out of retention) is logged and left at `0`, which means it's
-retried on every run indefinitely. That's intentional given the low volume here rather than worth the complexity of
-a separate "gave up" marker - see [`SqlSynchronizedBackgroundService`](../src/number-sequence/Services/Background/SqlSynchronizedBackgroundService.cs)
-for the run-once-per-cron-tick machinery this and the other background services share.
-
-## Latex pdf migration
-
-The `FileLength` backfill surfaced a second, older gap: `EmailDocument` rows processed before the 2024-09-15
-QuestPDF cutover (commit `7163fe1`) were never copied into the `pdf` blob container in the first place. Before
-that date, `EmailPdfForLatexBackgroundService` (removed in `70da9ae`) attached the pdf straight out of the retired
-`latex` container's `{id}/output/{id}.pdf` path and never wrote a copy into `pdf`, so `FileLengthBackfillBackgroundService`
-correctly gets a 404 for these and can never fill them in on its own.
-
-`LatexPdfMigrationBackgroundService` closes that gap: for `EmailDocument` rows with `FileLength == 0`, a set
-`ProcessedAt`, and `CreatedDate` before the cutover, it does a same-account `SyncCopyFromUriAsync` from
-`NsStorage.GetLegacyLatexPdfBlobClient` into the normal `pdf` location, then reads the copy's size back for
-`FileLength`. The cutover date isn't a performance filter — it's load-bearing: `ChiroEmailBatch` postdates the
-QuestPDF switch entirely, so it's never a candidate and isn't queried here, and any *post*-cutover row with
-`FileLength == 0` is a real bug that this service must not paper over by matching it.
-
-This is a one-time migration for a fixed, closed set of historical rows, not evergreen infrastructure like the
-`FileLength` backfill above — it, `NsStorage.GetLegacyLatexPdfBlobClient`, and its `Startup.cs` registration should
-be deleted together (a single revert) once its query stops matching anything.
+`EmailDocument`/`ChiroEmailBatch` rows carry a `FileLength` populated at pdf-generation time from the blob's size
+(see the `*PdfGenerationActivity` classes). Historical rows predating that column, plus a cohort of pre-2024-09-15
+`EmailDocument` rows whose pdfs only ever lived in a since-retired `latex` blob container, were one-time backfilled
+by `FileLengthBackfillBackgroundService`/`LatexPdfMigrationBackgroundService`, both since removed now that their
+queries stopped matching anything - see git history if this needs revisiting.
 
 ## Access
 
