@@ -37,7 +37,7 @@ namespace number_sequence.Services.Background
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            const int batchSize = 5;
+            const int batchSize = 25;
 
             List<Models.EmailDocument> emailDocuments = await nsContext.EmailDocuments
                                                             .Where(x => x.FileLength == 0)
