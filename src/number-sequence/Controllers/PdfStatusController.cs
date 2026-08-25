@@ -106,6 +106,11 @@ namespace number_sequence.Controllers
             static TimeSpan chiroRecordDelay(Models.ChiroRecord record)
                 => (record.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(record.DataEnteredAt);
 
+            static string formatFileLength(long bytes)
+                => bytes >= 1_000_000
+                    ? $"{bytes / 1_000_000.0:N2} MB"
+                    : $"{bytes / 1_000.0:N2} KB";
+
             const string dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
             string chiroRecordsTimeSpanFormat = determineTimeSpanFormat(chiroRecords.Select(chiroRecordDelay));
             string emailDocumentTimeSpanFormat = determineTimeSpanFormat(emailDocuments.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
@@ -129,6 +134,7 @@ namespace number_sequence.Controllers
                         Id = x.Id,
                         Subject = x.Subject,
                         AttachmentName = x.AttachmentName,
+                        FileLength = formatFileLength(x.FileLength),
                         CreatedDate = x.CreatedDate.AddHours(hoursOffset).ToString(dateTimeFormat),
                         ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
                         Delay = (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate).ToString(emailDocumentTimeSpanFormat),
@@ -141,6 +147,7 @@ namespace number_sequence.Controllers
                         Clinic = x.ClinicAbbreviation,
                         CC = x.CcEmail,
                         AttachmentName = x.AttachmentName,
+                        FileLength = formatFileLength(x.FileLength),
                         CreatedDate = x.CreatedDate.AddHours(hoursOffset).ToString(dateTimeFormat),
                         ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
                         Delay = (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate).ToString(chiroBatchTimeSpanFormat),
@@ -153,6 +160,7 @@ namespace number_sequence.Controllers
                         Clinic = g.Key.ClinicAbbreviation,
                         CC = g.Key.CcEmail,
                         Count = g.Count(),
+                        TotalFileLength = formatFileLength(g.Sum(x => x.FileLength)),
                     })
                     .OrderByDescending(x => x.Count)
                     .ToList(),

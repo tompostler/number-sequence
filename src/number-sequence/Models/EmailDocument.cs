@@ -26,6 +26,8 @@ namespace number_sequence.Models
         [MaxLength(512)]
         public string AdditionalBody { get; set; }
 
+        public long FileLength { get; set; }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
 

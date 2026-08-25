@@ -89,6 +89,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 // CC moved to batch processing to handle clients with multiple patients.
                 Subject = subject,
                 AttachmentName = attachmentName,
+                FileLength = ms.Length,
             };
             _ = nsContext.EmailDocuments.Add(emailDocument);
 
@@ -99,6 +100,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 {
                     ClinicAbbreviation = chiroInput.ClinicAbbreviation,
                     AttachmentName = attachmentName,
+                    FileLength = ms.Length,
                 });
             }
 
@@ -109,6 +111,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 {
                     CcEmail = ccEmail,
                     AttachmentName = attachmentName,
+                    FileLength = ms.Length,
                 });
             }
 

@@ -94,6 +94,7 @@ else
         <th class="text-nowrap">ID</th>
         <th>Subject</th>
         <th class="text-nowrap">Attachment</th>
+        <th class="text-nowrap">Size</th>
         <th class="text-nowrap">Created</th>
         <th class="text-nowrap">Processed</th>
         <th class="text-nowrap">Delay</th>
@@ -106,6 +107,7 @@ else
           <td>@doc.Id</td>
           <td>@doc.Subject</td>
           <td class="text-nowrap">@doc.AttachmentName</td>
+          <td class="text-nowrap">@doc.FileLength</td>
           <td class="text-nowrap">@doc.CreatedDate</td>
           <td class="text-nowrap">
             @if (doc.ProcessedAt == null)
@@ -145,6 +147,7 @@ else
         <th class="text-nowrap">Clinic</th>
         <th class="text-nowrap">CC</th>
         <th class="text-nowrap">Attachment</th>
+        <th class="text-nowrap">Size</th>
         <th class="text-nowrap">Created</th>
         <th class="text-nowrap">Processed</th>
         <th class="text-nowrap">Delay</th>
@@ -158,6 +161,7 @@ else
           <td class="text-nowrap">@batch.Clinic</td>
           <td class="text-nowrap">@batch.CC</td>
           <td class="text-nowrap">@batch.AttachmentName</td>
+          <td class="text-nowrap">@batch.FileLength</td>
           <td class="text-nowrap">@batch.CreatedDate</td>
           <td class="text-nowrap">
             @if (batch.ProcessedAt == null)
@@ -196,6 +200,7 @@ else
         <th class="text-nowrap">Clinic</th>
         <th class="text-nowrap">CC</th>
         <th class="text-nowrap">Pending</th>
+        <th class="text-nowrap">Size</th>
       </tr>
     </thead>
     <tbody>
@@ -205,6 +210,7 @@ else
           <td class="text-nowrap">@count.Clinic</td>
           <td class="text-nowrap">@count.CC</td>
           <td class="text-nowrap">@count.Count</td>
+          <td class="text-nowrap">@count.TotalFileLength</td>
         </tr>
       }
     </tbody>

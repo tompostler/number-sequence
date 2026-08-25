@@ -19,6 +19,7 @@
             public string Id { get; set; }
             public string Subject { get; set; }
             public string AttachmentName { get; set; }
+            public string FileLength { get; set; }
             public string CreatedDate { get; set; }
             public string ProcessedAt { get; set; }
             public string Delay { get; set; }
@@ -29,6 +30,7 @@
             public string Clinic { get; set; }
             public string CC { get; set; }
             public string AttachmentName { get; set; }
+            public string FileLength { get; set; }
             public string CreatedDate { get; set; }
             public string ProcessedAt { get; set; }
             public string Delay { get; set; }
@@ -38,6 +40,7 @@
             public string Clinic { get; set; }
             public string CC { get; set; }
             public int Count { get; set; }
+            public string TotalFileLength { get; set; }
         }
 
         public List<ChiroRecord> ChiroRecords { get; set; }

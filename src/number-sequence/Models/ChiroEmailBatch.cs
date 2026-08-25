@@ -18,6 +18,8 @@ namespace number_sequence.Models
         [MaxLength(128)]
         public string AttachmentName { get; set; }
 
+        public long FileLength { get; set; }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
 

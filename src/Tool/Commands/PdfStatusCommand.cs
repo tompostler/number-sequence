@@ -60,6 +60,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.EmailDocument.Id),
                 nameof(PdfStatus.EmailDocument.Subject),
                 nameof(PdfStatus.EmailDocument.AttachmentName),
+                nameof(PdfStatus.EmailDocument.FileLength),
                 nameof(PdfStatus.EmailDocument.CreatedDate),
                 nameof(PdfStatus.EmailDocument.ProcessedAt),
                 nameof(PdfStatus.EmailDocument.Delay));
@@ -71,6 +72,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.ChiroBatch.Clinic),
                 nameof(PdfStatus.ChiroBatch.CC),
                 nameof(PdfStatus.ChiroBatch.AttachmentName),
+                nameof(PdfStatus.ChiroBatch.FileLength),
                 nameof(PdfStatus.ChiroBatch.CreatedDate),
                 nameof(PdfStatus.ChiroBatch.ProcessedAt),
                 nameof(PdfStatus.ChiroBatch.Delay));
@@ -80,7 +82,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 pdfStatus.ChiroBatchPendingCounts,
                 nameof(PdfStatus.ChiroBatchPendingCount.Clinic),
                 nameof(PdfStatus.ChiroBatchPendingCount.CC),
-                nameof(PdfStatus.ChiroBatchPendingCount.Count));
+                nameof(PdfStatus.ChiroBatchPendingCount.Count),
+                nameof(PdfStatus.ChiroBatchPendingCount.TotalFileLength));
         }
     }
 }

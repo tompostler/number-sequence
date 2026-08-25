@@ -112,6 +112,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 pdfDocument.GeneratePdf(ms);
                 ms.Position = 0;
             }
+            emailDocument.FileLength = ms.Length;
 
             // Put it in storage
             Azure.Storage.Blobs.BlobClient pdfBlobClient = this.nsStorage.GetBlobClient(emailDocument);
