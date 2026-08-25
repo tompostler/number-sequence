@@ -46,6 +46,33 @@ jobs:
       StartupCommand: dotnet number-sequence.dll
 
   - powershell: |
+      # nbgv sets Build.BuildNumber to the public version (e.g. "7.7.123"), while the server-version response
+      # header carries the full informational version (e.g. "7.7.123+abcde"), so a prefix match is enough and
+      # avoids having to re-run nbgv here to compute the expected value independently.
+      $expectedVersionPrefix = '$(Build.BuildNumber)';
+      $uri = 'https://ns.tcp.wtf/';
+      $timeout = New-TimeSpan -Minutes 10;
+      $sw = [System.Diagnostics.Stopwatch]::StartNew();
+      $actualVersion = $null;
+      while ($sw.Elapsed -lt $timeout) {
+        try {
+          $response = Invoke-WebRequest -Uri $uri -Method Get -TimeoutSec 30;
+          $actualVersion = @($response.Headers['server-version'])[0];
+          if ($actualVersion -and $actualVersion.StartsWith($expectedVersionPrefix)) {
+            Write-Host "Site is serving version '$actualVersion' (expected prefix '$expectedVersionPrefix') after $($sw.Elapsed).";
+            exit 0;
+          }
+          Write-Host "Site is serving version '$actualVersion', waiting for prefix '$expectedVersionPrefix'. Elapsed: $($sw.Elapsed).";
+        } catch {
+          Write-Host "Request to $uri failed: $($_.Exception.Message)";
+        }
+        Start-Sleep -Seconds 10;
+      }
+      Write-Error "Timed out after $timeout waiting for $uri to report version prefix '$expectedVersionPrefix'. Last seen: '$actualVersion'.";
+      exit 1;
+    displayName: Wait for deployed version to go live
+
+  - powershell: |
       $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
       $body = @{
         Title = "Deployment of $(Build.DefinitionName) $(Build.BuildNumber)+$shortSha was successful";
@@ -57,7 +84,7 @@ jobs:
   - powershell: |
       $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
       $body = @{
-        Title = "Deployment of $(Build.DefinitionName) $(Build.BuildNumber)+$shortSha was successful";
+        Title = "Deployment of $(Build.DefinitionName) $(Build.BuildNumber)+$shortSha failed";
         Description = "``$(Build.SourceVersionMessage)``";
       } | ConvertTo-Json -Compress;
       Invoke-RestMethod -Method Post -Uri https://po.tcp.wtf/randommessage -Headers @{ 'x-api-key' = '$(pobot-api-key)' } -ContentType 'application/json' -Body $body;
