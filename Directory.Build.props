@@ -12,7 +12,8 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <!-- Portable, not full: CoreCLR on Linux can only do stack traces from portable/embedded PDBs. -->
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 
   <!-- Define this property for other build steps/tasks. -->
