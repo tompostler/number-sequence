@@ -31,7 +31,7 @@ namespace number_sequence.Services.Background
             this.nsStorage = nsStorage;
         }
 
-        protected override TimeSpan? Interval => TimeSpan.FromMinutes(5);
+        protected override TimeSpan? Interval => TimeSpan.FromMinutes(1);
 
         protected override async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
