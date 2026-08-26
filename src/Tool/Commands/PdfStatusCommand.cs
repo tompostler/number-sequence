@@ -19,12 +19,17 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 Description = "How many days of lookback.",
                 DefaultValueFactory = _ => 30,
             };
+            Option<FileInfo> chartOption = new("--chart")
+            {
+                Description = "If specified, writes a PNG stacked bar chart of chiro forms per clinic per day to this file instead of printing the tables.",
+            };
             Command command = new("pdf-status", "Get the status of the pdf background services. Defaults to local time.")
             {
                 stampOption,
                 verbosityOption,
                 takeAmountOption,
                 daysLookbackOption,
+                chartOption,
             };
             command.SetAction(
                 (parseResult, cancellationToken) =>
@@ -33,14 +38,31 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
                     int takeAmount = parseResult.GetRequiredValue(takeAmountOption);
                     int daysLookback = parseResult.GetRequiredValue(daysLookbackOption);
-                    return HandleAsync(stamp, takeAmount, daysLookback, verbosity);
+                    FileInfo chart = parseResult.GetValue(chartOption);
+                    return HandleAsync(stamp, takeAmount, daysLookback, chart, verbosity);
                 });
             return command;
         }
 
-        private static async Task HandleAsync(Stamp stamp, int takeAmount, int daysLookback, Verbosity verbosity)
+        private static async Task HandleAsync(Stamp stamp, int takeAmount, int daysLookback, FileInfo chart, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
+
+            if (chart != null)
+            {
+                byte[] bytes = await client.PdfStatus.GetChartAsync(daysLookback, TimeZoneInfo.Local.BaseUtcOffset.TotalHours);
+                if (bytes == null)
+                {
+                    Console.WriteLine("No chiro records to chart.");
+                    return;
+                }
+
+                chart.Delete();
+                File.WriteAllBytes(chart.FullName, bytes);
+                Console.WriteLine($"Wrote {chart.FullName}");
+                return;
+            }
+
             PdfStatus pdfStatus = await client.PdfStatus.GetAsync(TimeZoneInfo.Local.BaseUtcOffset.TotalHours, takeAmount, daysLookback);
 
             Console.WriteLine();

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
 using number_sequence.Filters;
+using System.Text.Json;
 using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.Controllers
@@ -165,6 +166,131 @@ namespace number_sequence.Controllers
             };
 
             return this.Ok(pdfStatus);
+        }
+
+        [HttpGet("chart")]
+        public async Task<IActionResult> GetChartAsync(
+            [FromQuery] int daysLookback = 30,
+            [FromQuery] double hoursOffset = 0,
+            [FromQuery] int width = 2560,
+            [FromQuery] int height = 1440,
+            CancellationToken cancellationToken = default)
+        {
+            bool hasChiroAccess = this.User.IsInRole(AccountRoles.Chiro) || this.User.IsInRole(AccountRoles.PdfStatus);
+            if (!hasChiroAccess)
+            {
+                return this.Forbid();
+            }
+
+            if (width < 100 || width > 2560 || height < 100 || height > 1440)
+            {
+                return this.BadRequest($"Width must be 100–2560 and height must be 100–1440.");
+            }
+
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            DateTimeOffset daysAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
+
+            List<Models.ChiroRecord> chiroRecords = await nsContext.ChiroRecords
+                                            .Where(r => r.RecordedAt > daysAgo)
+                                            .ToListAsync(cancellationToken);
+
+            if (chiroRecords.Count == 0)
+            {
+                return this.NoContent();
+            }
+
+            // Bucket by (local day, clinic). Clinic isn't an indexed column - it only exists inside the
+            // serialized InputJson - so this deserializes every row in the window. Volumes are small.
+            const string noClinicLabel = "(no clinic)";
+            static string clinicOf(Models.ChiroRecord record)
+            {
+                string abbreviation = string.IsNullOrWhiteSpace(record.InputJson)
+                    ? null
+                    : JsonSerializer.Deserialize<ChiroInput>(record.InputJson)?.ClinicAbbreviation;
+                return string.IsNullOrWhiteSpace(abbreviation) ? noClinicLabel : abbreviation;
+            }
+
+            Dictionary<(DateTime Day, string Clinic), int> byDayAndClinic = chiroRecords
+                .GroupBy(r => (Day: r.RecordedAt.AddHours(hoursOffset).Date, Clinic: clinicOf(r)))
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            // Every day in the window gets a position, even with zero forms, so gaps between
+            // productive days are visible instead of the bars silently compressing together.
+            DateTime todayLocal = DateTimeOffset.UtcNow.AddHours(hoursOffset).Date;
+            List<DateTime> days = Enumerable.Range(0, daysLookback)
+                .Select(i => todayLocal.AddDays(i - daysLookback + 1))
+                .ToList();
+            List<string> clinics = byDayAndClinic.Keys.Select(k => k.Clinic).Distinct()
+                .OrderBy(c => c == noClinicLabel ? 0 : 1)
+                .ThenBy(c => c, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            ScottPlot.Palettes.Category10 palette = new();
+            List<ScottPlot.Bar> bars = [];
+            for (int dayIndex = 0; dayIndex < days.Count; dayIndex++)
+            {
+                double cumulative = 0;
+                for (int clinicIndex = 0; clinicIndex < clinics.Count; clinicIndex++)
+                {
+                    if (!byDayAndClinic.TryGetValue((days[dayIndex], clinics[clinicIndex]), out int count))
+                    {
+                        continue;
+                    }
+
+                    bars.Add(new ScottPlot.Bar
+                    {
+                        Position = dayIndex,
+                        ValueBase = cumulative,
+                        Value = cumulative + count,
+                        FillColor = palette.GetColor(clinicIndex),
+                    });
+                    cumulative += count;
+                }
+            }
+
+            ScottPlot.Plot plot = new();
+            _ = plot.Add.Bars(bars);
+
+            // Thin x-axis labels for wide lookback windows so they stop overlapping - bars stay one per
+            // day regardless, only the labeling gets sparser. Step is derived from the chart's pixel
+            // width so it scales for any daysLookback/width combination instead of a fixed cadence.
+            // Anchored on the most recent day so "today" always has a label.
+            int maxLabels = Math.Max(1, width / 40);
+            int labelStep = Math.Max(1, (int)Math.Ceiling(days.Count / (double)maxLabels));
+            List<ScottPlot.Tick> tickList = [];
+            for (int i = days.Count - 1; i >= 0; i -= labelStep)
+            {
+                tickList.Add(new ScottPlot.Tick(i, days[i].ToString("MM-dd")));
+            }
+            tickList.Reverse();
+            plot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual([.. tickList]);
+            plot.Axes.Bottom.MajorTickStyle.Length = 0;
+            plot.HideGrid();
+            plot.Axes.Margins(left: 0.02, right: 0.02, bottom: 0, top: 0.05);
+
+            Dictionary<string, int> totalByClinic = byDayAndClinic
+                .GroupBy(kv => kv.Key.Clinic)
+                .ToDictionary(g => g.Key, g => g.Sum(kv => kv.Value));
+            ScottPlot.LegendItem[] legendItems = [.. clinics.Select((c, i) => new ScottPlot.LegendItem { LabelText = $"{c} ({totalByClinic[c]})", FillColor = palette.GetColor(i) })];
+            ScottPlot.Panels.LegendPanel legendPanel = plot.ShowLegend(ScottPlot.Edge.Bottom);
+            legendPanel.Legend.ManualItems.AddRange(legendItems);
+            legendPanel.Legend.Orientation = ScottPlot.Orientation.Horizontal;
+            // Trim the legend panel's default padding/spacing - it's generous enough on a stock plot
+            // to leave a noticeable band of empty space below the bars.
+            legendPanel.Padding = new ScottPlot.PixelPadding(8, 6);
+            legendPanel.Legend.Margin = new ScottPlot.PixelPadding(4, 4);
+            legendPanel.Legend.Padding = new ScottPlot.PixelPadding(6, 3);
+            legendPanel.Legend.SymbolWidth = 14;
+            legendPanel.Legend.SymbolPadding = 3;
+            legendPanel.Legend.InterItemPadding = new ScottPlot.PixelPadding(7, 3);
+
+            plot.Title($"Chiro forms per clinic (last {daysLookback} days)");
+            _ = plot.Add.Annotation($"Generated {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC", ScottPlot.Alignment.UpperLeft);
+
+            byte[] bytes = plot.GetImage(width, height).GetImageBytes();
+            return this.File(bytes, "image/png");
         }
     }
 }

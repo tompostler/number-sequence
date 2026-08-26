@@ -212,3 +212,15 @@ else
     </tbody>
   </table>
 }
+
+<h5>Chiro Forms Per Clinic</h5>
+@if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
+{
+  <div class="mb-4">
+    <img src="/ui/pdf-status/chart?daysLookback=@Model.DaysLookback&hoursOffset=@Model.HoursOffset" class="img-fluid" alt="Chiro forms per clinic chart" />
+  </div>
+}
+else
+{
+  <p class="text-muted">No access.</p>
+}

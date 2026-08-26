@@ -17,6 +17,12 @@ build sees that as up to date and copies it to `bin`, and the app then dies at s
 `FontManager.RegisterFont` with a null stream. If the exe is locked because the app is running, ask for it to be
 stopped. Recovery is `dotnet build --no-incremental`.
 
+The user often has `dotnet watch` running in another tab while iterating, which holds `number-sequence.exe`
+locked. A validation `dotnet build` in that situation fails at the final copy step (`MSB3027`/`MSB3021`) after
+compilation has already succeeded — that failure is benign and doesn't mean the change is broken. Real compile
+errors (`CS####`) show up before that copy step regardless of the lock, so read for those rather than treating
+every red "Build FAILED" as a problem to chase.
+
 ## Preferences
 
 - **Running the code beats maintaining unit tests here.** Tests that have to be rewritten every time a shape
@@ -82,3 +88,7 @@ Full design notes: [`docs/pdf-status.md`](docs/pdf-status.md). Constraint that w
 
 - **The pending-count section deliberately ignores `daysLookback`/`takeAmount`.** It exists specifically to
   surface stragglers the windowed list views hide.
+- **The per-clinic chart counts `ChiroRecords`, not `ChiroEmailBatches`.** `ChiroEmailBatches` has an indexed
+  clinic column and is cheaper to query, but it's a post-processing artifact (duplicate CC rows, drops
+  clinic-less records). `ChiroRecords` requires deserializing `InputJson` per row but is the true "form
+  filled out" count. Don't swap the source without renaming the section.

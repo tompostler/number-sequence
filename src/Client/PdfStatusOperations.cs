@@ -30,5 +30,30 @@ namespace TcpWtf.NumberSequence.Client
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<PdfStatus>(cancellationToken: cancellationToken);
         }
+
+        /// <summary>
+        /// Get a PNG stacked bar chart of chiro forms per clinic per day, over the given lookback window.
+        /// Returns null if there are no records in that window.
+        /// </summary>
+        public async Task<byte[]> GetChartAsync(
+            int daysLookback = 30,
+            double hoursOffset = 0,
+            int width = 2560,
+            int height = 1440,
+            CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"pdfstatus/chart?{nameof(daysLookback)}={daysLookback}&{nameof(hoursOffset)}={hoursOffset}&{nameof(width)}={width}&{nameof(height)}={height}"),
+                cancellationToken);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        }
     }
 }
