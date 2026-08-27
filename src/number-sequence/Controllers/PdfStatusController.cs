@@ -267,7 +267,6 @@ namespace number_sequence.Controllers
             tickList.Reverse();
             plot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual([.. tickList]);
             plot.Axes.Bottom.MajorTickStyle.Length = 0;
-            plot.HideGrid();
             // Bars are stacked from zero - without this, the y-axis pads below zero by default and
             // the bars appear to float above the x-axis instead of sitting flush on it.
             plot.Axes.Margins(bottom: 0);
@@ -280,7 +279,7 @@ namespace number_sequence.Controllers
             legendPanel.Legend.ManualItems.AddRange(legendItems);
             legendPanel.Legend.Orientation = ScottPlot.Orientation.Horizontal;
 
-            plot.Title($"Chiro forms per clinic (last {daysLookback} days) ({totalByClinic.Values.Sum()})");
+            plot.Title($"Chiro forms per clinic, last {daysLookback} days ({totalByClinic.Values.Sum()})");
             _ = plot.Add.Annotation($"Generated {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC", ScottPlot.Alignment.UpperLeft);
 
             byte[] bytes = plot.GetImage(width, height).GetImageBytes();
