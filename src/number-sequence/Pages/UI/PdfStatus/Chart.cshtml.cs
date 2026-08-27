@@ -21,8 +21,8 @@ namespace number_sequence.Pages.UI.PdfStatus
             byte[] bytes = await this.nsClient.PdfStatus.GetChartAsync(
                 daysLookback: daysLookback,
                 hoursOffset: hoursOffset,
-                width: 1200,
-                height: 600,
+                width: 1440,
+                height: 720,
                 cancellationToken: cancellationToken);
             if (bytes == null)
             {

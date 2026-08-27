@@ -268,7 +268,9 @@ namespace number_sequence.Controllers
             plot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual([.. tickList]);
             plot.Axes.Bottom.MajorTickStyle.Length = 0;
             plot.HideGrid();
-            plot.Axes.Margins(left: 0.02, right: 0.02, bottom: 0, top: 0.05);
+            // Bars are stacked from zero - without this, the y-axis pads below zero by default and
+            // the bars appear to float above the x-axis instead of sitting flush on it.
+            plot.Axes.Margins(bottom: 0);
 
             Dictionary<string, int> totalByClinic = byDayAndClinic
                 .GroupBy(kv => kv.Key.Clinic)
@@ -277,16 +279,8 @@ namespace number_sequence.Controllers
             ScottPlot.Panels.LegendPanel legendPanel = plot.ShowLegend(ScottPlot.Edge.Bottom);
             legendPanel.Legend.ManualItems.AddRange(legendItems);
             legendPanel.Legend.Orientation = ScottPlot.Orientation.Horizontal;
-            // Trim the legend panel's default padding/spacing - it's generous enough on a stock plot
-            // to leave a noticeable band of empty space below the bars.
-            legendPanel.Padding = new ScottPlot.PixelPadding(8, 6);
-            legendPanel.Legend.Margin = new ScottPlot.PixelPadding(4, 4);
-            legendPanel.Legend.Padding = new ScottPlot.PixelPadding(6, 3);
-            legendPanel.Legend.SymbolWidth = 14;
-            legendPanel.Legend.SymbolPadding = 3;
-            legendPanel.Legend.InterItemPadding = new ScottPlot.PixelPadding(7, 3);
 
-            plot.Title($"Chiro forms per clinic (last {daysLookback} days)");
+            plot.Title($"Chiro forms per clinic (last {daysLookback} days) ({totalByClinic.Values.Sum()})");
             _ = plot.Add.Annotation($"Generated {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC", ScottPlot.Alignment.UpperLeft);
 
             byte[] bytes = plot.GetImage(width, height).GetImageBytes();
