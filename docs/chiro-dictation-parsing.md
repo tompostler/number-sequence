@@ -106,6 +106,10 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
   cannot know and the server can.
 - **An intended-but-not-performed adjustment is not a finding.** Resisted, deferred, or not tolerated goes in the
   notes and must never tick a box.
+- **A bare "TMJ" names no maneuver.** "TMJ" is the question's own label, not one of its options, so "TMJ right"
+  with no maneuver named defaults to ventral mandible technique 1 right. Rostral mandible, traction, and upper
+  left/right are selected only when the dictation names them by that word. Carried as a hint on the head and
+  cervical region, indexed into `HeadTmjChoices` for the same reason as the occiput hint above.
 - **The transcript is speech-to-text and contains recognition errors.** `cairo` is `chiro`; `post` is `posterior`;
   "on the front" means the forelimb. A side stated once carries across the items following it in the same phrase.
   `hypermobility` is always `hypomobility` — the transcription software reliably mishears it, and no such finding

@@ -164,6 +164,10 @@ namespace number_sequence.Pages.UI.Chiro
                             // other. The options are indexed rather than written out so the rule cannot name a
                             // choice the checkboxes do not have.
                             $"An occiput given both a side and a superior or inferior is both options: \"occiput superior right\" is \"{HeadOcciputChoices[1]}\" and \"{HeadOcciputChoices[2]}\" together. \"Bilateral\" is part of that option's name and does not contradict the side that was said. Select only what was said, so a side on its own stays a side on its own.",
+                            // "TMJ" is the question's own label, not a maneuver name, so a bare "TMJ <side>" names no
+                            // technique at all. The default is ventral mandible technique 1, indexed rather than
+                            // written out so the rule cannot name a choice the checkboxes do not have.
+                            $"A bare \"TMJ\" naming only a side, with no maneuver or technique named, means \"{HeadTmjChoices[0]}\" / \"{HeadTmjChoices[1]}\": \"TMJ right\" is \"{HeadTmjChoices[1]}\". Select rostral mandible, traction, or upper left/right only when the dictation names them by that word; a technique number is stated only when it is 2 or above, same as any other numbered technique.",
                         ]),
                     ChiroVocabularyRegion.Of(
                         "thoracic and ribs",
