@@ -206,13 +206,29 @@ namespace number_sequence.Services
 
             _ = prompt.AppendLine();
 
-            _ = prompt.AppendLine("## The input is speech to text");
+            _ = prompt.AppendLine("## The input is live dictation");
+            _ = prompt.AppendLine("It is speech to text: spoken in one pass while examining the animal, with no chance to go back and edit.");
+            _ = prompt.AppendLine("Read it the way it was said, not the way written text is written.");
+            _ = prompt.AppendLine();
             _ = prompt.AppendLine("It contains recognition errors. Prefer a veterinary chiropractic reading over a literal one:");
             _ = prompt.AppendLine("\"cairo\" is almost always \"chiro\"; \"post\" is \"posterior\"; \"t4\" is \"T4\"; \"on the front\" means the forelimb.");
             _ = prompt.AppendLine("\"hypermobility\" is always \"hypomobility\": the transcription software mishears it and there is no such finding.");
             _ = prompt.AppendLine("Terms you will see: PI and AS (pelvis), SCP (spinous/mammillary process), coxofemoral, cranial, caudal, ventral, dorsal, medial, lateral.");
             _ = prompt.AppendLine("Punctuation is unreliable. A side stated once carries across the items that follow it in the same phrase,");
             _ = prompt.AppendLine("so \"left digits 2, 3 on the front\" is digits 2 and 3 of the LEFT forelimb.");
+            _ = prompt.AppendLine();
+            _ = prompt.AppendLine("## A correction comes AFTER the thing it corrects");
+            _ = prompt.AppendLine("A speaker cannot un-say a word, so when they misspeak they say the right version next. A retraction and");
+            _ = prompt.AppendLine("whatever follows it replace what was said JUST BEFORE it. They never negate what comes after.");
+            _ = prompt.AppendLine("\"occiput superior right no occiput superior left\" is ONE finding, occiput superior LEFT: the \"no\" throws");
+            _ = prompt.AppendLine("away the right that was just said. Written text would have put the \"no\" first, and reading it that way");
+            _ = prompt.AppendLine("selects exactly the wrong side. Dictation puts it last.");
+            _ = prompt.AppendLine("The same shape appears as \"not that\", \"sorry\", \"I mean\", \"actually\", \"make that\", \"scratch that\",");
+            _ = prompt.AppendLine("\"correction\", or a bare restatement of the same site with a different side, level or maneuver. Keep the last");
+            _ = prompt.AppendLine("version and drop the earlier one.");
+            _ = prompt.AppendLine("Only a retraction does this, and only over something actually said. Two findings for the same site with no");
+            _ = prompt.AppendLine("retracting word between them are two findings, and \"no hypomobility on the left\" where nothing preceded it");
+            _ = prompt.AppendLine("is a plain statement that there was none — record neither a correction nor a finding.");
             _ = prompt.AppendLine();
 
             if (recordsFindings)
@@ -281,7 +297,8 @@ namespace number_sequence.Services
             _ = prompt.AppendLine("a careful reviewer of the same words might reasonably choose differently from you.");
             _ = prompt.AppendLine();
             _ = prompt.AppendLine("Flag: you picked one of two options that both fit; a phrase had no matching option at all; you could not tell");
-            _ = prompt.AppendLine("which side or which level something belonged to.");
+            _ = prompt.AppendLine("which side or which level something belonged to; you could not tell whether a repeated site was a correction");
+            _ = prompt.AppendLine("or a second finding.");
             _ = prompt.AppendLine();
             _ = prompt.AppendLine("Do NOT flag: following the instructions above (an unmentioned question left empty, something not performed");
             _ = prompt.AppendLine("recorded in notes, a future date or clinic left off) — those are rules, not judgement calls. Do not flag a");

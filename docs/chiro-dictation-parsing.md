@@ -110,6 +110,16 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
   with no maneuver named defaults to ventral mandible technique 1 right. Rostral mandible, traction, and upper
   left/right are selected only when the dictation names them by that word. Carried as a hint on the head and
   cervical region, indexed into `HeadTmjChoices` for the same reason as the occiput hint above.
+- **A correction lands after the thing it corrects.** Dictation is spoken in one pass, so a speaker who misspeaks
+  says the right version next: the retraction and what follows it replace what came immediately before. Written
+  prose does the opposite, and reading it the written way inverts the finding rather than merely losing it —
+  "occiput superior right no occiput superior left" is one finding, superior *left*, and was being parsed as
+  superior *right* with the "no" attached forward to the left. Also covers "not that", "sorry", "I mean",
+  "actually", "make that", and a bare restatement of the same site with a different value. Guarded two ways so it
+  cannot eat real findings: only a retracting word turns a repeated site into a correction, and a negation with
+  nothing before it to retract ("no hypomobility on the left") stays a plain statement that there was none. In the
+  prompt of necessity — the trigger is a word in the transcript, and by the time the server sees selections the
+  correction and the second finding look identical.
 - **The transcript is speech-to-text and contains recognition errors.** `cairo` is `chiro`; `post` is `posterior`;
   "on the front" means the forelimb. A side stated once carries across the items following it in the same phrase.
   `hypermobility` is always `hypomobility` — the transcription software reliably mishears it, and no such finding
