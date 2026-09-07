@@ -25,8 +25,12 @@ every red "Build FAILED" as a problem to chase.
 
 ## Preferences
 
-- **Running the code beats maintaining unit tests here.** Tests that have to be rewritten every time a shape
-  changes are not worth their upkeep. Prefer a quick real run over a test suite.
+- **Running the code beats maintaining unit tests here** — but the user does that running, not Claude. Don't
+  start the app (`dotnet run`, IIS Express, etc.) or drive it in a browser to validate a change; the user runs and
+  validates themselves, often via a `dotnet watch` tab already open. Confirm with a build instead, reading for
+  `CS####` errors rather than treating a locked-exe copy failure as a problem — see the note above.
+- Tests that have to be rewritten every time a shape changes are not worth their upkeep. Prefer a quick real run
+  over a test suite for verifying behavior, understanding that the user is the one doing that run.
 - **Log at Information.** Volumes are small; a level nobody has switched on is not useful. Log the inputs, timings,
   sizes, and anything not reconstructible from source. Do not log things that are generated from source, such as a
   prompt or a schema — sizes are enough.

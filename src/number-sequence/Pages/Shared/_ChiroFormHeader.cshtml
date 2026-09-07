@@ -35,3 +35,17 @@
     window.addEventListener('resize', setOffset);
   })();
 </script>
+
+@* Each section card carries its own .chiro-clear-btn in markup (see _ChiroSmallAnimalForm.cshtml /
+   Equine.cshtml). One delegated listener here handles all of them rather than wiring one per button. Delegated
+   on document, not the record form, so it works regardless of load order relative to this partial. *@
+<script>
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest('.chiro-clear-btn');
+    if (!button) { return; }
+    var body = button.closest('.card-header').nextElementSibling;
+    if (!body) { return; }
+    body.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) { checkbox.checked = false; });
+    body.querySelectorAll('input[type="text"]').forEach(function (input) { input.value = ''; });
+  });
+</script>

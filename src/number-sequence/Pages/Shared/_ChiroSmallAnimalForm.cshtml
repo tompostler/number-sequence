@@ -12,11 +12,14 @@
 
 @await Html.PartialAsync("_ChiroTranscript", Model)
 
-<form method="post" asp-page-handler="Submit">
+<form method="post" asp-page-handler="Submit" id="chiro-record-form">
   @await Html.PartialAsync("_ChiroFormIntake", Model)
 
   <div class="card mb-4" id="head">
-    <div class="card-header">Head</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Head
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="HeadNotes" class="form-label">Head Other Notes</label>
@@ -28,7 +31,10 @@
   </div>
 
   <div class="card mb-4" id="cervical">
-    <div class="card-header">Cervical</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Cervical
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="CervicalNotes" class="form-label">Cervical Other Notes</label>
@@ -40,7 +46,10 @@
   </div>
 
   <div class="card mb-4" id="thoracic">
-    <div class="card-header">Thoracic</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Thoracic
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="ThoracicNotes" class="form-label">Thoracic Other Notes</label>
@@ -53,7 +62,10 @@
   </div>
 
   <div class="card mb-4" id="lumbar">
-    <div class="card-header">Lumbar</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Lumbar
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="LumbarNotes" class="form-label">Lumbar Other Notes</label>
@@ -64,7 +76,10 @@
   </div>
 
   <div class="card mb-4" id="sacrum-pelvis">
-    <div class="card-header">Sacrum / Pelvis</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Sacrum / Pelvis
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="SacrumNotes" class="form-label">Sacrum Other Notes</label>
@@ -81,7 +96,10 @@
   </div>
 
   <div class="card mb-4" id="left-forelimb">
-    <div class="card-header">Left Forelimb</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Left Forelimb
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="LeftForelimbNotes" class="form-label">Left Forelimb Other Notes</label>
@@ -97,7 +115,10 @@
   </div>
 
   <div class="card mb-4" id="right-forelimb">
-    <div class="card-header">Right Forelimb</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Right Forelimb
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="RightForelimbNotes" class="form-label">Right Forelimb Other Notes</label>
@@ -113,7 +134,10 @@
   </div>
 
   <div class="card mb-4" id="left-rear-limb">
-    <div class="card-header">Left Rear Limb</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Left Rear Limb
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="LeftRearLimbNotes" class="form-label">Left Rear Limb Other Notes</label>
@@ -124,7 +148,10 @@
   </div>
 
   <div class="card mb-4" id="right-rear-limb">
-    <div class="card-header">Right Rear Limb</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Right Rear Limb
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="RightRearLimbNotes" class="form-label">Right Rear Limb Other Notes</label>
@@ -135,7 +162,10 @@
   </div>
 
   <div class="card mb-4" id="coccygeal">
-    <div class="card-header">Coccygeal / Other Notes</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      Coccygeal / Other Notes
+      <button type="button" class="btn btn-sm btn-outline-secondary chiro-clear-btn">Clear</button>
+    </div>
     <div class="card-body">
       <div class="mb-3">
         <label asp-for="CoccygealNotes" class="form-label">Coccygeal / Other Notes</label>
