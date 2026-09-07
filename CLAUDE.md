@@ -92,3 +92,6 @@ Full design notes: [`docs/pdf-status.md`](docs/pdf-status.md). Constraint that w
   clinic column and is cheaper to query, but it's a post-processing artifact (duplicate CC rows, drops
   clinic-less records). `ChiroRecords` requires deserializing `InputJson` per row but is the true "form
   filled out" count. Don't swap the source without renaming the section.
+- **Backfilling a missed `ChiroEmailBatches` row by hand must copy `CreatedDate` from the matching
+  `EmailDocuments` row**, not let it default to now — the blob path is keyed by `CreatedDate.Year`, so a
+  default from a different calendar year than the original pdf points at the wrong folder.

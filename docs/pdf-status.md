@@ -65,6 +65,34 @@ default 30-day window already renders comfortably at the UI's 1200px chart, so t
 untouched (`step == 1`) and only wider windows thin out. Every day still gets a bar - only the axis
 text gets sparser - so this doesn't cost any resolution the way capping `daysLookback` would.
 
+## Manually backfilling a batch row
+
+Occasionally a chiro record's pdf already exists (`ChiroRecord.ProcessedAt` is set, the pdf is in
+blob storage, `EmailDocuments` has the row) but no `ChiroEmailBatches` row went out for a
+destination it should have — e.g. a CC address that wasn't on the form at submission time. This is
+rare enough that it isn't worth a UI action; a direct SQL insert is fine.
+
+Pull `AttachmentName`, `FileLength`, and `CreatedDate` from the matching `EmailDocuments` row rather
+than recomputing them, and copy `CreatedDate` through unchanged:
+
+```sql
+INSERT INTO dbo.ChiroEmailBatches (CcEmail, AttachmentName, FileLength, CreatedDate)
+SELECT '<cc-email>', AttachmentName, FileLength, CreatedDate
+FROM dbo.EmailDocuments
+WHERE Id = '<email-document-id>';
+```
+
+Use `ClinicAbbreviation` instead of `CcEmail` for a clinic destination. Leave `Id` and `ProcessedAt`
+out of the insert — `Id` gets its sequence default and `ProcessedAt` must stay `NULL` so
+`ChiroBatchSendBackgroundService` picks the row up on its next scheduled run (10th/20th/30th, 10:10
+AM).
+
+**Copying `CreatedDate` is not optional.** `NsStorage.GetBlobClient(ChiroEmailBatch)` builds the
+blob path as `{CreatedDate.Year}/{AttachmentName}.pdf`. `CreatedDate` defaults to
+`SYSDATETIMEOFFSET()` at insert time, so a backfill done in a different calendar year than the pdf
+was originally generated in would silently point at the wrong year's folder and fail to download
+the blob when the batch sender runs.
+
 ## FileLength
 
 `EmailDocument`/`ChiroEmailBatch` rows carry a `FileLength` populated at pdf-generation time from the blob's size
