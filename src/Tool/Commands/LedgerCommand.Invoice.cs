@@ -62,7 +62,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             if (createFromInvoice != default)
             {
-                invoice.Lines ??= new List<Contracts.Ledger.InvoiceLine>();
+                invoice.Lines ??= [];
                 invoice.Lines.Add(new()
                 {
                     Title = $"Invoice \"{createFromInvoice.Title}\" (id {createFromInvoice.Id:0000}), due {createFromInvoice.DueDate:o}",
@@ -70,16 +70,16 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     Quantity = 1,
                     Price = createFromInvoice.Total,
                 });
-                string paymentDescription = createFromInvoice.Payments?.Count > 0
-                    ? string.Join(", ", createFromInvoice.Payments.OrderBy(x => x.PaymentDate).Select(x => $"{x.PaymentDate:yyyy-MM-dd} ${x.Amount:N2}"))
-                    : null;
-                invoice.Lines.Add(new()
+                foreach (Contracts.Ledger.InvoicePayment payment in createFromInvoice.Payments ?? [])
                 {
-                    Title = $"Payment received on {createFromInvoice.PaidDate:o}",
-                    Description = paymentDescription,
-                    Quantity = 1,
-                    Price = -createFromInvoice.Total,
-                });
+                    invoice.Lines.Add(new()
+                    {
+                        Title = $"Payment received on {payment.PaymentDate:o}",
+                        Description = payment.Details,
+                        Quantity = 1,
+                        Price = -payment.Amount,
+                    });
+                }
                 invoice = await client.Ledger.UpdateInvoiceAsync(invoice);
             }
 
