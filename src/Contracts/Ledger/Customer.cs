@@ -24,25 +24,25 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         /// The customer name.
         /// </summary>
         [Required, MaxLength(64)]
-        public string Name { get; set; }
+        public string Name { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The customer address.
         /// </summary>
         [Required, MaxLength(64)]
-        public string AddressLine1 { get; set; }
+        public string AddressLine1 { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The customer address.
         /// </summary>
         [Required, MaxLength(64)]
-        public string AddressLine2 { get; set; }
+        public string AddressLine2 { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Contact information for the customer, such as email or phone.
         /// </summary>
         [Required, MaxLength(64)]
-        public string Contact { get; set; }
+        public string Contact { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The date the customer was created.

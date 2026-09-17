@@ -24,31 +24,31 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         /// The business unit name.
         /// </summary>
         [Required, MaxLength(64)]
-        public string Name { get; set; }
+        public string Name { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The business unit display name to put in the invoice for checks and cash.
         /// </summary>
         [Required, MaxLength(64)]
-        public string PayableName { get; set; }
+        public string PayableName { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The business unit address.
         /// </summary>
         [Required, MaxLength(64)]
-        public string AddressLine1 { get; set; }
+        public string AddressLine1 { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The business unit address.
         /// </summary>
         [Required, MaxLength(64)]
-        public string AddressLine2 { get; set; }
+        public string AddressLine2 { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Contact information for the business unit, such as email or phone.
         /// </summary>
         [Required, MaxLength(64)]
-        public string Contact { get; set; }
+        public string Contact { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The date the business unit was created.
