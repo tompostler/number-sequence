@@ -18,7 +18,7 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         /// See <see cref="Account.Name"/>.
         /// </summary>
         [Required, MaxLength(64)]
-        public string AccountName { get; set; }
+        public string AccountName { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The invoice this payment is for.
