@@ -16,7 +16,7 @@
 }
 
 <div class="mb-3 text-muted small">
-  Current balance: <strong>@Model.Invoice.Balance.ToString("C")</strong>
+  Current balance: <strong>@Model.Invoice.Balance.ToCurrencyDisplay()</strong>
 </div>
 
 <div class="col-12 col-md-6">

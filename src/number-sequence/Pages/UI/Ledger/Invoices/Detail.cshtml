@@ -115,8 +115,8 @@
           {
             <td class="text-muted small">@line.Unit</td>
           }
-          <td class="text-nowrap text-end">@line.Price.ToString("C")</td>
-          <td class="text-nowrap text-end">@line.Total.ToString("C")</td>
+          <td class="text-nowrap text-end">@line.Price.ToCurrencyDisplay()</td>
+          <td class="text-nowrap text-end">@line.Total.ToCurrencyDisplay()</td>
           <td class="text-nowrap text-end">@line.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
           <td class="text-nowrap text-end">@line.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</td>
           <td class="text-nowrap">
@@ -131,7 +131,7 @@
       }
     </tbody>
   </table>
-  <div class="text-end fw-bold mb-4">Total: @Model.Invoice.Total.ToString("C")</div>
+  <div class="text-end fw-bold mb-4">Total: @Model.Invoice.Total.ToCurrencyDisplay()</div>
 }
 else
 {
@@ -160,7 +160,7 @@ else
         <tr>
           <td class="text-nowrap">@pmt.PaymentDate.ToString("yyyy-MM-dd")</td>
           <td>@pmt.Details</td>
-          <td class="text-nowrap text-end">@pmt.Amount.ToString("C")</td>
+          <td class="text-nowrap text-end">@pmt.Amount.ToCurrencyDisplay()</td>
           <td class="text-nowrap">
             <form method="post" asp-page-handler="DeletePayment" class="d-inline">
               <input type="hidden" name="paymentId" value="@pmt.Id" />
@@ -171,9 +171,9 @@ else
       }
     </tbody>
   </table>
-  <div class="text-end fw-bold">Total paid: @Model.Invoice.TotalPaid.ToString("C")</div>
+  <div class="text-end fw-bold">Total paid: @Model.Invoice.TotalPaid.ToCurrencyDisplay()</div>
   <div class="text-end @(Model.Invoice.Balance > 0 ? "text-danger" : "text-success") fw-bold mb-4">Balance:
-    @Model.Invoice.Balance.ToString("C")</div>
+    @Model.Invoice.Balance.ToCurrencyDisplay()</div>
   }
 else
   {

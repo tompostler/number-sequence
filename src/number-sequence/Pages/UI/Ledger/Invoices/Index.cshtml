@@ -43,9 +43,9 @@ else
           <td class="text-nowrap">@inv.Business.Name</td>
           <td class="text-nowrap">@inv.Customer.Name</td>
           <td class="text-nowrap">@inv.DueDate.ToString("yyyy-MM-dd")</td>
-          <td class="text-nowrap text-end">@inv.Total.ToString("C")</td>
-          <td class="text-nowrap text-end">@inv.TotalPaid.ToString("C")</td>
-          <td class="text-nowrap text-end">@inv.Balance.ToString("C")</td>
+          <td class="text-nowrap text-end">@inv.Total.ToCurrencyDisplay()</td>
+          <td class="text-nowrap text-end">@inv.TotalPaid.ToCurrencyDisplay()</td>
+          <td class="text-nowrap text-end">@inv.Balance.ToCurrencyDisplay()</td>
           <td class="text-nowrap">@inv.CreatedDate.ToString("yyyy-MM-dd")</td>
           <td class="text-nowrap">@inv.ModifiedDate.ToString("yyyy-MM-dd")</td>
           <td class="text-nowrap">

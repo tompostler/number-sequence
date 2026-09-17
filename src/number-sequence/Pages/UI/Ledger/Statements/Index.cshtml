@@ -38,8 +38,8 @@ else
           <td class="text-nowrap">@s.Business.Name</td>
           <td class="text-nowrap">@s.Customer.Name</td>
           <td class="text-nowrap">@s.InvoiceStartDate.ToString("yyyy-MM-dd") – @s.InvoiceEndDate.ToString("yyyy-MM-dd")</td>
-          <td class="text-nowrap text-end">@s.TotalBilled.ToString("C")</td>
-          <td class="text-nowrap text-end">@s.Balance.ToString("C")</td>
+          <td class="text-nowrap text-end">@s.TotalBilled.ToCurrencyDisplay()</td>
+          <td class="text-nowrap text-end">@s.Balance.ToCurrencyDisplay()</td>
           <td class="text-nowrap">@s.CreatedDate.ToString("yyyy-MM-dd")</td>
           <td class="text-nowrap">@s.ModifiedDate.ToString("yyyy-MM-dd")</td>
           <td class="text-nowrap">

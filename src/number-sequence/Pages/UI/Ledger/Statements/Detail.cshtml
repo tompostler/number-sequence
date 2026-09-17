@@ -31,11 +31,11 @@
       <dt class="col-sm-4">Search by</dt>
       <dd class="col-sm-8">@(Model.Statement.SearchByDueDate ? "Due date" : "Created date")</dd>
       <dt class="col-sm-4">Billed</dt>
-      <dd class="col-sm-8">@Model.Statement.TotalBilled.ToString("C")</dd>
+      <dd class="col-sm-8">@Model.Statement.TotalBilled.ToCurrencyDisplay()</dd>
       <dt class="col-sm-4">Paid</dt>
-      <dd class="col-sm-8">@Model.Statement.TotalPaid.ToString("C")</dd>
+      <dd class="col-sm-8">@Model.Statement.TotalPaid.ToCurrencyDisplay()</dd>
       <dt class="col-sm-4">Balance</dt>
-      <dd class="col-sm-8"><strong>@Model.Statement.Balance.ToString("C")</strong></dd>
+      <dd class="col-sm-8"><strong>@Model.Statement.Balance.ToCurrencyDisplay()</strong></dd>
       <dt class="col-sm-4">Created</dt>
       <dd class="col-sm-8">@Model.Statement.CreatedDate.ToString("yyyy-MM-dd HH:mm")</dd>
       <dt class="col-sm-4">Modified</dt>
@@ -80,9 +80,9 @@ else
           <td class="text-nowrap"><a href="/ui/ledger/invoices/@inv.Id">@inv.FriendlyId</a></td>
           <td>@inv.Title</td>
           <td class="text-nowrap">@inv.DueDate.ToString("yyyy-MM-dd")</td>
-          <td class="text-nowrap text-end">@inv.Total.ToString("C")</td>
-          <td class="text-nowrap text-end">@inv.TotalPaid.ToString("C")</td>
-          <td class="text-nowrap text-end">@inv.Balance.ToString("C")</td>
+          <td class="text-nowrap text-end">@inv.Total.ToCurrencyDisplay()</td>
+          <td class="text-nowrap text-end">@inv.TotalPaid.ToCurrencyDisplay()</td>
+          <td class="text-nowrap text-end">@inv.Balance.ToCurrencyDisplay()</td>
           <td class="text-nowrap">
             @if (inv.PaidDate.HasValue)
             {

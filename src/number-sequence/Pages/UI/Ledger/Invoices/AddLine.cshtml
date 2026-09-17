@@ -28,7 +28,7 @@
           <option value="">— none —</option>
           @foreach (var d in Model.LineDefaults)
           {
-            <option value="@d.Id">@d.Title (@d.Quantity × @d.Price.ToString("C"))</option>
+            <option value="@d.Id">@d.Title (@d.Quantity × @d.Price.ToCurrencyDisplay())</option>
           }
         </select>
       </div>
