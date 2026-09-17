@@ -264,7 +264,10 @@ namespace number_sequence.DurableTaskImpl.Activities
                     page.MarginBottom(0.25f, Unit.Inch);
                     page.MarginHorizontal(0.5f, Unit.Inch);
 
-                    page.DefaultTextStyle(TextStyle.Default.FontSize(baseFontSize).FontFamily("CMU Serif"));
+                    // Falls back to Lato for anything CMU Serif has no glyph for: this page renders free-text
+                    // dictation notes, so an unusual character (an em dash, a degree symbol) is expected input, not
+                    // a bug. Since QuestPDF 2026.9, a missing glyph with no fallback throws instead of rendering.
+                    page.DefaultTextStyle(TextStyle.Default.FontSize(baseFontSize).FontFamily("CMU Serif", "Lato"));
 
                     // Header, repeated every page.
                     page.Header().Element(container =>

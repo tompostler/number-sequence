@@ -30,7 +30,7 @@
     <PackageVersion Include="Google.Apis.Sheets.v4" Version="1.75.0.4178" />
     <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.8.1" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
-    <PackageVersion Include="QuestPDF" Version="2026.7.3" />
+    <PackageVersion Include="QuestPDF" Version="2026.9.0" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
     <PackageVersion Include="Unlimitedinf.Utilities" Version="5.1.7" />
     <PackageVersion Include="ScottPlot" Version="5.1.59" />

@@ -115,7 +115,7 @@ namespace number_sequence
             //
 
             _ = services.AddSingleton<Services.ChiroDictationParser>();
-            FontManager.RegisterFont(Resources.ComputerModernRomanFont);
+            FontManager.RegisterFontFromStream(Resources.ComputerModernRomanFont);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

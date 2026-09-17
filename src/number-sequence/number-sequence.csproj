@@ -25,10 +25,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!-- ScottPlot depends on SkiaSharp, which does not automatically include Linux native assets. Without this, libSkiaSharp.so is missing on the Linux app service and chart generation fails. QuestPDF bundles its own native Skia build and does not need this. -->
     <PackageReference Include="ScottPlot" />
-    <PackageReference Include="QuestPDF" />
-    <!-- QuestPDF uses SkiaSharp, which does not automatically include Linux native assets. Without this, libSkiaSharp.so is missing on the Linux app service and PDF generation fails. -->
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
+    <PackageReference Include="QuestPDF" />
   </ItemGroup>
 
   <ItemGroup>
