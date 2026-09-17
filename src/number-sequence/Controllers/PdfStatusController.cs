@@ -29,6 +29,7 @@ namespace number_sequence.Controllers
             DateTimeOffset daysAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
 
             List<Models.ChiroRecord> chiroRecords = [];
+            List<Models.ChiroRecord> pendingChiroRecords = [];
             List<Models.ChiroEmailBatch> chiroBatches = [];
             List<Models.ChiroEmailBatch> pendingChiroBatches = [];
             List <Models.EmailDocument> emailDocuments = [];
@@ -52,6 +53,13 @@ namespace number_sequence.Controllers
                 // Not bound by daysLookback/takeAmount - a stuck straggler outside that window should still show up.
                 pendingChiroBatches = await nsContext.ChiroEmailBatches
                                                 .Where(r => r.ProcessedAt == null)
+                                                .ToListAsync();
+
+                // Same reasoning - InputJson == null are records deliberately never processed (unrecognized
+                // submitter on the google sheet ingestion path), not stragglers.
+                pendingChiroRecords = await nsContext.ChiroRecords
+                                                .Where(r => r.ProcessedAt == null && r.InputJson != null)
+                                                .OrderBy(r => r.RecordedAt)
                                                 .ToListAsync();
             }
             if (hasEmailAccess)
@@ -116,6 +124,7 @@ namespace number_sequence.Controllers
             string chiroRecordsTimeSpanFormat = determineTimeSpanFormat(chiroRecords.Select(chiroRecordDelay));
             string emailDocumentTimeSpanFormat = determineTimeSpanFormat(emailDocuments.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
             string chiroBatchTimeSpanFormat = determineTimeSpanFormat(chiroBatches.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
+            string pendingChiroRecordsTimeSpanFormat = determineTimeSpanFormat(pendingChiroRecords.Select(chiroRecordDelay));
 
             PdfStatus pdfStatus = new()
             {
@@ -127,6 +136,7 @@ namespace number_sequence.Controllers
                         RecordedAt = x.RecordedAt.AddHours(hoursOffset).ToString(dateTimeFormat),
                         ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
                         Delay = chiroRecordDelay(x).ToString(chiroRecordsTimeSpanFormat),
+                        ProcessAttempt = x.ProcessAttempt,
                     })
                     .ToList(),
                 EmailDocuments = emailDocuments.Select(
@@ -151,6 +161,16 @@ namespace number_sequence.Controllers
                         CreatedDate = x.CreatedDate.AddHours(hoursOffset).ToString(dateTimeFormat),
                         ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
                         Delay = (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate).ToString(chiroBatchTimeSpanFormat),
+                    })
+                    .ToList(),
+                ChiroRecordsPending = pendingChiroRecords.Select(
+                    x => new PdfStatus.ChiroRecord
+                    {
+                        Id = x.RowId,
+                        DataEnteredAt = x.DataEnteredAt.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        RecordedAt = x.RecordedAt.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        Delay = chiroRecordDelay(x).ToString(pendingChiroRecordsTimeSpanFormat),
+                        ProcessAttempt = x.ProcessAttempt,
                     })
                     .ToList(),
                 ChiroBatchPendingCounts = pendingChiroBatches

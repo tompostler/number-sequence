@@ -5,6 +5,7 @@
     <None Include="$(RepoRoot)\.config\**\*" Link=".config\%(RecursiveDir)\%(Filename)%(Extension)" />
     <None Include="$(RepoRoot)\build\**\*" Link="build\%(RecursiveDir)\%(Filename)%(Extension)" />
     <None Include="$(RepoRoot)\deployment\**\*" Link="deployment\%(RecursiveDir)\%(Filename)%(Extension)" />
+    <None Include="$(RepoRoot)\docs\**\*" Link="docs\%(RecursiveDir)\%(Filename)%(Extension)" />
     <None Include="$(RepoRoot)\*" Link="%(RecursiveDir)\%(Filename)%(Extension)" />
   </ItemGroup>
 

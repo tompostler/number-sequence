@@ -193,7 +193,7 @@ namespace number_sequence.Services.Background.GoogleSheetPdfGeneration
                 TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
                 OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
                     typeof(DurableTaskImpl.Orchestrators.ChiroGenerationOrchestrator),
-                    instanceId: $"{id.MakeHumanFriendly()}_{template.Id}",
+                    instanceId: ChiroOrchestrationNaming.InstanceId(id, template.Id, record.ProcessAttempt),
                     record.RowId);
                 this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
                 break;

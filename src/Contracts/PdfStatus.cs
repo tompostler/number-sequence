@@ -13,6 +13,7 @@
             public string RecordedAt { get; set; }
             public string ProcessedAt { get; set; }
             public string Delay { get; set; }
+            public int ProcessAttempt { get; set; }
         }
         public sealed class EmailDocument
         {
@@ -44,6 +45,7 @@
         public List<ChiroRecord> ChiroRecords { get; set; }
         public List<EmailDocument> EmailDocuments { get; set; }
         public List<ChiroBatch> ChiroBatches { get; set; }
+        public List<ChiroRecord> ChiroRecordsPending { get; set; }
         public List<ChiroBatchPendingCount> ChiroBatchPendingCounts { get; set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }

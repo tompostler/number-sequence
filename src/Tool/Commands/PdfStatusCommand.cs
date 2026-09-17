@@ -74,7 +74,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.ChiroRecord.DataEnteredAt),
                 nameof(PdfStatus.ChiroRecord.RecordedAt),
                 nameof(PdfStatus.ChiroRecord.ProcessedAt),
-                nameof(PdfStatus.ChiroRecord.Delay));
+                nameof(PdfStatus.ChiroRecord.Delay),
+                nameof(PdfStatus.ChiroRecord.ProcessAttempt));
 
             Console.WriteLine($"{nameof(PdfStatus.EmailDocuments)} ({pdfStatus.EmailDocuments.Count}):");
             Output.WriteTable(
@@ -97,6 +98,15 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.ChiroBatch.CreatedDate),
                 nameof(PdfStatus.ChiroBatch.ProcessedAt),
                 nameof(PdfStatus.ChiroBatch.Delay));
+
+            Console.WriteLine($"{nameof(PdfStatus.ChiroRecordsPending)} ({pdfStatus.ChiroRecordsPending.Count}):");
+            Output.WriteTable(
+                pdfStatus.ChiroRecordsPending,
+                nameof(PdfStatus.ChiroRecord.Id),
+                nameof(PdfStatus.ChiroRecord.DataEnteredAt),
+                nameof(PdfStatus.ChiroRecord.RecordedAt),
+                nameof(PdfStatus.ChiroRecord.Delay),
+                nameof(PdfStatus.ChiroRecord.ProcessAttempt));
 
             Console.WriteLine($"{nameof(PdfStatus.ChiroBatchPendingCounts)} ({pdfStatus.ChiroBatchPendingCounts.Count}):");
             Output.WriteTable(

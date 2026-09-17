@@ -48,6 +48,7 @@ else
         <th class="text-nowrap">Recorded</th>
         <th class="text-nowrap">Processed</th>
         <th class="text-nowrap">Delay</th>
+        <th class="text-nowrap">Attempt</th>
       </tr>
     </thead>
     <tbody>
@@ -68,6 +69,46 @@ else
             }
           </td>
           <td class="text-nowrap">@record.Delay</td>
+          <td class="text-nowrap">@record.ProcessAttempt</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
+
+<h5>Chiro Records Pending</h5>
+@if (Model.Status.ChiroRecordsPending.Count == 0)
+{
+    @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
+    {
+        <p class="text-muted">None.</p>
+    }
+    else
+    {
+        <p class="text-muted">No access.</p>
+    }
+}
+else
+{
+  <table class="table table-striped table-sm mb-4">
+    <thead>
+      <tr>
+        <th class="text-nowrap">ID</th>
+        <th class="text-nowrap">Data entered</th>
+        <th class="text-nowrap">Recorded</th>
+        <th class="text-nowrap">Delay</th>
+        <th class="text-nowrap">Attempt</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var record in Model.Status.ChiroRecordsPending)
+      {
+        <tr>
+          <td>@record.Id</td>
+          <td class="text-nowrap">@record.DataEnteredAt</td>
+          <td class="text-nowrap">@record.RecordedAt</td>
+          <td class="text-nowrap">@record.Delay</td>
+          <td class="text-nowrap">@record.ProcessAttempt</td>
         </tr>
       }
     </tbody>

@@ -121,7 +121,7 @@ namespace number_sequence.Controllers
             TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
             OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(
                 typeof(DurableTaskImpl.Orchestrators.ChiroGenerationOrchestrator),
-                instanceId: $"{rowId.MakeHumanFriendly()}_{template.Id}",
+                instanceId: ChiroOrchestrationNaming.InstanceId(rowId, template.Id, record.ProcessAttempt),
                 record.RowId);
             this.logger.LogInformation($"Created orchestration {instance.InstanceId} to generate the pdf.");
 

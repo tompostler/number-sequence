@@ -20,6 +20,8 @@ namespace number_sequence.Models
 
         public DateTimeOffset? ProcessedAt { get; set; }
 
+        public int ProcessAttempt { get; set; }
+
         public string InputJson { get; set; }
     }
 }

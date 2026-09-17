@@ -18,6 +18,17 @@ This section is what should be checked first when `ChiroBatchSendBackgroundServi
 it isn't draining a clinic's queue: it shows the true backlog per destination independent of the
 list-view paging.
 
+## Chiro records pending
+
+"Chiro Records Pending" is the same shape as "Chiro Batch Pending Counts" but for `ChiroRecords`: unbounded by
+`daysLookback`/`takeAmount`, so a record stuck failing pdf generation stays visible instead of aging out of the
+windowed "Chiro Records" table above it. It isn't grouped into counts like the batch section, since each record is
+individually actionable — its attempt count (`ChiroRecord.ProcessAttempt`) is the signal for whether
+`ReprocessChiroRegularlyBackgroundService` has had a chance to retry it yet, versus whether it's still within the
+original orchestration's own retry window. See [`docs/chiro-pdf-retry.md`](chiro-pdf-retry.md) for why retries work
+this way. Records with no `InputJson` (a disallowed submitter on the google sheet ingestion path) are excluded —
+they're deliberately never processed, not stuck.
+
 ## Chiro forms per clinic chart
 
 The "Chiro Forms Per Clinic" section renders a PNG stacked bar chart, one bar per day over the
