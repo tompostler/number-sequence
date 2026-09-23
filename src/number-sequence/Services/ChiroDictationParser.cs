@@ -33,10 +33,9 @@ namespace number_sequence.Services
         // The api reports tokens, never money, so the rates have to live next to the model they belong to. List
         // price in dollars per million tokens; cache write bills at 1.25x the input rate and cache read at 0.1x.
         // A rate left stale after a model change makes the number quietly wrong rather than failing, so move these
-        // whenever Model moves. claude-sonnet-5 also has introductory pricing of 2.00/10.00 through 2026-08-31,
-        // which is not encoded: list price ages into being right, an introductory rate ages into being wrong.
-        private const decimal InputRatePerMillion = 3.00m;
-        private const decimal OutputRatePerMillion = 15.00m;
+        // whenever Model moves.
+        private const decimal InputRatePerMillion = 2.00m;
+        private const decimal OutputRatePerMillion = 10.00m;
         private const decimal CacheWriteRatePerMillion = InputRatePerMillion * 1.25m;
         private const decimal CacheReadRatePerMillion = InputRatePerMillion * 0.10m;
 
@@ -214,8 +213,38 @@ namespace number_sequence.Services
             _ = prompt.AppendLine("\"cairo\" is almost always \"chiro\"; \"post\" is \"posterior\"; \"t4\" is \"T4\"; \"on the front\" means the forelimb.");
             _ = prompt.AppendLine("\"hypermobility\" is always \"hypomobility\": the transcription software mishears it and there is no such finding.");
             _ = prompt.AppendLine("Terms you will see: PI and AS (pelvis), SCP (spinous/mammillary process), coxofemoral, cranial, caudal, ventral, dorsal, medial, lateral.");
-            _ = prompt.AppendLine("Punctuation is unreliable. A side stated once carries across the items that follow it in the same phrase,");
-            _ = prompt.AppendLine("so \"left digits 2, 3 on the front\" is digits 2 and 3 of the LEFT forelimb.");
+            _ = prompt.AppendLine("Numbers get split, run together and stuttered: \"l 4\" is L4, \"t t 6\" is T6, \"thoracic vertebra 4\" is T4, and");
+            _ = prompt.AppendLine("\"digits 234\" or \"digits 23\" are digits 2, 3, 4 or digits 2, 3. \"C or T10 right\" is T10 right: a level begun and corrected.");
+            _ = prompt.AppendLine("Other mishearings: \"inner transverse\" is intertransverse; \"ti\" is PI; \"barrel roar\" is barrel roll; \"or\" is often");
+            _ = prompt.AppendLine("\"for\", as in \"Max or the Valley clinic\". \"Shoulder\" means the scapula.");
+            _ = prompt.AppendLine("Dates are said as run-together numbers: \"812 of 2026\" is 2026-08-12 and \"704 26\" is 2026-07-04. A date said twice");
+            _ = prompt.AppendLine("in a row, \"812811 of 2026\", is a correction like any other: keep the last one, 2026-08-11, and flag it.");
+            _ = prompt.AppendLine();
+            _ = prompt.AppendLine("## Which site a side belongs to");
+            _ = prompt.AppendLine("Punctuation is unreliable, so a side word belongs to a site by where it sits, not by any sentence break:");
+            _ = prompt.AppendLine("\"rib 6. Right dorsal L2, left L3 left\" is rib 6 right dorsal, L2 left, L3 left.");
+            _ = prompt.AppendLine("Almost everywhere, the side is said AFTER the site, and every site states its own. A side word belongs to the site");
+            _ = prompt.AppendLine("just before it, never to the one after, and a side never carries forward onto the next site. That holds for:");
+            _ = prompt.AppendLine("- the spine: \"L6 left L5 left L3 right T11 right\" is L6 left, L5 left, L3 right, T11 right.");
+            _ = prompt.AppendLine("- ribs, with the direction after the side: \"rib 5 right dorsal\", \"rib 7 right cranial\".");
+            _ = prompt.AppendLine("- sacrum and pelvis: \"sacral base posterior right apex left PI left\" is the base posterior and right, the apex");
+            _ = prompt.AppendLine("  left, and PI left.");
+            _ = prompt.AppendLine("- intertransverse: \"intertransverse 5 and 6 left\" is L5/L6 left.");
+            _ = prompt.AppendLine("- the humerus: \"external rotation of the humerus left\" is the LEFT humerus.");
+            _ = prompt.AppendLine("- digits: \"digits 2, 3, 4 on the front left digits 3, 4 on the front right\" is digits 2, 3 and 4 of the LEFT");
+            _ = prompt.AppendLine("  forelimb, then digits 3 and 4 of the RIGHT. The limb is named after the digits, not before them.");
+            _ = prompt.AppendLine("The scapula is the exception. It is said as the maneuver, then the side, then \"scapula\": \"dorsal medial left");
+            _ = prompt.AppendLine("scapula\" is the LEFT scapula, dorsal medial, and \"ventral lateral right scapula\" is the RIGHT scapula.");
+            _ = prompt.AppendLine("A finding said with no side of its own takes none from its neighbours. In \"external rotation of the humerus left");
+            _ = prompt.AppendLine("elbow traction\" the left is the humerus's and the elbow traction was said without a side, so do not lend it one.");
+            _ = prompt.AppendLine("Record your best reading of a finding like that and flag it.");
+            _ = prompt.AppendLine("\"On both front limbs\" is both sides for everything in its phrase: in \"humerus left carpal flexion traction on both front");
+            _ = prompt.AppendLine("limbs\" the left is the humerus's, and the carpal flexion and traction are on BOTH forelimbs.");
+            _ = prompt.AppendLine("Two sides back to back with no site between them, as in \"L4 left right L5 right\", may be a correction or a slip:");
+            _ = prompt.AppendLine("keep the last side, as for any correction, and flag it.");
+            _ = prompt.AppendLine("A doubled word is usually a stutter (\"left left\" is one left), but at a boundary it can end one finding and start");
+            _ = prompt.AppendLine("the next: in \"rib 6 right dorsal dorsal medial left scapula\" the first dorsal is the rib's and the second begins");
+            _ = prompt.AppendLine("the scapula.");
             _ = prompt.AppendLine();
             _ = prompt.AppendLine("## A correction comes AFTER the thing it corrects");
             _ = prompt.AppendLine("A speaker cannot un-say a word, so when they misspeak they say the right version next. A retraction and");

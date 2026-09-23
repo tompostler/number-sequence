@@ -83,6 +83,8 @@ break things if forgotten:
   URL including its query string, so after a parse the stale `?handler=Parse` routed Submit into the parser.
 - **The pdf filename comes from `ChiroDocumentNaming`**, used by both the generation activity and the submitting
   page, which shows the doctor the name before the pdf exists. Two copies would be two filenames.
+- **The repo is public: never copy a real transcript into the prompt, docs, or tests.** Finding-run fragments
+  ("L6 left L5 left") are fine; patient, owner and clinic names, visit dates and history narrative are not.
 - **`ChiroVocabulary` names are `nameof` of bound properties**, resolved by reflection in `ChiroForm.ApplyParse`.
   Renaming a bound property without updating the vocabulary fails at runtime, not at build.
 

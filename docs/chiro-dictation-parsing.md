@@ -121,7 +121,27 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
   prompt of necessity — the trigger is a word in the transcript, and by the time the server sees selections the
   correction and the second finding look identical.
 - **The transcript is speech-to-text and contains recognition errors.** `cairo` is `chiro`; `post` is `posterior`;
-  "on the front" means the forelimb. A side stated once carries across the items following it in the same phrase.
+  "on the front" means the forelimb; "l 4" is L4, "t t 6" is T6, "inner transverse" is intertransverse.
+- **Which site a side belongs to depends on where it sits.** Across eight real transcripts (four equine, four
+  canine) the side is said *after* the site almost everywhere — spine, ribs, sacrum, pelvis, intertransverse,
+  humerus, and digits ("digits 3, 4 on the front left"). The scapula is the one exception: "dorsal medial left
+  scapula", maneuver then side then site. The prompt originally carried only a side-*first* rule with an invented
+  example ("left digits 2, 3 on the front"), and applied to a side-after run that attached each side to the next
+  site — off by one exactly where the side changes, which is what the misparses looked like. Now a side belongs to
+  the site before it and never carries forward, and the scapula is called out by name. A finding said with no side
+  ("humerus left elbow traction") gets none borrowed from its neighbour and is flagged. Two sides back to back
+  ("L4 left right") are treated as a correction and flagged; a doubled word at a boundary can be two findings
+  rather than a stutter ("rib 6 right dorsal dorsal medial left scapula"). The examples in the prompt are lifted
+  from those transcripts, so this is one doctor's style; a second doctor may need the rule revisited. "On both
+  front limbs" closes everything in its phrase, confirmed by the doctor on "humerus left carpal flexion traction on
+  both front limbs".
+- **The prompt's examples are fragments, never transcripts.** The repo is public. A finding run like "L6 left L5
+  left L3 right" identifies nobody and is kept close to how it was said, because the exact word order is the point;
+  patient, owner and clinic names, visit dates and the history narrative are never copied in. Names and dates in
+  examples are made up.
+- **Numbers and dates run together.** "digits 234", "thoracic vertebra 4", "812 of 2026" for 2026-08-12, and
+  "812811 of 2026" for a date said twice, kept as the last per the correction rule and flagged. "Shoulder" is the
+  scapula, "ti" is PI, "or" is often "for", "barrel roar" is barrel roll.
   `hypermobility` is always `hypomobility` — the transcription software reliably mishears it, and no such finding
   exists. The same phantom option was in Scribenote's template and is what put a hypermobility entry on its list.
 
@@ -176,10 +196,9 @@ Model and effort are constants at the top of `ChiroDictationParser`. Currently `
 
 **Cost is computed, not reported.** The api returns token counts and nothing about money, so the four rates sit
 next to `Model` as constants and `Price` turns a response's usage into dollars. They are list price per million
-tokens, with cache write at 1.25x input and cache read at 0.1x. Two things follow: **the rates have to move
-whenever `Model` moves**, because a stale rate makes the figure quietly wrong rather than failing; and the
-introductory pricing some models launch with is deliberately not encoded, since list price ages into being right
-and an introductory rate ages into being wrong. The number is an estimate, and the page says "about". It is
+tokens, with cache write at 1.25x input and cache read at 0.1x; `claude-sonnet-5` is $2/$10. **The rates have to
+move whenever `Model` moves**, because a stale rate makes the figure quietly wrong rather than failing. The number
+is an estimate, and the page says "about". It is
 rendered by `CostDisplay` rather than the `C` format, because the amount is dollars by definition: `C` takes its
 symbol from the ambient culture, which is a `¤` placeholder on a host with no `LANG` set and the wrong currency
 outright on one with a different locale.
@@ -197,8 +216,17 @@ Cost is the sum across regions; elapsed is the slowest region. The first parse a
 every region and costs several times a warm one, so judge a config by a repeat run. If one region dominates, splitting that region beats changing model — forelimbs is the
 obvious candidate and divides cleanly into left and right.
 
-`claude-haiku-4-5` is the cheap option but is **not** a one-constant change: `effort` is unsupported there and will
-return a 400, so `OutputConfig.Effort` has to come out, and Haiku has no thinking on by default.
+**Thinking is on and is most of the bill.** `Thinking` is not set, and on `claude-sonnet-5` omitting it runs
+adaptive thinking. Thinking tokens bill as output and are in the logged output count; the api's default of not
+returning the thinking text changes nothing about what is billed. Warm, a region's cached prefix costs a fraction
+of a cent, so the cost of a parse is almost entirely output. `Effort` is the lever: step `Medium` to `Low` first.
+Sonnet 5 also accepts thinking `disabled`, which is the step after that, but it is the one most likely to cost
+accuracy on the reading-order problems above, so it is a sweep step rather than a default.
+
+`claude-haiku-4-5` was considered and set aside. It is not a one-constant change (`effort` returns a 400, thinking
+takes a fixed `budget_tokens` instead), and a region's roughly 1.9k-token prefix is under Haiku's 4096-token
+caching minimum, so it would pay full input on every region of every parse. The saving over Sonnet at low effort
+is under a cent a parse, against more wrong sides on transcripts that already trip Sonnet.
 
 When sweeping, do not judge by the flags — they only show what the model noticed was ambiguous. Run the same
 transcripts through each config and diff the resulting checkboxes. Test negation first; it is the highest
