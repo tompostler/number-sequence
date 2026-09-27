@@ -15,17 +15,17 @@ a single stuck instance parked in the durable task worker indefinitely, which fi
 orchestration" model (`MaxActiveOrchestrations = 1` in `DurableOrchestrationWorkerBackgroundService`) — nothing
 else would get generated while it spun.
 
-**Retrying is a new orchestration, not a longer one.** `ReprocessChiroRegularlyBackgroundService` runs every 30
-minutes (long enough that the original orchestration's own ~20-minute retry window has already resolved one way or
-the other) and creates a fresh orchestration for every `ChiroRecord` with `ProcessedAt == null` and `InputJson`
-set. This is the same shape as `ReprocessLedgerRegularlyBackgroundService`, which already does this for recurring
+**Retrying is a new orchestration, not a longer one.** `ReprocessChiroRegularlyBackgroundService` runs every hour
+and creates a fresh orchestration for every `ChiroRecord` with `ProcessedAt == null`, `InputJson` set, and
+`RecordedAt` more than an hour old. The hour on `RecordedAt` is what keeps it clear of the original orchestration's
+own ~20-minute retry window, which has definitely resolved one way or the other by then. This is the same shape as `ReprocessLedgerRegularlyBackgroundService`, which already does this for recurring
 invoices — the difference is this one is driven by failure, not by a recurrence schedule.
 
 **`InputJson == null` is excluded deliberately, not defensively.** The google sheet ingestion services record a
 `ChiroRecord` with no `InputJson` when the row's submitter isn't on the template's allowed list, specifically so
 the row is never re-read as new on the next poll. That record is meant to stay unprocessed forever. Without this
-filter the reprocessing service would treat every rejected submission as a stuck straggler and spin on it every 30
-minutes forever.
+filter the reprocessing service would treat every rejected submission as a stuck straggler and spin on it every
+hour forever.
 
 ## Orchestration instance id collisions
 
