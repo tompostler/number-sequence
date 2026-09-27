@@ -104,6 +104,11 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
   either shape and tells the model not to guess; `ChiroDictationParser.ReadDateOfService` supplies the current
   year. Deliberately not solved by putting today's date in the prompt — what year it is is the one fact the model
   cannot know and the server can.
+- **A date the parse missed is caught at submit, not in the parser.** A failed or absent date still turns up on
+  the form as `0001-01-01`, and `[Required]` cannot catch that because a `DateOnly` is never null. Rather than
+  chase every way a spoken date can go wrong (or be missing from the dictation entirely), `DateOfService` carries
+  `PlausibleDateOfServiceAttribute`: more than a year old or more than a day ahead is rejected, and the doctor
+  fixes it by hand like any other empty required field.
 - **An intended-but-not-performed adjustment is not a finding.** Resisted, deferred, or not tolerated goes in the
   notes and must never tick a box.
 - **A bare "TMJ" names no maneuver.** "TMJ" is the question's own label, not one of its options, so "TMJ right"

@@ -36,7 +36,7 @@ namespace number_sequence.Pages.UI.Chiro
         [BindProperty, Required, MaxLength(128)]
         public string OwnerName { get; set; }
 
-        [BindProperty, Required]
+        [BindProperty, Required, PlausibleDateOfService]
         public DateOnly DateOfService { get; set; }
 
         [BindProperty]
