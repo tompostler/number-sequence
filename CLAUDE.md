@@ -104,15 +104,12 @@ Full design notes: [`docs/pdf-status.md`](docs/pdf-status.md). Constraint that w
 
 ## Chiro pdf generation retry
 
-Full design notes: [`docs/chiro-pdf-retry.md`](docs/chiro-pdf-retry.md). Constraints that will break things if
+Full design notes: [`docs/chiro-pdf-retry.md`](docs/chiro-pdf-retry.md). Constraint that will break things if
 forgotten:
 
 - **The orchestration instance id always goes through `ChiroOrchestrationNaming.InstanceId`**, at every creation
-  site (`ChiroController`, both google sheet ingestion services, `ReprocessChiroRegularlyBackgroundService`). It
-  folds in `ChiroRecord.ProcessAttempt` so a retry's id doesn't collide with the failed attempt it's replacing —
-  hand-building the id anywhere brings that collision back.
-- **`ReprocessChiroRegularlyBackgroundService` must keep excluding `InputJson == null` records.** Those are
-  submissions from a disallowed submitter that the google sheet ingestion deliberately never processes; without
-  the filter they'd be retried forever.
+  site (`ChiroController`, `ReprocessChiroRegularlyBackgroundService`). It folds in `ChiroRecord.ProcessAttempt`
+  so a retry's id doesn't collide with the failed attempt it's replacing — hand-building the id anywhere brings
+  that collision back.
 
 

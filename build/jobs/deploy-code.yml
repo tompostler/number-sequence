@@ -27,7 +27,6 @@ jobs:
         -emailPort "$(email-port)"
         -emailUsername "$(email-username)"
         -emailPassword "$(email-password)"
-        -googleCredentials "$(google-dr-chiro-credentials)"
         -sqlServerName tompostler
         -sqlAdminPassword "$(tompostler-sqladmin-password)"
 

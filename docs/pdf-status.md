@@ -26,8 +26,7 @@ windowed "Chiro Records" table above it. It isn't grouped into counts like the b
 individually actionable — its attempt count (`ChiroRecord.ProcessAttempt`) is the signal for whether
 `ReprocessChiroRegularlyBackgroundService` has had a chance to retry it yet, versus whether it's still within the
 original orchestration's own retry window. See [`docs/chiro-pdf-retry.md`](chiro-pdf-retry.md) for why retries work
-this way. Records with no `InputJson` (a disallowed submitter on the google sheet ingestion path) are excluded —
-they're deliberately never processed, not stuck.
+this way.
 
 ## Chiro forms per clinic chart
 

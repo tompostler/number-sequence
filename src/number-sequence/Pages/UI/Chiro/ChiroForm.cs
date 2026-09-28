@@ -27,8 +27,8 @@ namespace number_sequence.Pages.UI.Chiro
         public const string SubmittedDocumentKey = "ChiroSubmittedDocument";
 
         /// <summary>
-        /// Multi-select answers are recorded as a single comma-separated string, matching how google sheets
-        /// serializes them, so that pdfs generated from either ingestion path are identical.
+        /// Multi-select answers are recorded as a single comma-separated string, the shape the pdf renderer and
+        /// every stored <c>ChiroRecord.InputJson</c> expect.
         /// </summary>
         public static string Join(string[] selected) => string.Join(", ", selected ?? []);
 

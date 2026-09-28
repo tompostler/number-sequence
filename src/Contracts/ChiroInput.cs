@@ -9,7 +9,6 @@ namespace TcpWtf.NumberSequence.Contracts
     public sealed class ChiroInput
     {
         // Tracking / submission metadata. Always assigned by the service; anything sent by a caller is discarded.
-        public DateTimeOffset RowCreatedAt { get; set; }
         public string EmailSubmitter { get; set; }
 
         /// <summary>Assigned by the service from the route.</summary>

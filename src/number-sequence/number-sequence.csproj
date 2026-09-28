@@ -15,7 +15,6 @@
     <PackageReference Include="Anthropic" />
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="Cronos" />
-    <PackageReference Include="Google.Apis.Sheets.v4" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
     <PackageReference Include="Microsoft.DurableTask.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />

@@ -9,21 +9,9 @@ namespace number_sequence.Models
         [MaxLength(64)]
         public string Id { get; set; }
 
-        [MaxLength(64)]
-        public string SpreadsheetId { get; set; }
-
-        [MaxLength(16)]
-        public string SpreadsheetRange { get; set; }
-
         [Required]
         [MaxLength(64)]
         public string EmailTo { get; set; }
-
-        /// <summary>
-        /// Semicolon-delimited.
-        /// </summary>
-        [MaxLength(128)]
-        public string AllowedSubmitterEmails { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }

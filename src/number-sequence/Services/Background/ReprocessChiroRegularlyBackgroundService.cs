@@ -37,11 +37,9 @@ namespace number_sequence.Services.Background
             // Long enough that the original orchestration's own retries (~20 minutes, see DefaultExponentialRetryOptions) have definitely finished one way or the other.
             DateTimeOffset oneHourAgo = DateTimeOffset.UtcNow.AddHours(-1);
 
-            // InputJson is null for records deliberately never processed (an unrecognized submitter on the google sheet ingestion path records the row so it isn't re-read as new, but never schedules generation).
             List<ChiroRecord> recordsNeedingReprocessing = await nsContext.ChiroRecords
                                                             .Where(x =>
                                                                 x.ProcessedAt == null
-                                                                && x.InputJson != null
                                                                 && x.RecordedAt < oneHourAgo)
                                                             .ToListAsync(cancellationToken);
             foreach (ChiroRecord recordNeedingReprocessing in recordsNeedingReprocessing)

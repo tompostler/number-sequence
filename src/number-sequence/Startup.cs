@@ -46,8 +46,6 @@ namespace number_sequence
 
             // Email
             _ = services.AddSingleton<DataAccess.EmailDataAccess>();
-            // Google
-            _ = services.AddSingleton<DataAccess.GoogleSheetDataAccess>();
             // SQL
             _ = services.AddDbContext<DataAccess.NsContext>((provider, options) => options
                   .UseSqlServer(
@@ -95,8 +93,6 @@ namespace number_sequence
             // Background services
             //
 
-            _ = services.AddHostedService<Services.Background.GoogleSheetPdfGeneration.ChiroCanineGoogleSheetPdfGenerationBackgroundService>();
-            _ = services.AddHostedService<Services.Background.GoogleSheetPdfGeneration.ChiroEquineGoogleSheetPdfGenerationBackgroundService>();
             _ = services.AddHostedService<Services.Background.ChiroBatchSendBackgroundService>();
             _ = services.AddHostedService<Services.Background.ReprocessChiroRegularlyBackgroundService>();
             _ = services.AddHostedService<Services.Background.ReprocessLedgerRegularlyBackgroundService>();

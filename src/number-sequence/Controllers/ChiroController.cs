@@ -7,7 +7,6 @@ using number_sequence.Models;
 using number_sequence.Utilities;
 using System.Text.Json;
 using TcpWtf.NumberSequence.Contracts;
-using Unlimitedinf.Utilities.Extensions;
 
 namespace number_sequence.Controllers
 {
@@ -92,16 +91,11 @@ namespace number_sequence.Controllers
             }
 
             // These are never taken from the caller.
-            input.RowCreatedAt = DateTimeOffset.UtcNow;
             input.EmailSubmitter = this.User.Identity.Name;
             input.ToEmail = template.EmailTo;
             input.Species = definition.Species;
 
-            // Matches the shape of the id the google sheet ingestion computes so that MakeHumanFriendly behaves the same.
-            string rowId = $"ui|{templateId}|{input.EmailSubmitter}|{input.RowCreatedAt:O}|{Guid.NewGuid()}".ComputeSHA256();
-
-            // Source must not be a spreadsheet id; the google sheet background services count records by
-            // Source == SpreadsheetId to determine how many spreadsheet rows to skip.
+            string rowId = Guid.NewGuid().ToString("N");
             string source = $"ui/{input.EmailSubmitter}";
             if (source.Length > 128)
             {
@@ -112,7 +106,7 @@ namespace number_sequence.Controllers
             {
                 Source = source,
                 RowId = rowId,
-                DataEnteredAt = input.RowCreatedAt,
+                DataEnteredAt = DateTimeOffset.UtcNow,
                 InputJson = JsonSerializer.Serialize(input),
             };
             _ = nsContext.ChiroRecords.Add(record);

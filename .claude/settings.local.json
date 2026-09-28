@@ -6,7 +6,8 @@
       "Bash(git status *)",
       "Bash(git log *)",
       "WebFetch(domain:scottplot.net)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(dotnet test *)"
     ]
   }
 }

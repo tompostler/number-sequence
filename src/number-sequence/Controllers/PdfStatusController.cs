@@ -55,10 +55,9 @@ namespace number_sequence.Controllers
                                                 .Where(r => r.ProcessedAt == null)
                                                 .ToListAsync();
 
-                // Same reasoning - InputJson == null are records deliberately never processed (unrecognized
-                // submitter on the google sheet ingestion path), not stragglers.
+                // Same reasoning.
                 pendingChiroRecords = await nsContext.ChiroRecords
-                                                .Where(r => r.ProcessedAt == null && r.InputJson != null)
+                                                .Where(r => r.ProcessedAt == null)
                                                 .OrderBy(r => r.RecordedAt)
                                                 .ToListAsync();
             }

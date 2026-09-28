@@ -21,17 +21,14 @@ and creates a fresh orchestration for every `ChiroRecord` with `ProcessedAt == n
 own ~20-minute retry window, which has definitely resolved one way or the other by then. This is the same shape as `ReprocessLedgerRegularlyBackgroundService`, which already does this for recurring
 invoices — the difference is this one is driven by failure, not by a recurrence schedule.
 
-**`InputJson == null` is excluded deliberately, not defensively.** The google sheet ingestion services record a
-`ChiroRecord` with no `InputJson` when the row's submitter isn't on the template's allowed list, specifically so
-the row is never re-read as new on the next poll. That record is meant to stay unprocessed forever. Without this
-filter the reprocessing service would treat every rejected submission as a stuck straggler and spin on it every
-hour forever.
+There is no `InputJson != null` filter. Every unprocessed record has one; see
+[Google Sheets ingestion (removed)](#google-sheets-ingestion-removed) for the rows that don't.
 
 ## Orchestration instance id collisions
 
 The orchestration instance id was deterministic from the row id alone (`{rowId.MakeHumanFriendly()}_{templateId}`),
-computed identically at every creation site: `ChiroController`, both google sheet ingestion services, and now
-`ReprocessChiroRegularlyBackgroundService`. Calling `CreateOrchestrationInstanceAsync` again with that same id for
+computed identically at every creation site: `ChiroController`, the since-removed google sheet ingestion services,
+and now `ReprocessChiroRegularlyBackgroundService`. Calling `CreateOrchestrationInstanceAsync` again with that same id for
 a retry collides with the id the failed attempt already used.
 
 `ChiroRecord.ProcessAttempt` (bumped before each retry) is folded into the id via
@@ -53,8 +50,23 @@ from the UI instead of App Insights.
 
 ## Pending records on the status page
 
-`PdfStatusController` exposes `ChiroRecordsPending` — every unprocessed, non-rejected `ChiroRecord`, unbounded by
+`PdfStatusController` exposes `ChiroRecordsPending` — every unprocessed `ChiroRecord`, unbounded by
 `daysLookback`/`takeAmount` — the same reasoning as the existing `ChiroBatchPendingCounts` section: a straggler
 old enough to fall out of the windowed `ChiroRecords` table should still be visible. Unlike the batch pending
 section it isn't grouped/counted, since each record is individually actionable (its `ProcessAttempt` tells you
 whether reprocessing has even had a chance to run yet).
+
+## Google Sheets ingestion (removed)
+
+Until September 2026, canine and equine records also came in through two Google Forms. Two background services
+polled the forms' response spreadsheets through a Google service account and recorded one new row per poll. The
+in-app forms replaced that path, and it was removed once both Google Forms were closed and fully ingested. What it
+left behind in `ChiroRecords`:
+
+- **`Source` holds a spreadsheet id** on records from that path, instead of `ui/{submitter}`.
+- **Processed records with no `InputJson`** predate `ChiroRecord` itself. They were copied from the older
+  `PdfTemplateSpreadsheetRows` table, which only tracked rows and never stored their contents. They are history,
+  which is why `InputJson` stays nullable and the per-clinic chart still guards for null.
+- **Unprocessed records with no `InputJson`** were rows from a submitter not on the template's allow-list,
+  recorded only so the poller wouldn't read them as new again. The `RemoveGoogleSheetIngestion` migration deleted
+  them, which is what lets the reprocessing and pending queries treat every unprocessed record as real.

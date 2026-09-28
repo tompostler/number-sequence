@@ -8,7 +8,6 @@ namespace number_sequence
         {
             _ = services.Configure<Claude>(configuration.GetSection(nameof(Claude)));
             _ = services.Configure<Email>(configuration.GetSection(nameof(Email)));
-            _ = services.Configure<Google>(configuration.GetSection(nameof(Google)));
             _ = services.Configure<Sql>(configuration.GetSection(nameof(Sql)));
             _ = services.Configure<Storage>(configuration.GetSection(nameof(Storage)));
             return services;
@@ -39,11 +38,6 @@ namespace number_sequence
             /// <summary>Spelled out clinic name for dictation parsing assistance.</summary>
             public string Name { get; set; }
             public string Email { get; set; }
-        }
-
-        public sealed class Google
-        {
-            public string Credentials { get; set; }
         }
 
         public sealed class Sql

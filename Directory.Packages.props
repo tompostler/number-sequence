@@ -27,7 +27,6 @@
     <PackageVersion Include="MSTest" Version="4.4.1" />
     <!-- Everything else -->
     <PackageVersion Include="Cronos" Version="0.13.0" />
-    <PackageVersion Include="Google.Apis.Sheets.v4" Version="1.75.0.4178" />
     <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.8.1" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
     <PackageVersion Include="QuestPDF" Version="2026.9.0" />

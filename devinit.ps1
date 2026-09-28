@@ -62,9 +62,6 @@ $localSettings = [PSCustomObject]@{
         Password           = (Get-Secret 'email-password');
         LocalDevToOverride = (git config --get user.email);
     };
-    Google              = [PSCustomObject]@{
-        Credentials = (Get-Secret 'google-dr-chiro-credentials').Replace('\"', '"');
-    };
     Sql                 = [PSCustomObject]@{
         ConnectionString = (
             'Server=tcp:tompostler.database.windows.net,1433;Initial Catalog=nslocal;Persist Security Info=False;' `
