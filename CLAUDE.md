@@ -117,6 +117,17 @@ forgotten:
   so a retry's id doesn't collide with the failed attempt it's replacing — hand-building the id anywhere brings
   that collision back.
 
+## Account administration
+
+Full design notes: [`docs/account-admin.md`](docs/account-admin.md). Constraints that will break things if forgotten:
+
+- **Any write to `Account.Tier` or `Account.Roles` must evict that account's tokens from `IMemoryCache`.** The
+  validated principal is cached by raw token value with a sliding expiration, so an account in active use otherwise
+  keeps its old roles until its token expires. Go through `AccountsController.UpdateAccountAsync` rather than saving
+  an account elsewhere.
+- **`AccountRoles.All` is reflected from the `const string` fields.** A non-role constant added to that class becomes
+  grantable.
+
 ## Library
 
 Full design notes: [`docs/library.md`](docs/library.md). Constraints that will break things if forgotten:

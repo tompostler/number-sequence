@@ -1,0 +1,81 @@
+@page "/ui/admin/accounts"
+@model number_sequence.Pages.UI.Admin.AccountsModel
+@using TcpWtf.NumberSequence.Contracts
+@{
+  ViewData["Title"] = "Accounts";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <h2 class="mb-0">Accounts</h2>
+</div>
+
+@if (Model.Error != null)
+{
+  <div class="alert alert-danger" style="white-space:pre-wrap">@Model.Error</div>
+}
+@if (Model.Updated != null)
+{
+  <div class="alert alert-success">Updated @Model.Updated. Its tokens pick up the change on their next request.</div>
+}
+
+<div class="table-responsive">
+  <table class="table table-striped table-sm align-middle">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Tier</th>
+        <th>Roles</th>
+        <th class="text-nowrap">Created</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var account in Model.Accounts)
+      {
+        var formId = $"account-{account.Name}";
+        var isSelf = string.Equals(account.Name, User.Identity.Name, StringComparison.OrdinalIgnoreCase);
+        var accountRoles = AccountRoles.Parse(account.Roles);
+        // Roles written by hand that aren't defined any more still show, so they can be unchecked.
+        var shownRoles = AccountRoles.All.Union(accountRoles, StringComparer.OrdinalIgnoreCase).ToList();
+        <tr>
+          <td class="text-nowrap">@account.Name</td>
+          <td>
+            <select name="tier" form="@formId" class="form-select form-select-sm" style="width:auto">
+              @foreach (var tier in Enum.GetValues<AccountTier>())
+              {
+                <option value="@tier" selected="@(tier == account.Tier)">@tier</option>
+              }
+            </select>
+          </td>
+          <td>
+            <div class="d-flex flex-wrap gap-3">
+              @foreach (var role in shownRoles)
+              {
+                var id = $"{formId}-{role}";
+                var isChecked = accountRoles.Contains(role, StringComparer.OrdinalIgnoreCase);
+                var isUnknown = !AccountRoles.All.Contains(role, StringComparer.OrdinalIgnoreCase);
+                // Removing your own admin role is refused by the api; disabled inputs don't post, so the hidden one keeps it.
+                var isLocked = isSelf && string.Equals(role, AccountRoles.Admin, StringComparison.OrdinalIgnoreCase);
+                <div class="form-check mb-0">
+                  <input class="form-check-input" type="checkbox" name="roles" value="@role" id="@id" form="@formId" checked="@isChecked" disabled="@isLocked" />
+                  <label class="form-check-label @(isUnknown ? "text-decoration-line-through text-muted" : "")" for="@id" title="@(isUnknown ? "Not a defined role" : null)">@role</label>
+                </div>
+                @if (isLocked)
+                {
+                  <input type="hidden" name="roles" value="@role" form="@formId" />
+                }
+              }
+            </div>
+          </td>
+          <td class="text-nowrap">@account.CreatedDate.ToString("yyyy-MM-dd")</td>
+          <td>
+            <form method="post" asp-page-handler="Update" id="@formId">
+              <input type="hidden" name="name" value="@account.Name" />
+              <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+            </form>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
