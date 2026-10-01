@@ -50,14 +50,129 @@ and `LibraryScanEntry.Barcode`. A book scanned from its EAN-13 barcode and the s
 copyright page have to match. Every write path must normalize before storing, or lookups quietly miss.
 
 **History.** `LibraryCopyEvent` is append-only and written by the server whenever a copy's location, loan or status
-changes. It also records which account made the change, because editors exist. Loans have their own table
-(`LibraryLoan`, at most one open per copy), since they carry their own fields (due date, borrower). The event log
-references a loan rather than duplicating it.
+changes. It also records which account made the change, because editors exist. `CreatedDate` is when the event was
+recorded, and events are never edited after that.
+
+**When a copy was acquired** comes from `LibraryCopy.AcquiredDate` (when set), not from its `Acquired` event's
+`CreatedDate`. An initial inventory records a shelf of books bought over ten years all on the day it is scanned. The
+real purchase dates often get filled in much later, by editing the copies. Because the acquisition time is read from
+the copy, editing `AcquiredDate` moves the book's arrival in history and in the [gource export](#gource-export-planned)
+without touching the event log.
+
+**Rejected: an `EffectiveDate` on the event**, copied from `AcquiredDate` when the copy is created. It goes stale the
+moment the purchase date is corrected, and keeping it current would mean editing an append-only table to keep a second
+copy of a fact the copy already holds. That is the drift this repo avoids elsewhere.
+
+The same rule covers loans, which already carry their real dates: a `Loaned` event's time is its loan's `LoanedDate`,
+and a `Returned` event's is its `ReturnedDate`. Recording a loan that started last March puts it in March.
+
+One helper computes event times for both the item page's history and the export. It walks a copy's events in recorded
+order (`CreatedDate`, then `Id`):
+
+- `Acquired` takes the copy's `AcquiredDate`, `Loaned` its loan's `LoanedDate`, and `Returned` its loan's
+  `ReturnedDate`, each at start of day. When that date isn't set, or for any other event type, the event takes its
+  `CreatedDate`.
+- Each time is then clamped up to at least the previous event's time.
+
+The clamp keeps a copy's events in recorded order whatever dates are entered. A copy never moves or gets lent before it
+arrives, and a loan backdated past a move that was recorded before it lands at the move instead of before it. The
+[gource export](#gource-export-planned) depends on that order.
+
+Loans have their own table (`LibraryLoan`, at most one open per copy), since they carry their own fields (due date,
+borrower). The event log references a loan rather than duplicating it.
 
 **Loanees** are a free-text `BorrowerName`, optionally linked to an account via `BorrowerAccountName`. Most borrowers
 are friends without accounts. The link exists so a borrower with an account could later see what they have out.
 
 ### Delete behaviour
+
+In the diagram, solid lines cascade on delete. Dashed lines labelled `no action` are foreign keys that block the delete.
+Dashed lines labelled `id only` are plain columns with no foreign key.
+
+```mermaid
+erDiagram
+    Library ||--o{ LibraryShare : cascade
+    Library ||--o{ LibraryItem : cascade
+    Library ||--o{ LibraryLocation : cascade
+    Library ||--o{ LibraryScanSession : cascade
+    LibraryItem ||--o{ LibraryCopy : cascade
+    LibraryCopy ||--o{ LibraryLoan : cascade
+    LibraryCopy ||--o{ LibraryCopyEvent : cascade
+    LibraryScanSession ||--o{ LibraryScanEntry : cascade
+
+    Library ||..o{ LibraryCopy : "no action"
+    LibraryLocation |o..o{ LibraryCopy : "no action"
+    LibraryLocation |o..o{ LibraryLocation : "parent, no action"
+    LibraryLocation ||..o{ LibraryScanSession : "no action"
+
+    LibraryLocation |o..o{ LibraryCopyEvent : "from/to, id only"
+    LibraryLoan |o..o{ LibraryCopyEvent : "id only"
+    LibraryCopy |o..o{ LibraryScanEntry : "resolved, id only"
+
+    Library {
+        long Id PK
+        string AccountName "owner"
+        string Name
+    }
+    LibraryShare {
+        long LibraryId PK
+        string AccountName PK "grantee"
+        enum Permission "Viewer | Editor"
+    }
+    LibraryLocation {
+        long Id PK
+        long LibraryId FK
+        long ParentLocationId FK "nullable"
+        string Name
+    }
+    LibraryItem {
+        long Id PK
+        long LibraryId FK
+        enum MediaType
+        string Title
+        string Creators
+        json ExternalIds
+        json Attributes
+    }
+    LibraryCopy {
+        long Id PK
+        long LibraryId FK
+        long ItemId FK
+        long LocationId FK "nullable"
+        string Format
+        string Barcode "normalized"
+        enum Status
+    }
+    LibraryLoan {
+        long Id PK
+        long CopyId FK
+        string BorrowerName
+        date ReturnedDate "null while open"
+    }
+    LibraryCopyEvent {
+        long Id PK
+        long CopyId FK
+        enum EventType
+        long FromLocationId
+        long ToLocationId
+        long LoanId
+        string AccountName "who made the change"
+        datetime CreatedDate "when it was recorded"
+    }
+    LibraryScanSession {
+        long Id PK
+        long LibraryId FK
+        long LocationId FK
+        datetime CompletedDate "null while open"
+    }
+    LibraryScanEntry {
+        long Id PK
+        long SessionId FK
+        string Barcode "normalized"
+        enum Resolution
+        long ResolvedCopyId
+    }
+```
 
 SQL Server refuses to create a schema where a table can be reached by two cascade paths. `LibraryCopy` has both
 `LibraryId` and `ItemId`, and `LibraryItem` cascades from `Library`, so `Library → Copy` directly would be a second path.
@@ -121,6 +236,38 @@ rather than general PUTs, because each one writes a `LibraryCopyEvent`. A genera
 The Client is `LibraryOperations` (partial, one file per sub-resource) exposed as `NsTcpWtfClient.Library`. The Tool is
 `library` (alias `lib`), with the usual CRUD aliases, plus `owned <barcode>` and `export <libraryId> <file.csv>`.
 
+## Gource export (planned)
+
+[Gource](https://gource.io) animates a version-control history as a growing tree. Its
+[custom log format](https://github.com/acaudwell/Gource/wiki/Custom-Log-Format) is one line per change,
+`timestamp|user|A/M/D|path|colour`, which makes it an easy way to watch a library fill up and move around over the
+years. The export is `GET library/libraries/{id}/events/gource` (text/plain), with `library export-gource <libraryId>
+<file.log>` in the Tool, then `gource file.log`.
+
+Mapping:
+
+- **Path:** `/{location path}/{title} ({format}) #{copyId}`, so locations are the directories and each copy is a file.
+  The copy id keeps two identical paperbacks from collapsing into one file. `|` and `/` in names are replaced, since
+  they are the format's field and path separators. A copy with no location sits under `/(no location)/`, a loaned
+  copy under `/(on loan)/{borrower}/`, and a missing copy under `/(missing)/`.
+- **Colour:** one per `MediaType`, rather than gource's default of colouring by file extension, which here would mean
+  nothing.
+- **User:** the event's `AccountName`, so an editor's activity shows up as a second person working on the tree.
+- **Events:** `Acquired` and `Restored` → `A`. `Verified` → `M` (a pulse on the file). `Disposed` → `D`. Gource
+  has no rename, so `Moved`, `Loaned`, `Returned` and `MarkedMissing` each become a `D` at the old path followed by an
+  `A` at the new one, both with the same timestamp.
+- **Time:** the event time from the shared helper (see [History](#data-model-item--copy)) as unix seconds, sorted
+  ascending with `Id` to break ties, because gource requires the log to be in order. The sort must be stable: clamping
+  can give several of a copy's events the same time, and they still have to come out in recorded order.
+
+Because the helper's clamp keeps each copy's events in recorded order, the `D` half of each move can use the event's
+stored `FromLocationId`, and it names a file gource has already seen. A `D` for a path gource has never seen leaves an
+orphaned file in the tree. That is why the clamp exists, and why a date on a copy or loan can never reorder that copy's
+events.
+
+Paths use location names as they are now, since locations don't keep a name history. A renamed shelf shows under its
+new name for its whole history. A deleted location shows as `(deleted location #id)`.
+
 ## External lookup (planned)
 
 Behind an `ILibraryLookupProvider` interface. A provider whose key isn't configured turns itself off, and the UI falls
@@ -164,10 +311,31 @@ The same flow handles first-time inventory and later reconciling:
 For a first inventory nothing is expected anywhere yet, so every entry is `NotInLibrary` and the reconcile becomes "add
 everything".
 
+```mermaid
+flowchart TD
+    scan([Barcode read]) --> norm[Normalize: digits only, ISBN-10 to ISBN-13]
+    norm --> any{"Any unclaimed Active or Missing copy<br/>in this library with this barcode?"}
+    any -- no --> nil["<b>NotInLibrary</b><br/>no copy claimed"]
+    any -- yes --> here{"Is one of them recorded<br/>at the session's location?"}
+    here -- yes --> exp["<b>Expected</b><br/>claim that copy"]
+    here -- no --> els["<b>Elsewhere</b><br/>claim one of the others"]
+
+    exp & els & nil --> finish([Finish: reconcile view])
+    finish --> v["Expected → <b>Verified</b> event<br/>(a Missing copy goes back to Active)"]
+    finish --> m["Elsewhere, if ticked → <b>Moved</b> event"]
+    finish --> u["Copies recorded here with no entry →<br/>mark missing / leave / mark loaned"]
+    finish --> n["NotInLibrary → add flow<br/>(ISBN lookup, or title search)"]
+```
+
 **Duplicates while scanning.** Each scan matches at most one copy, and an earlier scan in the same session claims its
-copy first. Two copies of the same paperback therefore need two scans. A third scan of that barcode resolves to
-`NotInLibrary`, which is correct: it's a copy you didn't know you had. An accidental double scan is fixed by removing
-the entry.
+copy first. "Unclaimed" means not already the `ResolvedCopyId` of an earlier entry in the session. When several copies
+share the barcode, a copy recorded at this location is claimed before one recorded elsewhere, so scanning a shelf never
+reports a move for a copy that was already there. Two copies of the same paperback therefore need two scans. A third
+scan of that barcode resolves to `NotInLibrary`, which is correct: it's a copy you didn't know you had. An accidental
+double scan is fixed by removing the entry.
+
+`Missing` copies are matched along with `Active` ones, because scanning a missing copy is how it gets found. `Disposed`
+copies are not matched. A disposed copy that turns up again is restored deliberately from its item page, not by a scan.
 
 **Camera.** There is no `wwwroot`, so the scanner is loaded from jsDelivr like Bootstrap. It is the `barcode-detector`
 ponyfill (zxing-wasm), which uses the browser's native `BarcodeDetector` where there is one (Android Chrome) and WASM
