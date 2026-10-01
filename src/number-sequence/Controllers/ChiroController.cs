@@ -107,7 +107,7 @@ namespace number_sequence.Controllers
                 Source = source,
                 RowId = rowId,
                 DataEnteredAt = DateTimeOffset.UtcNow,
-                InputJson = JsonSerializer.Serialize(input),
+                InputJson = JsonSerializer.Serialize(input, RelaxedJson.Options),
             };
             _ = nsContext.ChiroRecords.Add(record);
             _ = await nsContext.SaveChangesAsync(cancellationToken);

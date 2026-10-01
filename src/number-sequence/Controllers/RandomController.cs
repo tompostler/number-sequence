@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using number_sequence.Utilities;
 using System.Text.Json;
 using System.Web;
 using TcpWtf.NumberSequence.Contracts;
@@ -2719,7 +2720,7 @@ namespace number_sequence.Controllers
         [HttpGet("xkcd")]
         public IActionResult Xkcd() => this.Ok(4);
 
-        private static readonly string[] nos = JsonSerializer.Deserialize<string[]>(Resources.NoAsAServiceJson);
+        private static readonly string[] nos = JsonSerializer.Deserialize<string[]>(Resources.NoAsAServiceJson, RelaxedJson.Options);
 
 
         [HttpGet("no")]

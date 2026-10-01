@@ -46,7 +46,7 @@ namespace number_sequence.Services.Background
             {
                 recordNeedingReprocessing.ProcessAttempt += 1;
 
-                ChiroInput chiroInput = JsonSerializer.Deserialize<ChiroInput>(recordNeedingReprocessing.InputJson);
+                ChiroInput chiroInput = JsonSerializer.Deserialize<ChiroInput>(recordNeedingReprocessing.InputJson, RelaxedJson.Options);
                 ChiroSpeciesDefinition species = ChiroSpeciesDefinition.Get(chiroInput.Species);
 
                 TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);

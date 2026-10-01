@@ -62,7 +62,7 @@ namespace number_sequence.DurableTaskImpl.Activities
                 throw new InvalidOperationException($"ChiroRecord {record.RowId} was already processed at {record.ProcessedAt:u}");
             }
 
-            ChiroInput chiroInput = JsonSerializer.Deserialize<ChiroInput>(record.InputJson);
+            ChiroInput chiroInput = JsonSerializer.Deserialize<ChiroInput>(record.InputJson, RelaxedJson.Options);
             ChiroSpeciesDefinition species = ChiroSpeciesDefinition.Get(chiroInput.Species);
             this.logger.LogInformation($"Processing {species.DisplayName} ChiroRecord {record.RowId} for {chiroInput.PatientName} / {chiroInput.OwnerName}.");
 

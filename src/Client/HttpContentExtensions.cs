@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -13,6 +14,8 @@ namespace TcpWtf.NumberSequence.Client
             options = new JsonSerializerOptions
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                // Matches the server: non-ascii text is sent as-is rather than as \uXXXX escapes.
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new JsonStringEnumConverter());

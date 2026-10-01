@@ -121,7 +121,7 @@ namespace number_sequence.Utilities
                 ["properties"] = properties,
             };
 
-            return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(schema.ToJsonString());
+            return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(schema.ToJsonString(RelaxedJson.Options));
         }
 
         /// <summary>

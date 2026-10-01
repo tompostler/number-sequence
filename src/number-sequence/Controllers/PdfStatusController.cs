@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
 using number_sequence.Filters;
+using number_sequence.Utilities;
 using System.Text.Json;
 using TcpWtf.NumberSequence.Contracts;
 
@@ -227,7 +228,7 @@ namespace number_sequence.Controllers
             {
                 string abbreviation = string.IsNullOrWhiteSpace(record.InputJson)
                     ? null
-                    : JsonSerializer.Deserialize<ChiroInput>(record.InputJson)?.ClinicAbbreviation;
+                    : JsonSerializer.Deserialize<ChiroInput>(record.InputJson, RelaxedJson.Options)?.ClinicAbbreviation;
                 return string.IsNullOrWhiteSpace(abbreviation) ? noClinicLabel : abbreviation;
             }
 

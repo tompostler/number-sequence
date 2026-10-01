@@ -9,7 +9,6 @@ using number_sequence.Models;
 using number_sequence.Utilities;
 using System.IO.Compression;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace number_sequence.Services.Background
@@ -19,7 +18,6 @@ namespace number_sequence.Services.Background
         private readonly NsStorage nsStorage;
         private readonly IHttpClientFactory httpClientFactory;
         private readonly Options.Email emailOptions;
-        private readonly JsonSerializerOptions serializerOptions;
 
         public ChiroBatchSendBackgroundService(
             NsStorage nsStorage,
@@ -34,10 +32,6 @@ namespace number_sequence.Services.Background
             this.nsStorage = nsStorage;
             this.httpClientFactory = httpClientFactory;
             this.emailOptions = emailOptions.Value;
-            this.serializerOptions = new()
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
         }
 
         protected override List<CronExpression> Crons =>
@@ -142,7 +136,7 @@ namespace number_sequence.Services.Background
                 using HttpClient httpClient = this.httpClientFactory.CreateClient();
                 HttpResponseMessage response = await httpClient.PostAsync(
                     this.emailOptions.ChiroBatchUri,
-                    new StringContent(JsonSerializer.Serialize(payload, this.serializerOptions), Encoding.UTF8, "application/json"),
+                    new StringContent(JsonSerializer.Serialize(payload, RelaxedJson.Options), Encoding.UTF8, "application/json"),
                     cancellationToken);
                 this.logger.LogInformation($"Response: {response.StatusCode} {await response.Content.ReadAsStringAsync(cancellationToken)}");
                 _ = response.EnsureSuccessStatusCode();

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using QuestPDF.Drawing;
+using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using TcpWtf.NumberSequence.Client;
 
@@ -30,6 +31,8 @@ namespace number_sequence
                     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    // Same as Utilities.RelaxedJson: non-ascii stays readable, and html escaping happens at display time.
+                    options.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
                 });
             _ = services.AddRazorPages();
             _ = services.AddApplicationInsightsTelemetry();

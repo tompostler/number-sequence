@@ -91,7 +91,7 @@ namespace number_sequence.Services
         {
             Dictionary<string, JsonElement> schema = ChiroSchemaBuilder.Build(region, clinics.Keys, includeIntake);
             string systemPrompt = BuildSystemPrompt(vocabulary, region, includeIntake, clinics);
-            string schemaJson = JsonSerializer.Serialize(schema);
+            string schemaJson = JsonSerializer.Serialize(schema, RelaxedJson.Options);
 
             MessageCreateParams parameters = new()
             {
