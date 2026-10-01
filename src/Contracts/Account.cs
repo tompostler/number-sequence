@@ -30,7 +30,7 @@ namespace TcpWtf.NumberSequence.Contracts
         /// <summary>
         /// When an account should have access to more features, it will have additional roles. See <see cref="AccountRoles"/>.
         /// </summary>
-        [MaxLength(64)]
+        [MaxLength(256)]
         public string Roles { get; set; }
 
         /// <summary>

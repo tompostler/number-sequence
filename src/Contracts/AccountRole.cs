@@ -16,6 +16,11 @@
         public const string Ledger = nameof(Ledger);
 
         /// <summary>
+        /// The account has access to the library features, including libraries shared with it by other accounts.
+        /// </summary>
+        public const string Library = nameof(Library);
+
+        /// <summary>
         /// Ability to view the status of the pdf document generation.
         /// </summary>
         public const string PdfStatus = nameof(PdfStatus);

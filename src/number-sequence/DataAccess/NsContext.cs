@@ -2,6 +2,7 @@
 using number_sequence.Models;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Ledger;
+using TcpWtf.NumberSequence.Contracts.Libraries;
 
 namespace number_sequence.DataAccess
 {
@@ -26,6 +27,16 @@ namespace number_sequence.DataAccess
         public DbSet<InvoicePayment> InvoicePayments { get; set; }
         public DbSet<Statement> Statements { get; set; }
 
+        public DbSet<Library> Libraries { get; set; }
+        public DbSet<LibraryCopy> LibraryCopies { get; set; }
+        public DbSet<LibraryCopyEvent> LibraryCopyEvents { get; set; }
+        public DbSet<LibraryItem> LibraryItems { get; set; }
+        public DbSet<LibraryLoan> LibraryLoans { get; set; }
+        public DbSet<LibraryLocation> LibraryLocations { get; set; }
+        public DbSet<LibraryScanEntry> LibraryScanEntries { get; set; }
+        public DbSet<LibraryScanSession> LibraryScanSessions { get; set; }
+        public DbSet<LibraryShare> LibraryShares { get; set; }
+
         public DbSet<ChiroEmailBatch> ChiroEmailBatches { get; set; }
         public DbSet<ChiroRecord> ChiroRecords { get; set; }
         public DbSet<EmailDocument> EmailDocuments { get; set; }
@@ -47,6 +58,14 @@ namespace number_sequence.DataAccess
                 .UseLoggerFactory(this.loggerFactory)
                 // Since it's just Ns, we can include the actual values of the parameters to all queries
                 .EnableSensitiveDataLogging();
+        }
+
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            _ = configurationBuilder
+                .Properties<Dictionary<string, string>>()
+                .HaveConversion<JsonDictionaryConverter, JsonDictionaryComparer>()
+                .HaveMaxLength(4000);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -209,6 +228,180 @@ namespace number_sequence.DataAccess
                 .OnDelete(DeleteBehavior.Cascade);
 
             #endregion // Ledger
+
+            #region Library
+
+            // Cascades run Library -> Item -> Copy -> Loan/Event, plus Library -> Location/Share/ScanSession -> ScanEntry.
+            // Every other path into a copy or location is NoAction, because SQL Server rejects a table that can be reached by
+            // two cascade paths (Library -> Copy directly and via Item would be two). Event location/loan ids and scan entry
+            // copy ids are plain columns with no foreign key at all, so history outlives the rows it mentions.
+
+            _ = modelBuilder.HasSequence<long>("LibraryIds");
+            _ = modelBuilder.HasSequence<long>("LibraryCopyIds");
+            _ = modelBuilder.HasSequence<long>("LibraryCopyEventIds");
+            _ = modelBuilder.HasSequence<long>("LibraryItemIds");
+            _ = modelBuilder.HasSequence<long>("LibraryLoanIds");
+            _ = modelBuilder.HasSequence<long>("LibraryLocationIds");
+            _ = modelBuilder.HasSequence<long>("LibraryScanEntryIds");
+            _ = modelBuilder.HasSequence<long>("LibraryScanSessionIds");
+
+            _ = modelBuilder.Entity<Library>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.LibraryIds");
+            _ = modelBuilder.Entity<Library>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<Library>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<Library>()
+                .HasIndex(x => x.AccountName);
+
+            _ = modelBuilder.Entity<LibraryShare>()
+                .HasKey(x => new { x.LibraryId, x.AccountName });
+            _ = modelBuilder.Entity<LibraryShare>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryShare>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryShare>()
+                .HasOne(x => x.Library)
+                .WithMany(x => x.Shares)
+                .HasForeignKey(x => x.LibraryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // "Libraries shared with me" is looked up by grantee, not by library.
+            _ = modelBuilder.Entity<LibraryShare>()
+                .HasIndex(x => x.AccountName);
+
+            _ = modelBuilder.Entity<LibraryLocation>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.LibraryLocationIds");
+            _ = modelBuilder.Entity<LibraryLocation>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryLocation>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryLocation>()
+                .HasOne<Library>()
+                .WithMany()
+                .HasForeignKey(x => x.LibraryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            _ = modelBuilder.Entity<LibraryLocation>()
+                .HasOne<LibraryLocation>()
+                .WithMany()
+                .HasForeignKey(x => x.ParentLocationId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            _ = modelBuilder.Entity<LibraryItem>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.LibraryItemIds");
+            _ = modelBuilder.Entity<LibraryItem>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryItem>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryItem>()
+                .Property(x => x.SeriesNumber)
+                .HasPrecision(8, 2);
+            _ = modelBuilder.Entity<LibraryItem>()
+                .HasOne<Library>()
+                .WithMany()
+                .HasForeignKey(x => x.LibraryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            _ = modelBuilder.Entity<LibraryItem>()
+                .HasIndex(x => new { x.LibraryId, x.Title });
+
+            _ = modelBuilder.Entity<LibraryCopy>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.LibraryCopyIds");
+            _ = modelBuilder.Entity<LibraryCopy>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryCopy>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryCopy>()
+                .Property(x => x.PricePaid)
+                .HasPrecision(18, 2);
+            _ = modelBuilder.Entity<LibraryCopy>()
+                .HasOne(x => x.Item)
+                .WithMany(x => x.Copies)
+                .HasForeignKey(x => x.ItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+            _ = modelBuilder.Entity<LibraryCopy>()
+                .HasOne<Library>()
+                .WithMany()
+                .HasForeignKey(x => x.LibraryId)
+                .OnDelete(DeleteBehavior.NoAction);
+            _ = modelBuilder.Entity<LibraryCopy>()
+                .HasOne(x => x.Location)
+                .WithMany()
+                .HasForeignKey(x => x.LocationId)
+                .OnDelete(DeleteBehavior.NoAction);
+            // The "do I own this?" lookup and every scan resolve by barcode.
+            _ = modelBuilder.Entity<LibraryCopy>()
+                .HasIndex(x => new { x.LibraryId, x.Barcode });
+
+            _ = modelBuilder.Entity<LibraryLoan>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.LibraryLoanIds");
+            _ = modelBuilder.Entity<LibraryLoan>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryLoan>()
+                .Property(x => x.ModifiedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryLoan>()
+                .HasOne(x => x.Copy)
+                .WithMany(x => x.Loans)
+                .HasForeignKey(x => x.CopyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            _ = modelBuilder.Entity<LibraryCopyEvent>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.LibraryCopyEventIds");
+            _ = modelBuilder.Entity<LibraryCopyEvent>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryCopyEvent>()
+                .HasOne<LibraryCopy>()
+                .WithMany(x => x.Events)
+                .HasForeignKey(x => x.CopyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            _ = modelBuilder.Entity<LibraryScanSession>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.LibraryScanSessionIds");
+            _ = modelBuilder.Entity<LibraryScanSession>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryScanSession>()
+                .HasOne<Library>()
+                .WithMany()
+                .HasForeignKey(x => x.LibraryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            _ = modelBuilder.Entity<LibraryScanSession>()
+                .HasOne<LibraryLocation>()
+                .WithMany()
+                .HasForeignKey(x => x.LocationId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            _ = modelBuilder.Entity<LibraryScanEntry>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR dbo.LibraryScanEntryIds");
+            _ = modelBuilder.Entity<LibraryScanEntry>()
+                .Property(x => x.CreatedDate)
+                .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+            _ = modelBuilder.Entity<LibraryScanEntry>()
+                .HasOne<LibraryScanSession>()
+                .WithMany(x => x.Entries)
+                .HasForeignKey(x => x.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            #endregion // Library
 
             #region Pdf
 

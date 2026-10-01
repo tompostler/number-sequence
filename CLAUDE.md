@@ -117,4 +117,13 @@ forgotten:
   so a retry's id doesn't collide with the failed attempt it's replacing — hand-building the id anywhere brings
   that collision back.
 
+## Library
 
+Full design notes: [`docs/library.md`](docs/library.md). Constraints that will break things if forgotten:
+
+- **Every library-scoped query goes through the access helper, never `AccountName == User.Identity.Name`.** The Ledger
+  pattern copied here silently locks out every account a library is shared with.
+- **Barcodes are stored normalized** (digits only, ISBN-10 as ISBN-13) on copies and scan entries. A write path that
+  skips normalization makes lookups and scans quietly miss.
+- **The namespace and pages folder are `Libraries`, not `Library`**, because the root entity is `Library` and a type named
+  like its own namespace breaks name resolution (CS0118).

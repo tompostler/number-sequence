@@ -16,6 +16,13 @@
             [AccountTier.Large] = 19,
             [AccountTier.Infinite] = int.MaxValue,
         };
+        private static readonly IReadOnlyDictionary<AccountTier, int> OneThousandTimesAccountsPerCreatedFrom = new Dictionary<AccountTier, int>
+        {
+            [AccountTier.Small] = 1000 * AccountsPerCreatedFrom[AccountTier.Small],
+            [AccountTier.Medium] = 1000 * AccountsPerCreatedFrom[AccountTier.Medium],
+            [AccountTier.Large] = 1000 * AccountsPerCreatedFrom[AccountTier.Large],
+            [AccountTier.Infinite] = int.MaxValue,
+        };
 
         /// <summary>
         /// Number of tokens allowed is based on the account tier.
@@ -30,13 +37,7 @@
         /// <summary>
         /// Number of count events allowed per count is based on the account tier.
         /// </summary>
-        public static readonly IReadOnlyDictionary<AccountTier, int> CountEventsPerCount = new Dictionary<AccountTier, int>
-        {
-            [AccountTier.Small] = 1000 * AccountsPerCreatedFrom[AccountTier.Small],
-            [AccountTier.Medium] = 1000 * AccountsPerCreatedFrom[AccountTier.Medium],
-            [AccountTier.Large] = 1000 * AccountsPerCreatedFrom[AccountTier.Large],
-            [AccountTier.Infinite] = int.MaxValue,
-        };
+        public static readonly IReadOnlyDictionary<AccountTier, int> CountEventsPerCount = OneThousandTimesAccountsPerCreatedFrom;
 
         /// <summary>
         /// Number of 'days since' allowed is based on the account tier.
@@ -53,6 +54,16 @@
             [AccountTier.Large] = 64,
             [AccountTier.Infinite] = int.MaxValue,
         };
+
+        /// <summary>
+        /// Number of libraries an account may own is based on the account tier. Libraries shared with the account don't count.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<AccountTier, int> LibrariesPerAccount = AccountsPerCreatedFrom;
+
+        /// <summary>
+        /// Number of copies allowed per library is based on the owning account's tier.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<AccountTier, int> LibraryCopiesPerLibrary = OneThousandTimesAccountsPerCreatedFrom;
 
         /// <summary>
         /// Number of redirects allowed is based on the account tier.
