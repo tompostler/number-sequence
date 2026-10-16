@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
 using number_sequence.Filters;
 using number_sequence.Utilities;
+using System.Linq.Expressions;
 using System.Text.Json;
 using TcpWtf.NumberSequence.Contracts;
 
@@ -12,6 +13,15 @@ namespace number_sequence.Controllers
     public sealed class PdfStatusController : ControllerBase
     {
         private readonly IServiceProvider serviceProvider;
+
+        /// <summary>
+        /// The columns of a <see cref="Models.ChiroRecord"/> the status lists show. Projecting to it leaves
+        /// <see cref="Models.ChiroRecord.InputJson"/>, the whole filled-out form, in the database.
+        /// </summary>
+        private sealed record ChiroRecordRow(string RowId, DateTimeOffset DataEnteredAt, DateTimeOffset RecordedAt, DateTimeOffset? ProcessedAt, int ProcessAttempt);
+
+        private static readonly Expression<Func<Models.ChiroRecord, ChiroRecordRow>> toChiroRecordRow =
+            r => new ChiroRecordRow(r.RowId, r.DataEnteredAt, r.RecordedAt, r.ProcessedAt, r.ProcessAttempt);
 
         public PdfStatusController(IServiceProvider serviceProvider)
         {
@@ -29,8 +39,8 @@ namespace number_sequence.Controllers
 
             DateTimeOffset daysAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
 
-            List<Models.ChiroRecord> chiroRecords = [];
-            List<Models.ChiroRecord> pendingChiroRecords = [];
+            List<ChiroRecordRow> chiroRecords = [];
+            List<ChiroRecordRow> pendingChiroRecords = [];
             List<Models.ChiroEmailBatch> chiroBatches = [];
             List<Models.ChiroEmailBatch> pendingChiroBatches = [];
             List <Models.EmailDocument> emailDocuments = [];
@@ -44,8 +54,10 @@ namespace number_sequence.Controllers
                                                 .Where(r => r.RecordedAt > daysAgo)
                                                 .OrderByDescending(r => r.RecordedAt)
                                                 .Take(takeAmount)
+                                                .Select(toChiroRecordRow)
                                                 .ToListAsync();
                 chiroBatches = await nsContext.ChiroEmailBatches
+                                                .AsNoTracking()
                                                 .Where(r => r.CreatedDate > daysAgo)
                                                 .OrderByDescending(r => r.CreatedDate)
                                                 .Take(takeAmount)
@@ -53,6 +65,7 @@ namespace number_sequence.Controllers
 
                 // Not bound by daysLookback/takeAmount - a stuck straggler outside that window should still show up.
                 pendingChiroBatches = await nsContext.ChiroEmailBatches
+                                                .AsNoTracking()
                                                 .Where(r => r.ProcessedAt == null)
                                                 .ToListAsync();
 
@@ -60,11 +73,13 @@ namespace number_sequence.Controllers
                 pendingChiroRecords = await nsContext.ChiroRecords
                                                 .Where(r => r.ProcessedAt == null)
                                                 .OrderBy(r => r.RecordedAt)
+                                                .Select(toChiroRecordRow)
                                                 .ToListAsync();
             }
             if (hasEmailAccess)
             {
                 emailDocuments = await nsContext.EmailDocuments
+                                                .AsNoTracking()
                                                 .Where(r => r.CreatedDate > daysAgo)
                                                 .OrderByDescending(r => r.CreatedDate)
                                                 .Take(takeAmount)
@@ -112,7 +127,7 @@ namespace number_sequence.Controllers
                 }
             }
 
-            static TimeSpan chiroRecordDelay(Models.ChiroRecord record)
+            static TimeSpan chiroRecordDelay(ChiroRecordRow record)
                 => (record.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(record.DataEnteredAt);
 
             static string formatFileLength(long bytes)
@@ -212,8 +227,9 @@ namespace number_sequence.Controllers
 
             DateTimeOffset daysAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
 
-            List<Models.ChiroRecord> chiroRecords = await nsContext.ChiroRecords
+            var chiroRecords = await nsContext.ChiroRecords
                                             .Where(r => r.RecordedAt > daysAgo)
+                                            .Select(r => new { r.RecordedAt, r.InputJson })
                                             .ToListAsync(cancellationToken);
 
             if (chiroRecords.Count == 0)
@@ -224,16 +240,16 @@ namespace number_sequence.Controllers
             // Bucket by (local day, clinic). Clinic isn't an indexed column - it only exists inside the
             // serialized InputJson - so this deserializes every row in the window. Volumes are small.
             const string noClinicLabel = "(no clinic)";
-            static string clinicOf(Models.ChiroRecord record)
+            static string clinicOf(string inputJson)
             {
-                string abbreviation = string.IsNullOrWhiteSpace(record.InputJson)
+                string abbreviation = string.IsNullOrWhiteSpace(inputJson)
                     ? null
-                    : JsonSerializer.Deserialize<ChiroInput>(record.InputJson, RelaxedJson.Options)?.ClinicAbbreviation;
+                    : JsonSerializer.Deserialize<ChiroInput>(inputJson, RelaxedJson.Options)?.ClinicAbbreviation;
                 return string.IsNullOrWhiteSpace(abbreviation) ? noClinicLabel : abbreviation;
             }
 
             Dictionary<(DateTime Day, string Clinic), int> byDayAndClinic = chiroRecords
-                .GroupBy(r => (Day: r.RecordedAt.AddHours(hoursOffset).Date, Clinic: clinicOf(r)))
+                .GroupBy(r => (Day: r.RecordedAt.AddHours(hoursOffset).Date, Clinic: clinicOf(r.InputJson)))
                 .ToDictionary(g => g.Key, g => g.Count());
 
             // Every day in the window gets a position, even with zero forms, so gaps between

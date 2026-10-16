@@ -71,6 +71,8 @@ namespace number_sequence.Controllers
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             List<Statement> statements = await nsContext.Statements
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Invoices)
@@ -96,6 +98,8 @@ namespace number_sequence.Controllers
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             Statement statement = await nsContext.Statements
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Invoices)
@@ -120,6 +124,7 @@ namespace number_sequence.Controllers
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             Statement statementRecord = await nsContext.Statements
+                .AsSplitQuery()
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Invoices)

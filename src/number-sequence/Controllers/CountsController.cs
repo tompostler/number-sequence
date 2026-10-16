@@ -211,8 +211,9 @@ namespace number_sequence.Controllers
                 query = query.Where(x => x.CreatedDate <= to.Value);
             }
 
-            List<CountEvent> events = await query
+            var events = await query
                 .OrderBy(x => x.CreatedDate)
+                .Select(x => new { x.CreatedDate, x.Value })
                 .ToListAsync(cancellationToken);
 
             if (width < 100 || width > 2560 || height < 100 || height > 1440)

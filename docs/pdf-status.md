@@ -28,6 +28,11 @@ individually actionable — its attempt count (`ChiroRecord.ProcessAttempt`) is 
 original orchestration's own retry window. See [`docs/chiro-pdf-retry.md`](chiro-pdf-retry.md) for why retries work
 this way.
 
+Both chiro record lists project to `ChiroRecordRow` rather than loading `ChiroRecord`, so `InputJson` (the whole
+filled-out form) never leaves the database for a page that only shows timestamps. That matters most here: this list
+is the unbounded one, and it grows exactly when something is wrong. The chart below needs `InputJson` and projects to
+just that and `RecordedAt`. The page's other queries are `AsNoTracking`, since the endpoint never saves.
+
 ## Chiro forms per clinic chart
 
 The "Chiro Forms Per Clinic" section renders a PNG stacked bar chart, one bar per day over the

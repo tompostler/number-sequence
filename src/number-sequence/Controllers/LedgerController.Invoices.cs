@@ -44,6 +44,8 @@ namespace number_sequence.Controllers
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
             List<Invoice> invoices = await nsContext.Invoices
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(x => x.Business)
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)

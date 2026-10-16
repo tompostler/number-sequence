@@ -55,6 +55,8 @@ namespace number_sequence.DurableTaskImpl.Activities
 
             // Check if there's any invoices ready to be processed
             Invoice invoice = await nsContext.Invoices
+                // Split: as one join, the logo's bytes would repeat on every line x payment row.
+                .AsSplitQuery()
                 .Include(x => x.Business)
                     .ThenInclude(x => x.Logo)
                 .Include(x => x.Customer)
