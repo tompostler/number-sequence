@@ -361,7 +361,9 @@ Choices that aren't obvious from `--help`:
 - **Deleting a library, item or copy asks for confirmation** and points at disposing instead, which keeps history.
   Deleting a location doesn't ask, since the server refuses unless it's empty.
 
-`export <libraryId> <file.csv>` waits for an export endpoint.
+`export <libraryId> [file]` waits for an export endpoint. The UI is the main way to manage a library, and the Tool is
+for scripting: piping the export into gource, or diffing it against a spreadsheet. So `export` and `lookup` write
+plain output with stable columns, to stdout unless a file is given, and print no prompts or other chatter.
 
 ## Gource export (planned)
 
