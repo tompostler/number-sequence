@@ -8,8 +8,10 @@ shopping, and scanning barcodes to build the first inventory and later to reconc
 This is deliberately not a full library system. There are no holds, fines, patrons or cataloguing standards.
 
 **Status.** The data model and migration exist (`src/Contracts/Libraries/`, `NsContext` `#region Library`,
-`Migrations/*_AddLibrary`). The API, Client, Tool, UI, external lookup and scanning described below are the plan for the
-remaining work, in the order listed under [Delivery order](#delivery-order).
+`Migrations/*_AddLibrary`), and so do three helpers the API is built on: barcode normalization (`Utilities/LibraryBarcode.cs`),
+the access check (`DataAccess/LibraryAccess.cs`) and event times (`Utilities/LibraryEventTimes.cs`). The API, Client,
+Tool, UI, external lookup and scanning described below are the plan for the remaining work, in the order listed under
+[Delivery order](#delivery-order).
 
 ## Data model: item → copy
 
@@ -45,9 +47,22 @@ formats show up (Steelbook, 4K + Blu-ray combo), and none of them change any beh
 table would allow "everything by this author" with an exact match, but at personal-library volumes a `LIKE` on one
 column is just as good and much less code.
 
-**Barcodes are stored normalized**, as digits only, with ISBN-10 converted to ISBN-13, on both `LibraryCopy.Barcode`
-and `LibraryScanEntry.Barcode`. A book scanned from its EAN-13 barcode and the same book typed in as an ISBN-10 from the
-copyright page have to match. Every write path must normalize before storing, or lookups quietly miss.
+**Barcodes are stored normalized** on both `LibraryCopy.Barcode` and `LibraryScanEntry.Barcode`, and every search
+normalizes its input the same way. All of that goes through `LibraryBarcode.TryParse` (`Utilities/LibraryBarcode.cs`).
+The same physical barcode reaches the server in several forms:
+- A book scanned from its cover is an ISBN-13, but typed in from the copyright page it is often an ISBN-10.
+- A movie's UPC-A comes back as 12 digits from one scanner and as a 13-digit EAN with a leading zero from another.
+
+So every retail product code is brought to **GTIN-13**: ISBN-10 is converted to ISBN-13, and UPC-A gets the leading
+zero. A path that skips this stores a form the others don't match, and lookups quietly miss.
+
+- **Wrong check digit:** a code that has the length of an ISBN-10, UPC-A or EAN-13 but the wrong check digit is rejected
+  (the API's 400), not stored. It is nearly always a typo or a misread, and a stored typo is a copy its real barcode
+  never finds. The rare book with a misprinted ISBN can be added with no barcode.
+- **8-digit codes are left as read.** UPC-E and EAN-8 are both 8 digits, and the digits alone don't say which was
+  scanned. Expanding UPC-E to UPC-A would therefore mangle every EAN-8, and neither is common on books, movies or games.
+- **Anything else** is kept, uppercased with spaces and dashes removed: a Code 128 or QR sticker you printed for a tool,
+  say. This is what lets the "other loanable items" media type work with your own labels.
 
 **History.** `LibraryCopyEvent` is append-only and written by the server whenever a copy's location, loan or status
 changes. It also records which account made the change, because editors exist. `CreatedDate` is when the event was
@@ -70,9 +85,13 @@ One helper computes event times for both the item page's history and the export.
 order (`CreatedDate`, then `Id`):
 
 - `Acquired` takes the copy's `AcquiredDate`, `Loaned` its loan's `LoanedDate`, and `Returned` its loan's
-  `ReturnedDate`, each at start of day. When that date isn't set, or for any other event type, the event takes its
+  `ReturnedDate`, each at midnight UTC and flagged as date-only. When that date isn't set, or for any other event type, the event takes its
   `CreatedDate`.
 - Each time is then clamped up to at least the previous event's time.
+
+The date-only flag is for display: a midnight-UTC time converted to local time shows as the previous day anywhere west
+of UTC, so the item page shows a date-only event as a date. An event the clamp moves stops being date-only, since its
+time then comes from another event.
 
 The clamp keeps a copy's events in recorded order whatever dates are entered. A copy never moves or gets lent before it
 arrives, and a loan backdated past a move that was recorded before it lands at the move instead of before it. The
@@ -211,11 +230,16 @@ resolve to the namespace first. The Razor Pages folder has the same problem (`Pa
   - **Editor:** add and change items, copies, locations, loans and scans.
   - **Viewer:** read only.
 - `Library.CallerPermission` is `[NotMapped]`. The API fills it per request so the UI knows which controls to show.
-- **Every library-scoped API action goes through a single access helper** (`GetLibraryAccessAsync(libraryId,
-  minimumPermission)`). It resolves owner, share or not-found, and throws `NotFoundException` when access is too low.
-  Nothing filters on `AccountName == User.Identity.Name` directly. That is the Ledger pattern, and copied here it
-  would quietly lock out everyone a library is shared with. Not-found rather than forbidden, so a library id doesn't
-  reveal that it exists.
+- **Every library-scoped API action goes through `DataAccess/LibraryAccess.cs`.** `GetLibraryWithAccessAsync(libraryId,
+  accountName, minimum)` loads the library with `CallerPermission` set. `GetAccessibleLibrariesAsync` lists every
+  library an account can reach. `AccessibleLibraryIds` is a subquery for the cross-library barcode check. Nothing
+  filters on `AccountName == User.Identity.Name` directly. That is the Ledger pattern, and copied here it would quietly
+  lock out everyone a library is shared with. Ownership is compared in SQL rather than C#, so it uses the same
+  case-insensitive collation as the account key.
+- **No access is 404, too little access is 403.** An account with no access gets `NotFoundException`, so a library id
+  doesn't reveal that the library exists. An account that can see the library but tries something above its level (a
+  viewer editing) gets `ForbiddenException`, newly mapped to 403 in `ExceptionToStatusCodeMiddleware`. "Not found" would
+  be wrong for a library that caller is looking at.
 - The owner shares by account name, and the server checks the account exists. There is no invite flow.
 - Tier limits: `TierLimits.LibrariesPerAccount` counts owned libraries only. `LibraryCopiesPerLibrary` uses the owner's
   tier (3,000 copies on Small).
@@ -313,7 +337,7 @@ everything".
 
 ```mermaid
 flowchart TD
-    scan([Barcode read]) --> norm[Normalize: digits only, ISBN-10 to ISBN-13]
+    scan([Barcode read]) --> norm["Normalize: LibraryBarcode.TryParse<br/>(ISBN-10 and UPC-A to 13 digits)"]
     norm --> any{"Any unclaimed Active or Missing copy<br/>in this library with this barcode?"}
     any -- no --> nil["<b>NotInLibrary</b><br/>no copy claimed"]
     any -- yes --> here{"Is one of them recorded<br/>at the session's location?"}
@@ -347,7 +371,7 @@ tokens for what is the only JS-heavy page.
 
 ## Delivery order
 
-1. **Core:** the data model (done), then the access helper and full API, Client and Tool CRUD, and UI for browse,
+1. **Core:** the data model and the three helpers (done), then the full API, Client and Tool CRUD, and UI for browse,
    search, detail, manual add/edit, loans, locations and shares.
-2. **Lookup:** barcode normalization, the providers, covers in blob, and options and deployment settings.
+2. **Lookup:** the providers, covers in blob, and options and deployment settings.
 3. **Scanning:** the camera scanner, scan sessions and the reconcile view.
