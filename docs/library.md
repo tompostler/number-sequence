@@ -8,9 +8,9 @@ shopping, and scanning barcodes to build the first inventory and later to reconc
 This is deliberately not a full library system. There are no holds, fines, patrons or cataloguing standards.
 
 **Status.** The data model, migration and API exist (`src/Contracts/Libraries/`, `NsContext` `#region Library`,
-`Migrations/*_AddLibrary`), and so do three helpers the API is built on: barcode normalization (`Utilities/LibraryBarcode.cs`),
-the access check (`DataAccess/LibraryAccess.cs`) and event times (`Utilities/LibraryEventTimes.cs`). The Client,
-Tool, UI, external lookup and scanning described below are the plan for the remaining work, in the order listed under
+`Migrations/*_AddLibrary*`), as do the Client and Tool, and so do three helpers the API is built on: barcode normalization (`Utilities/LibraryBarcode.cs`),
+the access check (`DataAccess/LibraryAccess.cs`) and event times (`Utilities/LibraryEventTimes.cs`). The UI,
+external lookup, scanning and export described below are the plan for the remaining work, in the order listed under
 [Delivery order](#delivery-order).
 
 ## Data model: item → copy
@@ -336,10 +336,32 @@ logged each at Error and returned the full stack trace as the body, which the UI
 returns just the message for the mapped exceptions and logs them at Information. Unmapped exceptions are still 500s
 with the full trace.
 
-## Client and Tool (planned)
+## Client and Tool
 
-The Client is `LibraryOperations` (partial, one file per sub-resource) exposed as `NsTcpWtfClient.Library`. The Tool is
-`library` (alias `lib`), with the usual CRUD aliases, plus `owned <barcode>` and `export <libraryId> <file.csv>`.
+The Client is `LibraryOperations` (partial, one file per sub-resource) exposed as `NsTcpWtfClient.Library`, one method
+per API route. Deletes return nothing, because the API answers them with 204.
+
+The Tool is `ns library` (alias `lib`). Libraries themselves are managed at the top level (`lib ls`, `lib create`), with
+`share`, `location`, `item`, `copy` and `loan` beneath it, plus `owned <barcode>`. Each takes the usual CRUD aliases.
+Choices that aren't obvious from `--help`:
+
+- **`--library`/`-L` can be left out** when the caller can access exactly one library, which is the common case. With
+  more than one, the command lists them and asks for the flag. Making every command take a library id argument
+  would have meant typing the same number on every line.
+- **Prompts take a blank answer as "keep the current value" and a lone `-` as "clear it".** The shared `Input` helpers
+  can't leave a value empty or clear one that's set, and most library fields are optional. So the library commands
+  carry their own small prompts (`LibraryCommand.Common.cs`) rather than changing the shared ones under every other
+  command.
+- **`item create` offers to add copies straight away**, since an item with no copies is rarely what was meant.
+- **Location, status and loans have their own commands** (`copy move`, `copy status`, `copy loan`, `copy return`),
+  matching the API, and `copy update` doesn't prompt for them. `copy update` does prompt for `ItemId`, which is how a
+  duplicate gets merged.
+- **`item read` shows the item, a table of copies and one combined history**, with event dates from the server's
+  event-time helper. Moves show location paths and loans show the borrower. `--raw` gives the json instead.
+- **Deleting a library, item or copy asks for confirmation** and points at disposing instead, which keeps history.
+  Deleting a location doesn't ask, since the server refuses unless it's empty.
+
+`export <libraryId> <file.csv>` waits for an export endpoint.
 
 ## Gource export (planned)
 
@@ -452,7 +474,7 @@ tokens for what is the only JS-heavy page.
 
 ## Delivery order
 
-1. **Core:** the data model, the three helpers and the API (done), then Client and Tool CRUD, and UI for browse,
-   search, detail, manual add/edit, loans, locations and shares.
+1. **Core:** the data model, the three helpers, the API, and Client and Tool CRUD (done), then UI for browse, search,
+   detail, manual add/edit, loans, locations and shares.
 2. **Lookup:** the providers, covers in blob, and options and deployment settings.
 3. **Scanning:** the camera scanner, scan sessions and the reconcile view.

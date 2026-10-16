@@ -26,6 +26,7 @@ namespace TcpWtf.NumberSequence.Tool
             rootCommand.Subcommands.Add(DaysSinceCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(HistoryCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(LedgerCommand.Create(stampOption, verbosityOption));
+            rootCommand.Subcommands.Add(LibraryCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(IpCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(PdfStatusCommand.Create(stampOption, verbosityOption));
             rootCommand.Subcommands.Add(PingCommand.Create(stampOption, verbosityOption));

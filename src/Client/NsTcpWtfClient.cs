@@ -61,6 +61,7 @@ namespace TcpWtf.NumberSequence.Client
             this.DaysSince = new DaysSinceOperations(this);
             this.History = new HistoryOperations(this);
             this.Ledger = new LedgerOperations(this);
+            this.Library = new LibraryOperations(this);
             this.PdfStatus = new PdfStatusOperations(this);
             this.Ping = new PingOperations(this);
             this.Random = new RandomOperations(this);
@@ -97,6 +98,11 @@ namespace TcpWtf.NumberSequence.Client
         /// Ledger operations.
         /// </summary>
         public LedgerOperations Ledger { get; }
+
+        /// <summary>
+        /// Library operations.
+        /// </summary>
+        public LibraryOperations Library { get; }
 
         /// <summary>
         /// Pdf status operations.
