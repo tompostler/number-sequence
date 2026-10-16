@@ -140,5 +140,7 @@ Full design notes: [`docs/library.md`](docs/library.md). Constraints that will b
   `ReturnedDate`) through one helper, and are never stored on the event. Events are append-only, so a copied date goes
   stale the moment a purchase date is corrected. The helper's clamp keeps each copy's events in recorded order, which
   the gource export needs.
+- **API responses are whole entities, not hand-mapped partial ones.** A field left out of a projection looks exactly
+  like an empty one to every client. Use `Include`; item search is the one documented exception.
 - **The namespace and pages folder are `Libraries`, not `Library`**, because the root entity is `Library` and a type named
   like its own namespace breaks name resolution (CS0118).

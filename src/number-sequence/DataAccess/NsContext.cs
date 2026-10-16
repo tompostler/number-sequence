@@ -359,6 +359,15 @@ namespace number_sequence.DataAccess
                 .WithMany(x => x.Loans)
                 .HasForeignKey(x => x.CopyId)
                 .OnDelete(DeleteBehavior.Cascade);
+            // At most one open loan per copy. The loan action checks first, but two requests close together (a double tap)
+            // can both pass that check. The unfiltered index is declared too: left implicit, EF adopts the filtered one as the
+            // foreign key's index and drops it, leaving a copy's returned loans unindexed.
+            _ = modelBuilder.Entity<LibraryLoan>()
+                .HasIndex(x => x.CopyId);
+            _ = modelBuilder.Entity<LibraryLoan>()
+                .HasIndex(x => x.CopyId, "IX_LibraryLoans_CopyId_Open")
+                .IsUnique()
+                .HasFilter("[ReturnedDate] IS NULL");
 
             _ = modelBuilder.Entity<LibraryCopyEvent>()
                 .Property(x => x.Id)

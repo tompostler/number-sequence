@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TcpWtf.NumberSequence.Contracts.Libraries
@@ -53,9 +53,23 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public string Notes { get; set; }
 
         /// <summary>
-        /// When it happened.
+        /// When it was recorded. When it actually happened is <see cref="OccurredDate"/>.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
+
+        /// <summary>
+        /// When it actually happened, read from the copy's or loan's own date where it has one. Computed per response, not
+        /// stored, so it follows a purchase or loan date that is corrected later.
+        /// </summary>
+        [NotMapped]
+        public DateTimeOffset OccurredDate { get; set; }
+
+        /// <summary>
+        /// <see cref="OccurredDate"/> came from a date with no time of day and is midnight UTC of that date. Show it as a
+        /// date: converted to local time it would read as the previous day anywhere west of UTC.
+        /// </summary>
+        [NotMapped]
+        public bool OccurredDateIsDateOnly { get; set; }
     }
 }

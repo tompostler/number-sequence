@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TcpWtf.NumberSequence.Contracts.Libraries
@@ -36,6 +36,12 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         /// </summary>
         [MaxLength(256)]
         public string Notes { get; set; }
+
+        /// <summary>
+        /// The full path from the outermost location, such as "House › Office › Shelf 3". Computed per response, not stored.
+        /// </summary>
+        [NotMapped]
+        public string Path { get; set; }
 
         /// <summary>
         /// The date the location was created.

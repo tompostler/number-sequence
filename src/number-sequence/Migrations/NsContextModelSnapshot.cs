@@ -920,6 +920,10 @@ namespace number_sequence.Migrations
 
                     b.HasIndex("CopyId");
 
+                    b.HasIndex(new[] { "CopyId" }, "IX_LibraryLoans_CopyId_Open")
+                        .IsUnique()
+                        .HasFilter("[ReturnedDate] IS NULL");
+
                     b.ToTable("LibraryLoans");
                 });
 

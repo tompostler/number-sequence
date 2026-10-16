@@ -21,7 +21,26 @@ namespace number_sequence.Middleware
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Caught an unhandled exception!");
+                // The mapped exceptions are how an action reports an expected outcome (missing, forbidden, bad input) from
+                // inside a helper. They get their message, not a stack trace, and aren't logged as errors.
+                int? mappedStatusCode = ex switch
+                {
+                    BadRequestException => 400,
+                    UnauthorizedException => 401,
+                    ForbiddenException => 403,
+                    NotFoundException => 404,
+                    ConflictException => 409,
+                    _ => null,
+                };
+
+                if (mappedStatusCode.HasValue)
+                {
+                    this.logger.LogInformation($"Returning {mappedStatusCode} for {ex.GetType().Name}: {ex.Message}");
+                }
+                else
+                {
+                    this.logger.LogError(ex, "Caught an unhandled exception!");
+                }
 
                 if (httpContext.Response.HasStarted)
                 {
@@ -29,32 +48,9 @@ namespace number_sequence.Middleware
                 }
                 else
                 {
-                    if (ex is BadRequestException)
-                    {
-                        httpContext.Response.StatusCode = 400;
-                    }
-                    else if (ex is UnauthorizedException)
-                    {
-                        httpContext.Response.StatusCode = 401;
-                    }
-                    else if (ex is ForbiddenException)
-                    {
-                        httpContext.Response.StatusCode = 403;
-                    }
-                    else if (ex is NotFoundException)
-                    {
-                        httpContext.Response.StatusCode = 404;
-                    }
-                    else if (ex is ConflictException)
-                    {
-                        httpContext.Response.StatusCode = 409;
-                    }
-                    else
-                    {
-                        httpContext.Response.StatusCode = 500;
-                    }
+                    httpContext.Response.StatusCode = mappedStatusCode ?? 500;
                     httpContext.Response.ContentType = "text/plain";
-                    await httpContext.Response.WriteAsync(ex.ToString());
+                    await httpContext.Response.WriteAsync(mappedStatusCode.HasValue ? ex.Message : ex.ToString());
                 }
             }
         }

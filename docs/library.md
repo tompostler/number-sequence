@@ -7,9 +7,9 @@ shopping, and scanning barcodes to build the first inventory and later to reconc
 
 This is deliberately not a full library system. There are no holds, fines, patrons or cataloguing standards.
 
-**Status.** The data model and migration exist (`src/Contracts/Libraries/`, `NsContext` `#region Library`,
+**Status.** The data model, migration and API exist (`src/Contracts/Libraries/`, `NsContext` `#region Library`,
 `Migrations/*_AddLibrary`), and so do three helpers the API is built on: barcode normalization (`Utilities/LibraryBarcode.cs`),
-the access check (`DataAccess/LibraryAccess.cs`) and event times (`Utilities/LibraryEventTimes.cs`). The API, Client,
+the access check (`DataAccess/LibraryAccess.cs`) and event times (`Utilities/LibraryEventTimes.cs`). The Client,
 Tool, UI, external lookup and scanning described below are the plan for the remaining work, in the order listed under
 [Delivery order](#delivery-order).
 
@@ -97,8 +97,15 @@ The clamp keeps a copy's events in recorded order whatever dates are entered. A 
 arrives, and a loan backdated past a move that was recorded before it lands at the move instead of before it. The
 [gource export](#gource-export-planned) depends on that order.
 
-Loans have their own table (`LibraryLoan`, at most one open per copy), since they carry their own fields (due date,
-borrower). The event log references a loan rather than duplicating it.
+Loans have their own table (`LibraryLoan`), since they carry their own fields (due date, borrower). The event log
+references a loan rather than duplicating it. A copy has at most one open loan, which the database enforces with a
+filtered unique index, `IX_LibraryLoans_CopyId_Open` on `CopyId` where `ReturnedDate IS NULL`. The loan action checks
+first, but two requests close together, such as a double tap on Lend, can both pass that check. A second open loan would
+then break return, which expects exactly one, until it was fixed by hand. With the index, the second insert fails and
+the action returns 409.
+
+The ordinary `CopyId` index is declared explicitly beside it. Left implicit, EF adopts the filtered index as the foreign
+key's index and drops the unfiltered one, leaving a copy's returned loans with no index.
 
 **Loanees** are a free-text `BorrowerName`, optionally linked to an account via `BorrowerAccountName`. Most borrowers
 are friends without accounts. The link exists so a borrower with an account could later see what they have out.
@@ -201,10 +208,19 @@ The cascades are therefore:
 - `Library → Location`, `Library → Share`, `Library → ScanSession → ScanEntry`
 
 Every other foreign key into a copy or location (`Copy.LibraryId`, `Copy.LocationId`, `Location.ParentLocationId`,
-`ScanSession.LocationId`) is `NoAction`. Deleting a library should still remove everything in one statement, since SQL
-Server checks `NO ACTION` constraints after the statement's cascades have run. That hasn't been exercised against a real
-database yet. If it fails, the delete action should remove copies, then items and locations, then the library,
-explicitly. Deleting a location that still has copies or children fails, which is what the API should turn into a 409.
+`ScanSession.LocationId`) is `NoAction`.
+
+Deleting a library therefore doesn't rely on one cascading delete of the library row. That would only work if SQL
+Server checks the `NO ACTION` keys after the statement's cascades have run, which is plausible but has never been
+tested here. The delete runs three bulk deletes in one transaction instead:
+1. copies, which takes their loans and events with them;
+2. scan sessions, which hold `NO ACTION` keys to locations;
+3. the library, which cascades to items, locations and shares. Its locations' parent keys point only at other locations
+   deleted in the same statement.
+
+Deleting a location returns 409 while copies or child locations are still in it, so nothing silently loses its location.
+Scan sessions at that location are deleted with it. They are a tool for reconciling a location, not history of the
+copies, and keeping them would make any location that was ever scanned impossible to delete.
 
 The location and loan ids on `LibraryCopyEvent` and the copy id on `LibraryScanEntry` are plain columns, not foreign keys,
 so history survives the rows it mentions being deleted. The UI shows a deleted location as "(deleted location)" instead
@@ -244,18 +260,83 @@ resolve to the namespace first. The Razor Pages folder has the same problem (`Pa
 - Tier limits: `TierLimits.LibrariesPerAccount` counts owned libraries only. `LibraryCopiesPerLibrary` uses the owner's
   tier (3,000 copies on Small).
 
-## API, Client, Tool (planned)
+## API
 
-`LibraryController` (partial, one file per sub-resource like Ledger) at `/library`, with `RequiresToken(AccountRoles.Library)`.
-Everything is nested under `libraries/{libraryId}` except two routes that span libraries:
+`LibraryController` (a partial class, one file per sub-resource like Ledger) is at `/library`, with
+`RequiresToken(AccountRoles.Library)`. Everything is nested under `libraries/{libraryId}` except the routes that span
+libraries:
 
-- `barcodes/{barcode}` is the "do I own this?" check across **every library the caller can access**. The shopping case
-  shouldn't make you choose a library first.
-- `lookup/isbn/{isbn}` and `lookup/search?mediaType=&q=` call outside services and save nothing.
+- `barcodes/{barcode}` is the "do I own this?" check across **every library the caller can access**, so the shopping
+  case doesn't start by choosing a library. It returns matching copies that aren't disposed, with their item and open
+  loan. It only matches the exact barcode, so a different edition of something owned won't show up. Matching by Open
+  Library work key is a job for the lookup phase.
+- `lookup/isbn/{isbn}` and `lookup/search?mediaType=&q=` (planned) call outside services and save nothing.
 
-Moves, loans, returns and status changes are their own actions (`copies/{id}/move`, `/loan`, `/return`, `/status`)
-rather than general PUTs, because each one writes a `LibraryCopyEvent`. A general PUT of a copy doesn't change
-`LocationId` or `Status`.
+**Copies change location, status and loans only through dedicated actions** (`copies/{id}/move`, `/status`, `/loan`,
+`/return`), because each one writes a `LibraryCopyEvent`. The general PUT of a copy leaves all three alone. It does
+allow changing `ItemId` to another item in the same library: that is how a copy added as its own item gets merged into
+the right one.
+
+**Rules the actions enforce:**
+- **Not recorded:** a move to where the copy already is, or a status it already has.
+- **Disposed copies** can't be moved or lent; restore one first.
+- **Copies on loan** can't be marked missing or disposed, because the borrower has them.
+- **Dates:** a loan's due date can't precede its loan date, and a return date can't precede the loan date. Both
+  dates default to today (UTC).
+- **Copy limit:** `LibraryCopiesPerLibrary` uses the **owner's** tier, since an editor adds to someone else's library.
+- **Leaving a library:** anyone can delete their own share, so a library can be left without the owner. Only the owner
+  can delete anyone else's.
+- **Account names** for shares and borrowers are checked to exist, and lowercased, because accounts are stored
+  lowercase.
+
+**A loan's id is drawn from its sequence before the insert.** The `Loaned` event's `LoanId` is a plain column with no
+foreign key, so EF can't fill it in. Drawing the id first keeps the loan and its event in one save, which is atomic
+without an explicit transaction. Explicit transactions are awkward here: the connection has retry-on-failure enabled,
+which requires running them through the execution strategy. The only ones in the controller wrap bulk deletes
+(`InBulkTransactionAsync`). Those bypass the change tracker, so a retry reruns them from the same state.
+
+The draw is `Database.SqlQuery<long>(...)` read with `ToListAsync` and nothing composed on top. Composing anything,
+even `SingleAsync`, makes EF wrap the sql as `SELECT TOP(n) ... FROM (...) AS s`. Sql server refuses `NEXT VALUE FOR`
+inside a derived table and in any statement with `TOP`, so the composed form translates fine (`ToQueryString` shows
+nothing wrong) and fails only when it runs.
+
+Two alternatives were rejected:
+- **A real foreign key from event to loan,** so EF could fix up the id itself. It would add a second cascade path from
+  copy to event (copy → loan → event beside copy → event), which sql server forbids. Making that key no-action would
+  put copy deletes back on the untested question of when no-action keys get checked.
+- **`UseHiLo`,** which has EF draw ids client-side on `AddAsync`. It needs a model change and a migration that drops the
+  column default, and it doesn't fit the way every other table here gets its id.
+
+**Search** (`items?q=&mediaType=&locationId=&loanedOut=`):
+- **Text:** `q` is matched with `LIKE` against title, subtitle, creators and series.
+- **Barcodes:** if `q` parses as a barcode, a copy with that barcode also matches, so a scanned code can go in the
+  same search box.
+- **Locations:** `locationId` includes everything inside that location, so "Office" finds its shelves.
+- **Columns:** each item comes without its summary, external ids and attributes, which are null in the results even
+  when set. Those are the large columns, and a page can hold 500 items. Copies come back whole, and each copy's `Loans`
+  holds only its open loan. `items/{id}` has everything, including each copy's history with `OccurredDate` filled in by
+  `LibraryEventTimes`.
+
+**Responses are whole rows unless documented otherwise.** Narrow projections are fine inside the server, where the code
+reading them knows what was selected. An entity returned from the API with fields left out looks exactly like one whose
+fields are empty: a client can't tell a copy with no barcode from a copy whose barcode wasn't selected, and each new
+column has to be remembered in every projection or it silently comes back null. So the API returns whole entities,
+loaded with `Include`. Item search is the one exception, because its savings are real. Its doc comment and the bullet
+above say which fields are missing. The first version of this controller hand-mapped partial entities in several
+places, including loans; that was reverted for these reasons.
+
+`Path` on `LibraryLocation` and `OccurredDate` on `LibraryCopyEvent` are `[NotMapped]` and computed per response, the
+same way as `CallerPermission`. Clients resolve a copy's `LocationId` through the locations list, which carries the
+paths; responses don't repeat location rows on every copy.
+
+**Errors.** The access helper and barcode normalization report errors by throwing (`NotFoundException`,
+`ForbiddenException`, `BadRequestException`), and `ExceptionToStatusCodeMiddleware` maps those to status codes. The
+Library feature is the first code to throw them. Before, that middleware treated every exception as a crash: it
+logged each at Error and returned the full stack trace as the body, which the UI would have shown on every 404. It now
+returns just the message for the mapped exceptions and logs them at Information. Unmapped exceptions are still 500s
+with the full trace.
+
+## Client and Tool (planned)
 
 The Client is `LibraryOperations` (partial, one file per sub-resource) exposed as `NsTcpWtfClient.Library`. The Tool is
 `library` (alias `lib`), with the usual CRUD aliases, plus `owned <barcode>` and `export <libraryId> <file.csv>`.
@@ -371,7 +452,7 @@ tokens for what is the only JS-heavy page.
 
 ## Delivery order
 
-1. **Core:** the data model and the three helpers (done), then the full API, Client and Tool CRUD, and UI for browse,
+1. **Core:** the data model, the three helpers and the API (done), then Client and Tool CRUD, and UI for browse,
    search, detail, manual add/edit, loans, locations and shares.
 2. **Lookup:** the providers, covers in blob, and options and deployment settings.
 3. **Scanning:** the camera scanner, scan sessions and the reconcile view.
