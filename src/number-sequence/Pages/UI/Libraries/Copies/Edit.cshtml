@@ -1,0 +1,68 @@
+@page "/ui/library/{libraryId:long}/copies/{copyId:long}/edit"
+@model number_sequence.Pages.UI.Libraries.Copies.EditModel
+@{
+  ViewData["Title"] = $"Edit copy of {Model.Item.Title}";
+  ViewData["MediaType"] = Model.Item.MediaType;
+}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+  <a href="/ui/library/@Model.Library.Id/items/@Model.Item.Id" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Edit copy</h2>
+</div>
+<div class="mb-3 fw-semibold">@Model.Item.Title</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<form method="post" class="col-12 col-md-8 col-lg-6 mb-5">
+  <partial name="_CopyFields" for="Copy" />
+  <p class="form-text">Location, loans and status change from the item page, so they're recorded in its history.</p>
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="/ui/library/@Model.Library.Id/items/@Model.Item.Id" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+
+<div class="col-12 col-md-8 col-lg-6 mb-5">
+  <h6>Belongs to another item?</h6>
+  <p class="small text-muted mb-2">
+    Move this copy to the item it should be part of, such as when the same book was added twice. Its history moves with it.
+  </p>
+  <form method="get" class="input-group input-group-sm mb-2">
+    <input name="mergeQ" value="@Model.MergeQ" class="form-control" placeholder="Find the other item" autocomplete="off" inputmode="search" enterkeyhint="search" />
+    <button type="submit" class="btn btn-outline-secondary">Find</button>
+  </form>
+  @if (!string.IsNullOrWhiteSpace(Model.MergeQ))
+  {
+    @if (Model.MergeCandidates.Count == 0)
+    {
+      <p class="small text-muted">No other items match.</p>
+    }
+    else
+    {
+      <div class="list-group">
+        @foreach (LibraryItem candidate in Model.MergeCandidates)
+        {
+          <div class="list-group-item py-2">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+              <div>
+                <div class="fw-semibold">@candidate.Title</div>
+                <div class="small text-muted">@LibraryDisplay.MediaType(candidate.MediaType) · @LibraryDisplay.CopiesSummary(candidate, Model.Paths)</div>
+              </div>
+              <form method="post" asp-page-handler="MoveToItem" data-confirm="Move this copy to @candidate.Title?" onsubmit="return confirm(this.dataset.confirm)">
+                <input type="hidden" name="targetItemId" value="@candidate.Id" />
+                <button type="submit" class="btn btn-sm btn-primary">Move here</button>
+              </form>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
+<div class="border border-danger rounded p-2 col-12 col-md-8 col-lg-6 mb-4">
+  <div class="small mb-2">Deleting removes the copy with its loans and history. For a copy that's gone but should stay in history, set its status to Disposed from the item page instead.</div>
+  <form method="post" asp-page-handler="Delete" data-confirm="Delete this copy with its loans and history?" onsubmit="return confirm(this.dataset.confirm)">
+    <button type="submit" class="btn btn-sm btn-outline-danger">Delete copy</button>
+  </form>
+</div>

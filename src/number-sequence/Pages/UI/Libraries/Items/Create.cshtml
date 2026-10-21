@@ -1,0 +1,85 @@
+@page "/ui/library/{libraryId:long}/items/create"
+@model number_sequence.Pages.UI.Libraries.Items.CreateModel
+@{
+  ViewData["Title"] = $"Add to {Model.Library.Name}";
+  ViewData["MediaType"] = Model.Item?.MediaType;
+}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+  <a href="/ui/library/@Model.Library.Id" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Add to @Model.Library.Name</h2>
+</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<form method="post" class="col-12 col-md-8 col-lg-6">
+  @* Enter in a field presses the form's first submit button. Without this one, that would be the first duplicate's
+     "Add copy here". *@
+  <button type="submit" class="visually-hidden" tabindex="-1" aria-hidden="true">Add</button>
+  @if (Model.Duplicates.Count > 0)
+  {
+    <div class="alert alert-warning">
+      <div class="fw-semibold mb-1">This might already be here.</div>
+      <div class="small mb-2">
+        Two formats or two identical copies of the same thing belong on one item.
+        @(Model.AddCopy ? "Add the copy below to one of these," : "Open one of these,") or create a new item anyway.
+      </div>
+      <div class="list-group mb-2">
+        @foreach (LibraryItem duplicate in Model.Duplicates)
+        {
+          <div class="list-group-item py-2">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+              <div>
+                <a href="/ui/library/@Model.Library.Id/items/@duplicate.Id" target="_blank" class="fw-semibold">@duplicate.Title</a>
+                <div class="small text-muted">@LibraryDisplay.MediaType(duplicate.MediaType) · @LibraryDisplay.Byline(duplicate)</div>
+                <div class="small text-muted">@LibraryDisplay.CopiesSummary(duplicate, Model.Paths)</div>
+              </div>
+              @if (Model.AddCopy)
+              {
+                <button type="submit" name="AsCopyOfItemId" value="@duplicate.Id" class="btn btn-sm btn-primary flex-shrink-0">Add copy here</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      <button type="submit" name="ConfirmNew" value="true" class="btn btn-sm btn-outline-secondary">Create a new item anyway</button>
+    </div>
+  }
+
+  <partial name="_ItemFields" for="Item" />
+
+  <div class="form-check form-switch my-3">
+    <input asp-for="AddCopy" class="form-check-input" data-bs-toggle="collapse" data-bs-target="#copy-fields" />
+    <label asp-for="AddCopy" class="form-check-label">Add a copy now</label>
+  </div>
+
+  <div class="collapse @(Model.AddCopy ? "show" : "")" id="copy-fields">
+    <div class="border rounded p-2 mb-3">
+      <div class="mb-2">
+        <label asp-for="LocationId" class="form-label">Location</label>
+        <select asp-for="LocationId" class="form-select">
+          <option value="">No location</option>
+          @foreach (LibraryLocation location in Model.Locations)
+          {
+            <option value="@location.Id">@location.Path</option>
+          }
+        </select>
+        @if (Model.Locations.Count == 0)
+        {
+          <div class="form-text"><a href="/ui/library/@Model.Library.Id/locations">Add locations</a> to say where things live.</div>
+        }
+      </div>
+      <partial name="_CopyFields" for="Copy" />
+    </div>
+  </div>
+
+  <div class="form-check mb-3">
+    <input asp-for="AddAnother" class="form-check-input" />
+    <label asp-for="AddAnother" class="form-check-label">Add another after this, keeping the type and location</label>
+  </div>
+
+  <div class="d-flex gap-2 mb-4">
+    <button type="submit" class="btn btn-primary">Add</button>
+    <a href="/ui/library/@Model.Library.Id" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>

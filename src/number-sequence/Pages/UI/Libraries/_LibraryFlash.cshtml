@@ -1,0 +1,20 @@
+@model LibraryPageModel
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+  <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
+    @Model.StatusMessage
+    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+  <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+    @Model.ErrorMessage
+    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+}
+@if (!string.IsNullOrEmpty(Model.FormError))
+{
+  <div class="alert alert-danger py-2" role="alert">@Model.FormError</div>
+}

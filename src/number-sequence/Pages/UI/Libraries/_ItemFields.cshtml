@@ -1,0 +1,50 @@
+@model LibraryItem
+@* Rendered with <partial for="..."> so the field names carry the page's property prefix. *@
+
+<div class="row g-2 mb-2">
+  <div class="col-5 col-md-3">
+    <label asp-for="MediaType" class="form-label">Type</label>
+    <select asp-for="MediaType" class="form-select">
+      @foreach (LibraryMediaType type in Enum.GetValues<LibraryMediaType>().OrderBy(x => x == LibraryMediaType.Other))
+      {
+        <option value="@type">@LibraryDisplay.MediaType(type)</option>
+      }
+    </select>
+  </div>
+  <div class="col-7 col-md-3">
+    <label asp-for="Year" class="form-label">Year</label>
+    <input asp-for="Year" type="number" inputmode="numeric" class="form-control" placeholder="First released" />
+  </div>
+</div>
+<div class="mb-2">
+  <label asp-for="Title" class="form-label">Title</label>
+  <input asp-for="Title" class="form-control" maxlength="256" required />
+  <span asp-validation-for="Title" class="text-danger small"></span>
+</div>
+<div class="mb-2">
+  <label asp-for="Subtitle" class="form-label">Subtitle</label>
+  <input asp-for="Subtitle" class="form-control" maxlength="256" />
+</div>
+<div class="mb-2">
+  <label asp-for="Creators" class="form-label">Creators</label>
+  <input asp-for="Creators" class="form-control" maxlength="512" placeholder="Authors, directors, designers" />
+  <div class="form-text">Separate several with a semicolon.</div>
+</div>
+<div class="row g-2 mb-2">
+  <div class="col-8">
+    <label asp-for="Series" class="form-label">Series</label>
+    <input asp-for="Series" class="form-control" maxlength="128" />
+  </div>
+  <div class="col-4">
+    <label asp-for="SeriesNumber" class="form-label">Number</label>
+    <input asp-for="SeriesNumber" type="number" step="any" inputmode="decimal" class="form-control" />
+  </div>
+</div>
+<div class="mb-2">
+  <label asp-for="Tags" class="form-label">Tags</label>
+  <input asp-for="Tags" class="form-control" maxlength="256" placeholder="Separate with a semicolon" />
+</div>
+<div class="mb-2">
+  <label asp-for="Summary" class="form-label">Summary</label>
+  <textarea asp-for="Summary" class="form-control" rows="3" maxlength="4000"></textarea>
+</div>

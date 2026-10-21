@@ -1,0 +1,32 @@
+@page "/ui/library/{libraryId:long}/items/{itemId:long}/copies/create"
+@model number_sequence.Pages.UI.Libraries.Copies.CreateModel
+@{
+  ViewData["Title"] = $"Add a copy of {Model.Item.Title}";
+  ViewData["MediaType"] = Model.Item.MediaType;
+}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+  <a href="/ui/library/@Model.Library.Id/items/@Model.Item.Id" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Add a copy</h2>
+</div>
+<div class="mb-3 fw-semibold">@Model.Item.Title</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<form method="post" class="col-12 col-md-8 col-lg-6">
+  <div class="mb-2">
+    <label asp-for="LocationId" class="form-label">Location</label>
+    <select asp-for="LocationId" class="form-select">
+      <option value="">No location</option>
+      @foreach (LibraryLocation location in Model.Locations)
+      {
+        <option value="@location.Id">@location.Path</option>
+      }
+    </select>
+  </div>
+  <partial name="_CopyFields" for="Copy" />
+  <div class="d-flex gap-2 my-3">
+    <button type="submit" class="btn btn-primary">Add</button>
+    <a href="/ui/library/@Model.Library.Id/items/@Model.Item.Id" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>

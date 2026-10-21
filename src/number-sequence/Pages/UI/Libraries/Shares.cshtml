@@ -1,0 +1,65 @@
+@page "/ui/library/{libraryId:long}/shares"
+@model number_sequence.Pages.UI.Libraries.SharesModel
+@{
+  ViewData["Title"] = $"{Model.Library.Name} sharing";
+  LibraryPermission[] grantable = [LibraryPermission.Viewer, LibraryPermission.Editor];
+}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+  <a href="/ui/library/@Model.Library.Id" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Sharing</h2>
+</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<p class="small text-muted">
+  Viewers can browse and search. Editors can also add, edit, move and lend. Only you can manage sharing or delete the library.
+  Everyone you share with also needs the @TcpWtf.NumberSequence.Contracts.AccountRoles.Library role on their account.
+</p>
+
+@if (Model.Shares.Count == 0)
+{
+  <p class="text-muted">Not shared with anyone.</p>
+}
+else
+{
+  <ul class="list-group mb-4">
+    @foreach (LibraryShare share in Model.Shares)
+    {
+      <li class="list-group-item">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <span class="fw-semibold">@share.AccountName</span>
+          <div class="d-flex gap-2">
+            <form method="post" asp-page-handler="Set" class="d-flex gap-1">
+              <input type="hidden" name="accountName" value="@share.AccountName" />
+              <select name="permission" class="form-select form-select-sm" onchange="this.form.submit()">
+                @foreach (LibraryPermission permission in grantable)
+                {
+                  <option value="@permission" selected="@(share.Permission == permission)">@permission</option>
+                }
+              </select>
+            </form>
+            <form method="post" asp-page-handler="Remove" data-confirm="Stop sharing with @share.AccountName?" onsubmit="return confirm(this.dataset.confirm)">
+              <input type="hidden" name="accountName" value="@share.AccountName" />
+              <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+            </form>
+          </div>
+        </div>
+      </li>
+    }
+  </ul>
+}
+
+<h6>Share with someone</h6>
+<form method="post" asp-page-handler="Set" class="col-12 col-md-6">
+  <div class="input-group">
+    <input name="accountName" class="form-control" placeholder="Account name" autocapitalize="none" autocomplete="off" required />
+    <select name="permission" class="form-select flex-grow-0 w-auto">
+      @foreach (LibraryPermission permission in grantable)
+      {
+        <option value="@permission">@permission</option>
+      }
+    </select>
+    <button type="submit" class="btn btn-primary">Share</button>
+  </div>
+</form>

@@ -142,5 +142,7 @@ Full design notes: [`docs/library.md`](docs/library.md). Constraints that will b
   the gource export needs.
 - **API responses are whole entities, not hand-mapped partial ones.** A field left out of a projection looks exactly
   like an empty one to every client. Use `Include`; item search is the one documented exception.
+- **Item and copy updates replace every editable field.** A page that sends its bound form wipes whatever the form
+  doesn't carry, such as `ExternalIds` and `Attributes`. Apply the form onto the fetched entity and send that.
 - **The namespace and pages folder are `Libraries`, not `Library`**, because the root entity is `Library` and a type named
   like its own namespace breaks name resolution (CS0118).

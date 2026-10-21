@@ -49,6 +49,12 @@
               <a class="nav-link" href="/ui/ledger">Ledger</a>
             </li>
           }
+          @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Library))
+          {
+            <li class="nav-item">
+              <a class="nav-link" href="/ui/library">Library</a>
+            </li>
+          }
           @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
           {
             <li class="nav-item">

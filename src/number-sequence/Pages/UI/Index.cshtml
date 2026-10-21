@@ -93,6 +93,20 @@
       </div>
     </div>
   }
+  @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Library))
+  {
+    <div class="col-12 col-md-6 col-lg-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">Library</h5>
+          <p class="card-text">Track books, movies and games: where each copy lives, who borrowed it, and whether you already own something.</p>
+        </div>
+        <div class="card-footer">
+          <a class="btn btn-sm btn-outline-primary" href="/ui/library">Open</a>
+        </div>
+      </div>
+    </div>
+  }
   <div class="col-12 col-md-6 col-lg-4 mb-4">
     <div class="card h-100">
       <div class="card-body">

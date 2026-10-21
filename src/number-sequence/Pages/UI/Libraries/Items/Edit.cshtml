@@ -1,0 +1,21 @@
+@page "/ui/library/{libraryId:long}/items/{itemId:long}/edit"
+@model number_sequence.Pages.UI.Libraries.Items.EditModel
+@{
+  ViewData["Title"] = $"Edit {Model.Item.Title}";
+}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+  <a href="/ui/library/@Model.Library.Id/items/@Model.Item.Id" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Edit item</h2>
+</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<form method="post" class="col-12 col-md-8 col-lg-6">
+  <partial name="_ItemFields" for="Item" />
+  <p class="form-text">Format, barcode, edition and acquisition details belong to each copy; edit those from the copy.</p>
+  <div class="d-flex gap-2 mb-4">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="/ui/library/@Model.Library.Id/items/@Model.Item.Id" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>

@@ -1,0 +1,100 @@
+@page "/ui/library/{libraryId:long}/locations"
+@model number_sequence.Pages.UI.Libraries.LocationsModel
+@{
+  ViewData["Title"] = $"{Model.Library.Name} locations";
+}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+  <a href="/ui/library/@Model.Library.Id" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Locations</h2>
+</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+@if (Model.Locations.Count == 0)
+{
+  <p class="text-muted">
+    No locations yet. They nest, so a shelf can sit inside a bookcase inside a room: add the room first, then the shelves
+    with the room as their parent.
+  </p>
+}
+else
+{
+  <ul class="list-group mb-4">
+    @foreach (LibraryLocation location in Model.Locations)
+    {
+      int depth = Model.Depths[location.Id];
+      <li class="list-group-item py-2" style="padding-left: @(0.75 + (1.25 * depth))rem">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+          <div>
+            <a href="/ui/library/@Model.Library.Id?location=@location.Id" class="@(depth == 0 ? "fw-semibold" : "")">@location.Name</a>
+            @if (!string.IsNullOrWhiteSpace(location.Notes))
+            {
+              <div class="small text-muted">@location.Notes</div>
+            }
+          </div>
+          @if (Model.CanEdit)
+          {
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#edit-@location.Id">Edit</button>
+          }
+        </div>
+        @if (Model.CanEdit)
+        {
+          <div class="collapse mt-2" id="edit-@location.Id">
+            <form method="post" asp-page-handler="Update">
+              <input type="hidden" name="locationId" value="@location.Id" />
+              <div class="mb-2">
+                <input name="name" value="@location.Name" class="form-control form-control-sm" maxlength="64" required />
+              </div>
+              <div class="mb-2">
+                <select name="parentLocationId" class="form-select form-select-sm">
+                  <option value="">No parent (top level)</option>
+                  @foreach (LibraryLocation parent in Model.Locations.Where(x => x.Id != location.Id))
+                  {
+                    <option value="@parent.Id" selected="@(location.ParentLocationId == parent.Id)">@parent.Path</option>
+                  }
+                </select>
+              </div>
+              <div class="mb-2">
+                <input name="notes" value="@location.Notes" class="form-control form-control-sm" placeholder="Notes" maxlength="256" />
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                <button type="submit" class="btn btn-sm btn-outline-danger" form="delete-@location.Id">Delete</button>
+              </div>
+            </form>
+            <form method="post" asp-page-handler="Delete" id="delete-@location.Id" data-confirm="Delete @location.Path? It has to be empty first." onsubmit="return confirm(this.dataset.confirm)">
+              <input type="hidden" name="locationId" value="@location.Id" />
+            </form>
+          </div>
+        }
+      </li>
+    }
+  </ul>
+}
+
+@if (Model.CanEdit)
+{
+  <h6>Add a location</h6>
+  <form method="post" asp-page-handler="Create" class="col-12 col-md-6">
+    <div class="mb-2">
+      <input name="name" class="form-control" placeholder="Name, e.g. Office or Shelf 3" maxlength="64" required />
+    </div>
+    @if (Model.Locations.Count > 0)
+    {
+      <div class="mb-2">
+        <select name="parentLocationId" class="form-select">
+          <option value="">No parent (top level)</option>
+          @foreach (LibraryLocation parent in Model.Locations)
+          {
+            <option value="@parent.Id">Inside @parent.Path</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="mb-2">
+      <input name="notes" class="form-control" placeholder="Notes (optional)" maxlength="256" />
+    </div>
+    <button type="submit" class="btn btn-primary">Add</button>
+  </form>
+}

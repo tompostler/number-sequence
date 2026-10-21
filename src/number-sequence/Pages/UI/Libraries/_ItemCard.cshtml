@@ -1,0 +1,36 @@
+@model ItemCard
+@{
+  LibraryItem item = Model.Item;
+  string byline = LibraryDisplay.Byline(item);
+  List<LibraryLoan> openLoans = item.Copies?.Select(LibraryDisplay.OpenLoan).Where(x => x != null).ToList() ?? [];
+}
+
+<a href="/ui/library/@item.LibraryId/items/@item.Id" class="list-group-item list-group-item-action py-2">
+  <div class="d-flex justify-content-between align-items-start gap-2">
+    <div class="fw-semibold">
+      @item.Title
+      @if (!string.IsNullOrWhiteSpace(item.Subtitle))
+      {
+        <span class="fw-normal text-muted">: @item.Subtitle</span>
+      }
+    </div>
+    <span class="badge text-bg-secondary flex-shrink-0">@LibraryDisplay.MediaType(item.MediaType)</span>
+  </div>
+  @if (byline.Length > 0)
+  {
+    <div class="small">@byline</div>
+  }
+  <div class="small text-muted">
+    @if (Model.LibraryName != null)
+    {
+      <span>@Model.LibraryName · </span>
+    }
+    @LibraryDisplay.CopiesSummary(item, Model.Paths)
+  </div>
+  @foreach (LibraryLoan loan in openLoans)
+  {
+    <div class="small @(LibraryDisplay.IsOverdue(loan) ? "text-danger" : "text-warning-emphasis")">
+      On loan to @loan.BorrowerName@(loan.DueDate.HasValue ? $", due {loan.DueDate:yyyy-MM-dd}" : "")
+    </div>
+  }
+</a>

@@ -1,0 +1,70 @@
+@page "/ui/library/{libraryId:long}/loans"
+@model number_sequence.Pages.UI.Libraries.LoansModel
+@{
+  ViewData["Title"] = $"{Model.Library.Name} loans";
+}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+  <a href="/ui/library/@Model.Library.Id" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Loans</h2>
+</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<ul class="nav nav-pills nav-fill mb-3">
+  <li class="nav-item"><a class="nav-link @(Model.All ? "" : "active")" href="/ui/library/@Model.Library.Id/loans">Out now</a></li>
+  <li class="nav-item"><a class="nav-link @(Model.All ? "active" : "")" href="/ui/library/@Model.Library.Id/loans?all=true">All loans</a></li>
+</ul>
+
+@if (Model.Loans.Count == 0)
+{
+  <p class="text-muted">@(Model.All ? "Nothing has been lent yet." : "Nothing is out on loan.")</p>
+}
+else
+{
+  <ul class="list-group mb-3">
+    @foreach (LibraryLoan loan in Model.Loans)
+    {
+      bool overdue = LibraryDisplay.IsOverdue(loan);
+      <li class="list-group-item py-2">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <a href="/ui/library/@Model.Library.Id/items/@loan.Copy.ItemId" class="fw-semibold">@loan.Copy.Item.Title</a>
+            @if (!string.IsNullOrWhiteSpace(loan.Copy.Format))
+            {
+              <span class="small text-muted">(@loan.Copy.Format)</span>
+            }
+            <div class="small">@LibraryDisplay.Borrower(loan)</div>
+            <div class="small text-muted">
+              Lent @loan.LoanedDate.ToString("yyyy-MM-dd")
+              @if (loan.DueDate.HasValue)
+              {
+                <span class="@(overdue ? "text-danger fw-semibold" : "")"> · due @loan.DueDate.Value.ToString("yyyy-MM-dd")@(overdue ? " (overdue)" : "")</span>
+              }
+              @if (loan.ReturnedDate.HasValue)
+              {
+                <span> · returned @loan.ReturnedDate.Value.ToString("yyyy-MM-dd")</span>
+              }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(loan.Notes))
+            {
+              <div class="small text-muted">@loan.Notes</div>
+            }
+          </div>
+          @if (Model.CanEdit && !loan.ReturnedDate.HasValue)
+          {
+            <form method="post" asp-page-handler="Return" class="flex-shrink-0">
+              <input type="hidden" name="copyId" value="@loan.CopyId" />
+              <input type="hidden" name="title" value="@loan.Copy.Item.Title" />
+              <button type="submit" class="btn btn-sm btn-outline-success">Returned today</button>
+            </form>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+  @if (Model.Truncated)
+  {
+    <p class="small text-muted">Showing the most recent @Model.Loans.Count.</p>
+  }
+}

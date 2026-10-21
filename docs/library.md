@@ -8,10 +8,10 @@ shopping, and scanning barcodes to build the first inventory and later to reconc
 This is deliberately not a full library system. There are no holds, fines, patrons or cataloguing standards.
 
 **Status.** The data model, migration and API exist (`src/Contracts/Libraries/`, `NsContext` `#region Library`,
-`Migrations/*_AddLibrary*`), as do the Client and Tool, and so do three helpers the API is built on: barcode normalization (`Utilities/LibraryBarcode.cs`),
-the access check (`DataAccess/LibraryAccess.cs`) and event times (`Utilities/LibraryEventTimes.cs`). The UI,
-external lookup, scanning and export described below are the plan for the remaining work, in the order listed under
-[Delivery order](#delivery-order).
+`Migrations/*_AddLibrary*`), as do the Client, Tool and UI (`Pages/UI/Libraries/`), and so do three helpers the API is
+built on: barcode normalization (`Utilities/LibraryBarcode.cs`), the access check (`DataAccess/LibraryAccess.cs`) and
+event times (`Utilities/LibraryEventTimes.cs`). External lookup, scanning and export described below are the plan for
+the remaining work, in the order listed under [Delivery order](#delivery-order).
 
 ## Data model: item → copy
 
@@ -365,6 +365,39 @@ Choices that aren't obvious from `--help`:
 for scripting: piping the export into gource, or diffing it against a spreadsheet. So `export` and `lookup` write
 plain output with stable columns, to stdout unless a file is given, and print no prompts or other chatter.
 
+## UI
+
+Razor Pages under `Pages/UI/Libraries/`, routed at `/ui/library`, and built for a phone first: lists of cards rather
+than tables, and copy actions as small forms that fold open in place. They call the API through `NsTcpWtfClient` like
+Ledger, so the access rules are the API's and the pages only hide controls by `Library.CallerPermission`. The nav link
+and home card show for the `Library` role.
+
+- **Every action posts, then redirects back** with the outcome in a `[TempData]` message, so reload and the back button
+  never resubmit. A form shown again in the same request, with what was typed, uses `FormError` instead: a `[TempData]`
+  property set without a redirect is still saved, and the message shows a second time on the next page.
+- **The home search covers every library you can see**, because "do I already own this?" shouldn't start by picking a
+  library. It runs the item search once per library rather than adding a cross-library search endpoint, since an account
+  sees a handful of libraries at most. A barcode with no match says so and offers "Add to *library*" with the barcode
+  filled in.
+- **Adding an item adds its first copy in the same form.** Before creating, the page looks for an item this might already
+  be: one with a copy carrying the same barcode, or one with exactly the same title. If it finds one, it offers "Add copy
+  here" on each match, which keeps everything typed for the copy, or "Create a new item anyway". The barcode is checked
+  with `LibraryBarcode.TryParse` before anything is created, so a typo doesn't leave behind an item without its copy.
+  "Add another after this" returns to the form with the type and location kept, for entering a shelf at a time.
+- **Merging a duplicate** is "Belongs to another item?" on the copy's edit page: find the other item, and move the copy
+  to it. That changes `LibraryCopy.ItemId`, and the copy's history goes with it. The item left with no copies is then
+  deleted from its own page.
+- **Edit pages apply the form onto the item or copy fetched from the server, then send that.** An update replaces every
+  editable field, and the item form doesn't carry `ExternalIds` or `Attributes`. Sending the bound form would wipe them.
+- **The acquired date starts blank, with a Today button.** Defaulting it to today would put every book in a first
+  inventory into history as bought this week.
+- **Confirmations read their text from `data-confirm`.** An inline `confirm('…')` breaks on a title with an apostrophe,
+  because the attribute is decoded before the script runs.
+- **Deleting a copy is only on its edit page**, so a misplaced tap on the item page can't do it. Status changes and
+  "Disposed" are on the item page.
+
+Covers wait for the lookup phase, which is what sets `HasCover`, and the Scan button waits for scanning.
+
 ## Gource export (planned)
 
 [Gource](https://gource.io) animates a version-control history as a growing tree. Its
@@ -476,7 +509,7 @@ tokens for what is the only JS-heavy page.
 
 ## Delivery order
 
-1. **Core:** the data model, the three helpers, the API, and Client and Tool CRUD (done), then UI for browse, search,
-   detail, manual add/edit, loans, locations and shares.
+1. **Core:** the data model, the three helpers, the API, Client and Tool CRUD, and UI for browse, search, detail,
+   manual add/edit, loans, locations and shares (done).
 2. **Lookup:** the providers, covers in blob, and options and deployment settings.
 3. **Scanning:** the camera scanner, scan sessions and the reconcile view.

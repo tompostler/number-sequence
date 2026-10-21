@@ -1,0 +1,132 @@
+@page "/ui/library/{libraryId:long}"
+@model number_sequence.Pages.UI.Libraries.DetailModel
+@{
+  ViewData["Title"] = Model.Library.Name;
+}
+
+<div class="d-flex align-items-center gap-2 mb-1">
+  <a href="/ui/library" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">@Model.Library.Name</h2>
+</div>
+@if (Model.Library.CallerPermission != LibraryPermission.Owner)
+{
+  <div class="small text-muted mb-1">Shared by @Model.Library.AccountName · @Model.Library.CallerPermission</div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.Library.Description))
+{
+  <div class="text-muted mb-1">@Model.Library.Description</div>
+}
+
+<div class="d-flex flex-wrap gap-2 my-3">
+  @if (Model.CanEdit)
+  {
+    <a href="/ui/library/@Model.Library.Id/items/create" class="btn btn-sm btn-primary">+ Add</a>
+  }
+  <a href="/ui/library/@Model.Library.Id/locations" class="btn btn-sm btn-outline-secondary">Locations</a>
+  <a href="/ui/library/@Model.Library.Id/loans" class="btn btn-sm btn-outline-secondary">Loans</a>
+  @if (Model.IsOwner)
+  {
+    <a href="/ui/library/@Model.Library.Id/shares" class="btn btn-sm btn-outline-secondary">Sharing</a>
+    <a href="/ui/library/@Model.Library.Id/edit" class="btn btn-sm btn-outline-secondary">Settings</a>
+  }
+</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<form method="get" class="mb-3">
+  <div class="input-group mb-2">
+    <input asp-for="Q" name="q" class="form-control" placeholder="Title, author, series, or barcode" autocomplete="off" inputmode="search" enterkeyhint="search" />
+    <button type="submit" class="btn btn-primary">Search</button>
+  </div>
+  <div class="row g-2 align-items-center">
+    <div class="col-6 col-md-3">
+      <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="">All types</option>
+        @foreach (LibraryMediaType type in Enum.GetValues<LibraryMediaType>())
+        {
+          <option value="@type" selected="@(Model.Type == type)">@LibraryDisplay.MediaType(type)</option>
+        }
+      </select>
+    </div>
+    <div class="col-6 col-md-4">
+      <select name="location" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="">All locations</option>
+        @foreach (LibraryLocation location in Model.Locations)
+        {
+          <option value="@location.Id" selected="@(Model.Location == location.Id)">@location.Path</option>
+        }
+      </select>
+    </div>
+    <div class="col-auto">
+      <div class="form-check mb-0">
+        <input type="checkbox" name="loanedOut" value="true" id="loanedOut" class="form-check-input" checked="@Model.LoanedOut" onchange="this.form.submit()" />
+        <label for="loanedOut" class="form-check-label small">On loan</label>
+      </div>
+    </div>
+    @if (Model.Filtered)
+    {
+      <div class="col-auto">
+        <a href="/ui/library/@Model.Library.Id" class="small">Clear</a>
+      </div>
+    }
+  </div>
+</form>
+
+@if (Model.Items.Count == 0)
+{
+  @if (Model.Filtered || Model.Skip > 0)
+  {
+    <p class="text-muted">Nothing matches.</p>
+  }
+  else
+  {
+    <p class="text-muted">
+      Nothing here yet.
+      @if (Model.CanEdit)
+      {
+        @if (Model.Locations.Count == 0)
+        {
+          <span>Start with <a href="/ui/library/@Model.Library.Id/locations">some locations</a>, then <a href="/ui/library/@Model.Library.Id/items/create">add an item</a>.</span>
+        }
+        else
+        {
+          <a href="/ui/library/@Model.Library.Id/items/create">Add an item.</a>
+        }
+      }
+    </p>
+  }
+}
+else
+{
+  <div class="list-group mb-3">
+    @foreach (LibraryItem item in Model.Items)
+    {
+      <partial name="_ItemCard" model="new ItemCard(item, Model.Paths)" />
+    }
+  </div>
+}
+
+@if (Model.Skip > 0 || Model.Items.Count == DetailModel.PageSize)
+{
+  <div class="d-flex justify-content-between mb-4">
+    @if (Model.Skip > 0)
+    {
+      <a href="/ui/library/@Model.Library.Id@Model.PageQuery(Math.Max(0, Model.Skip - DetailModel.PageSize))" class="btn btn-sm btn-outline-secondary">&larr; Previous</a>
+    }
+    else
+    {
+      <span></span>
+    }
+    @if (Model.Items.Count == DetailModel.PageSize)
+    {
+      <a href="/ui/library/@Model.Library.Id@Model.PageQuery(Model.Skip + DetailModel.PageSize)" class="btn btn-sm btn-outline-secondary">Next &rarr;</a>
+    }
+  </div>
+}
+
+@if (Model.Library.CallerPermission != LibraryPermission.Owner)
+{
+  <form method="post" asp-page-handler="Leave" class="mt-5" data-confirm="Leave @Model.Library.Name? Only its owner can share it with you again." onsubmit="return confirm(this.dataset.confirm)">
+    <button type="submit" class="btn btn-sm btn-outline-danger">Leave this library</button>
+  </form>
+}

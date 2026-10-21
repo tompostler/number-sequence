@@ -1,0 +1,243 @@
+@page "/ui/library/{libraryId:long}/items/{itemId:long}"
+@model number_sequence.Pages.UI.Libraries.Items.DetailModel
+@{
+  LibraryItem item = Model.Item;
+  ViewData["Title"] = item.Title;
+  string byline = LibraryDisplay.Byline(item);
+  string today = DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
+  Dictionary<long, int> copyNumbers = item.Copies.Select((c, i) => (c.Id, i + 1)).ToDictionary(x => x.Id, x => x.Item2);
+}
+
+<div class="d-flex align-items-center gap-2 mb-2">
+  <a href="/ui/library/@Model.Library.Id" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <span class="text-muted small text-truncate">@Model.Library.Name</span>
+</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<div class="mb-3">
+  <div class="d-flex justify-content-between align-items-start gap-2">
+    <h3 class="mb-0">@item.Title</h3>
+    <span class="badge text-bg-secondary mt-1">@LibraryDisplay.MediaType(item.MediaType)</span>
+  </div>
+  @if (!string.IsNullOrWhiteSpace(item.Subtitle))
+  {
+    <div class="text-muted">@item.Subtitle</div>
+  }
+  @if (byline.Length > 0)
+  {
+    <div>@byline</div>
+  }
+  @if (!string.IsNullOrWhiteSpace(item.Tags))
+  {
+    <div class="mt-1">
+      @foreach (string tag in item.Tags.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+      {
+        <a href="/ui/library/@Model.Library.Id?q=@Uri.EscapeDataString(tag)" class="badge text-bg-light text-decoration-none border me-1">@tag</a>
+      }
+    </div>
+  }
+  @if (!string.IsNullOrWhiteSpace(item.Summary))
+  {
+    <p class="mt-2 mb-0 small" style="white-space: pre-line">@item.Summary</p>
+  }
+  @if (Model.CanEdit)
+  {
+    <div class="d-flex gap-2 mt-2">
+      <a href="/ui/library/@Model.Library.Id/items/@item.Id/edit" class="btn btn-sm btn-outline-primary">Edit</a>
+      <a href="/ui/library/@Model.Library.Id/items/@item.Id/copies/create" class="btn btn-sm btn-outline-primary">+ Copy</a>
+    </div>
+  }
+</div>
+
+<h5>@(item.Copies.Count == 1 ? "1 copy" : $"{item.Copies.Count} copies")</h5>
+@if (item.Copies.Count == 0)
+{
+  <p class="text-muted">No copies.</p>
+}
+@foreach (LibraryCopy copy in item.Copies)
+{
+  LibraryLoan openLoan = LibraryDisplay.OpenLoan(copy);
+  string heading = string.Join(" · ", new[] { item.Copies.Count > 1 ? $"#{copyNumbers[copy.Id]}" : null, copy.Format, copy.Condition }.Where(x => !string.IsNullOrWhiteSpace(x)));
+  string edition = string.Join(" · ", new[] { copy.Publisher, copy.PublishedYear?.ToString() }.Where(x => !string.IsNullOrWhiteSpace(x)));
+  string acquired = string.Join(" · ", new[]
+  {
+    copy.AcquiredDate.HasValue ? $"Acquired {copy.AcquiredDate:yyyy-MM-dd}" : null,
+    string.IsNullOrWhiteSpace(copy.AcquiredFrom) ? null : $"from {copy.AcquiredFrom}",
+    copy.PricePaid?.ToCurrencyDisplay(),
+  }.Where(x => x != null));
+
+  <div class="card mb-2 @(copy.Status == LibraryCopyStatus.Disposed ? "opacity-75" : "")">
+    <div class="card-body p-2">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div class="fw-semibold">@(heading.Length > 0 ? heading : "Copy")</div>
+        @if (copy.Status != LibraryCopyStatus.Active)
+        {
+          <span class="badge @(copy.Status == LibraryCopyStatus.Missing ? "text-bg-warning" : "text-bg-dark")">@copy.Status</span>
+        }
+      </div>
+      <div class="small">@LibraryDisplay.LocationPath(Model.Paths, copy.LocationId)</div>
+      @if (openLoan != null)
+      {
+        <div class="small @(LibraryDisplay.IsOverdue(openLoan) ? "text-danger fw-semibold" : "text-warning-emphasis")">
+          On loan to @LibraryDisplay.Borrower(openLoan) since @openLoan.LoanedDate.ToString("yyyy-MM-dd")@(openLoan.DueDate.HasValue ? $", due {openLoan.DueDate:yyyy-MM-dd}" : "")
+        </div>
+      }
+      @if (!string.IsNullOrWhiteSpace(copy.Barcode))
+      {
+        <div class="small text-muted font-monospace">@copy.Barcode</div>
+      }
+      @if (edition.Length > 0)
+      {
+        <div class="small text-muted">@edition</div>
+      }
+      @if (acquired.Length > 0)
+      {
+        <div class="small text-muted">@acquired</div>
+      }
+      @if (!string.IsNullOrWhiteSpace(copy.Notes))
+      {
+        <div class="small text-muted" style="white-space: pre-line">@copy.Notes</div>
+      }
+
+      @if (Model.CanEdit)
+      {
+        <div class="d-flex flex-wrap gap-1 mt-2">
+          @if (copy.Status != LibraryCopyStatus.Disposed)
+          {
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#move-@copy.Id">Move</button>
+          }
+          @if (openLoan != null)
+          {
+            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="collapse" data-bs-target="#return-@copy.Id">Return</button>
+          }
+          else if (copy.Status == LibraryCopyStatus.Active)
+          {
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#lend-@copy.Id">Lend</button>
+          }
+          @if (openLoan == null)
+          {
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#status-@copy.Id">Status</button>
+          }
+          <a href="/ui/library/@Model.Library.Id/copies/@copy.Id/edit" class="btn btn-sm btn-outline-secondary">Edit</a>
+        </div>
+
+        <div class="collapse mt-2" id="move-@copy.Id">
+          <form method="post" asp-page-handler="Move" class="border rounded p-2">
+            <input type="hidden" name="copyId" value="@copy.Id" />
+            <select name="locationId" class="form-select form-select-sm mb-2">
+              <option value="">No location</option>
+              @foreach (LibraryLocation location in Model.Locations)
+              {
+                <option value="@location.Id" selected="@(copy.LocationId == location.Id)">@location.Path</option>
+              }
+            </select>
+            <input name="notes" class="form-control form-control-sm mb-2" placeholder="Notes (optional)" maxlength="256" />
+            <button type="submit" class="btn btn-sm btn-primary">Move</button>
+          </form>
+        </div>
+
+        @if (openLoan != null)
+        {
+          <div class="collapse mt-2" id="return-@copy.Id">
+            <form method="post" asp-page-handler="Return" class="border rounded p-2">
+              <input type="hidden" name="copyId" value="@copy.Id" />
+              <label class="form-label small mb-1">Returned</label>
+              <input name="returnedDate" type="date" value="@today" class="form-control form-control-sm mb-2" />
+              <input name="notes" class="form-control form-control-sm mb-2" placeholder="Notes (optional)" maxlength="256" />
+              <button type="submit" class="btn btn-sm btn-success">Return</button>
+            </form>
+          </div>
+        }
+        else if (copy.Status == LibraryCopyStatus.Active)
+        {
+          <div class="collapse mt-2" id="lend-@copy.Id">
+            <form method="post" asp-page-handler="Lend" class="border rounded p-2">
+              <input type="hidden" name="copyId" value="@copy.Id" />
+              <input name="borrowerName" class="form-control form-control-sm mb-2" placeholder="Borrower's name" maxlength="64" />
+              <input name="borrowerAccountName" class="form-control form-control-sm mb-2" placeholder="Their account name, if they have one (optional)" maxlength="64" autocapitalize="none" autocomplete="off" />
+              <div class="row g-2 mb-2">
+                <div class="col-6">
+                  <label class="form-label small mb-1">Lent</label>
+                  <input name="loanedDate" type="date" value="@today" class="form-control form-control-sm" />
+                </div>
+                <div class="col-6">
+                  <label class="form-label small mb-1">Due (optional)</label>
+                  <input name="dueDate" type="date" class="form-control form-control-sm" />
+                </div>
+              </div>
+              <input name="notes" class="form-control form-control-sm mb-2" placeholder="Notes (optional)" maxlength="256" />
+              <button type="submit" class="btn btn-sm btn-primary">Lend</button>
+            </form>
+          </div>
+        }
+
+        @if (openLoan == null)
+        {
+          <div class="collapse mt-2" id="status-@copy.Id">
+            <form method="post" asp-page-handler="Status" class="border rounded p-2">
+              <input type="hidden" name="copyId" value="@copy.Id" />
+              <select name="status" class="form-select form-select-sm mb-2">
+                @if (copy.Status != LibraryCopyStatus.Active)
+                {
+                  <option value="@LibraryCopyStatus.Active">Restore: it's back in the library</option>
+                }
+                @if (copy.Status != LibraryCopyStatus.Missing)
+                {
+                  <option value="@LibraryCopyStatus.Missing">Missing: can't find it</option>
+                }
+                @if (copy.Status != LibraryCopyStatus.Disposed)
+                {
+                  <option value="@LibraryCopyStatus.Disposed">Disposed: sold, given away, or gone</option>
+                }
+              </select>
+              <input name="notes" class="form-control form-control-sm mb-2" placeholder="Notes, e.g. who it went to (optional)" maxlength="256" />
+              <button type="submit" class="btn btn-sm btn-primary">Save</button>
+            </form>
+          </div>
+        }
+      }
+    </div>
+  </div>
+}
+
+@if (Model.History.Count > 0)
+{
+  <h5 class="mt-4">History</h5>
+  <ul class="list-group list-group-flush mb-4">
+    @foreach (LibraryCopyEvent copyEvent in Model.History)
+    {
+      string detail = LibraryDisplay.DescribeEvent(copyEvent, Model.Paths, Model.LoansById);
+      <li class="list-group-item px-0 py-1 small">
+        <div class="d-flex justify-content-between gap-2">
+          <span>
+            <span class="fw-semibold">@LibraryDisplay.EventName(copyEvent.EventType)</span>
+            @if (item.Copies.Count > 1)
+            {
+              <span class="text-muted">#@copyNumbers[copyEvent.CopyId]</span>
+            }
+            @if (detail.Length > 0)
+            {
+              <span>@detail</span>
+            }
+          </span>
+          <span class="text-muted text-nowrap">@LibraryDisplay.When(copyEvent)</span>
+        </div>
+        @if (copyEvent.AccountName != User.Identity?.Name)
+        {
+          <div class="text-muted">by @copyEvent.AccountName</div>
+        }
+      </li>
+    }
+  </ul>
+}
+
+@if (Model.CanEdit)
+{
+  <div class="border border-danger rounded p-2 mt-5 mb-4">
+    <form method="post" asp-page-handler="DeleteItem" data-confirm="Delete @item.Title with all @item.Copies.Count of its copies and their loans and history? To keep the history of a copy that's gone, set its status to Disposed instead." onsubmit="return confirm(this.dataset.confirm)">
+      <div class="small mb-2">Deleting removes every copy with its loans and history. For a copy that's gone but should stay in history, set its status to Disposed instead.</div>
+      <button type="submit" class="btn btn-sm btn-outline-danger">Delete item</button>
+    </form>
+  </div>
+}
