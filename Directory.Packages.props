@@ -8,34 +8,36 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- dotnet -->
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
-    <PackageVersion Include="Anthropic" Version="12.48.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
+    <PackageVersion Include="Anthropic" Version="13.3.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.14" />
     <!-- EFCore -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.14" />
+    <!-- Transitive pin only. Microsoft.Data.SqlClient (through EFCore.SqlServer and DurableTask.SqlServer) brings in 9.0.11, which has known vulnerabilities (NU1902/NU1903). Drop once SqlClient brings in a fixed version on its own. -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     <!-- Azure -->
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.29.2" />
-    <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.1.2" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.30.1" />
+    <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.2.0" />
     <!-- Tests -->
     <PackageVersion Include="FluentAssertions" Version="8.11.0" />
-    <PackageVersion Include="MSTest" Version="4.4.1" />
+    <PackageVersion Include="MSTest" Version="4.5.1" />
     <!-- Everything else -->
     <PackageVersion Include="Cronos" Version="0.13.0" />
     <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.8.1" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
-    <PackageVersion Include="QuestPDF" Version="2026.9.0" />
+    <PackageVersion Include="QuestPDF" Version="2026.9.1" />
     <!-- Used directly to redraw library covers, as well as through ScottPlot for charts. Kept at the version ScottPlot brings in. -->
     <PackageVersion Include="SkiaSharp" Version="3.119.4" />
     <!-- SkiaSharp only brings in Windows and macOS native assets, never Linux, whether referenced directly or through ScottPlot. Without this, libSkiaSharp.so is missing on the Linux app service and both charts and covers fail. QuestPDF bundles its own native Skia build and does not need this. -->
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
     <PackageVersion Include="Unlimitedinf.Utilities" Version="5.1.7" />
     <PackageVersion Include="ScottPlot" Version="5.1.59" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.12" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.14" />
   </ItemGroup>
 </Project>

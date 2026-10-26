@@ -112,7 +112,7 @@ namespace number_sequence.Services
                     Effort = ParseEffort,
                     Format = new JsonOutputFormat { Schema = schema },
                 },
-                Messages = [new() { Role = Role.User, Content = transcript }],
+                Messages = [new UserMessageParam(transcript)],
             };
 
             // Sizes but not contents: the prompt and schema are both generated from source, so logging them every
