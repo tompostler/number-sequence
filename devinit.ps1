@@ -18,6 +18,17 @@ function Get-Secret([string]$name) {
     return $value;
 }
 
+# Fetch a secret that the app can run without, such as a library lookup token not registered yet. A missing one is null,
+# which the app treats as that feature being off.
+function Get-OptionalSecret([string]$name) {
+    $value = az keyvault secret show --vault-name tompostler --name $name --query value --output json 2>$null | ConvertFrom-Json;
+    if ($LASTEXITCODE -ne 0) {
+        Write-Yellow "No '$name' secret in key vault; leaving it unset.";
+        return $null;
+    }
+    return $value;
+}
+
 Write-Cyan 'Logging in to subscription....';
 # A cached login is not proof of a usable token, so probe a real token instead of just checking that an account exists.
 # Conditional access is evaluated per resource, so arm and key vault are separate grants and have to be probed, and if needed logged into, separately.
@@ -61,6 +72,10 @@ $localSettings = [PSCustomObject]@{
         Username           = (Get-Secret 'email-username');
         Password           = (Get-Secret 'email-password');
         LocalDevToOverride = (git config --get user.email);
+    };
+    LibraryLookup       = [PSCustomObject]@{
+        BggToken  = (Get-OptionalSecret 'library-lookup-bgg-token');
+        TmdbToken = (Get-OptionalSecret 'library-lookup-tmdb-token');
     };
     Sql                 = [PSCustomObject]@{
         ConnectionString = (

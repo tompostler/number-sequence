@@ -50,7 +50,7 @@ jobs:
       location: Central US
       csmFile: $(Build.SourcesDirectory)/deployment/templates/SimpleStorageAccountWithContainers.json
       csmParametersFile: $(Build.SourcesDirectory)/deployment/parameters/Empty.json
-      overrideParameters: -storageAccountName nstcpwtf -storageAccountContainerNames "pdf"
+      overrideParameters: -storageAccountName nstcpwtf -storageAccountContainerNames "library,pdf"
 
 - job: Deploy_SimpleStorageAccountWithContainers_LocalDev
   dependsOn: []
@@ -68,7 +68,7 @@ jobs:
       location: Central US
       csmFile: $(Build.SourcesDirectory)/deployment/templates/SimpleStorageAccountWithContainers.json
       csmParametersFile: $(Build.SourcesDirectory)/deployment/parameters/Empty.json
-      overrideParameters: -storageAccountName nstcpwtflocal -storageAccountContainerNames "pdf"
+      overrideParameters: -storageAccountName nstcpwtflocal -storageAccountContainerNames "library,pdf"
 
 - job: Deploy_Sql
   dependsOn: []

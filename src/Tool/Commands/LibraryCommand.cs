@@ -591,6 +591,42 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             #endregion // Loan
 
 
+            #region Lookup
+
+            Option<LibraryMediaType> lookupTypeOption = new("--type")
+            {
+                Description = "What to search for by title. Not needed for an ISBN.",
+                DefaultValueFactory = _ => LibraryMediaType.Book,
+            };
+            Option<string> lookupSourceOption = new("--source")
+            {
+                Description = $"Get one record by id from this source instead of searching: {LibraryLookupSources.OpenLibrary}, {LibraryLookupSources.TmdbMovie}, {LibraryLookupSources.TmdbTv} or {LibraryLookupSources.BoardGameGeek}. The source and id are the first two columns of a search.",
+            };
+            Command lookupCommand = new("lookup", "Look up a book by ISBN, or search by title, in the outside services the add page uses. Saves nothing. Writes a table with fixed columns, or json with --raw, and nothing else.")
+            {
+                stampOption,
+                verbosityOption,
+                new Argument<string>("query") { Description = "An ISBN, a title, or with --source the record's id." },
+                lookupTypeOption,
+                lookupSourceOption,
+                rawOption,
+            };
+            lookupCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    string query = parseResult.GetRequiredValue<string>("query");
+                    LibraryMediaType mediaType = parseResult.GetRequiredValue(lookupTypeOption);
+                    string source = parseResult.GetValue(lookupSourceOption);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleLookupAsync(query, mediaType, source, raw, stamp, verbosity);
+                });
+            rootCommand.Subcommands.Add(lookupCommand);
+
+            #endregion // Lookup
+
+
             #region Owned
 
             Command ownedCommand = new("owned", "Do I already own this? Looks a barcode up across every library you can access.")

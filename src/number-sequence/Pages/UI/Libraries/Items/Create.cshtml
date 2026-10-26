@@ -3,6 +3,10 @@
 @{
   ViewData["Title"] = $"Add to {Model.Library.Name}";
   ViewData["MediaType"] = Model.Item?.MediaType;
+  bool filledIn = Model.LookupSource != null;
+  bool fresh = !filledIn && Model.Candidates == null && string.IsNullOrWhiteSpace(Model.Copy?.Barcode) && Model.Duplicates.Count == 0;
+  List<string> attributes = LibraryDisplay.Attributes(Model.Item?.Attributes);
+  List<string> creditedSources = (Model.Candidates?.Select(x => x.Source) ?? []).Append(Model.LookupSource).Where(x => x != null).ToList();
 }
 
 <div class="d-flex align-items-center gap-2 mb-3">
@@ -12,74 +16,206 @@
 
 <partial name="_LibraryFlash" model="Model" />
 
-<form method="post" class="col-12 col-md-8 col-lg-6">
-  @* Enter in a field presses the form's first submit button. Without this one, that would be the first duplicate's
-     "Add copy here". *@
-  <button type="submit" class="visually-hidden" tabindex="-1" aria-hidden="true">Add</button>
-  @if (Model.Duplicates.Count > 0)
-  {
-    <div class="alert alert-warning">
-      <div class="fw-semibold mb-1">This might already be here.</div>
-      <div class="small mb-2">
-        Two formats or two identical copies of the same thing belong on one item.
-        @(Model.AddCopy ? "Add the copy below to one of these," : "Open one of these,") or create a new item anyway.
-      </div>
-      <div class="list-group mb-2">
-        @foreach (LibraryItem duplicate in Model.Duplicates)
+<div class="col-12 col-md-8 col-lg-6">
+  <form method="get" class="mb-3">
+    @if (Model.LocationId.HasValue)
+    {
+      <input type="hidden" name="location" value="@Model.LocationId" />
+    }
+    @if (Model.AddAnother)
+    {
+      <input type="hidden" name="another" value="true" />
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Copy?.Barcode))
+    {
+      @* Kept through a title search, so a scanned UPC still lands on the copy. A barcode typed in the box replaces it. *@
+      <input type="hidden" name="barcode" value="@Model.Copy.Barcode" />
+    }
+    <label for="find" class="form-label">Look it up</label>
+    <div class="input-group">
+      <select name="type" class="form-select flex-grow-0 w-auto" aria-label="Type">
+        @foreach (LibraryMediaType mediaType in Enum.GetValues<LibraryMediaType>().Where(x => x != LibraryMediaType.Other))
         {
-          <div class="list-group-item py-2">
-            <div class="d-flex justify-content-between align-items-center gap-2">
-              <div>
-                <a href="/ui/library/@Model.Library.Id/items/@duplicate.Id" target="_blank" class="fw-semibold">@duplicate.Title</a>
-                <div class="small text-muted">@LibraryDisplay.MediaType(duplicate.MediaType) · @LibraryDisplay.Byline(duplicate)</div>
-                <div class="small text-muted">@LibraryDisplay.CopiesSummary(duplicate, Model.Paths)</div>
-              </div>
-              @if (Model.AddCopy)
+          <option value="@mediaType" selected="@(Model.Item?.MediaType == mediaType)">@LibraryDisplay.MediaType(mediaType)</option>
+        }
+      </select>
+      <input id="find" name="find" value="@Model.Find" class="form-control" placeholder="ISBN, barcode or title" autocomplete="off" autofocus="@fresh" />
+      <button type="submit" class="btn btn-outline-primary">Look up</button>
+    </div>
+    <div class="form-text">An ISBN fills in a book. Movies and games are found by title.</div>
+  </form>
+
+  @if (Model.LookupNote != null)
+  {
+    <div class="alert alert-info py-2 small">@Model.LookupNote</div>
+  }
+
+  @if (Model.Candidates != null)
+  {
+    @if (Model.Candidates.Count == 0)
+    {
+      <div class="alert alert-info py-2 small">Nothing found for "@Model.Find". Try fewer words, or fill it in below.</div>
+    }
+    else
+    {
+      <div class="small text-muted mb-1">Pick one to fill in the form:</div>
+      <div class="list-group mb-3">
+        @foreach (LibraryLookupResult candidate in Model.Candidates)
+        {
+          string detail = string.Join(" · ", new[]
+          {
+            candidate.Source == LibraryLookupSources.TmdbTv ? "TV series" : null,
+            candidate.Format == "Expansion" ? "Expansion" : null,
+            candidate.Creators?.Replace(";", ","),
+          }.Where(x => !string.IsNullOrWhiteSpace(x)));
+          <a href="@Model.PickUrl(candidate)" class="list-group-item list-group-item-action py-2">
+            <div class="d-flex gap-2">
+              @if (candidate.CoverUrls?.Count > 0)
               {
-                <button type="submit" name="AsCopyOfItemId" value="@duplicate.Id" class="btn btn-sm btn-primary flex-shrink-0">Add copy here</button>
+                <img src="@LibraryDisplay.LookupCoverUrl(candidate.CoverUrls[^1])" alt="" loading="lazy" class="flex-shrink-0 rounded border" style="width: 40px; height: 60px; object-fit: cover" />
               }
+              else
+              {
+                <div class="flex-shrink-0 rounded border bg-body-secondary" style="width: 40px; height: 60px"></div>
+              }
+              <div style="min-width: 0">
+                <div class="fw-semibold">@candidate.Title @(candidate.Year.HasValue ? $"({candidate.Year})" : "")</div>
+                @if (detail.Length > 0)
+                {
+                  <div class="small">@detail</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(candidate.Summary))
+                {
+                  <div class="small text-muted text-truncate">@candidate.Summary</div>
+                }
+              </div>
             </div>
-          </div>
+          </a>
         }
       </div>
-      <button type="submit" name="ConfirmNew" value="true" class="btn btn-sm btn-outline-secondary">Create a new item anyway</button>
+    }
+  }
+
+  @if (filledIn)
+  {
+    <div class="d-flex gap-2 align-items-start border rounded p-2 mb-3">
+      @if (Model.CoverUrls.Count > 0)
+      {
+        <img src="@LibraryDisplay.LookupCoverUrl(Model.CoverUrls[^1])" alt="" class="flex-shrink-0 rounded border" style="width: 64px; height: 96px; object-fit: cover" />
+      }
+      <div class="small">
+        <div>
+          Filled in from
+          @if (Model.LookupSourceUrl != null)
+          {
+            <a href="@Model.LookupSourceUrl" target="_blank" rel="noopener">@LibraryDisplay.LookupSourceName(Model.LookupSource)</a>@(".")
+          }
+          else
+          {
+            @(LibraryDisplay.LookupSourceName(Model.LookupSource) + ".")
+          }
+          Check it over before adding.
+        </div>
+        @if (Model.CoverUrls.Count > 0)
+        {
+          <div class="text-muted">The cover is saved with the item.</div>
+        }
+        @if (attributes.Count > 0)
+        {
+          <div class="text-muted">Also saved: @string.Join(" · ", attributes)</div>
+        }
+      </div>
     </div>
   }
 
-  <partial name="_ItemFields" for="Item" />
+  <form method="post">
+    @* Enter in a field presses the form's first submit button. Without this one, that would be the first duplicate's
+       "Add copy here". *@
+    <button type="submit" class="visually-hidden" tabindex="-1" aria-hidden="true">Add</button>
 
-  <div class="form-check form-switch my-3">
-    <input asp-for="AddCopy" class="form-check-input" data-bs-toggle="collapse" data-bs-target="#copy-fields" />
-    <label asp-for="AddCopy" class="form-check-label">Add a copy now</label>
-  </div>
+    @* The lookup's ids, attributes and cover aren't on the form, so they ride along hidden. *@
+    @foreach ((string key, string value) in Model.Item?.ExternalIds ?? [])
+    {
+      <input type="hidden" name="@($"Item.ExternalIds[{key}]")" value="@value" />
+    }
+    @foreach ((string key, string value) in Model.Item?.Attributes ?? [])
+    {
+      <input type="hidden" name="@($"Item.Attributes[{key}]")" value="@value" />
+    }
+    @foreach (string url in Model.CoverUrls)
+    {
+      <input type="hidden" name="CoverUrls" value="@url" />
+    }
+    <input type="hidden" asp-for="LookupSource" />
+    <input type="hidden" asp-for="LookupSourceUrl" />
 
-  <div class="collapse @(Model.AddCopy ? "show" : "")" id="copy-fields">
-    <div class="border rounded p-2 mb-3">
-      <div class="mb-2">
-        <label asp-for="LocationId" class="form-label">Location</label>
-        <select asp-for="LocationId" class="form-select">
-          <option value="">No location</option>
-          @foreach (LibraryLocation location in Model.Locations)
+    @if (Model.Duplicates.Count > 0)
+    {
+      <div class="alert alert-warning">
+        <div class="fw-semibold mb-1">This might already be here.</div>
+        <div class="small mb-2">
+          Two formats or two identical copies of the same thing belong on one item.
+          @(Model.AddCopy ? "Add the copy below to one of these," : "Open one of these,") or create a new item anyway.
+        </div>
+        <div class="list-group mb-2">
+          @foreach (LibraryItem duplicate in Model.Duplicates)
           {
-            <option value="@location.Id">@location.Path</option>
+            <div class="list-group-item py-2">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <div>
+                  <a href="/ui/library/@Model.Library.Id/items/@duplicate.Id" target="_blank" class="fw-semibold">@duplicate.Title</a>
+                  <div class="small text-muted">@LibraryDisplay.MediaType(duplicate.MediaType) · @LibraryDisplay.Byline(duplicate)</div>
+                  <div class="small text-muted">@LibraryDisplay.CopiesSummary(duplicate, Model.Paths)</div>
+                </div>
+                @if (Model.AddCopy)
+                {
+                  <button type="submit" name="AsCopyOfItemId" value="@duplicate.Id" class="btn btn-sm btn-primary flex-shrink-0">Add copy here</button>
+                }
+              </div>
+            </div>
           }
-        </select>
-        @if (Model.Locations.Count == 0)
-        {
-          <div class="form-text"><a href="/ui/library/@Model.Library.Id/locations">Add locations</a> to say where things live.</div>
-        }
+        </div>
+        <button type="submit" name="ConfirmNew" value="true" class="btn btn-sm btn-outline-secondary">Create a new item anyway</button>
       </div>
-      <partial name="_CopyFields" for="Copy" />
+    }
+
+    <partial name="_ItemFields" for="Item" />
+
+    <div class="form-check form-switch my-3">
+      <input asp-for="AddCopy" class="form-check-input" data-bs-toggle="collapse" data-bs-target="#copy-fields" />
+      <label asp-for="AddCopy" class="form-check-label">Add a copy now</label>
     </div>
-  </div>
 
-  <div class="form-check mb-3">
-    <input asp-for="AddAnother" class="form-check-input" />
-    <label asp-for="AddAnother" class="form-check-label">Add another after this, keeping the type and location</label>
-  </div>
+    <div class="collapse @(Model.AddCopy ? "show" : "")" id="copy-fields">
+      <div class="border rounded p-2 mb-3">
+        <div class="mb-2">
+          <label asp-for="LocationId" class="form-label">Location</label>
+          <select asp-for="LocationId" class="form-select">
+            <option value="">No location</option>
+            @foreach (LibraryLocation location in Model.Locations)
+            {
+              <option value="@location.Id">@location.Path</option>
+            }
+          </select>
+          @if (Model.Locations.Count == 0)
+          {
+            <div class="form-text"><a href="/ui/library/@Model.Library.Id/locations">Add locations</a> to say where things live.</div>
+          }
+        </div>
+        <partial name="_CopyFields" for="Copy" />
+      </div>
+    </div>
 
-  <div class="d-flex gap-2 mb-4">
-    <button type="submit" class="btn btn-primary">Add</button>
-    <a href="/ui/library/@Model.Library.Id" class="btn btn-outline-secondary">Cancel</a>
-  </div>
-</form>
+    <div class="form-check mb-3">
+      <input asp-for="AddAnother" class="form-check-input" />
+      <label asp-for="AddAnother" class="form-check-label">Add another after this, keeping the type and location</label>
+    </div>
+
+    <div class="d-flex gap-2 mb-4">
+      <button type="submit" class="btn btn-primary">Add</button>
+      <a href="/ui/library/@Model.Library.Id" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+
+  <partial name="_LookupAttribution" model="creditedSources" />
+</div>

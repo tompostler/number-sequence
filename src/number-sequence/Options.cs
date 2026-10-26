@@ -8,6 +8,7 @@ namespace number_sequence
         {
             _ = services.Configure<Claude>(configuration.GetSection(nameof(Claude)));
             _ = services.Configure<Email>(configuration.GetSection(nameof(Email)));
+            _ = services.Configure<LibraryLookup>(configuration.GetSection(nameof(LibraryLookup)));
             _ = services.Configure<Sql>(configuration.GetSection(nameof(Sql)));
             _ = services.Configure<Storage>(configuration.GetSection(nameof(Storage)));
             return services;
@@ -38,6 +39,19 @@ namespace number_sequence
             /// <summary>Spelled out clinic name for dictation parsing assistance.</summary>
             public string Name { get; set; }
             public string Email { get; set; }
+        }
+
+        public sealed class LibraryLookup
+        {
+            /// <summary>
+            /// A TMDB API read access token, for movies and TV.
+            /// </summary>
+            public string TmdbToken { get; set; }
+
+            /// <summary>
+            /// A BoardGameGeek registered application token, for board games.
+            /// </summary>
+            public string BggToken { get; set; }
         }
 
         public sealed class Sql

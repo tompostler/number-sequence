@@ -1,0 +1,27 @@
+@model IEnumerable<string>
+@* Credits the lookup sources whose data is on the page. TMDB's terms require this wherever its data is shown, and
+   BoardGameGeek's ask for it; the book sources get the same line for consistency. *@
+@{
+  HashSet<string> sources = Model.Select(x => x == LibraryLookupSources.TmdbTv ? LibraryLookupSources.TmdbMovie : x).ToHashSet();
+}
+@if (sources.Count > 0)
+{
+  <div class="small text-muted mt-3">
+    @if (sources.Contains(LibraryLookupSources.OpenLibrary))
+    {
+      <div>Book data from <a href="https://openlibrary.org" target="_blank" rel="noopener">Open Library</a>.</div>
+    }
+    @if (sources.Contains(LibraryLookupSources.GoogleBooks))
+    {
+      <div>Book data from <a href="https://books.google.com" target="_blank" rel="noopener">Google Books</a>.</div>
+    }
+    @if (sources.Contains(LibraryLookupSources.TmdbMovie))
+    {
+      <div>This product uses the <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a> API but is not endorsed or certified by TMDB.</div>
+    }
+    @if (sources.Contains(LibraryLookupSources.BoardGameGeek))
+    {
+      <div>Game data from <a href="https://boardgamegeek.com" target="_blank" rel="noopener">BoardGameGeek</a>.</div>
+    }
+  </div>
+}

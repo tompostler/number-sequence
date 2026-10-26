@@ -30,6 +30,7 @@ namespace number_sequence.Middleware
                     ForbiddenException => 403,
                     NotFoundException => 404,
                     ConflictException => 409,
+                    FailedDependencyException => 424,
                     _ => null,
                 };
 

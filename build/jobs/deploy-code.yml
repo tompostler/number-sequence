@@ -27,6 +27,8 @@ jobs:
         -emailPort "$(email-port)"
         -emailUsername "$(email-username)"
         -emailPassword "$(email-password)"
+        -libraryLookupBggToken "$(library-lookup-bgg-token)"
+        -libraryLookupTmdbToken "$(library-lookup-tmdb-token)"
         -sqlServerName tompostler
         -sqlAdminPassword "$(tompostler-sqladmin-password)"
 

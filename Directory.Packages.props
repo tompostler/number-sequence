@@ -30,6 +30,9 @@
     <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.8.1" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
     <PackageVersion Include="QuestPDF" Version="2026.9.0" />
+    <!-- Used directly to redraw library covers, as well as through ScottPlot for charts. Kept at the version ScottPlot brings in. -->
+    <PackageVersion Include="SkiaSharp" Version="3.119.4" />
+    <!-- SkiaSharp only brings in Windows and macOS native assets, never Linux, whether referenced directly or through ScottPlot. Without this, libSkiaSharp.so is missing on the Linux app service and both charts and covers fail. QuestPDF bundles its own native Skia build and does not need this. -->
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
     <PackageVersion Include="Unlimitedinf.Utilities" Version="5.1.7" />
     <PackageVersion Include="ScottPlot" Version="5.1.59" />

@@ -10,8 +10,9 @@ This is deliberately not a full library system. There are no holds, fines, patro
 **Status.** The data model, migration and API exist (`src/Contracts/Libraries/`, `NsContext` `#region Library`,
 `Migrations/*_AddLibrary*`), as do the Client, Tool and UI (`Pages/UI/Libraries/`), and so do three helpers the API is
 built on: barcode normalization (`Utilities/LibraryBarcode.cs`), the access check (`DataAccess/LibraryAccess.cs`) and
-event times (`Utilities/LibraryEventTimes.cs`). External lookup, scanning and export described below are the plan for
-the remaining work, in the order listed under [Delivery order](#delivery-order).
+event times (`Utilities/LibraryEventTimes.cs`). External lookup and covers exist too (`Services/Libraries/`). Scanning
+and export described below are the plan for the remaining work, in the order listed under
+[Delivery order](#delivery-order).
 
 ## Data model: item → copy
 
@@ -33,9 +34,11 @@ into every add and every scan. Edition details live on the copy. If a lookup ret
 cover that differs per edition, the item gets it from the first copy added.
 
 **Recognizing an existing item.** Scanning an ISBN that isn't in the library yet doesn't automatically create a new
-item. The ISBN lookup returns an Open Library work key, which is stored in `LibraryItem.ExternalIds`. If an item in the
-library already has that key, or failing that the same normalized title and first creator, the add flow offers "add as
-another copy of *X*". That is how a paperback joins the hardcover's item instead of creating a duplicate.
+item. The ISBN lookup returns an Open Library work id, which is stored in `LibraryItem.ExternalIds`. If an item in the
+library already shares any external id with the lookup, has a copy with the same barcode, or has exactly the same title
+(ignoring case), the add flow offers "add as another copy of *X*". That is how a paperback joins the hardcover's item
+instead of creating a duplicate. The keys in `LibraryExternalIds` are part of that match, so renaming one quietly stops
+it finding items saved under the old name.
 
 **Media types.** `LibraryMediaType` is an enum stored as a string (`NVARCHAR(32)`, the same way as `AccountTier`), so
 adding a value needs no migration. Fields that only apply to some types (page count, runtime, player count, play time)
@@ -268,9 +271,10 @@ libraries:
 
 - `barcodes/{barcode}` is the "do I own this?" check across **every library the caller can access**, so the shopping
   case doesn't start by choosing a library. It returns matching copies that aren't disposed, with their item and open
-  loan. It only matches the exact barcode, so a different edition of something owned won't show up. Matching by Open
-  Library work key is a job for the lookup phase.
-- `lookup/isbn/{isbn}` and `lookup/search?mediaType=&q=` (planned) call outside services and save nothing.
+  loan. It only matches the exact barcode, so a different edition of something owned won't show up. The add page's
+  duplicate check is what matches by Open Library work id.
+- `lookup/isbn/{isbn}`, `lookup/search?mediaType=&q=`, `lookup/{source}/{sourceId}` and `lookup/cover?url=` call
+  outside services and save nothing. See [External lookup](#external-lookup).
 
 **Copies change location, status and loans only through dedicated actions** (`copies/{id}/move`, `/status`, `/loan`,
 `/return`), because each one writes a `LibraryCopyEvent`. The general PUT of a copy leaves all three alone. It does
@@ -312,6 +316,9 @@ Two alternatives were rejected:
 - **Barcodes:** if `q` parses as a barcode, a copy with that barcode also matches, so a scanned code can go in the
   same search box.
 - **Locations:** `locationId` includes everything inside that location, so "Office" finds its shelves.
+- **External ids:** `externalIdKey` with `externalIdValue` keeps items whose `ExternalIds` has that entry. The column
+  is json, which EF sees only through the dictionary converter, so this one filter is sql (`JSON_VALUE`). The key
+  becomes a json path, so it is limited to letters and digits.
 - **Columns:** each item comes without its summary, external ids and attributes, which are null in the results even
   when set. Those are the large columns, and a page can hold 500 items. Copies come back whole, and each copy's `Loans`
   holds only its open loan. `items/{id}` has everything, including each copy's history with `OccurredDate` filled in by
@@ -361,7 +368,8 @@ Choices that aren't obvious from `--help`:
 - **Deleting a library, item or copy asks for confirmation** and points at disposing instead, which keeps history.
   Deleting a location doesn't ask, since the server refuses unless it's empty.
 
-`export <libraryId> [file]` waits for an export endpoint. The UI is the main way to manage a library, and the Tool is
+`lookup <isbn|title>` (`--type` for a title search, `--source` to get one record by id) writes the same columns
+whatever was asked. `export <libraryId> [file]` waits for an export endpoint. The UI is the main way to manage a library, and the Tool is
 for scripting: piping the export into gource, or diffing it against a spreadsheet. So `export` and `lookup` write
 plain output with stable columns, to stdout unless a file is given, and print no prompts or other chatter.
 
@@ -396,7 +404,22 @@ and home card show for the `Library` role.
 - **Deleting a copy is only on its edit page**, so a misplaced tap on the item page can't do it. Status changes and
   "Disposed" are on the item page.
 
-Covers wait for the lookup phase, which is what sets `HasCover`, and the Scan button waits for scanning.
+- **Lookup is all GET on the add page.** An ISBN (in the lookup box, or passed as `barcode` from the home page's "Not
+  owned") fills the form in. A title lists candidates, and picking one comes back with `source` and `sourceId`. Each
+  step carries the barcode, location and "add another" along, so a UPC typed in before a title search still lands on
+  the copy. The lookup's external ids, attributes and cover urls aren't form fields, so they ride along as hidden
+  inputs. The duplicate check runs as soon as the form is filled in, not only on submit, so "this might already be
+  here" shows before anything is typed.
+- **Adding a looked-up copy to an item typed in by hand** gives that item the lookup's external ids it lacks, so the
+  next edition finds it by id rather than by title. Ids it already has are never changed.
+- **Covers** show on cards (thumbnail) and the item page, and are set from the lookup when an item is created, or
+  uploaded on the item's edit page. A phone photo is fine: the server turns it upright and resizes it. The `<img>` tags
+  point at the api route directly, which the token cookie authenticates, with the item's modified date in the query so
+  the api can cache covers for a month. The api streams each cover from blob storage to the response rather than
+  reading it into memory first, since a page of cards asks for dozens at once.
+- **Credits:** pages showing looked-up data name the source (`_LookupAttribution`), as TMDB's terms require.
+
+The Scan button waits for scanning.
 
 ## Gource export (planned)
 
@@ -430,29 +453,94 @@ events.
 Paths use location names as they are now, since locations don't keep a name history. A renamed shelf shows under its
 new name for its whole history. A deleted location shows as `(deleted location #id)`.
 
-## External lookup (planned)
+## External lookup
 
-Behind an `ILibraryLookupProvider` interface. A provider whose key isn't configured turns itself off, and the UI falls
-back to entering details by hand.
+`Services/Libraries/`. `LibraryLookup` picks the provider for a request and caches answers; one class per provider does
+the calls. A lookup returns a `LibraryLookupResult`: item fields, edition fields for the first copy (barcode, format,
+publisher, year), external ids, attributes and cover urls. It saves nothing. A search returns candidates that may lack
+fields (TMDB's search has no director), and the chosen one is fetched again by `Source` and `SourceId` for the full
+record.
 
-- **Books by ISBN:** Open Library first (`/isbn/{isbn}.json`, then the work record for summary and authors). It needs no
-  key, and its work key is what makes duplicate detection work. Google Books (`volumes?q=isbn:`) is the fallback when Open
-  Library has no record, with an optional key.
-- **Movies by title:** TMDB `search/movie` and `search/tv`, with a bearer token. A UPC doesn't identify a movie in TMDB,
-  so a scanned UPC is saved on the copy (a rescan finds it) and the details come from a title search. TMDB's terms
-  require attribution on pages showing its data.
-- **Board games by title:** BoardGameGeek XML API2 (`search?type=boardgame`, then `thing?id=`). BGG has required a
-  registered application token since 2025.
+- **Books by ISBN:** Open Library first, then Google Books when Open Library has no record or is down.
+  - Open Library spreads a book over three records: the edition (publisher, format, pages, cover), the work (summary)
+    and the search index, which already has the author names resolved. Using the index saves a request per author.
+    Its record is only used when its work id matches, because a search that misread the query would return another
+    book's authors without anyone noticing. When it doesn't match, each author's record is fetched instead.
+  - The edition's cover is preferred over the work's, which may show another edition.
+  - Open Library's free-text physical format is mapped onto the suggested formats; anything else is left blank rather
+    than stored as one cataloguer typed it.
+  - Google Books only knows the edition, so `Year` (first release) is left empty rather than set to a reprint's year.
+- **Books by title:** Open Library's search, which is also how a book with no ISBN gets details.
+- **Movies by title:** TMDB `search/multi` (movies and TV in one request), then `movie/{id}?append_to_response=credits`
+  or `tv/{id}`. A UPC doesn't identify a movie in TMDB, so a scanned UPC is saved on the copy (a rescan finds it) and
+  the details come from a title search. A movie's TMDB collection becomes its series.
+- **Board games by title:** BoardGameGeek XML API2. Its search returns every game with a matching name, in no useful
+  order, with names and years only; "Catan" matches hundreds. So names are ranked (exact, prefix, shortest), the best 20
+  are fetched in one `thing` request (BGG's limit), and those are ordered by how many people rated them, which puts the
+  game most people mean first. An expansion's base game becomes its series.
 
-Rejected: UPC databases (e.g. UPCitemdb's free tier). Their results for movies and games are thin and inconsistent, and
-the free tiers are rate limited to around 100 a day, which a first inventory run blows through.
+**Rejected:**
+- **UPC databases** (e.g. UPCitemdb's free tier). Their results for movies and games are thin and inconsistent, and
+  the free tiers are rate limited to around 100 a day, which a first inventory run blows through.
+- **A Google Books key.** It would be one more secret in Key Vault, the variable group, the template and `devinit.ps1`,
+  for a fallback that rarely runs. Keyless use is allowed at low volume. Add one if its quota starts refusing.
+- **An `ILibraryLookupProvider` interface.** The providers don't share a shape (ISBN for books only, search plus fetch
+  for the rest), so the interface would have been mostly unsupported methods.
 
-Covers are downloaded from the provider when the item is created and stored in blob storage (container `library`, path
-`covers/{itemId}`). They are not stored as SQL bytes like the Ledger logos, because a few thousand covers at 20–100 KB
-each doesn't belong in the database. They are never hotlinked, because provider URLs change and hotlinking leaks
-browsing to third parties. The new container has to be added to `storageAccountContainerNames` in
-`build/jobs/deploy-prereqs.yml`, for both the prod and the LocalDev job. Lookup keys go in `Options.Library` and
-`deployment/templates/AppServiceSettings.json`.
+**Caching:** answers are cached in `IMemoryCache` for an hour, misses included, since one add asks about the same record
+several times (search, pick, the form shown again). Failures aren't cached.
+
+**Failures** become `FailedDependencyException`, which the middleware maps to **424**, with a message naming the
+provider. Not a 5xx: the client retries those five times over about half a minute, which would turn one slow provider
+into a page that hangs. The add page shows the message and carries on with typing details in.
+
+**Provider values aren't trusted in urls.** Only the cover client has a host allowlist, so anything taken from a response
+is checked before it goes into a request or a link. Open Library's keys carry their leading slash (`/works/OL45883W`) and
+are appended straight after the host, where a key like `@other.host/x` would send the request to another host. So each
+key must match its kind's shape (`/works/OL…W`, `/books/OL…M`, `/authors/OL…A`) or is ignored. BoardGameGeek's ids
+must be digits, since they go into a query unescaped. A source link that isn't http or https is dropped, because the
+add page puts it in an `href`.
+
+**Tokens:** `Options.LibraryLookup` (`TmdbToken`, `BggToken`). A blank token turns that provider off, and searching that
+media type is a 400 saying so. They come from Key Vault (`library-lookup-tmdb-token`, `library-lookup-bgg-token`)
+through the `tompostler` variable group into `deploy-code.yml` and `AppServiceSettings.json`, and through
+`devinit.ps1`, which leaves a missing one unset rather than failing. Azure Pipelines passes `$(name)` through literally
+when the group has no such secret, so a token starting `$(` also counts as unset. That lets the app deploy before a
+token is registered.
+
+**Credits:** TMDB's terms require the line "This product uses the TMDB API but is not endorsed or certified by TMDB"
+on pages showing its data, and BoardGameGeek asks for credit too. `_LookupAttribution` shows a line per source, on the
+add page and on the item page, judged by the item's external ids. TMDB also asks for its logo; there is no `wwwroot` to
+serve one from, so for now it's the text line only.
+
+### Covers
+
+Stored in blob storage (container `library`: `covers/{itemId}.webp` and `covers/thumbnails/{itemId}.webp`), not as
+SQL bytes like the Ledger logos, because a few thousand covers don't belong in the database. They are never hotlinked:
+provider URLs change, and hotlinking leaks browsing to third parties. The extension is only so a cover downloaded by
+hand from the storage account opens; the app serves the content type from `LibraryCovers`. It does tie the path to the
+format, so changing the format means renaming or re-encoding the existing covers along with it.
+
+- **Every cover is re-encoded** by `LibraryCovers` with SkiaSharp (already in the app for ScottPlot): turned upright from
+  its EXIF orientation, which phone photos depend on, scaled to fit 900px and 240px, and saved as WebP on white. That
+  keeps lists light (a 240px thumbnail is a few KB) and makes serving them safe: what's stored is an image this code
+  drew, so nothing uploaded or fetched is ever served from this site as-is. That includes the add page's preview of a
+  lookup cover (`lookup/cover`), which is re-encoded the same way.
+- **WebP at quality 90.** WebP is a quarter to a third smaller than JPEG at the same quality, and every current browser
+  shows it. PNG was rejected: covers are photos and artwork, which lossless compression makes several times larger for
+  no visible gain. Quality is 90 rather than the usual 75–80 so a stored cover is still a good source if covers are ever
+  re-encoded (a new size, say) without going back to the providers. The flattening onto white is deliberate even though
+  WebP keeps transparency: a transparent cover with dark artwork disappears against the dark theme.
+- **Fetching is only from provider hosts**, checked again on every redirect, because the urls come from the request.
+  The cover HttpClient follows no redirects itself; `LibraryCovers` follows up to three, checking each host. Open
+  Library's cover urls redirect to archive.org, which is why it's on the list. Without the check, the cover endpoint
+  would fetch any url for anyone with the Library role, including addresses inside the app service.
+- **Limits:** 15 MB in and 50 megapixels, since a small file can claim enormous dimensions and decoding allocates for all
+  of them.
+- **Deletes:** deleting an item or a library deletes its cover blobs after the rows are gone, so a failure leaves an
+  unreferenced blob (logged) rather than an item pointing at a missing cover.
+- **The container** is in `storageAccountContainerNames` in `build/jobs/deploy-prereqs.yml` for both prod and LocalDev,
+  and is also created on first use, so LocalDev works before the prereqs pipeline has run.
 
 ## Scanning and reconciling (planned)
 
@@ -511,5 +599,5 @@ tokens for what is the only JS-heavy page.
 
 1. **Core:** the data model, the three helpers, the API, Client and Tool CRUD, and UI for browse, search, detail,
    manual add/edit, loans, locations and shares (done).
-2. **Lookup:** the providers, covers in blob, and options and deployment settings.
+2. **Lookup:** the providers, covers in blob, and options and deployment settings (done).
 3. **Scanning:** the camera scanner, scan sessions and the reconcile view.

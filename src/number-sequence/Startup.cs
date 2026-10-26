@@ -115,6 +115,29 @@ namespace number_sequence
             //
 
             _ = services.AddSingleton<Services.ChiroDictationParser>();
+
+            // Library lookup. Open Library asks callers to identify themselves, so the lookup client carries a user agent.
+            // The cover client follows no redirects itself: LibraryCovers checks each hop's host before following it.
+            _ = services.AddHttpClient(Services.Libraries.LibraryLookupHttp.HttpClientName, client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(10);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd($"ns.tcp.wtf-library/{ThisAssembly.AssemblyVersion}");
+            });
+            _ = services
+                .AddHttpClient(Services.Libraries.LibraryCovers.HttpClientName, client =>
+                {
+                    client.Timeout = TimeSpan.FromSeconds(15);
+                    client.DefaultRequestHeaders.UserAgent.ParseAdd($"ns.tcp.wtf-library/{ThisAssembly.AssemblyVersion}");
+                })
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+            _ = services.AddSingleton<Services.Libraries.LibraryLookupHttp>();
+            _ = services.AddSingleton<Services.Libraries.OpenLibraryProvider>();
+            _ = services.AddSingleton<Services.Libraries.GoogleBooksProvider>();
+            _ = services.AddSingleton<Services.Libraries.TmdbProvider>();
+            _ = services.AddSingleton<Services.Libraries.BoardGameGeekProvider>();
+            _ = services.AddSingleton<Services.Libraries.LibraryLookup>();
+            _ = services.AddSingleton<Services.Libraries.LibraryCovers>();
+
             FontManager.RegisterFontFromStream(Resources.ComputerModernRomanFont);
         }
 

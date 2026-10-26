@@ -79,6 +79,20 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Items whose <see cref="LibraryItem.ExternalIds"/> has this entry, in the same shape as <see cref="GetItemsAsync"/>.
+        /// This is how a lookup result finds the item it's already in the library as.
+        /// </summary>
+        public async Task<List<LibraryItem>> GetItemsByExternalIdAsync(long libraryId, string key, string value, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"library/libraries/{libraryId}/items?externalIdKey={Uri.EscapeDataString(key)}&externalIdValue={Uri.EscapeDataString(value)}&take=20"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<LibraryItem>>(cancellationToken);
+        }
+
+        /// <summary>
         /// Update an existing item's descriptive fields.
         /// </summary>
         public async Task<LibraryItem> UpdateItemAsync(long libraryId, LibraryItem item, CancellationToken cancellationToken = default)

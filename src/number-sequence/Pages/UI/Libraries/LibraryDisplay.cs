@@ -31,6 +31,89 @@ namespace number_sequence.Pages.UI.Libraries
             _ => [],
         };
 
+        /// <summary>
+        /// The stored cover, served by the api directly (the token cookie authenticates it). The modified date in the query
+        /// changes when the cover does, which is what lets the api cache it for a month.
+        /// </summary>
+        public static string CoverUrl(LibraryItem item, bool thumbnail = false)
+            => $"/library/libraries/{item.LibraryId}/items/{item.Id}/cover?v={item.ModifiedDate.ToUnixTimeSeconds()}{(thumbnail ? "&thumbnail=true" : string.Empty)}";
+
+        /// <summary>
+        /// A lookup result's cover, as a thumbnail fetched through this site rather than hotlinked.
+        /// </summary>
+        public static string LookupCoverUrl(string url) => $"/library/lookup/cover?url={Uri.EscapeDataString(url)}";
+
+        public static string LookupSourceName(string source) => source switch
+        {
+            LibraryLookupSources.OpenLibrary => "Open Library",
+            LibraryLookupSources.GoogleBooks => "Google Books",
+            LibraryLookupSources.TmdbMovie or LibraryLookupSources.TmdbTv => "TMDB",
+            LibraryLookupSources.BoardGameGeek => "BoardGameGeek",
+            _ => source,
+        };
+
+        /// <summary>
+        /// The lookup sources an item's data came from, judged by its external ids, for crediting them.
+        /// </summary>
+        public static IEnumerable<string> LookupSources(LibraryItem item)
+        {
+            Dictionary<string, string> ids = item.ExternalIds ?? [];
+            if (ids.ContainsKey(LibraryExternalIds.OpenLibraryWork) || ids.ContainsKey(LibraryExternalIds.OpenLibraryEdition))
+            {
+                yield return LibraryLookupSources.OpenLibrary;
+            }
+            if (ids.ContainsKey(LibraryExternalIds.GoogleBooks))
+            {
+                yield return LibraryLookupSources.GoogleBooks;
+            }
+            if (ids.ContainsKey(LibraryExternalIds.TmdbMovie) || ids.ContainsKey(LibraryExternalIds.TmdbTv))
+            {
+                yield return LibraryLookupSources.TmdbMovie;
+            }
+            if (ids.ContainsKey(LibraryExternalIds.BoardGameGeek))
+            {
+                yield return LibraryLookupSources.BoardGameGeek;
+            }
+        }
+
+        /// <summary>
+        /// <see cref="LibraryItem.Attributes"/> as short phrases, the known keys first in a fixed order and anything else as
+        /// "key: value".
+        /// </summary>
+        public static List<string> Attributes(Dictionary<string, string> attributes)
+        {
+            if (attributes == null || attributes.Count == 0)
+            {
+                return [];
+            }
+            string[] known =
+            [
+                LibraryAttributes.Pages,
+                LibraryAttributes.RuntimeMinutes,
+                LibraryAttributes.Seasons,
+                LibraryAttributes.Players,
+                LibraryAttributes.PlayTimeMinutes,
+                LibraryAttributes.MinAge,
+                LibraryAttributes.Genres,
+            ];
+            return attributes
+                .Where(x => !string.IsNullOrWhiteSpace(x.Value))
+                .OrderBy(x => Array.IndexOf(known, x.Key) is int i && i >= 0 ? i : known.Length)
+                .ThenBy(x => x.Key)
+                .Select(x => x.Key switch
+                {
+                    LibraryAttributes.Pages => $"{x.Value} pages",
+                    LibraryAttributes.RuntimeMinutes => $"{x.Value} min",
+                    LibraryAttributes.Seasons => x.Value == "1" ? "1 season" : $"{x.Value} seasons",
+                    LibraryAttributes.Players => x.Value == "1" ? "1 player" : $"{x.Value} players",
+                    LibraryAttributes.PlayTimeMinutes => $"{x.Value} min to play",
+                    LibraryAttributes.MinAge => $"Age {x.Value}+",
+                    LibraryAttributes.Genres => x.Value,
+                    _ => $"{x.Key}: {x.Value}",
+                })
+                .ToList();
+        }
+
         public static Dictionary<long, string> Paths(IEnumerable<LibraryLocation> locations) => locations.ToDictionary(x => x.Id, x => x.Path);
 
         public static string LocationPath(IReadOnlyDictionary<long, string> paths, long? locationId)

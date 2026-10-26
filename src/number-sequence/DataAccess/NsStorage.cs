@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.Extensions.Options;
 using number_sequence.Models;
+using number_sequence.Services.Libraries;
 
 namespace number_sequence.DataAccess
 {
@@ -16,6 +17,7 @@ namespace number_sequence.DataAccess
             /// </summary>
             public static class CN
             {
+                public const string Library = "library";
                 public const string Pdf = "pdf";
             }
 
@@ -48,6 +50,12 @@ namespace number_sequence.DataAccess
         {
             BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(C.CN.Pdf);
             return blobContainerClient.GetBlobClient($"{(record.CreatedDate == default ? DateTimeOffset.UtcNow : record.CreatedDate).Year}/{EnsureEndsWithPdf(record.AttachmentName)}");
+        }
+
+        public async Task<BlobClient> GetLibraryCoverBlobClientAsync(long itemId, bool thumbnail, CancellationToken cancellationToken)
+        {
+            BlobContainerClient blobContainerClient = this.blobServiceClient.GetBlobContainerClient(C.CN.Library);
+            return blobContainerClient.GetBlobClient($"covers/{(thumbnail ? "thumbnails/" : string.Empty)}{itemId}{LibraryCovers.FileExtension}");
         }
 
         private static string EnsureEndsWithPdf(string input) => input.EndsWith(".pdf") ? input : input + ".pdf";

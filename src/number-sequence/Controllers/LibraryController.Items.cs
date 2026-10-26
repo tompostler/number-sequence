@@ -18,6 +18,9 @@ namespace number_sequence.Controllers
         /// carrying that barcode match too, so a scanned code can be pasted into the same search box.</param>
         /// <param name="locationId">Items with a copy at this location or anywhere inside it.</param>
         /// <param name="loanedOut">Only items with a copy currently on loan.</param>
+        /// <param name="externalIdKey">With <paramref name="externalIdValue"/>, only items whose
+        /// <see cref="LibraryItem.ExternalIds"/> has that entry. How a lookup result finds the item it's already in the
+        /// library as.</param>
         [HttpGet("libraries/{libraryId}/items")]
         public async Task<IActionResult> GetItemsAsync(
             long libraryId,
@@ -26,6 +29,8 @@ namespace number_sequence.Controllers
             [FromQuery] LibraryMediaType? mediaType = null,
             [FromQuery] long? locationId = null,
             [FromQuery] bool loanedOut = false,
+            [FromQuery] string externalIdKey = null,
+            [FromQuery] string externalIdValue = null,
             [FromQuery] int skip = 0,
             [FromQuery] int take = 100)
         {
@@ -64,6 +69,20 @@ namespace number_sequence.Controllers
             if (loanedOut)
             {
                 query = query.Where(x => x.Copies.Any(c => c.Loans.Any(l => l.ReturnedDate == null)));
+            }
+            if (!string.IsNullOrWhiteSpace(externalIdKey) && !string.IsNullOrWhiteSpace(externalIdValue))
+            {
+                // The column is json, which EF only sees as the converted dictionary, so the match is sql. The key becomes a
+                // json path, so it is limited to the plain identifiers LibraryExternalIds uses.
+                if (!externalIdKey.All(char.IsAsciiLetterOrDigit))
+                {
+                    return this.BadRequest("An external id key is letters and digits only.");
+                }
+                string path = $"$.{externalIdKey}";
+                List<long> matching = await nsContext.Database
+                    .SqlQuery<long>($"SELECT Id AS Value FROM dbo.LibraryItems WHERE LibraryId = {libraryId} AND JSON_VALUE(ExternalIds, {path}) = {externalIdValue}")
+                    .ToListAsync(cancellationToken);
+                query = query.Where(x => matching.Contains(x.Id));
             }
 
             // The item is the only partial row in the response: summary, external ids and attributes are the large columns,
@@ -108,7 +127,7 @@ namespace number_sequence.Controllers
                 items.Add(row.Item);
             }
 
-            this.logger.LogInformation($"[{this.AccountName}] searched library [{libraryId}] q=[{q}] mediaType=[{mediaType}] locationId=[{locationId}] loanedOut=[{loanedOut}] skip={skip} take={take}: {items.Count} items in {sw.ElapsedMilliseconds}ms.");
+            this.logger.LogInformation($"[{this.AccountName}] searched library [{libraryId}] q=[{q}] mediaType=[{mediaType}] locationId=[{locationId}] loanedOut=[{loanedOut}] externalId=[{externalIdKey}:{externalIdValue}] skip={skip} take={take}: {items.Count} items in {sw.ElapsedMilliseconds}ms.");
             return this.Ok(items);
         }
 
@@ -207,6 +226,7 @@ namespace number_sequence.Controllers
                 return this.NotFound($"Item [{itemId}] not found in library [{libraryId}].");
             }
 
+            await this.DeleteCoverBlobsAsync([itemId], cancellationToken);
             this.logger.LogInformation($"[{this.AccountName}] deleted item [{itemId}] in library [{libraryId}].");
             return this.NoContent();
         }

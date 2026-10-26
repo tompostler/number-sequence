@@ -86,6 +86,7 @@ namespace number_sequence.Controllers
 
             Library library = await nsContext.GetLibraryWithAccessAsync(libraryId, this.AccountName, LibraryPermission.Owner, cancellationToken);
 
+            List<long> coveredItemIds = await nsContext.LibraryItems.Where(x => x.LibraryId == libraryId && x.HasCover).Select(x => x.Id).ToListAsync(cancellationToken);
             int copies = 0, sessions = 0;
             await InBulkTransactionAsync(
                 nsContext,
@@ -97,6 +98,7 @@ namespace number_sequence.Controllers
                 },
                 cancellationToken);
 
+            await this.DeleteCoverBlobsAsync(coveredItemIds, cancellationToken);
             this.logger.LogInformation($"[{this.AccountName}] deleted library [{libraryId}] [{library.Name}] with {copies} copies and {sessions} scan sessions.");
             return this.NoContent();
         }
