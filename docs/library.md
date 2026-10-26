@@ -539,8 +539,15 @@ format, so changing the format means renaming or re-encoding the existing covers
   of them.
 - **Deletes:** deleting an item or a library deletes its cover blobs after the rows are gone, so a failure leaves an
   unreferenced blob (logged) rather than an item pointing at a missing cover.
-- **The container** is in `storageAccountContainerNames` in `build/jobs/deploy-prereqs.yml` for both prod and LocalDev,
-  and is also created on first use, so LocalDev works before the prereqs pipeline has run.
+- **The container** is in `storageAccountContainerNames` in `build/jobs/deploy-prereqs.yml` for both prod and LocalDev.
+  The app doesn't create it, so the prereqs pipeline has to run before covers work in either.
+- **LocalDev mirrors prod's covers** when `devinit.ps1` replaces `nslocal` from prod: it copies prod's `library`
+  container into the local one server side. A database copy alone leaves every prod item with `HasCover` set and no
+  blob, so every cover is a broken image locally. Every blob is overwritten rather than skipped when it exists: a
+  replaced cover keeps its name, and once the copies diverge, a local-only item can get the same id as a later prod one,
+  so skipping by name (or by newer timestamp, as azcopy's sync does) can keep the wrong image. Local-only blobs are left
+  in place, since nothing shows a cover its item isn't flagged for. The `pdf` container isn't copied: those are patient
+  documents, and nothing local needs them.
 
 ## Scanning and reconciling (planned)
 

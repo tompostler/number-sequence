@@ -97,9 +97,9 @@ New-Item -Path $localSettingsPath -ItemType File -Force | Out-Null;
 $localSettings | ConvertTo-Json | Set-Content -Path $localSettingsPath;
 Write-Host;
 
-$confirm = Read-Host 'Do you wish to also replace the nslocal sql database from prod? Note, this may take several minutes. [yN]';
+$confirm = Read-Host 'Do you wish to also replace the nslocal sql database and library covers from prod? Note, this may take several minutes. [yN]';
 if ($confirm -eq 'y') {
-    Write-Cyan 'Copying sql database from prod to localdev.';
+    Write-Cyan 'Copying sql database and library covers from prod to localdev.';
     Write-Host;
 
     az sql db show --resource-group tompostler --server tompostler --name nslocal --output none 2>$null;
@@ -115,9 +115,21 @@ if ($confirm -eq 'y') {
 
     Write-Cyan 'Resizing nslocal sql database to Basic....';
     az sql db update --resource-group tompostler --server tompostler --name nslocal --service-objective Basic --output none;
+    Write-Host;
+
+    # Library covers are flagged in sql (LibraryItem.HasCover) but stored in blob, so they're mirrored along with the
+    # database, or every copied cover is a broken image locally. Every blob is overwritten, never skipped: a replaced cover
+    # keeps its name, and a local-only item can share an id with a later prod one. Local-only blobs are left; nothing shows
+    # a cover its item isn't flagged for. The pdf container isn't copied: those are patient documents, and nothing local
+    # needs them.
+    Write-Cyan 'Copying library container from nstcpwtf to nstcpwtflocal....';
+    $prodStorageKey = az storage account keys list --resource-group tcp-wtf-hosting --account-name nstcpwtf --query '[1].value' --output tsv;
+    $localStorageKey = az storage account keys list --resource-group tcp-wtf-hosting --account-name nstcpwtflocal --query '[1].value' --output tsv;
+    az storage blob copy start-batch --account-name nstcpwtflocal --account-key $localStorageKey --destination-container library `
+        --source-account-name nstcpwtf --source-account-key $prodStorageKey --source-container library --output none;
 }
 else {
-    Write-Cyan 'Not copying sql database from prod to localdev.';
+    Write-Cyan 'Not copying sql database or library covers from prod to localdev.';
 }
 Write-Host;
 
