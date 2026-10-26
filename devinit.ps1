@@ -109,8 +109,29 @@ if ($confirm -eq 'y') {
     }
     Write-Host;
 
+    # Started without waiting so progress can be shown. The database's status is Copying until it's Online. Its
+    # operations carry a percentComplete, which a copy may only report as 0 then 100, so elapsed time is always shown too.
     Write-Cyan 'Creating copy of production sql database to nslocal....';
-    az sql db copy --resource-group tompostler --server tompostler --name ns --dest-resource-group tompostler --dest-server tompostler --dest-name nslocal --output none;
+    az sql db copy --resource-group tompostler --server tompostler --name ns --dest-resource-group tompostler --dest-server tompostler --dest-name nslocal --no-wait --output none;
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Failed to start copying the sql database.';
+    }
+    $copyStarted = Get-Date;
+    do {
+        Start-Sleep -Seconds 7;
+        $elapsed = (Get-Date) - $copyStarted;
+        $status = az sql db show --resource-group tompostler --server tompostler --name nslocal --query status --output tsv 2>$null;
+        $operation = az sql db op list --resource-group tompostler --server tompostler --database nslocal --output json 2>$null | ConvertFrom-Json `
+            | Sort-Object -Property startTime -Descending | Select-Object -First 1;
+        if ($operation.state -in 'Failed', 'Cancelled') {
+            throw "Copying the sql database $($operation.state.ToLowerInvariant()): $($operation.errorDescription)";
+        }
+        if ($elapsed.TotalMinutes -gt 60) {
+            throw 'Copying the sql database has taken over an hour; check it in the portal.';
+        }
+        $progress = if ($operation.percentComplete) { ", $($operation.percentComplete)% done" } else { '' };
+        Write-Host ("  {0:00}:{1:00} elapsed, {2}{3}" -f [math]::Floor($elapsed.TotalMinutes), $elapsed.Seconds, $(if ($status) { $status } else { 'started' }), $progress);
+    } while ($status -ne 'Online');
     Write-Host;
 
     Write-Cyan 'Resizing nslocal sql database to Basic....';
@@ -122,11 +143,26 @@ if ($confirm -eq 'y') {
     # keeps its name, and a local-only item can share an id with a later prod one. Local-only blobs are left; nothing shows
     # a cover its item isn't flagged for. The pdf container isn't copied: those are patient documents, and nothing local
     # needs them.
-    Write-Cyan 'Copying library container from nstcpwtf to nstcpwtflocal....';
+    # start-batch only starts each copy; the storage service finishes them in the background, so the destination's copy
+    # status is polled until none is pending.
     $prodStorageKey = az storage account keys list --resource-group tcp-wtf-hosting --account-name nstcpwtf --query '[1].value' --output tsv;
     $localStorageKey = az storage account keys list --resource-group tcp-wtf-hosting --account-name nstcpwtflocal --query '[1].value' --output tsv;
+    $blobCount = [int](az storage blob list --account-name nstcpwtf --account-key $prodStorageKey --container-name library --num-results '*' --query 'length(@)' --output tsv);
+    Write-Cyan "Copying $blobCount library blobs from nstcpwtf to nstcpwtflocal....";
     az storage blob copy start-batch --account-name nstcpwtflocal --account-key $localStorageKey --destination-container library `
         --source-account-name nstcpwtf --source-account-key $prodStorageKey --source-container library --output none;
+    do {
+        $copies = az storage blob list --account-name nstcpwtflocal --account-key $localStorageKey --container-name library --include c --num-results '*' `
+            --query "{pending: length([?properties.copy.status=='pending']), failed: length([?properties.copy.status=='failed' || properties.copy.status=='aborted'])}" --output json `
+            | ConvertFrom-Json;
+        if ($copies.pending -gt 0) {
+            Write-Host "  $($copies.pending) of $blobCount still copying";
+            Start-Sleep -Seconds 7;
+        }
+    } while ($copies.pending -gt 0);
+    if ($copies.failed -gt 0) {
+        Write-Yellow "$($copies.failed) library blobs failed to copy; their covers will be broken images locally.";
+    }
 }
 else {
     Write-Cyan 'Not copying sql database or library covers from prod to localdev.';
