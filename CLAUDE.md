@@ -7,8 +7,9 @@ dotnet build src/number-sequence/number-sequence.csproj
 dotnet test src/UnitTests/UnitTests.csproj
 ```
 
-There is no solution file — build projects individually. Projects: `number-sequence` (web), `Client`, `Contracts`,
-`Tool`, `UnitTests`, `IntTests`. Central package management, so package versions go in `Directory.Packages.props`
+The solution is `src/number-sequence.slnx`, which is what CI restores and builds. Building a single project, as
+above, is faster while iterating. Projects: `number-sequence` (web), `Client`, `Contracts`, `Tool`, `UnitTests`,
+`IntTests`, `_repo`. Central package management, so package versions go in `Directory.Packages.props`
 and the `PackageReference` in the csproj carries no version.
 
 **Never run `dotnet msbuild -t:CoreCompile` to work around a locked output file.** It compiles without the
@@ -68,6 +69,16 @@ culture, which renders `.ToString("C")` as `¤12.34` — the ledger UI is full o
 extracted file-by-file — code lands all at once instead of whenever App Service gets around to each file. This is
 the local-zip variant, not the run-from-URL variant: no storage account or SAS involved, since the existing
 `AzureRmWebAppDeployment@4` zip-deploy step already ships the zip to Kudu.
+
+## Static assets
+
+Full design notes: [`docs/static-assets.md`](docs/static-assets.md). Constraints that will break things if forgotten:
+
+- **Bootstrap is vendored under `wwwroot/lib/bootstrap` and served by `MapStaticAssets`; don't reintroduce a CDN
+  link.** Update it from the npm tarball, checked against the registry's integrity hash, as the notes describe.
+- **Reference anything in `wwwroot` as `~/path` with `asp-append-version="true"`.** That is what produces the
+  fingerprinted, `immutable` url. A literal `/lib/...` href gets the plain route, which is `no-cache` and costs a
+  revalidation on every page load.
 
 ## Chiro dictation parsing
 

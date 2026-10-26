@@ -160,8 +160,9 @@ namespace number_sequence
 
             _ = app.UseEndpoints(endpoints =>
             {
+                _ = endpoints.MapStaticAssets();
                 _ = endpoints.MapControllers();
-                _ = endpoints.MapRazorPages();
+                _ = endpoints.MapRazorPages().WithStaticAssets();
             });
         }
     }

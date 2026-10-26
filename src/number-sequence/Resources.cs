@@ -14,7 +14,6 @@ namespace number_sequence
 
         public static Stream ComputerModernRomanFont => GetFromResrouce("cmunrm.ttf");
 
-        public static Stream Favicon => GetFromResrouce("unlimitedinf-favicon.ico");
         public static Stream NoAsAServiceJson => GetFromResrouce("no-as-a-service.json");
     }
 }
