@@ -38,6 +38,14 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public long? ResolvedCopyId { get; set; }
 
         /// <summary>
+        /// The copy <see cref="ResolvedCopyId"/> names, with its item and open loan, as it is now. Not stored: the api fills it
+        /// in on a single session's responses, so the scan and reconcile pages can say what each scan was. Null on the session
+        /// list, and for a copy deleted since.
+        /// </summary>
+        [NotMapped]
+        public LibraryCopy ResolvedCopy { get; set; }
+
+        /// <summary>
         /// When the barcode was scanned.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

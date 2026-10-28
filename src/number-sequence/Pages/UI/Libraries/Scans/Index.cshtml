@@ -1,0 +1,83 @@
+@page "/ui/library/{libraryId:long}/scans"
+@model number_sequence.Pages.UI.Libraries.Scans.IndexModel
+@{
+  ViewData["Title"] = $"Scan {Model.Library.Name}";
+}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+  <a href="/ui/library/@Model.Library.Id" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Scan @Model.Library.Name</h2>
+</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<div class="col-12 col-md-8 col-lg-6">
+  <p class="text-muted small">
+    Scan one location at a time, everything on it. Finishing shows what was where you expected, what's recorded somewhere
+    else, what wasn't found, and what's new, and nothing changes until you apply that. For a first inventory, every scan is
+    new and finishing adds them.
+  </p>
+
+  @if (Model.CanEdit)
+  {
+    @if (Model.Locations.Count == 0)
+    {
+      <div class="alert alert-info py-2">Scanning is by location. <a href="/ui/library/@Model.Library.Id/locations">Add some locations</a> first.</div>
+    }
+    else
+    {
+      <form method="post" asp-page-handler="Start" class="mb-4">
+        <label for="location" class="form-label">Location</label>
+        <div class="input-group">
+          <select id="location" name="Location" class="form-select" required>
+            <option value="">Pick one</option>
+            @foreach (LibraryLocation location in Model.Locations)
+            {
+              <option value="@location.Id" selected="@(Model.Location == location.Id)">@location.Path</option>
+            }
+          </select>
+          <button type="submit" class="btn btn-primary">Start scanning</button>
+        </div>
+      </form>
+    }
+  }
+
+  @if (Model.Open.Count > 0)
+  {
+    <h5>In progress</h5>
+    <div class="list-group mb-4">
+      @foreach (LibraryScanSession session in Model.Open)
+      {
+        <div class="list-group-item py-2">
+          <div class="d-flex justify-content-between align-items-center gap-2">
+            <div>
+              <div class="fw-semibold">@LibraryDisplay.LocationPath(Model.Paths, session.LocationId)</div>
+              <div class="small text-muted">@session.Entries.Count scanned · started @session.CreatedDate.ToString("yyyy-MM-dd") by @session.AccountName</div>
+            </div>
+            <div class="d-flex gap-1 flex-shrink-0">
+              @if (Model.CanEdit)
+              {
+                <a href="/ui/library/@Model.Library.Id/scans/@session.Id" class="btn btn-sm btn-primary">Resume</a>
+              }
+              <a href="/ui/library/@Model.Library.Id/scans/@session.Id/reconcile" class="btn btn-sm btn-outline-secondary">Review</a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (Model.Applied.Count > 0)
+  {
+    <h5>Recently applied</h5>
+    <div class="list-group mb-4">
+      @foreach (LibraryScanSession session in Model.Applied)
+      {
+        <a href="/ui/library/@Model.Library.Id/scans/@session.Id/reconcile" class="list-group-item list-group-item-action py-2">
+          <div>@LibraryDisplay.LocationPath(Model.Paths, session.LocationId)</div>
+          <div class="small text-muted">@session.Entries.Count scanned · applied @session.CompletedDate?.ToString("yyyy-MM-dd") by @session.AccountName</div>
+        </a>
+      }
+    </div>
+  }
+</div>

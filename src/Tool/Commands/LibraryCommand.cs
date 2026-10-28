@@ -591,6 +591,124 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             #endregion // Loan
 
 
+            #region Scan
+
+            Argument<long> scanIdArgument = new("scanId") { Description = "The id of the scan session." };
+            Command scanCommand = new("scan", "Scan a location's barcodes, then reconcile what's there with what's recorded.");
+
+            Command scanListCommand = new("list", "List open and recently applied scans.")
+            {
+                stampOption,
+                verbosityOption,
+                libraryOption,
+            };
+            scanListCommand.AddListAliases();
+            scanListCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long? libraryId = parseResult.GetValue(libraryOption);
+                    return HandleScanListAsync(libraryId, stamp, verbosity);
+                });
+
+            Command scanStartCommand = new("start", "Start scanning a location, reading one code per line until a blank line.")
+            {
+                stampOption,
+                verbosityOption,
+                libraryOption,
+                locationIdArgument,
+            };
+            scanStartCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long? libraryId = parseResult.GetValue(libraryOption);
+                    long locationId = parseResult.GetRequiredValue(locationIdArgument);
+                    return HandleScanStartAsync(libraryId, locationId, stamp, verbosity);
+                });
+
+            Command scanResumeCommand = new("resume", "Keep scanning an open scan.")
+            {
+                stampOption,
+                verbosityOption,
+                libraryOption,
+                scanIdArgument,
+            };
+            scanResumeCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long? libraryId = parseResult.GetValue(libraryOption);
+                    long sessionId = parseResult.GetRequiredValue(scanIdArgument);
+                    return HandleScanResumeAsync(libraryId, sessionId, stamp, verbosity);
+                });
+
+            Command scanShowCommand = new("show", "Show what applying a scan would do.")
+            {
+                stampOption,
+                verbosityOption,
+                libraryOption,
+                scanIdArgument,
+            };
+            scanShowCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long? libraryId = parseResult.GetValue(libraryOption);
+                    long sessionId = parseResult.GetRequiredValue(scanIdArgument);
+                    return HandleScanShowAsync(libraryId, sessionId, stamp, verbosity);
+                });
+
+            Command scanApplyCommand = new("apply", "Apply a scan, asking about moves, returns and missing copies.")
+            {
+                stampOption,
+                verbosityOption,
+                libraryOption,
+                scanIdArgument,
+            };
+            scanApplyCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long? libraryId = parseResult.GetValue(libraryOption);
+                    long sessionId = parseResult.GetRequiredValue(scanIdArgument);
+                    return HandleScanApplyAsync(libraryId, sessionId, stamp, verbosity);
+                });
+
+            Command scanDeleteCommand = new("delete", "Discard a scan, or forget an applied one.")
+            {
+                stampOption,
+                verbosityOption,
+                libraryOption,
+                scanIdArgument,
+            };
+            scanDeleteCommand.AddDeleteAliases();
+            scanDeleteCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long? libraryId = parseResult.GetValue(libraryOption);
+                    long sessionId = parseResult.GetRequiredValue(scanIdArgument);
+                    return HandleScanDeleteAsync(libraryId, sessionId, stamp, verbosity);
+                });
+
+            scanCommand.Subcommands.Add(scanListCommand);
+            scanCommand.Subcommands.Add(scanStartCommand);
+            scanCommand.Subcommands.Add(scanResumeCommand);
+            scanCommand.Subcommands.Add(scanShowCommand);
+            scanCommand.Subcommands.Add(scanApplyCommand);
+            scanCommand.Subcommands.Add(scanDeleteCommand);
+            rootCommand.Subcommands.Add(scanCommand);
+
+            #endregion // Scan
+
+
             #region Lookup
 
             Option<LibraryMediaType> lookupTypeOption = new("--type")

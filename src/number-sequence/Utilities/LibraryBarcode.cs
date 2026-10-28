@@ -138,6 +138,12 @@ namespace number_sequence.Utilities
         public static Expression<Func<LibraryCopy, bool>> MatchesCopy(string normalized)
             => x => x.Barcode == normalized || x.Isbn == normalized;
 
+        /// <summary>
+        /// <see cref="MatchesCopy"/> for several codes at once, such as every code in a scan session.
+        /// </summary>
+        public static Expression<Func<LibraryCopy, bool>> MatchesAnyCopy(IReadOnlyCollection<string> normalized)
+            => x => normalized.Contains(x.Barcode) || normalized.Contains(x.Isbn);
+
         private static bool IsValidIsbn10(string isbn10)
         {
             int sum = 0;

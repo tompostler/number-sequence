@@ -1,0 +1,262 @@
+@page "/ui/library/{libraryId:long}/scans/{sessionId:long}/reconcile"
+@model number_sequence.Pages.UI.Libraries.Scans.ReconcileModel
+@{
+  ViewData["Title"] = $"Review scan of {Model.LocationPath}";
+  bool editable = Model.CanEdit && !Model.Applied;
+  List<LibraryScanEntry> here = Model.Here;
+  List<LibraryScanEntry> elsewhere = Model.Elsewhere;
+  List<LibraryScanEntry> gone = Model.Gone;
+  List<LibraryScanEntry> news = Model.New;
+  List<LibraryScanEntry> added = Model.Added;
+  List<LibraryCopy> notScanned = Model.Applied ? [] : Model.Reconcile.NotScanned;
+  int newIsbns = news.Count(ReconcileModel.IsIsbn);
+}
+
+<div class="d-flex align-items-center gap-2 mb-1">
+  <a href="/ui/library/@Model.Library.Id/scans" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">@Model.LocationPath</h2>
+</div>
+<div class="small text-muted mb-3">
+  @Model.Session.Entries.Count scanned by @Model.Session.AccountName, started @Model.Session.CreatedDate.ToString("yyyy-MM-dd")
+  @if (Model.Applied)
+  {
+    @($" · applied {Model.Session.CompletedDate:yyyy-MM-dd}")
+  }
+</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<div class="col-12 col-md-8 col-lg-6">
+  @if (editable)
+  {
+    <div class="d-flex gap-2 mb-3">
+      <a href="/ui/library/@Model.Library.Id/scans/@Model.Session.Id" class="btn btn-sm btn-outline-primary">Keep scanning</a>
+    </div>
+  }
+
+  <form method="post" asp-page-handler="Apply">
+    <h5 class="mt-3">Here <span class="text-muted">(@here.Count)</span></h5>
+    @if (here.Count == 0)
+    {
+      <p class="small text-muted">Nothing scanned is recorded here.</p>
+    }
+    else
+    {
+      <p class="small text-muted mb-1">@(Model.Applied ? "Verified." : "These are verified when you apply.")</p>
+      <ul class="list-group mb-3">
+        @foreach (LibraryScanEntry entry in here)
+        {
+          <partial name="_ScanCopyRow" model="(Model, entry.ResolvedCopy, editable, false)" />
+        }
+      </ul>
+    }
+
+    @if (elsewhere.Count > 0)
+    {
+      <h5>Recorded somewhere else <span class="text-muted">(@elsewhere.Count)</span></h5>
+      <p class="small text-muted mb-1">@(Model.Applied ? "Scanned here." : "Ticked ones are moved here when you apply.")</p>
+      <ul class="list-group mb-3">
+        @foreach (LibraryScanEntry entry in elsewhere)
+        {
+          <partial name="_ScanCopyRow" model="(Model, entry.ResolvedCopy, editable, true)" />
+        }
+      </ul>
+    }
+
+    @if (notScanned.Count > 0)
+    {
+      <div class="d-flex justify-content-between align-items-baseline">
+        <h5>Recorded here, not scanned <span class="text-muted">(@notScanned.Count)</span></h5>
+        @if (editable && notScanned.Any(x => LibraryDisplay.OpenLoan(x) == null))
+        {
+          <button type="button" class="btn btn-link btn-sm p-0" onclick="this.closest('form').querySelectorAll('input[name=missing]').forEach(function (x) { x.checked = true; })">Tick all</button>
+        }
+      </div>
+      <p class="small text-muted mb-1">Left as they are unless ticked. Ticked ones are marked missing.</p>
+      <ul class="list-group mb-3">
+        @foreach (LibraryCopy copy in notScanned)
+        {
+          LibraryLoan loan = LibraryDisplay.OpenLoan(copy);
+          <li class="list-group-item py-2">
+            <div class="d-flex gap-2 align-items-start">
+              @if (editable && loan == null)
+              {
+                <input type="checkbox" name="missing" value="@copy.Id" id="missing-@copy.Id" class="form-check-input mt-1 flex-shrink-0" />
+              }
+              <label for="missing-@copy.Id" class="flex-grow-1">
+                <a href="/ui/library/@Model.Library.Id/items/@copy.ItemId">@copy.Item?.Title</a>
+                <span class="small text-muted">@copy.Format</span>
+                @if (loan != null)
+                {
+                  <div class="small text-muted">On loan to @LibraryDisplay.Borrower(loan), so not expected on the shelf.</div>
+                }
+              </label>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (news.Count > 0)
+    {
+      <div class="d-flex justify-content-between align-items-baseline">
+        <h5>New <span class="text-muted">(@news.Count)</span></h5>
+        @if (editable && newIsbns > 1)
+        {
+          <button type="button" class="btn btn-sm btn-primary" data-add-all>Add all @newIsbns books</button>
+        }
+      </div>
+      <p class="small text-muted mb-1">
+        Not in this library, or more copies than it has. A book is looked up by its ISBN and added here, on the item it
+        matches if there is one. Anything else goes through the add page.
+      </p>
+      <ul class="list-group mb-3" data-add-api="/library/libraries/@Model.Library.Id/scans/@Model.Session.Id/entries/">
+        @foreach (LibraryScanEntry entry in news)
+        {
+          bool isbn = ReconcileModel.IsIsbn(entry);
+          <li class="list-group-item py-2">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+              <div>
+                <div class="font-monospace">@entry.Barcode</div>
+                <div class="small text-muted" data-add-status>@(isbn ? "ISBN" : "Not an ISBN")</div>
+              </div>
+              @if (editable)
+              {
+                <div class="d-flex gap-1 flex-shrink-0">
+                  @if (isbn)
+                  {
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-entry="@entry.Id">Add</button>
+                  }
+                  <a href="@Model.AddUrl(entry)" class="btn btn-sm btn-outline-secondary">@(isbn ? "By hand" : "Add…")</a>
+                </div>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (added.Count > 0)
+    {
+      <h5>Added from this scan <span class="text-muted">(@added.Count)</span></h5>
+      <ul class="list-group mb-3">
+        @foreach (LibraryScanEntry entry in added)
+        {
+          <li class="list-group-item py-2">
+            @if (entry.ResolvedCopy?.Item != null)
+            {
+              <a href="/ui/library/@Model.Library.Id/items/@entry.ResolvedCopy.ItemId">@entry.ResolvedCopy.Item.Title</a>
+            }
+            else
+            {
+              <span class="text-muted">Deleted since</span>
+            }
+            <span class="small text-muted font-monospace">@entry.Barcode</span>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (gone.Count > 0)
+    {
+      <h5>Changed since <span class="text-muted">(@gone.Count)</span></h5>
+      <p class="small text-muted mb-1">Matched a copy that has been deleted or disposed since, so applying leaves it alone.</p>
+      <ul class="list-group mb-3">
+        @foreach (LibraryScanEntry entry in gone)
+        {
+          <li class="list-group-item py-2 small">
+            <span class="font-monospace">@entry.Barcode</span>
+            @if (entry.ResolvedCopy?.Item != null)
+            {
+              @($" · {entry.ResolvedCopy.Item.Title}")
+            }
+          </li>
+        }
+      </ul>
+    }
+
+    @if (editable)
+    {
+      <button type="submit" class="btn btn-primary btn-lg w-100 mb-2">Apply</button>
+      <div class="form-text mb-4">Records each change in the copies' history and closes this scan. New scans that weren't added are left out.</div>
+    }
+  </form>
+
+  @if (Model.CanEdit)
+  {
+    <form method="post" asp-page-handler="Delete" class="mb-5" data-confirm="@(Model.Applied ? "Forget this scan? What it applied stays applied." : "Discard this scan? Nothing it would change is changed; copies added from it are kept.")" onsubmit="return confirm(this.dataset.confirm)">
+      <button type="submit" class="btn btn-sm btn-outline-danger">@(Model.Applied ? "Forget this scan" : "Discard this scan")</button>
+    </form>
+  }
+</div>
+
+@if (editable && news.Count > 0)
+{
+  <script>
+    // Adds new ISBNs through the api one at a time, so a stack of books shows progress row by row. A success reloads
+    // the page so the book moves to the added list, except during "add all", which reloads once at the end if every one
+    // worked and otherwise leaves each row saying what happened.
+    (function () {
+      var list = document.querySelector('[data-add-api]');
+      var api = list.dataset.addApi;
+
+      async function message(response) {
+        var text = await response.text();
+        try {
+          var parsed = JSON.parse(text);
+          return typeof parsed === 'string' ? parsed : (parsed.title || text);
+        } catch (e) {
+          return text || ('The server returned ' + response.status + '.');
+        }
+      }
+
+      async function add(button) {
+        var status = button.closest('li').querySelector('[data-add-status]');
+        button.disabled = true;
+        status.className = 'small text-muted';
+        status.textContent = 'Looking it up…';
+        try {
+          var response = await fetch(api + button.dataset.addEntry + '/add', { method: 'POST', credentials: 'same-origin' });
+          if (response.ok) {
+            var entry = await response.json();
+            status.className = 'small text-success';
+            status.textContent = 'Added' + (entry.resolvedCopy && entry.resolvedCopy.item ? ': ' + entry.resolvedCopy.item.title : '');
+            return true;
+          }
+          status.className = 'small text-danger';
+          status.textContent = await message(response);
+        } catch (e) {
+          status.className = 'small text-danger';
+          status.textContent = 'Couldn\'t reach the server. Try again.';
+        }
+        button.disabled = false;
+        return false;
+      }
+
+      list.querySelectorAll('[data-add-entry]').forEach(function (button) {
+        button.addEventListener('click', async function () {
+          if (await add(button)) {
+            location.reload();
+          }
+        });
+      });
+
+      var all = document.querySelector('[data-add-all]');
+      if (all) {
+        all.addEventListener('click', async function () {
+          all.disabled = true;
+          var ok = true;
+          for (var button of list.querySelectorAll('[data-add-entry]:not(:disabled)')) {
+            ok = (await add(button)) && ok;
+          }
+          if (ok) {
+            location.reload();
+          } else {
+            all.disabled = false;
+            all.textContent = 'Retry the rest';
+          }
+        });
+      }
+    })();
+  </script>
+}

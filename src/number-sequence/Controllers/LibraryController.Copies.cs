@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
+using number_sequence.Exceptions;
 using number_sequence.Utilities;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Libraries;
@@ -42,27 +43,9 @@ namespace number_sequence.Controllers
             {
                 return this.BadRequest($"Item [{copy.ItemId}] is not in library [{libraryId}].");
             }
-            await EnsureLocationInLibraryAsync(nsContext, libraryId, copy.LocationId, cancellationToken);
 
-            AccountTier ownerTier = await nsContext.Accounts.Where(x => x.Name == library.AccountName).Select(x => x.Tier).SingleAsync(cancellationToken);
-            int existing = await nsContext.LibraryCopies.CountAsync(x => x.LibraryId == libraryId, cancellationToken);
-            if (existing >= TierLimits.LibraryCopiesPerLibrary[ownerTier])
-            {
-                return this.Conflict($"Library [{libraryId}] already has the most copies its owner's tier allows ({existing}).");
-            }
-
-            LibraryCopyEvent acquired = this.NewEvent(LibraryCopyEventType.Acquired);
-            acquired.ToLocationId = copy.LocationId;
-            LibraryCopy toInsert = new()
-            {
-                LibraryId = libraryId,
-                ItemId = copy.ItemId,
-                LocationId = copy.LocationId,
-                Status = LibraryCopyStatus.Active,
-                Events = [acquired],
-            };
-            CopyEditableFields(copy, toInsert);
-            _ = nsContext.LibraryCopies.Add(toInsert);
+            LibraryCopy toInsert = await this.AddNewCopyAsync(nsContext, library, copy, cancellationToken);
+            toInsert.ItemId = copy.ItemId;
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
             this.logger.LogInformation($"[{this.AccountName}] created copy [{toInsert.Id}] of item [{toInsert.ItemId}] at location [{toInsert.LocationId}] with barcode [{toInsert.Barcode}] in library [{libraryId}].");
@@ -303,6 +286,36 @@ namespace number_sequence.Controllers
 
             this.logger.LogInformation($"[{this.AccountName}] returned copy [{copyId}] from [{loanRecord.BorrowerName}] closing loan [{loanRecord.Id}] on {returnedDate:yyyy-MM-dd} in library [{libraryId}].");
             return this.Ok(loanRecord);
+        }
+
+        /// <summary>
+        /// Adds a new active copy to the context, unsaved, with its <see cref="LibraryCopyEventType.Acquired"/> event, after
+        /// checking its location and the owner's tier limit (a 409 when full). The caller sets the item, by id or navigation.
+        /// Shared by creating a copy and adding one from a scan.
+        /// </summary>
+        private async Task<LibraryCopy> AddNewCopyAsync(NsContext nsContext, Library library, LibraryCopy copy, CancellationToken cancellationToken)
+        {
+            await EnsureLocationInLibraryAsync(nsContext, library.Id, copy.LocationId, cancellationToken);
+
+            AccountTier ownerTier = await nsContext.Accounts.Where(x => x.Name == library.AccountName).Select(x => x.Tier).SingleAsync(cancellationToken);
+            int existing = await nsContext.LibraryCopies.CountAsync(x => x.LibraryId == library.Id, cancellationToken);
+            if (existing >= TierLimits.LibraryCopiesPerLibrary[ownerTier])
+            {
+                throw new ConflictException($"Library [{library.Id}] already has the most copies its owner's tier allows ({existing}).");
+            }
+
+            LibraryCopyEvent acquired = this.NewEvent(LibraryCopyEventType.Acquired);
+            acquired.ToLocationId = copy.LocationId;
+            LibraryCopy toInsert = new()
+            {
+                LibraryId = library.Id,
+                LocationId = copy.LocationId,
+                Status = LibraryCopyStatus.Active,
+                Events = [acquired],
+            };
+            CopyEditableFields(copy, toInsert);
+            _ = nsContext.LibraryCopies.Add(toInsert);
+            return toInsert;
         }
 
         /// <summary>

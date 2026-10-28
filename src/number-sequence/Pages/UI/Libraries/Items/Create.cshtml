@@ -18,6 +18,13 @@
 
 <partial name="_LibraryFlash" model="Model" />
 
+@if (Model.FromScan)
+{
+  <div class="alert alert-secondary py-2 small">
+    Adding a code from a <a href="/ui/library/@Model.Library.Id/scans/@Model.ScanId/reconcile">scan</a>. Saving goes back to it.
+  </div>
+}
+
 <div class="col-12 col-md-8 col-lg-6">
   <form method="get" class="mb-3">
     @if (Model.LocationId.HasValue)
@@ -27,6 +34,11 @@
     @if (Model.AddAnother)
     {
       <input type="hidden" name="another" value="true" />
+    }
+    @if (Model.FromScan)
+    {
+      <input type="hidden" name="scan" value="@Model.ScanId" />
+      <input type="hidden" name="scanEntry" value="@Model.ScanEntryId" />
     }
     @if (!string.IsNullOrWhiteSpace(Model.Copy?.Barcode))
     {
@@ -162,6 +174,11 @@
     @foreach (string url in Model.CoverUrls)
     {
       <input type="hidden" name="CoverUrls" value="@url" />
+    }
+    @if (Model.FromScan)
+    {
+      <input type="hidden" name="scan" value="@Model.ScanId" />
+      <input type="hidden" name="scanEntry" value="@Model.ScanEntryId" />
     }
     <input type="hidden" asp-for="LookupSource" />
     <input type="hidden" asp-for="LookupSourceUrl" />

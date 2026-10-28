@@ -42,6 +42,18 @@ namespace number_sequence.Pages.UI.Libraries.Items
         public bool AddAnother { get; set; }
 
         /// <summary>
+        /// Set when adding a new code from a scan's reconcile view: once the copy is saved, that scan entry is marked added
+        /// as it, and the page goes back to the reconcile view. Carried through the lookup like the barcode.
+        /// </summary>
+        [BindProperty(SupportsGet = true, Name = "scan")]
+        public long? ScanId { get; set; }
+
+        [BindProperty(SupportsGet = true, Name = "scanEntry")]
+        public long? ScanEntryId { get; set; }
+
+        public bool FromScan => this.ScanId.HasValue && this.ScanEntryId.HasValue;
+
+        /// <summary>
         /// Set once the caller has seen <see cref="Duplicates"/> and wants a new item anyway.
         /// </summary>
         [BindProperty]
@@ -273,13 +285,14 @@ namespace number_sequence.Pages.UI.Libraries.Items
                 return this.Page();
             }
 
+            LibraryCopy createdCopy = null;
             if (this.AddCopy)
             {
                 this.Copy.ItemId = target.Id;
                 this.Copy.LocationId = this.LocationId;
                 try
                 {
-                    _ = await this.NsClient.Library.CreateCopyAsync(libraryId, this.Copy, cancellationToken);
+                    createdCopy = await this.NsClient.Library.CreateCopyAsync(libraryId, this.Copy, cancellationToken);
                 }
                 catch (NsTcpWtfClientException ex)
                 {
@@ -303,6 +316,21 @@ namespace number_sequence.Pages.UI.Libraries.Items
             }
 
             this.StatusMessage = (this.AsCopyOfItemId.HasValue ? $"Added another copy of {target.Title}." : $"Added {target.Title}.") + coverNote;
+            if (this.FromScan)
+            {
+                if (createdCopy != null)
+                {
+                    try
+                    {
+                        _ = await this.NsClient.Library.ResolveScanEntryAsync(libraryId, this.ScanId.Value, this.ScanEntryId.Value, createdCopy.Id, cancellationToken);
+                    }
+                    catch (NsTcpWtfClientException ex)
+                    {
+                        this.StatusMessage += $" The scan still lists it as new: {ErrorText(ex)}";
+                    }
+                }
+                return this.Redirect($"/ui/library/{libraryId}/scans/{this.ScanId}/reconcile");
+            }
             if (this.AddAnother)
             {
                 string location = this.LocationId.HasValue ? $"&location={this.LocationId}" : string.Empty;
@@ -337,6 +365,10 @@ namespace number_sequence.Pages.UI.Libraries.Items
             if (this.AddAnother)
             {
                 query.Add("another=true");
+            }
+            if (this.FromScan)
+            {
+                query.Add($"scan={this.ScanId}&scanEntry={this.ScanEntryId}");
             }
             return $"/ui/library/{this.Library.Id}/items/create?{string.Join("&", query)}";
         }

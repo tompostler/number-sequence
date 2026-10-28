@@ -5,6 +5,9 @@
 // input and its form is submitted, so the page does exactly what it does when the code is typed. Buttons start hidden and
 // are shown only where there is a camera api (https or localhost), so the text box is always the fallback. Adding
 // data-library-scan-quiet skips the beep (a read still vibrates), for scanning in a shop.
+//
+// The scan session page uses window.LibraryScanner.open with continuous: true instead, which keeps the camera open and
+// hands each new code to the page along with a handle for the result's status text and tone.
 (function () {
   'use strict';
 
@@ -67,22 +70,36 @@
     } catch (e) { }
   }
 
-  function feedback(quiet) {
+  // Distinct enough to tell apart without looking at the screen, which is the point while scanning a shelf.
+  var tones = {
+    ok: [[1760, 0.08]],
+    move: [[1320, 0.07], [0, 0.06], [1320, 0.07]],
+    new: [[660, 0.16]],
+    error: [[220, 0.3]],
+  };
+
+  function tone(kind) {
+    try {
+      var at = audio.currentTime;
+      (tones[kind] || tones.ok).forEach(function (step) {
+        if (step[0] > 0) {
+          var osc = audio.createOscillator();
+          var gain = audio.createGain();
+          osc.frequency.value = step[0];
+          gain.gain.value = 0.08;
+          osc.connect(gain).connect(audio.destination);
+          osc.start(at);
+          osc.stop(at + step[1]);
+        }
+        at += step[1];
+      });
+    } catch (e) { }
+  }
+
+  function vibrate() {
     if (navigator.vibrate) {
       navigator.vibrate(60);
     }
-    if (quiet) {
-      return;
-    }
-    try {
-      var osc = audio.createOscillator();
-      var gain = audio.createGain();
-      osc.frequency.value = 1760;
-      gain.gain.value = 0.08;
-      osc.connect(gain).connect(audio.destination);
-      osc.start();
-      osc.stop(audio.currentTime + 0.08);
-    } catch (e) { }
   }
 
   function describe(error) {
@@ -95,9 +112,14 @@
     }
   }
 
-  // A full-screen camera view. Calls onCode with the first barcode read, after closing itself.
-  function open(onCode, quiet) {
-    if (!quiet) {
+  // A full-screen camera view. By default it calls onCode with the first barcode read, after closing itself. With
+  // options.continuous it stays open and calls onCode(code, handle) for each new code, where handle.status(text) and
+  // handle.tone(kind) report the result and handle.close() ends it. A code is new once it has been out of view for a
+  // few seconds, so holding a book up doesn't count it twice; a second identical copy needs a moment in between.
+  function open(onCode, options) {
+    options = options || {};
+    var continuous = !!options.continuous;
+    if (!options.quiet) {
       unlockAudio();
     }
 
@@ -111,7 +133,7 @@
       '</div>' +
       '<div class="d-flex align-items-center gap-2 p-3 text-white">' +
       '  <div class="flex-grow-1 small" data-status>Starting the camera…</div>' +
-      '  <button type="button" class="btn btn-light">Cancel</button>' +
+      '  <button type="button" class="btn btn-light">' + (continuous ? 'Done' : 'Cancel') + '</button>' +
       '</div>';
     document.body.appendChild(overlay);
 
@@ -120,6 +142,18 @@
     var stream = null;
     var timer = null;
     var closed = false;
+    var lastCode = null;
+    var lastSeen = 0;
+    var handle = {
+      status: function (text) { status.textContent = text; },
+      tone: function (kind) {
+        if (!options.quiet) {
+          tone(kind);
+        }
+      },
+      close: function () { close(); },
+      isOpen: function () { return !closed; },
+    };
 
     function close() {
       if (closed) {
@@ -185,8 +219,18 @@
             if (video.readyState >= 2) {
               var codes = await detector.detect(video);
               var code = codes.length > 0 ? codes[0].rawValue : null;
-              if (code && !closed) {
-                feedback(quiet);
+              if (code && !closed && continuous) {
+                var now = Date.now();
+                var repeat = code === lastCode && now - lastSeen < 3000;
+                lastCode = code;
+                lastSeen = now;
+                if (!repeat) {
+                  vibrate();
+                  onCode(code, handle);
+                }
+              } else if (code && !closed) {
+                vibrate();
+                handle.tone('ok');
                 close();
                 onCode(code);
                 return;
@@ -206,7 +250,9 @@
     })();
   }
 
-  if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+  var available = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  window.LibraryScanner = { available: available, open: open };
+  if (!available) {
     return;
   }
   document.querySelectorAll('[data-library-scan]').forEach(function (button) {
@@ -215,7 +261,7 @@
       return;
     }
     button.hidden = false;
-    var quiet = button.hasAttribute('data-library-scan-quiet');
+    var options = { quiet: button.hasAttribute('data-library-scan-quiet') };
     button.addEventListener('click', function () {
       open(function (code) {
         input.value = code;
@@ -224,7 +270,7 @@
         } else {
           input.form.submit();
         }
-      }, quiet);
+      }, options);
     });
   });
 })();

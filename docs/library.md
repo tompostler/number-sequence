@@ -11,8 +11,8 @@ This is deliberately not a full library system. There are no holds, fines, patro
 `Migrations/*_AddLibrary*`), as do the Client, Tool and UI (`Pages/UI/Libraries/`), and so do three helpers the API is
 built on: barcode normalization (`Utilities/LibraryBarcode.cs`), the access check (`DataAccess/LibraryAccess.cs`) and
 event times (`Utilities/LibraryEventTimes.cs`). External lookup and covers exist too (`Services/Libraries/`), and so does
-the camera scanner (`wwwroot/js/library-scanner.js`). Scan sessions and export described below are the plan for the
-remaining work, in the order listed under [Delivery order](#delivery-order).
+the camera scanner (`wwwroot/js/library-scanner.js`) and scan sessions with their reconcile view. Export, described
+below, is the remaining work.
 
 ## Data model: item → copy
 
@@ -602,24 +602,25 @@ scanner types into the box like a keyboard.
   the "do I own this?" check, done in a shop, where a success beep is noise. Adding and scan sessions beep, since they're done at home, often
   without looking at the screen.
 
-## Scanning and reconciling (planned)
+## Scanning and reconciling
 
-The same flow handles first-time inventory and later reconciling:
+The same flow handles first-time inventory and later reconciling. It lives in `LibraryController.Scans.cs`, the pages
+under `Pages/UI/Libraries/Scans/`, `wwwroot/js/library-scan-session.js`, and `library scan` in the Tool.
 
-1. Pick a location. This starts a `LibraryScanSession`.
-2. Scan continuously. Each barcode becomes a `LibraryScanEntry`, stored on the server as it is scanned, so a phone that
+1. Pick a location (the library page's "Scan a shelf", or a location's Scan link). This starts a `LibraryScanSession`.
+2. Scan continuously. Each code becomes a `LibraryScanEntry`, stored on the server as it is scanned, so a phone that
    locks or reloads mid-shelf loses nothing. Keeping the state in browser memory was rejected for exactly that reason.
-3. Each entry is resolved when scanned: `Expected` (a copy with this barcode or ISBN is recorded here), `Elsewhere` (recorded at
-   another location or none), or `NotInLibrary`.
+3. Each entry is matched when scanned: `Expected` (a copy with this barcode or ISBN is recorded here), `Elsewhere`
+   (recorded at another location or none), or `NotInLibrary`.
 4. **Finish** shows the reconcile view:
-   - verified;
-   - to move here;
-   - expected here but not scanned (mark missing, leave as is, or mark loaned);
-   - new barcodes (ISBNs can be added in bulk through lookup; others are added one at a time by title).
-5. Applying the reconcile writes the events and sets `CompletedDate`.
+   - here: verified on apply;
+   - recorded somewhere else: ticked to move here, by default;
+   - recorded here but not scanned: left as is unless ticked to mark missing (a copy on loan is listed but can't be);
+   - new codes: an ISBN is added by lookup, one at a time or "add all"; anything else goes through the add page.
+5. Applying writes the events and sets `CompletedDate`, in one save.
 
 For a first inventory nothing is expected anywhere yet, so every entry is `NotInLibrary` and the reconcile becomes "add
-everything".
+all".
 
 ```mermaid
 flowchart TD
@@ -631,10 +632,11 @@ flowchart TD
     here -- no --> els["<b>Elsewhere</b><br/>claim one of the others"]
 
     exp & els & nil --> finish([Finish: reconcile view])
-    finish --> v["Expected → <b>Verified</b> event<br/>(a Missing copy goes back to Active)"]
-    finish --> m["Elsewhere, if ticked → <b>Moved</b> event"]
-    finish --> u["Copies recorded here with no entry →<br/>mark missing / leave / mark loaned"]
-    finish --> n["NotInLibrary → add flow<br/>(ISBN lookup, or title search)"]
+    finish --> v["Copy recorded here now → <b>Verified</b><br/>(a Missing one is <b>Restored</b> first)"]
+    finish --> m["Copy recorded elsewhere, if ticked → <b>Moved</b>"]
+    finish --> r["Copy on loan, if ticked → <b>Returned</b>"]
+    finish --> u["Copies recorded here with no entry →<br/>left, or <b>MarkedMissing</b> if ticked"]
+    finish --> n["NotInLibrary → add by ISBN lookup,<br/>or the add page → <b>Added</b>"]
 ```
 
 **Duplicates while scanning.** Each scan matches at most one copy, and an earlier scan in the same session claims its
@@ -642,18 +644,56 @@ copy first. "Unclaimed" means not already the `ResolvedCopyId` of an earlier ent
 share the barcode, a copy recorded at this location is claimed before one recorded elsewhere, so scanning a shelf never
 reports a move for a copy that was already there. Two copies of the same paperback therefore need two scans. A third
 scan of that barcode resolves to `NotInLibrary`, which is correct: it's a copy you didn't know you had. An accidental
-double scan is fixed by removing the entry.
+double scan is fixed by removing the entry, after which every remaining entry is matched again in scan order, since the
+removed one may have claimed the copy a later scan missed. Matching is one function (`Resolve`) over candidates loaded
+through `LibraryBarcode.MatchesCopy`, so scanning and re-matching can't disagree.
+
+Entries are posted one at a time, in order, because each match depends on which copies earlier scans claimed. Two
+devices scanning the same session at once could both claim one copy; one person scans a shelf, so that isn't guarded.
 
 `Missing` copies are matched along with `Active` ones, because scanning a missing copy is how it gets found. `Disposed`
 copies are not matched. A disposed copy that turns up again is restored deliberately from its item page, not by a scan.
 
-**The scan page** keeps the camera open and reads continuously, debouncing repeat reads of the same code for a few
-seconds. It calls the `/library/...` API directly with `fetch`, using the `ns-token` cookie `RequiresTokenFilter`
-already accepts. That avoids page handlers and antiforgery tokens for what is the only JS-heavy page.
+**Applying reads copies as they are now**, not as they were when scanned, and the reconcile view groups them the same
+way. A copy moved here since it was scanned is verified rather than moved, and one deleted or disposed since is listed
+as changed and left alone. The request carries only the choices (`LibraryScanApply`: moves, returns, missing); the
+server checks each against the session, so a stale page can't move a copy no scan matched or mark a scanned one missing.
+
+**Loans.** The plan had a "mark loaned" choice for a copy that wasn't on the shelf. It was dropped: lending needs a
+borrower and a date, which belong on the item page, not in a list of checkboxes. The reverse case is offered instead: a
+copy on loan that turns up on the shelf has "mark it returned" ticked by default, since it's evidently back. A copy on
+loan that isn't scanned isn't expected on the shelf, so it can't be marked missing.
+
+**Adding new codes.** `NotInLibrary` entries become `Added` (a resolution the plan didn't have) once a copy exists for
+them, so applying doesn't also verify a copy whose `Acquired` event already says where it is.
+- **An ISBN** is added by `POST .../entries/{id}/add`, one request per book, so the page shows progress through a stack.
+  It looks the ISBN up, puts the copy at the session's location on the item that shares an external id with the lookup
+  (what the add page's duplicate check would offer) or on a new item, and fetches the cover for a new item. A title-only
+  match isn't used: without someone looking, it would join the wrong book as often as the right one. The entry is matched
+  again first, so a retry after a half-finished request, or a copy added some other way meanwhile, doesn't add twice.
+- **Anything else** opens the add page with the barcode, location, and the scan and entry ids. Saving there marks the
+  entry added (`.../resolve/{copyId}`) and returns to the reconcile view.
+
+**The scan page** is a shell; `library-scan-session.js` does the work against the `/library/...` api with `fetch` and
+the `ns-token` cookie. That avoids page handlers and antiforgery tokens, and is safe because the cookie is
+`SameSite=Strict`. The script reads the api's json by its camelCase property names, so renaming a property on the scan
+contracts, `LibraryCopy` or `LibraryItem` breaks the page at runtime, not at build.
+- **Unsaved codes wait in a queue** kept in `localStorage` per session and are retried every few seconds until the api
+  takes them, so a dropped connection or a reload mid-shelf loses nothing. A refusal (a bad check digit, a session
+  already applied) drops the code and lists it as refused; only network failures and 5xx are retried.
+- **The camera stays open** (`LibraryScanner.open` with `continuous`), and a code is only new once it has been out of
+  view for three seconds, so holding a book up counts it once. A second identical copy needs a moment in between, or
+  the text box.
+- **Tones say what matched** without looking at the screen: one high beep for here or added, two for recorded
+  elsewhere, a low one for new, a buzz for refused. They play when the server answers, not on the read.
+- **The text box** takes typed codes and a handheld scanner, as everywhere else.
+
+**The Tool** (`library scan start|resume|show|apply|list|delete`) reads codes a line at a time, which is how a USB
+handheld scanner types, and applies with the same three questions. New codes are left to the reconcile page.
 
 ## Delivery order
 
 1. **Core:** the data model, the three helpers, the API, Client and Tool CRUD, and UI for browse, search, detail,
    manual add/edit, loans, locations and shares (done).
 2. **Lookup:** the providers, covers in blob, and options and deployment settings (done).
-3. **Scanning:** the camera scanner (done), then scan sessions and the reconcile view.
+3. **Scanning:** the camera scanner, scan sessions and the reconcile view (done).

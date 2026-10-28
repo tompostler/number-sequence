@@ -1,0 +1,49 @@
+@page "/ui/library/{libraryId:long}/scans/{sessionId:long}"
+@model number_sequence.Pages.UI.Libraries.Scans.ScanModel
+@using System.Text.Json
+@using number_sequence.Utilities
+@{
+  string path = LibraryDisplay.LocationPath(Model.Paths, Model.Session.LocationId);
+  ViewData["Title"] = $"Scanning {path}";
+}
+
+<div class="d-flex align-items-center gap-2 mb-1">
+  <a href="/ui/library/@Model.Library.Id/scans" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Scanning @path</h2>
+</div>
+<div class="small text-muted mb-3">@Model.Library.Name</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+@* The paths are json in an attribute, which razor encodes and the browser decodes, so nothing here is Html.Raw. *@
+<div id="scan-session" class="col-12 col-md-8 col-lg-6"
+     data-library-id="@Model.Library.Id"
+     data-session-id="@Model.Session.Id"
+     data-location-id="@Model.Session.LocationId"
+     data-can-edit="@(Model.CanEdit ? "true" : "false")"
+     data-paths="@JsonSerializer.Serialize(Model.Paths, RelaxedJson.Options)">
+
+  <div class="d-flex gap-2 mb-3">
+    <button type="button" class="btn btn-primary btn-lg flex-grow-1" data-camera hidden>Scan with camera</button>
+    <a href="/ui/library/@Model.Library.Id/scans/@Model.Session.Id/reconcile" class="btn btn-outline-primary btn-lg">Finish</a>
+  </div>
+
+  <form class="mb-2" data-code-form>
+    <label for="scan-code" class="form-label small text-muted mb-1">Or type it, or use a handheld scanner here</label>
+    <div class="input-group">
+      <input id="scan-code" class="form-control" autofocus autocomplete="off" autocapitalize="characters" enterkeyhint="send" placeholder="Barcode" />
+      <button type="submit" class="btn btn-outline-secondary">Add</button>
+    </div>
+  </form>
+  <div class="form-text mb-3">
+    Scan every copy, including a second identical one: each scan matches one copy. The camera ignores a barcode still in
+    view, so give a second identical copy a moment, or tap Add. Nothing changes in the library until you finish and apply.
+  </div>
+
+  <div class="small text-muted mb-1" data-summary>Loading…</div>
+  <ul class="list-group mb-4" data-entries></ul>
+  <noscript><div class="alert alert-warning">Scanning needs JavaScript.</div></noscript>
+</div>
+
+<partial name="_LibraryScanner" />
+<script src="~/js/library-scan-session.js" asp-append-version="true"></script>

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
+using number_sequence.Exceptions;
 using number_sequence.Utilities;
 using System.Diagnostics;
 using TcpWtf.NumberSequence.Contracts.Libraries;
@@ -72,16 +73,7 @@ namespace number_sequence.Controllers
             }
             if (!string.IsNullOrWhiteSpace(externalIdKey) && !string.IsNullOrWhiteSpace(externalIdValue))
             {
-                // The column is json, which EF only sees as the converted dictionary, so the match is sql. The key becomes a
-                // json path, so it is limited to the plain identifiers LibraryExternalIds uses.
-                if (!externalIdKey.All(char.IsAsciiLetterOrDigit))
-                {
-                    return this.BadRequest("An external id key is letters and digits only.");
-                }
-                string path = $"$.{externalIdKey}";
-                List<long> matching = await nsContext.Database
-                    .SqlQuery<long>($"SELECT Id AS Value FROM dbo.LibraryItems WHERE LibraryId = {libraryId} AND JSON_VALUE(ExternalIds, {path}) = {externalIdValue}")
-                    .ToListAsync(cancellationToken);
+                List<long> matching = await ItemIdsByExternalIdAsync(nsContext, libraryId, externalIdKey, externalIdValue, cancellationToken);
                 query = query.Where(x => matching.Contains(x.Id));
             }
 
@@ -229,6 +221,23 @@ namespace number_sequence.Controllers
             await this.DeleteCoverBlobsAsync([itemId], cancellationToken);
             this.logger.LogInformation($"[{this.AccountName}] deleted item [{itemId}] in library [{libraryId}].");
             return this.NoContent();
+        }
+
+        /// <summary>
+        /// The ids of items in <paramref name="libraryId"/> whose external id <paramref name="key"/> is <paramref name="value"/>.
+        /// The column is json, which EF only sees as the converted dictionary, so the match is sql. The key becomes a json
+        /// path, so it is limited to the plain identifiers <see cref="LibraryExternalIds"/> uses.
+        /// </summary>
+        private static async Task<List<long>> ItemIdsByExternalIdAsync(NsContext nsContext, long libraryId, string key, string value, CancellationToken cancellationToken)
+        {
+            if (!key.All(char.IsAsciiLetterOrDigit))
+            {
+                throw new BadRequestException("An external id key is letters and digits only.");
+            }
+            string path = $"$.{key}";
+            return await nsContext.Database
+                .SqlQuery<long>($"SELECT Id AS Value FROM dbo.LibraryItems WHERE LibraryId = {libraryId} AND JSON_VALUE(ExternalIds, {path}) = {value}")
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>

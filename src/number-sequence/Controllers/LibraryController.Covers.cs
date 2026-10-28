@@ -97,19 +97,28 @@ namespace number_sequence.Controllers
                 return this.BadRequest("Send either the image or the urls to fetch it from.");
             }
 
+            await this.StoreCoverAsync(itemRecord, prepared, cancellationToken);
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+
+            this.logger.LogInformation($"[{this.AccountName}] set the cover of item [{itemId}] in library [{libraryId}] from {from}.");
+            return this.Ok(itemRecord);
+        }
+
+        /// <summary>
+        /// Uploads both blobs and marks the tracked <paramref name="itemRecord"/> as having a cover; the caller saves. Shared
+        /// by setting a cover and adding an item from a scan.
+        /// </summary>
+        private async Task StoreCoverAsync(LibraryItem itemRecord, LibraryCovers.Prepared prepared, CancellationToken cancellationToken)
+        {
             NsStorage storage = this.serviceProvider.GetRequiredService<NsStorage>();
             BlobHttpHeaders headers = new() { ContentType = LibraryCovers.ContentType };
-            BlobClient coverBlob = await storage.GetLibraryCoverBlobClientAsync(itemId, thumbnail: false, cancellationToken);
-            BlobClient thumbnailBlob = await storage.GetLibraryCoverBlobClientAsync(itemId, thumbnail: true, cancellationToken);
+            BlobClient coverBlob = await storage.GetLibraryCoverBlobClientAsync(itemRecord.Id, thumbnail: false, cancellationToken);
+            BlobClient thumbnailBlob = await storage.GetLibraryCoverBlobClientAsync(itemRecord.Id, thumbnail: true, cancellationToken);
             _ = await coverBlob.UploadAsync(new BinaryData(prepared.Cover), new BlobUploadOptions { HttpHeaders = headers }, cancellationToken);
             _ = await thumbnailBlob.UploadAsync(new BinaryData(prepared.Thumbnail), new BlobUploadOptions { HttpHeaders = headers }, cancellationToken);
 
             itemRecord.HasCover = true;
             itemRecord.ModifiedDate = DateTimeOffset.UtcNow;
-            _ = await nsContext.SaveChangesAsync(cancellationToken);
-
-            this.logger.LogInformation($"[{this.AccountName}] set the cover of item [{itemId}] in library [{libraryId}] from {from}.");
-            return this.Ok(itemRecord);
         }
 
         [HttpDelete("libraries/{libraryId}/items/{itemId}/cover")]

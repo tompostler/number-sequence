@@ -1,0 +1,44 @@
+@model (ReconcileModel Page, LibraryCopy Copy, bool Editable, bool Elsewhere)
+@* A matched copy in the reconcile view, with the choices applying it offers: moving it here when it's recorded somewhere
+   else, and returning it when it's on loan (it was on the shelf, so it's back). Both default to yes. *@
+@{
+  LibraryCopy copy = Model.Copy;
+  LibraryLoan loan = LibraryDisplay.OpenLoan(copy);
+  long libraryId = Model.Page.Library.Id;
+}
+<li class="list-group-item py-2">
+  <div class="d-flex gap-2 align-items-start">
+    @if (Model.Editable && Model.Elsewhere)
+    {
+      <input type="checkbox" name="move" value="@copy.Id" id="move-@copy.Id" class="form-check-input mt-1 flex-shrink-0" checked />
+    }
+    <div class="flex-grow-1">
+      <label for="move-@copy.Id">
+        <a href="/ui/library/@libraryId/items/@copy.ItemId">@copy.Item?.Title</a>
+        <span class="small text-muted">@copy.Format</span>
+      </label>
+      @if (Model.Elsewhere)
+      {
+        <div class="small text-muted">Recorded at @LibraryDisplay.LocationPath(Model.Page.Paths, copy.LocationId)</div>
+      }
+      @if (copy.Status == LibraryCopyStatus.Missing)
+      {
+        <div class="small text-success">Marked missing; applying marks it found.</div>
+      }
+      @if (loan != null)
+      {
+        @if (Model.Editable)
+        {
+          <div class="form-check small mb-0">
+            <input type="checkbox" name="returned" value="@copy.Id" id="returned-@copy.Id" class="form-check-input" checked />
+            <label for="returned-@copy.Id" class="form-check-label">On loan to @LibraryDisplay.Borrower(loan); mark it returned</label>
+          </div>
+        }
+        else
+        {
+          <div class="small text-muted">On loan to @LibraryDisplay.Borrower(loan)</div>
+        }
+      }
+    </div>
+  </div>
+</li>

@@ -35,7 +35,10 @@ else
           </div>
           @if (Model.CanEdit)
           {
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#edit-@location.Id">Edit</button>
+            <div class="d-flex gap-1 flex-shrink-0">
+              <a href="/ui/library/@Model.Library.Id/scans?location=@location.Id" class="btn btn-sm btn-outline-secondary">Scan</a>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#edit-@location.Id">Edit</button>
+            </div>
           }
         </div>
         @if (Model.CanEdit)

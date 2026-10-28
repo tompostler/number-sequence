@@ -20,5 +20,12 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         /// session.
         /// </summary>
         NotInLibrary,
+
+        /// <summary>
+        /// Was <see cref="NotInLibrary"/>, and has since been added from the reconcile view as
+        /// <see cref="LibraryScanEntry.ResolvedCopyId"/>. Applying the session records nothing more for it: adding the copy
+        /// already recorded where it is.
+        /// </summary>
+        Added,
     }
 }
