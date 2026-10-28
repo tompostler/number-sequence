@@ -3,7 +3,8 @@
 //
 // A button with data-library-scan="<selector of a text input>" opens the camera. The first barcode read goes into that
 // input and its form is submitted, so the page does exactly what it does when the code is typed. Buttons start hidden and
-// are shown only where there is a camera api (https or localhost), so the text box is always the fallback.
+// are shown only where there is a camera api (https or localhost), so the text box is always the fallback. Adding
+// data-library-scan-quiet skips the beep (a read still vibrates), for scanning in a shop.
 (function () {
   'use strict';
 
@@ -66,9 +67,12 @@
     } catch (e) { }
   }
 
-  function feedback() {
+  function feedback(quiet) {
     if (navigator.vibrate) {
       navigator.vibrate(60);
+    }
+    if (quiet) {
+      return;
     }
     try {
       var osc = audio.createOscillator();
@@ -92,8 +96,10 @@
   }
 
   // A full-screen camera view. Calls onCode with the first barcode read, after closing itself.
-  function open(onCode) {
-    unlockAudio();
+  function open(onCode, quiet) {
+    if (!quiet) {
+      unlockAudio();
+    }
 
     var overlay = document.createElement('div');
     overlay.className = 'position-fixed top-0 start-0 w-100 h-100 bg-black d-flex flex-column';
@@ -180,7 +186,7 @@
               var codes = await detector.detect(video);
               var code = codes.length > 0 ? codes[0].rawValue : null;
               if (code && !closed) {
-                feedback();
+                feedback(quiet);
                 close();
                 onCode(code);
                 return;
@@ -209,6 +215,7 @@
       return;
     }
     button.hidden = false;
+    var quiet = button.hasAttribute('data-library-scan-quiet');
     button.addEventListener('click', function () {
       open(function (code) {
         input.value = code;
@@ -217,7 +224,7 @@
         } else {
           input.form.submit();
         }
-      });
+      }, quiet);
     });
   });
 })();

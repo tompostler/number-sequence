@@ -12,7 +12,7 @@
 <form method="get" class="mb-3">
   <div class="input-group input-group-lg">
     <input id="q" name="q" value="@Model.Q" class="form-control" placeholder="Title, author, or barcode" autocomplete="off" inputmode="search" enterkeyhint="search" autofocus="@(Model.Q == null)" />
-    <button type="button" class="btn btn-outline-secondary" data-library-scan="#q" hidden>Scan</button>
+    <button type="button" class="btn btn-outline-secondary" data-library-scan="#q" data-library-scan-quiet hidden>Scan</button>
     <button type="submit" class="btn btn-primary">Search</button>
   </div>
   <div class="form-text">Searches every library you can see. Scan, type or paste an ISBN or UPC to check whether you already own it.</div>

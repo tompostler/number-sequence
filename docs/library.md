@@ -429,9 +429,10 @@ and home card show for the `Library` role.
   reading it into memory first, since a page of cards asks for dozens at once.
 - **Credits:** pages showing looked-up data name the source (`_LookupAttribution`), as TMDB's terms require.
 
-**Scan buttons** sit next to the search box on the library home and the lookup box on the add page. A read puts the code
-in the box and submits it, so a scan does exactly what typing the code does: "do I own this?" on the home page, and a
-lookup on the add page. On the add page a code taken as a barcode is cleared from the box and carried in the hidden
+**Scan buttons** sit next to the search boxes on the library home and a library's page, and the lookup box on the add
+page. A read puts the code in the box and submits it, so a scan does exactly what typing the code does: "do I own this?"
+on the home page, and a lookup on the add page. A code a library's page doesn't find offers "Add it", which opens the
+add page with the code. On the add page a code taken as a barcode is cleared from the box and carried in the hidden
 barcode field, with the box focused, because a movie's or game's UPC is followed by a title search.
 
 **Books with a UPC.** A non-ISBN code with Book selected says the UPC is kept as the barcode and to type the ISBN from
@@ -597,6 +598,9 @@ scanner types into the box like a keyboard.
 - **The camera closes when the page is hidden.** A locked phone suspends the stream and it doesn't reliably resume.
 - **Audio** is unlocked by the tap that opens the scanner, since iOS only plays sound from a context created in a user
   gesture.
+- **Searching scans quietly** (`data-library-scan-quiet`, on the home and library pages): vibration, no beep. That's
+  the "do I own this?" check, done in a shop, where a success beep is noise. Adding and scan sessions beep, since they're done at home, often
+  without looking at the screen.
 
 ## Scanning and reconciling (planned)
 

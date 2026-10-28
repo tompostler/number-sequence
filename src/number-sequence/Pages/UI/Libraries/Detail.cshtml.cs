@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using number_sequence.Filters;
+using number_sequence.Utilities;
 using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Libraries;
@@ -35,6 +36,12 @@ namespace number_sequence.Pages.UI.Libraries
         public List<LibraryItem> Items { get; private set; }
 
         public bool Filtered => !string.IsNullOrWhiteSpace(this.Q) || this.Type.HasValue || this.Location.HasValue || this.LoanedOut;
+
+        /// <summary>
+        /// The search, normalized, when it reads as a product code. One with no match offers to add it here.
+        /// </summary>
+        public string QueryBarcode
+            => LibraryBarcode.TryParse(this.Q, out LibraryBarcode parsed, out _) && parsed.Kind != LibraryBarcodeKind.Other ? parsed.Value : null;
 
         public async Task<IActionResult> OnGetAsync(long libraryId, CancellationToken cancellationToken)
         {
