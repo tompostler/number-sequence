@@ -78,7 +78,9 @@ Full design notes: [`docs/static-assets.md`](docs/static-assets.md). Constraints
   link.** Update it from the npm tarball, checked against the registry's integrity hash, as the notes describe.
 - **Reference anything in `wwwroot` as `~/path` with `asp-append-version="true"`.** That is what produces the
   fingerprinted, `immutable` url. A literal `/lib/...` href gets the plain route, which is `no-cache` and costs a
-  revalidation on every page load.
+  revalidation on every page load. A file fetched by script rather than a tag gets its url from `StaticAssetUrls.For`.
+- **`barcode-detector` and `zxing-wasm` are updated together**, zxing-wasm at exactly the version barcode-detector
+  depends on. The bundle embeds zxing-wasm's glue code, and a mismatched `.wasm` fails at runtime.
 
 ## Chiro dictation parsing
 

@@ -119,6 +119,9 @@ namespace number_sequence.Pages.UI.Libraries.Items
                 if (LibraryBarcode.TryParse(this.Find, out LibraryBarcode typed, out _) && typed.Kind != LibraryBarcodeKind.Other)
                 {
                     this.Copy.Barcode = typed.Value;
+                    // It rides along in the hidden barcode field now, leaving the box empty for a title search, which
+                    // is what a scanned movie or game needs next.
+                    this.Find = null;
                 }
                 else
                 {

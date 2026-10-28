@@ -4,7 +4,9 @@
   ViewData["Title"] = $"Add to {Model.Library.Name}";
   ViewData["MediaType"] = Model.Item?.MediaType;
   bool filledIn = Model.LookupSource != null;
-  bool fresh = !filledIn && Model.Candidates == null && string.IsNullOrWhiteSpace(Model.Copy?.Barcode) && Model.Duplicates.Count == 0;
+  @* The box is the next step unless something is already filled in, listed, or possibly here already. That includes a
+     scanned UPC, which is followed by a title search. *@
+  bool findNext = !filledIn && Model.Candidates == null && Model.Duplicates.Count == 0;
   List<string> attributes = LibraryDisplay.Attributes(Model.Item?.Attributes);
   List<string> creditedSources = (Model.Candidates?.Select(x => x.Source) ?? []).Append(Model.LookupSource).Where(x => x != null).ToList();
 }
@@ -39,10 +41,11 @@
           <option value="@mediaType" selected="@(Model.Item?.MediaType == mediaType)">@LibraryDisplay.MediaType(mediaType)</option>
         }
       </select>
-      <input id="find" name="find" value="@Model.Find" class="form-control" placeholder="ISBN, barcode or title" autocomplete="off" autofocus="@fresh" />
+      <input id="find" name="find" value="@Model.Find" class="form-control" placeholder="ISBN, barcode or title" autocomplete="off" autofocus="@findNext" />
+      <button type="button" class="btn btn-outline-secondary" data-library-scan="#find" hidden>Scan</button>
       <button type="submit" class="btn btn-outline-primary">Look up</button>
     </div>
-    <div class="form-text">An ISBN fills in a book. Movies and games are found by title.</div>
+    <div class="form-text">An ISBN fills in a book. Movies and games are found by title; a scanned UPC is kept for the copy.</div>
   </form>
 
   @if (Model.LookupNote != null)
@@ -219,3 +222,5 @@
 
   <partial name="_LookupAttribution" model="creditedSources" />
 </div>
+
+<partial name="_LibraryScanner" />

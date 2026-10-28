@@ -10,9 +10,9 @@ This is deliberately not a full library system. There are no holds, fines, patro
 **Status.** The data model, migration and API exist (`src/Contracts/Libraries/`, `NsContext` `#region Library`,
 `Migrations/*_AddLibrary*`), as do the Client, Tool and UI (`Pages/UI/Libraries/`), and so do three helpers the API is
 built on: barcode normalization (`Utilities/LibraryBarcode.cs`), the access check (`DataAccess/LibraryAccess.cs`) and
-event times (`Utilities/LibraryEventTimes.cs`). External lookup and covers exist too (`Services/Libraries/`). Scanning
-and export described below are the plan for the remaining work, in the order listed under
-[Delivery order](#delivery-order).
+event times (`Utilities/LibraryEventTimes.cs`). External lookup and covers exist too (`Services/Libraries/`), and so does
+the camera scanner (`wwwroot/js/library-scanner.js`). Scan sessions and export described below are the plan for the
+remaining work, in the order listed under [Delivery order](#delivery-order).
 
 ## Data model: item → copy
 
@@ -419,7 +419,10 @@ and home card show for the `Library` role.
   reading it into memory first, since a page of cards asks for dozens at once.
 - **Credits:** pages showing looked-up data name the source (`_LookupAttribution`), as TMDB's terms require.
 
-The Scan button waits for scanning.
+**Scan buttons** sit next to the search box on the library home and the lookup box on the add page. A read puts the code
+in the box and submits it, so a scan does exactly what typing the code does: "do I own this?" on the home page, and a
+lookup on the add page. On the add page a code taken as a barcode is cleared from the box and carried in the hidden
+barcode field, with the box focused, because a movie's or game's UPC is followed by a title search.
 
 ## Gource export (planned)
 
@@ -549,6 +552,28 @@ format, so changing the format means renaming or re-encoding the existing covers
   in place, since nothing shows a cover its item isn't flagged for. The `pdf` container isn't copied: those are patient
   documents, and nothing local needs them.
 
+## Camera scanning
+
+`wwwroot/js/library-scanner.js` opens a full-screen camera view from any `data-library-scan` button, reads one barcode
+(EAN-13, UPC-A or UPC-E), beeps and vibrates, and hands the code to the page's own text box. The text box is always
+there: buttons stay hidden without a camera api (plain http other than localhost), and a USB or Bluetooth handheld
+scanner types into the box like a keyboard.
+
+- **The browser's `BarcodeDetector` when it has one** with those formats (Android Chrome, macOS), else the
+  `barcode-detector` ponyfill, which runs zxing-cpp compiled to WebAssembly. iOS Safari has no `BarcodeDetector` at all,
+  which rules out the native api alone. The ponyfill (44 KB) and its `.wasm` (925 KB) are only downloaded on the first
+  Scan tap where there's no native detector, never on page load.
+- **Vendored, not from jsDelivr**, for the reasons in [static-assets.md](static-assets.md). The ponyfill fetches its
+  `.wasm` from jsDelivr unless told otherwise, so the script overrides `locateFile` with our url. That url comes from
+  `StaticAssetUrls`, which resolves it through the static-asset manifest to the fingerprinted, immutable route; the tag
+  helpers can't do it, since no tag references the file.
+- **One read, then close.** A barcode's check digit is validated by both detectors, and the server parses every code
+  through `LibraryBarcode` anyway, so a second confirming read isn't worth the delay. Continuous scanning with a
+  debounce belongs to scan sessions.
+- **The camera closes when the page is hidden.** A locked phone suspends the stream and it doesn't reliably resume.
+- **Audio** is unlocked by the tap that opens the scanner, since iOS only plays sound from a context created in a user
+  gesture.
+
 ## Scanning and reconciling (planned)
 
 The same flow handles first-time inventory and later reconciling:
@@ -594,17 +619,13 @@ double scan is fixed by removing the entry.
 `Missing` copies are matched along with `Active` ones, because scanning a missing copy is how it gets found. `Disposed`
 copies are not matched. A disposed copy that turns up again is restored deliberately from its item page, not by a scan.
 
-**Camera.** There is no `wwwroot`, so the scanner is loaded from jsDelivr like Bootstrap. It is the `barcode-detector`
-ponyfill (zxing-wasm), which uses the browser's native `BarcodeDetector` where there is one (Android Chrome) and WASM
-elsewhere. iOS Safari has no native `BarcodeDetector`, which rules out using the native API alone. The scanner reads
-EAN-13, UPC-A and UPC-E and debounces repeat reads of the same code. A text box is always there as well, and a USB or
-Bluetooth handheld scanner works through it as a keyboard. The scan page calls the `/library/...` API directly with
-`fetch`, using the `ns-token` cookie `RequiresTokenFilter` already accepts. That avoids page handlers and antiforgery
-tokens for what is the only JS-heavy page.
+**The scan page** keeps the camera open and reads continuously, debouncing repeat reads of the same code for a few
+seconds. It calls the `/library/...` API directly with `fetch`, using the `ns-token` cookie `RequiresTokenFilter`
+already accepts. That avoids page handlers and antiforgery tokens for what is the only JS-heavy page.
 
 ## Delivery order
 
 1. **Core:** the data model, the three helpers, the API, Client and Tool CRUD, and UI for browse, search, detail,
    manual add/edit, loans, locations and shares (done).
 2. **Lookup:** the providers, covers in blob, and options and deployment settings (done).
-3. **Scanning:** the camera scanner, scan sessions and the reconcile view.
+3. **Scanning:** the camera scanner (done), then scan sessions and the reconcile view.

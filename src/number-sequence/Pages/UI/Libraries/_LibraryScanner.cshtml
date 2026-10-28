@@ -1,0 +1,6 @@
+@using number_sequence.Utilities
+@* The camera scanner for every data-library-scan button on the page. Goes after those buttons. The script fetches the
+   ponyfill and its .wasm itself, so their urls are resolved here to the fingerprinted ones the tag helpers would give. *@
+<script src="~/js/library-scanner.js" asp-append-version="true"
+        data-ponyfill="@StaticAssetUrls.For(Context, "lib/barcode-detector/ponyfill.js")"
+        data-wasm="@StaticAssetUrls.For(Context, "lib/zxing-wasm/zxing_reader.wasm")"></script>
