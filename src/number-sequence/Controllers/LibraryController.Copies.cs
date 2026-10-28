@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
+using number_sequence.Utilities;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Libraries;
 
@@ -311,6 +312,9 @@ namespace number_sequence.Controllers
         {
             to.Format = from.Format;
             to.Barcode = NormalizeBarcodeOrThrow(from.Barcode);
+            // An ISBN barcode is the ISBN, so only a book printed with a UPC needs one entered separately.
+            to.Isbn = NormalizeIsbnOrThrow(from.Isbn)
+                ?? (to.Barcode != null && LibraryBarcode.TryParse(to.Barcode, out LibraryBarcode printed, out _) && printed.Kind == LibraryBarcodeKind.Isbn ? to.Barcode : null);
             to.Publisher = from.Publisher;
             to.PublishedYear = from.PublishedYear;
             to.Condition = from.Condition;

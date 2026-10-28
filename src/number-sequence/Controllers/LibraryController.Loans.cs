@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
 using number_sequence.Exceptions;
+using number_sequence.Utilities;
 using System.Diagnostics;
 using TcpWtf.NumberSequence.Contracts.Libraries;
 
@@ -70,7 +71,8 @@ namespace number_sequence.Controllers
                 .AsSplitQuery()
                 .Include(x => x.Item)
                 .Include(x => x.Loans.Where(l => l.ReturnedDate == null))
-                .Where(x => libraryIds.Contains(x.LibraryId) && x.Barcode == normalized && x.Status != LibraryCopyStatus.Disposed)
+                .Where(LibraryBarcode.MatchesCopy(normalized))
+                .Where(x => libraryIds.Contains(x.LibraryId) && x.Status != LibraryCopyStatus.Disposed)
                 .OrderBy(x => x.LibraryId)
                 .ThenBy(x => x.Id)
                 .ToListAsync(cancellationToken);

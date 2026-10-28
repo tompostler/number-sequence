@@ -50,8 +50,8 @@ formats show up (Steelbook, 4K + Blu-ray combo), and none of them change any beh
 table would allow "everything by this author" with an exact match, but at personal-library volumes a `LIKE` on one
 column is just as good and much less code.
 
-**Barcodes are stored normalized** on both `LibraryCopy.Barcode` and `LibraryScanEntry.Barcode`, and every search
-normalizes its input the same way. All of that goes through `LibraryBarcode.TryParse` (`Utilities/LibraryBarcode.cs`).
+**Barcodes are stored normalized** on `LibraryCopy.Barcode`, `LibraryCopy.Isbn` and `LibraryScanEntry.Barcode`, and
+every search normalizes its input the same way. All of that goes through `LibraryBarcode.TryParse` (`Utilities/LibraryBarcode.cs`).
 The same physical barcode reaches the server in several forms:
 - A book scanned from its cover is an ISBN-13, but typed in from the copyright page it is often an ISBN-10.
 - A movie's UPC-A comes back as 12 digits from one scanner and as a 13-digit EAN with a leading zero from another.
@@ -66,6 +66,15 @@ zero. A path that skips this stores a form the others don't match, and lookups q
   scanned. Expanding UPC-E to UPC-A would therefore mangle every EAN-8, and neither is common on books, movies or games.
 - **Anything else** is kept, uppercased with spaces and dashes removed: a Code 128 or QR sticker you printed for a tool,
   say. This is what lets the "other loanable items" media type work with your own labels.
+
+**A copy has a barcode and an ISBN**, and a code matches a copy by either (`LibraryBarcode.MatchesCopy`, used by item
+search, the "do I own this?" check, the add page's duplicate check, and scan resolution). The barcode is what's printed
+and scanned; the ISBN is what a book is looked up by. For most books they are the same, and the server fills the ISBN
+from an ISBN barcode on every write, so nothing extra is entered. They differ on a book printed with only a retail UPC,
+common on US mass-market paperbacks: the UPC is on the back and often inside the cover too, and the ISBN is only text on
+the copyright page. The UPC encodes the publisher and price, not the ISBN, so it can't be looked up, and it can't be
+dropped either, because it is what a rescan reads. Two columns rather than a list of codes per copy, because nothing
+else carries two product codes, and one extra column keeps every query a plain `OR`.
 
 **History.** `LibraryCopyEvent` is append-only and written by the server whenever a copy's location, loan or status
 changes. It also records which account made the change, because editors exist. `CreatedDate` is when the event was
@@ -170,6 +179,7 @@ erDiagram
         long LocationId FK "nullable"
         string Format
         string Barcode "normalized"
+        string Isbn "normalized, books"
         enum Status
     }
     LibraryLoan {
@@ -424,6 +434,20 @@ in the box and submits it, so a scan does exactly what typing the code does: "do
 lookup on the add page. On the add page a code taken as a barcode is cleared from the box and carried in the hidden
 barcode field, with the box focused, because a movie's or game's UPC is followed by a title search.
 
+**Books with a UPC.** A non-ISBN code with Book selected says the UPC is kept as the barcode and to type the ISBN from
+the copyright page, rather than the movie and game advice. The add page decides by the code, not the type dropdown,
+which only steers title searches. The box takes codes in any order: an ISBN becomes the copy's ISBN, and its barcode too
+unless the barcode is already a UPC; a UPC becomes the barcode and leaves the ISBN alone. Both ride along in hidden
+fields through a title search or a pick, like the barcode always did. The copy form shows the ISBN field for books only,
+blank when it is just the barcode.
+
+**The numeric keypad for ISBNs.** The copy form's ISBN field always uses it, and the lookup box does right after a
+book's UPC is scanned (Book selected, nothing filled in yet), when the ISBN is what gets typed next. Everywhere else the
+box keeps the full keyboard for titles. The keypad has no X, and older mass-market paperbacks, the ones with UPCs, often
+print only an ISBN-10, about one in eleven of which ends in X. So those two places take an ISBN-10's first nine digits
+alone ("ends in X? leave the X off", `LibraryBarcode.TryParseIsbn`). That's lossless: converting to ISBN-13 drops the
+ISBN-10 check character and computes a new one. Anywhere a code could be anything, nine digits stay a plain label.
+
 ## Gource export (planned)
 
 [Gource](https://gource.io) animates a version-control history as a growing tree. Its
@@ -581,7 +605,7 @@ The same flow handles first-time inventory and later reconciling:
 1. Pick a location. This starts a `LibraryScanSession`.
 2. Scan continuously. Each barcode becomes a `LibraryScanEntry`, stored on the server as it is scanned, so a phone that
    locks or reloads mid-shelf loses nothing. Keeping the state in browser memory was rejected for exactly that reason.
-3. Each entry is resolved when scanned: `Expected` (a copy with this barcode is recorded here), `Elsewhere` (recorded at
+3. Each entry is resolved when scanned: `Expected` (a copy with this barcode or ISBN is recorded here), `Elsewhere` (recorded at
    another location or none), or `NotInLibrary`.
 4. **Finish** shows the reconcile view:
    - verified;
@@ -596,7 +620,7 @@ everything".
 ```mermaid
 flowchart TD
     scan([Barcode read]) --> norm["Normalize: LibraryBarcode.TryParse<br/>(ISBN-10 and UPC-A to 13 digits)"]
-    norm --> any{"Any unclaimed Active or Missing copy<br/>in this library with this barcode?"}
+    norm --> any{"Any unclaimed Active or Missing copy<br/>in this library with this barcode or ISBN?"}
     any -- no --> nil["<b>NotInLibrary</b><br/>no copy claimed"]
     any -- yes --> here{"Is one of them recorded<br/>at the session's location?"}
     here -- yes --> exp["<b>Expected</b><br/>claim that copy"]

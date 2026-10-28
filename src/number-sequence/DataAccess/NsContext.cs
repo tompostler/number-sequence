@@ -341,9 +341,11 @@ namespace number_sequence.DataAccess
                 .WithMany()
                 .HasForeignKey(x => x.LocationId)
                 .OnDelete(DeleteBehavior.NoAction);
-            // The "do I own this?" lookup and every scan resolve by barcode.
+            // The "do I own this?" lookup and every scan resolve by barcode or ISBN (LibraryBarcode.MatchesCopy).
             _ = modelBuilder.Entity<LibraryCopy>()
                 .HasIndex(x => new { x.LibraryId, x.Barcode });
+            _ = modelBuilder.Entity<LibraryCopy>()
+                .HasIndex(x => new { x.LibraryId, x.Isbn });
 
             _ = modelBuilder.Entity<LibraryLoan>()
                 .Property(x => x.Id)

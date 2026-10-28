@@ -149,6 +149,8 @@ Full design notes: [`docs/library.md`](docs/library.md). Constraints that will b
   pattern copied here silently locks out every account a library is shared with.
 - **Every barcode written or searched for goes through `LibraryBarcode.TryParse`**, which brings ISBN-10 and UPC-A to
   13 digits. A path that skips it stores a form the others don't match, and lookups and scans quietly miss.
+- **Copies are found by a code only through `LibraryBarcode.MatchesCopy`**, which checks both `Barcode` and `Isbn`. A
+  query on `Barcode` alone misses every book whose printed barcode is a UPC.
 - **Event times come from the row that owns the date** (`LibraryCopy.AcquiredDate`, `LibraryLoan.LoanedDate` and
   `ReturnedDate`) through one helper, and are never stored on the event. Events are append-only, so a copied date goes
   stale the moment a purchase date is corrected. The helper's clamp keeps each copy's events in recorded order, which

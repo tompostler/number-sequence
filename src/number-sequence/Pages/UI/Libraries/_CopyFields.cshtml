@@ -23,11 +23,33 @@
     <input asp-for="Condition" class="form-control" maxlength="32" placeholder="e.g. Like new" />
   </div>
 </div>
-<div class="mb-2">
-  <label asp-for="Barcode" class="form-label">Barcode</label>
-  <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="ISBN, UPC or EAN" />
-  <span asp-validation-for="Barcode" class="text-danger small"></span>
-</div>
+@if (ViewData["MediaType"] as LibraryMediaType? is LibraryMediaType.Book or null || !string.IsNullOrWhiteSpace(Model?.Isbn))
+{
+  @* Books only: the ISBN is what a book is looked up by, and differs from the barcode when that's a retail UPC. *@
+  <div class="row g-2 mb-2">
+    <div class="col-6">
+      <label asp-for="Barcode" class="form-label">Barcode</label>
+      <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="As printed" />
+      <span asp-validation-for="Barcode" class="text-danger small"></span>
+    </div>
+    <div class="col-6">
+      <label asp-for="Isbn" class="form-label">ISBN</label>
+      @* Blank when it's just the barcode, which the server fills it from, so changing the barcode can't leave a stale ISBN.
+         The numeric keypad has no X, so an ISBN-10 is taken without it (LibraryBarcode.TryParseIsbn). *@
+      <input asp-for="Isbn" value="@(Model?.Isbn == Model?.Barcode ? null : Model?.Isbn)" class="form-control" maxlength="17" autocomplete="off" inputmode="numeric" placeholder="If not the barcode" />
+      <span asp-validation-for="Isbn" class="text-danger small"></span>
+    </div>
+  </div>
+  <div class="form-text mb-2 mt-n1">A book with a UPC on the back takes its ISBN from the copyright page; if it ends in X, leave the X off. Either code finds it.</div>
+}
+else
+{
+  <div class="mb-2">
+    <label asp-for="Barcode" class="form-label">Barcode</label>
+    <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="UPC or EAN" />
+    <span asp-validation-for="Barcode" class="text-danger small"></span>
+  </div>
+}
 <div class="row g-2 mb-2">
   <div class="col-8">
     <label asp-for="Publisher" class="form-label">Publisher</label>

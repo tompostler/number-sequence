@@ -139,7 +139,11 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 _ => string.Empty,
             };
             copy.Format = PromptString($"{nameof(copy.Format)}{formatHint}", copy.Format);
-            copy.Barcode = PromptString($"{nameof(copy.Barcode)} (ISBN, UPC or EAN)", copy.Barcode);
+            copy.Barcode = PromptString($"{nameof(copy.Barcode)} (ISBN, UPC or EAN, as printed)", copy.Barcode);
+            if (mediaType == LibraryMediaType.Book)
+            {
+                copy.Isbn = PromptString($"{nameof(copy.Isbn)} (only if the barcode is a UPC; from the copyright page)", copy.Isbn == copy.Barcode ? null : copy.Isbn);
+            }
             copy.Publisher = PromptString(nameof(copy.Publisher), copy.Publisher);
             copy.PublishedYear = PromptValue(nameof(copy.PublishedYear), copy.PublishedYear);
             copy.Condition = PromptString(nameof(copy.Condition), copy.Condition);

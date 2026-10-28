@@ -55,7 +55,7 @@ namespace number_sequence.Controllers
                     || x.Subtitle.Contains(term)
                     || x.Creators.Contains(term)
                     || x.Series.Contains(term)
-                    || (barcode != null && x.Copies.Any(c => c.Barcode == barcode)));
+                    || (barcode != null && x.Copies.AsQueryable().Any(LibraryBarcode.MatchesCopy(barcode))));
             }
             if (mediaType.HasValue)
             {

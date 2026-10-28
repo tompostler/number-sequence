@@ -102,6 +102,10 @@
       {
         <div class="small text-muted font-monospace">@copy.Barcode</div>
       }
+      @if (!string.IsNullOrWhiteSpace(copy.Isbn) && copy.Isbn != copy.Barcode)
+      {
+        <div class="small text-muted font-monospace">ISBN @copy.Isbn</div>
+      }
       @if (edition.Length > 0)
       {
         <div class="small text-muted">@edition</div>

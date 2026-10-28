@@ -17,7 +17,7 @@ namespace number_sequence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -712,6 +712,10 @@ namespace number_sequence.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
+                    b.Property<string>("Isbn")
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
+
                     b.Property<long>("ItemId")
                         .HasColumnType("bigint");
 
@@ -752,6 +756,8 @@ namespace number_sequence.Migrations
                     b.HasIndex("LocationId");
 
                     b.HasIndex("LibraryId", "Barcode");
+
+                    b.HasIndex("LibraryId", "Isbn");
 
                     b.ToTable("LibraryCopies");
                 });

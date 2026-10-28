@@ -33,6 +33,10 @@
       @* Kept through a title search, so a scanned UPC still lands on the copy. A barcode typed in the box replaces it. *@
       <input type="hidden" name="barcode" value="@Model.Copy.Barcode" />
     }
+    @if (!string.IsNullOrWhiteSpace(Model.Copy?.Isbn))
+    {
+      <input type="hidden" name="isbn" value="@Model.Copy.Isbn" />
+    }
     <label for="find" class="form-label">Look it up</label>
     <div class="input-group">
       <select name="type" class="form-select flex-grow-0 w-auto" aria-label="Type">
@@ -41,11 +45,21 @@
           <option value="@mediaType" selected="@(Model.Item?.MediaType == mediaType)">@LibraryDisplay.MediaType(mediaType)</option>
         }
       </select>
-      <input id="find" name="find" value="@Model.Find" class="form-control" placeholder="ISBN, barcode or title" autocomplete="off" autofocus="@findNext" />
+      @* After a book's UPC, the ISBN from the copyright page is what's typed next, so the numeric keypad. *@
+      <input id="find" name="find" value="@Model.Find" class="form-control" placeholder="@(Model.IsbnExpected ? "ISBN from the copyright page" : "ISBN, barcode or title")" inputmode="@(Model.IsbnExpected ? "numeric" : null)" autocomplete="off" autofocus="@findNext" />
       <button type="button" class="btn btn-outline-secondary" data-library-scan="#find" hidden>Scan</button>
       <button type="submit" class="btn btn-outline-primary">Look up</button>
     </div>
-    <div class="form-text">An ISBN fills in a book. Movies and games are found by title; a scanned UPC is kept for the copy.</div>
+    <div class="form-text">
+      @if (Model.IsbnExpected)
+      {
+        @("Ends in X? Leave the X off.")
+      }
+      else
+      {
+        @("An ISBN fills in a book. Movies and games are found by title; a scanned UPC is kept for the copy.")
+      }
+    </div>
   </form>
 
   @if (Model.LookupNote != null)

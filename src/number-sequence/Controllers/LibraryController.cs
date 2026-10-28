@@ -50,6 +50,23 @@ namespace number_sequence.Controllers
         }
 
         /// <summary>
+        /// Like <see cref="NormalizeBarcodeOrThrow"/>, but only an ISBN is accepted, through
+        /// <see cref="LibraryBarcode.TryParseIsbn"/>.
+        /// </summary>
+        private static string NormalizeIsbnOrThrow(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return null;
+            }
+            if (!LibraryBarcode.TryParseIsbn(input, out LibraryBarcode isbn, out string error))
+            {
+                throw new BadRequestException(error);
+            }
+            return isbn.Value;
+        }
+
+        /// <summary>
         /// A 400 unless <paramref name="locationId"/> is null or a location in <paramref name="libraryId"/>.
         /// </summary>
         private static async Task EnsureLocationInLibraryAsync(NsContext nsContext, long libraryId, long? locationId, CancellationToken cancellationToken)

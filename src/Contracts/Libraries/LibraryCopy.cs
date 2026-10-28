@@ -39,6 +39,14 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public string Barcode { get; set; }
 
         /// <summary>
+        /// The edition's ISBN-13, which is what a book is looked up by. Usually the same as <see cref="Barcode"/>, and filled
+        /// in from it when that is an ISBN. It differs on a book printed with only a retail UPC, common on US mass-market
+        /// paperbacks, whose ISBN is printed as text on the copyright page. A scanned or searched code matches either.
+        /// </summary>
+        [MaxLength(13)]
+        public string Isbn { get; set; }
+
+        /// <summary>
         /// The publisher or studio of this edition.
         /// </summary>
         [MaxLength(128)]

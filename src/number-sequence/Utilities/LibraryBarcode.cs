@@ -1,3 +1,6 @@
+using System.Linq.Expressions;
+using TcpWtf.NumberSequence.Contracts.Libraries;
+
 namespace number_sequence.Utilities
 {
     /// <summary>
@@ -97,6 +100,43 @@ namespace number_sequence.Utilities
             barcode = new(compact, LibraryBarcodeKind.Other);
             return true;
         }
+
+        /// <summary>
+        /// <see cref="TryParse"/> for a field or prompt that only takes an ISBN, which also accepts an ISBN-10 without its
+        /// check character: those places use the phone's numeric keypad, which has no X, so "ends in X? leave it off". It is
+        /// safe because converting to ISBN-13 discards the ISBN-10 check and computes a new one. Only here: anywhere a
+        /// code could be anything, nine digits stay an <see cref="LibraryBarcodeKind.Other"/> label.
+        /// </summary>
+        public static bool TryParseIsbn(string input, out LibraryBarcode isbn, out string error)
+        {
+            string compact = new((input ?? string.Empty).Where(x => !char.IsWhiteSpace(x) && x != '-').ToArray());
+            if (compact.Length == 9 && compact.All(char.IsAsciiDigit))
+            {
+                string isbn13 = "978" + compact;
+                isbn = new(isbn13 + GtinCheckDigit(isbn13), LibraryBarcodeKind.Isbn);
+                error = null;
+                return true;
+            }
+            if (!TryParse(input, out isbn, out error))
+            {
+                return false;
+            }
+            if (isbn.Kind != LibraryBarcodeKind.Isbn)
+            {
+                error = $"[{input}] isn't an ISBN.";
+                isbn = default;
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Copies a normalized code identifies: by <see cref="LibraryCopy.Barcode"/>, or by <see cref="LibraryCopy.Isbn"/>
+        /// for a book whose printed barcode is a UPC. Every query that finds copies by a code uses this, so a book found by
+        /// its UPC in one place is also found by its ISBN in every other.
+        /// </summary>
+        public static Expression<Func<LibraryCopy, bool>> MatchesCopy(string normalized)
+            => x => x.Barcode == normalized || x.Isbn == normalized;
 
         private static bool IsValidIsbn10(string isbn10)
         {

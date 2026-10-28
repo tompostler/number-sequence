@@ -62,6 +62,7 @@ namespace number_sequence.Pages.UI.Libraries.Copies
             // Apply the form onto the stored copy, so the item it belongs to comes from the server and not the form.
             this.Copy.Format = posted.Format?.Trim();
             this.Copy.Barcode = posted.Barcode?.Trim();
+            this.Copy.Isbn = posted.Isbn?.Trim();
             this.Copy.Publisher = posted.Publisher?.Trim();
             this.Copy.PublishedYear = posted.PublishedYear;
             this.Copy.Condition = posted.Condition?.Trim();
