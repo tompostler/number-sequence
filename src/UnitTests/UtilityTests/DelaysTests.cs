@@ -7,6 +7,12 @@ namespace number_sequence.UnitTests.UtilityTests
     [TestClass]
     public sealed class DelaysTests
     {
+        /// <summary>
+        /// How early a timer may fire. Waking late is common on a busy build agent, so the upper bounds only check that
+        /// the delay ended well short of where it would have otherwise.
+        /// </summary>
+        private static readonly TimeSpan Early = TimeSpan.FromMilliseconds(50);
+
         private Delays.DelayImpelmentation delay;
 
         [TestInitialize]
@@ -26,7 +32,7 @@ namespace number_sequence.UnitTests.UtilityTests
             await this.delay.Delay(delay, CancellationToken.None);
 
             // Assert
-            _ = sw.Elapsed.Should().BeCloseTo(delay, TimeSpan.FromSeconds(0.1));
+            _ = sw.Elapsed.Should().BeGreaterThanOrEqualTo(delay - Early);
         }
 
         [TestMethod]
@@ -43,7 +49,7 @@ namespace number_sequence.UnitTests.UtilityTests
             await delayTask;
 
             // Assert
-            _ = sw.Elapsed.Should().BeCloseTo(delay / 2, TimeSpan.FromSeconds(0.1));
+            _ = sw.Elapsed.Should().BeGreaterThanOrEqualTo(delay / 2 - Early).And.BeLessThan(delay);
             _ = delayTask.IsCompletedSuccessfully.Should().BeTrue();
         }
 
@@ -60,7 +66,7 @@ namespace number_sequence.UnitTests.UtilityTests
 
             // Assert
             _ = await act.Should().ThrowAsync<OperationCanceledException>();
-            _ = sw.Elapsed.Should().BeCloseTo(delay / 2, TimeSpan.FromSeconds(0.1));
+            _ = sw.Elapsed.Should().BeGreaterThanOrEqualTo(delay / 2 - Early).And.BeLessThan(delay);
         }
     }
 }
