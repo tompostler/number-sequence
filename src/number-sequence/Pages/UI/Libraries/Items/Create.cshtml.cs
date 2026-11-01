@@ -416,7 +416,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
             this.Item.Title = result.Title;
             this.Item.Subtitle = result.Subtitle;
             this.Item.Creators = result.Creators;
-            this.Item.Series = result.Series;
+            this.Item.Series = LibrarySeries.MatchExisting(result.Series, this.SeriesNames);
             this.Item.SeriesNumber = result.SeriesNumber;
             this.Item.Year = result.Year;
             this.Item.Summary = result.Summary;
@@ -502,6 +502,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
 
             this.Locations = await this.NsClient.Library.GetLocationsAsync(libraryId, cancellationToken);
             this.Paths = LibraryDisplay.Paths(this.Locations);
+            await this.LoadSeriesNamesAsync(libraryId, cancellationToken);
             return null;
         }
     }

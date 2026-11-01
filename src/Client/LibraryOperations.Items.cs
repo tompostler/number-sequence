@@ -93,6 +93,19 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Every series name in use in a library, sorted.
+        /// </summary>
+        public async Task<List<string>> GetSeriesAsync(long libraryId, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"library/libraries/{libraryId}/series"),
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<string>>(cancellationToken);
+        }
+
+        /// <summary>
         /// Update an existing item's descriptive fields.
         /// </summary>
         public async Task<LibraryItem> UpdateItemAsync(long libraryId, LibraryItem item, CancellationToken cancellationToken = default)

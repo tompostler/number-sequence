@@ -1,3 +1,4 @@
+using number_sequence.Utilities;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using TcpWtf.NumberSequence.Contracts.Libraries;
@@ -12,11 +13,17 @@ namespace number_sequence.Services.Libraries
     /// first publication) and the search index, which carries author names and first publication year already resolved.
     /// Using the search index saves a request per author.
     /// </para>
+    /// <para>
+    /// Looked up by ISBN, the title is the edition's: it's what is printed on the book in hand. A work groups every edition,
+    /// translations included, and its title is whatever the first cataloguer typed, which has been seen in Portuguese for
+    /// an English book and with the series written into it. The series comes from wherever Open Library has it; see
+    /// <see cref="ApplySeries"/>.
+    /// </para>
     /// </summary>
     public sealed partial class OpenLibraryProvider
     {
         private const string Name = "Open Library";
-        private const string SearchFields = "key,title,subtitle,author_name,first_publish_year,cover_i,number_of_pages_median";
+        private const string SearchFields = "key,title,subtitle,author_name,first_publish_year,cover_i,number_of_pages_median,series_name,series_position";
 
         private readonly LibraryLookupHttp http;
 
@@ -63,11 +70,6 @@ namespace number_sequence.Services.Libraries
             {
                 result.Attributes[LibraryAttributes.Pages] = pages.ToString();
             }
-            if (LookupText.Strings(edition, "series").FirstOrDefault() is string series)
-            {
-                (result.Series, result.SeriesNumber) = Series(series);
-            }
-
             // The edition's own cover beats the work's, which may be another edition's.
             List<string> covers = CoverUrls(LookupText.Array(edition, "covers"));
             if (covers.Count > 0)
@@ -99,6 +101,7 @@ namespace number_sequence.Services.Libraries
                 }
                 LibraryLookupResult result = NewResult(workKey);
                 ApplyIndexed(result, doc);
+                ApplySeries(result, doc, edition: null, work: null);
                 results.Add(result);
             }
             return results;
@@ -126,8 +129,9 @@ namespace number_sequence.Services.Libraries
         }
 
         /// <summary>
-        /// The item fields, from the work where it has them, else the search index, else the edition. Authors fall back to
-        /// fetching each author's record when the search index didn't have the book.
+        /// The item fields, from the work where it has them, else the search index, else the edition, except the title and
+        /// subtitle, which are the edition's when there is one. Authors fall back to fetching each author's record when the
+        /// search index didn't have the book.
         /// </summary>
         private async Task<LibraryLookupResult> BuildAsync(string workKey, JsonElement? work, JsonElement? indexed, JsonElement? edition, CancellationToken cancellationToken)
         {
@@ -151,8 +155,12 @@ namespace number_sequence.Services.Libraries
 
             if (edition.HasValue)
             {
-                result.Title ??= LookupText.Str(edition.Value, "title");
-                result.Subtitle ??= LookupText.Str(edition.Value, "subtitle");
+                // Title and subtitle as a pair, so an edition's title doesn't get the work's subtitle.
+                if (LookupText.Str(edition.Value, "title") is string editionTitle)
+                {
+                    result.Title = editionTitle;
+                    result.Subtitle = LookupText.Str(edition.Value, "subtitle");
+                }
                 result.Summary ??= LookupText.Summary(Description(edition.Value));
             }
 
@@ -169,7 +177,65 @@ namespace number_sequence.Services.Libraries
                 result.Creators = LookupText.Creators(names);
             }
 
+            ApplySeries(result, indexed, edition, work);
             return result;
+        }
+
+        /// <summary>
+        /// Sets the series, and takes it out of the title and subtitle where a cataloguer wrote it in. Sources in order: the
+        /// search index's structured series, the edition's free-text series field, then series text in the title, the
+        /// subtitle, and the work's title and subtitle. The name is the first source's; the number is the first number among
+        /// the sources naming that same series, so a field saying only "Wheel of Time" still gets its number from "(The Wheel
+        /// of Time, Book 11)" in the title. Last, a title that is only the series and a number ("The Dark Tower III", with
+        /// "The Waste Lands" as subtitle) gives way to the subtitle.
+        /// </summary>
+        private static void ApplySeries(LibraryLookupResult result, JsonElement? indexed, JsonElement? edition, JsonElement? work)
+        {
+            List<LibrarySeriesPart> found = [];
+            if (indexed.HasValue)
+            {
+                List<string> names = LookupText.Strings(indexed.Value, "series_name").ToList();
+                List<string> positions = LookupText.Strings(indexed.Value, "series_position").ToList();
+                if (names.Count > 0)
+                {
+                    found.Add(new(names[0], positions.Count > 0 ? LibrarySeries.ParseNumber(positions[0]) : null));
+                }
+            }
+            if (edition.HasValue)
+            {
+                found.AddRange(LookupText.Strings(edition.Value, "series").Select(LibrarySeries.ParseField).OfType<LibrarySeriesPart>());
+            }
+
+            (result.Title, LibrarySeriesPart? inTitle) = LibrarySeries.Extract(result.Title);
+            (result.Subtitle, LibrarySeriesPart? inSubtitle) = LibrarySeries.Extract(result.Subtitle);
+            found.AddRange(new[] { inTitle, inSubtitle }.OfType<LibrarySeriesPart>());
+            if (work.HasValue)
+            {
+                found.AddRange(new[] { "title", "subtitle" }.Select(x => LibrarySeries.Extract(LookupText.Str(work.Value, x)).Series).OfType<LibrarySeriesPart>());
+            }
+
+            if (result.Title == null)
+            {
+                // The whole title was series text, such as "(The Wheel of Time, Book 6)".
+                result.Title = result.Subtitle;
+                result.Subtitle = null;
+            }
+            if (found.Count == 0)
+            {
+                return;
+            }
+
+            string name = found[0].Name;
+            string key = LibrarySeries.Key(name);
+            result.Series = name;
+            result.SeriesNumber = found.Where(x => LibrarySeries.Key(x.Name) == key).Select(x => x.Number).FirstOrDefault(x => x.HasValue);
+
+            if (result.Subtitle != null && LibrarySeries.IsSeriesTitle(result.Title, found[0], out decimal? titleNumber))
+            {
+                result.Title = result.Subtitle;
+                result.Subtitle = null;
+                result.SeriesNumber ??= titleNumber;
+            }
         }
 
         private async Task<string> GetAuthorNameAsync(string authorKey, CancellationToken cancellationToken)
@@ -269,18 +335,6 @@ namespace number_sequence.Services.Libraries
             };
         }
 
-        /// <summary>
-        /// Splits a series string such as "Discworld (3)" or "Harry Potter #1" into name and number. One with no number
-        /// recognizable at the end is kept whole.
-        /// </summary>
-        private static (string Series, decimal? Number) Series(string series)
-        {
-            Match match = SeriesRegex().Match(series);
-            return match.Success && decimal.TryParse(match.Groups["number"].Value, System.Globalization.CultureInfo.InvariantCulture, out decimal number)
-                ? (match.Groups["name"].Value.Trim(), number)
-                : (series, null);
-        }
-
         [GeneratedRegex(@"^OL\d+W\z")]
         private static partial Regex WorkIdRegex();
 
@@ -292,8 +346,5 @@ namespace number_sequence.Services.Libraries
 
         [GeneratedRegex(@"^/authors/OL\d+A\z")]
         private static partial Regex AuthorKeyRegex();
-
-        [GeneratedRegex(@"^(?<name>.+?)[\s,;]*(?:\(|#|\bbook\s+|\bvol(?:ume)?\.?\s*|\bno\.?\s*)(?<number>\d+(?:\.\d+)?)\)?\s*$", RegexOptions.IgnoreCase)]
-        private static partial Regex SeriesRegex();
     }
 }

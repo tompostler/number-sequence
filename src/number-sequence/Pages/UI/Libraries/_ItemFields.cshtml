@@ -1,5 +1,8 @@
 @model LibraryItem
 @* Rendered with <partial for="..."> so the field names carry the page's property prefix. *@
+@{
+  List<string> seriesNames = ViewData[LibraryDisplay.SeriesNamesKey] as List<string> ?? [];
+}
 
 <div class="row g-2 mb-2">
   <div class="col-5 col-md-3">
@@ -33,7 +36,17 @@
 <div class="row g-2 mb-2">
   <div class="col-8">
     <label asp-for="Series" class="form-label">Series</label>
-    <input asp-for="Series" class="form-control" maxlength="128" />
+    <input asp-for="Series" class="form-control" maxlength="128" list="library-series-names" autocomplete="off" />
+    @if (seriesNames.Count > 0)
+    {
+      @* Suggesting the spellings already in use is what keeps one series from becoming two. *@
+      <datalist id="library-series-names">
+        @foreach (string name in seriesNames)
+        {
+          <option value="@name"></option>
+        }
+      </datalist>
+    }
   </div>
   <div class="col-4">
     <label asp-for="SeriesNumber" class="form-label">Number</label>

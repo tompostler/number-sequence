@@ -39,6 +39,11 @@ namespace number_sequence.Pages.UI.Libraries
         public bool IsOwner => this.Library?.CallerPermission == LibraryPermission.Owner;
 
         /// <summary>
+        /// The series names in use in the library, once <see cref="LoadSeriesNamesAsync"/> has run.
+        /// </summary>
+        public List<string> SeriesNames { get; private set; } = [];
+
+        /// <summary>
         /// Loads <see cref="Library"/>, or returns the result to send instead when it isn't visible to the caller.
         /// </summary>
         protected async Task<IActionResult> LoadLibraryAsync(long libraryId, CancellationToken cancellationToken)
@@ -52,6 +57,16 @@ namespace number_sequence.Pages.UI.Libraries
             {
                 return this.NotFound();
             }
+        }
+
+        /// <summary>
+        /// Loads <see cref="SeriesNames"/>, and puts them where <c>_ItemFields</c> offers them as suggestions for the series
+        /// box. Its model is the item, so they go in view data.
+        /// </summary>
+        protected async Task LoadSeriesNamesAsync(long libraryId, CancellationToken cancellationToken)
+        {
+            this.SeriesNames = await this.NsClient.Library.GetSeriesAsync(libraryId, cancellationToken);
+            this.ViewData[LibraryDisplay.SeriesNamesKey] = this.SeriesNames;
         }
 
         /// <summary>

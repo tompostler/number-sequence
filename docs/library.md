@@ -11,8 +11,8 @@ This is deliberately not a full library system. There are no holds, fines, patro
 `Migrations/*_AddLibrary*`), as do the Client, Tool and UI (`Pages/UI/Libraries/`), and so do three helpers the API is
 built on: barcode normalization (`Utilities/LibraryBarcode.cs`), the access check (`DataAccess/LibraryAccess.cs`) and
 event times (`Utilities/LibraryEventTimes.cs`). External lookup and covers exist too (`Services/Libraries/`), and so does
-the camera scanner (`wwwroot/js/library-scanner.js`) and scan sessions with their reconcile view. Export, described
-below, is the remaining work.
+the camera scanner (`wwwroot/js/library-scanner.js`) and scan sessions with their reconcile view, and series parsing
+(`Utilities/LibrarySeries.cs`). Export, described below, is the remaining work.
 
 ## Data model: item → copy
 
@@ -495,7 +495,17 @@ record.
     and the search index, which already has the author names resolved. Using the index saves a request per author.
     Its record is only used when its work id matches, because a search that misread the query would return another
     book's authors without anyone noticing. When it doesn't match, each author's record is fetched instead.
+  - **The title and subtitle are the edition's**, as a pair, falling back to the work's. A work groups every edition,
+    translations included, under whatever title its first cataloguer typed. Found on a real shelf: an English
+    *The Waste Lands* whose work is titled "A Torre Negra / As Terras Devastadas", and works titled "The Great Hunt (The
+    Wheel of Time Book 2)" over editions titled plainly. The work's title was first choice originally, on the idea that
+    it's the same across editions; it isn't any cleaner, and the edition's is what's printed on the book.
   - The edition's cover is preferred over the work's, which may show another edition.
+  - **Series** (`LibrarySeries`, below).
+  - `Year` is the search index's `first_publish_year`, which is the earliest year of any edition in the work, so one
+    misdated or misfiled edition drags it early (*Song of Susannah* as 1999, not 2004). The work's own
+    `first_publish_date` was compared on 23 real books and was wrong about as often, in other places, so neither wins;
+    it's an Open Library data problem, fixed there or by hand.
   - Open Library's free-text physical format is mapped onto the suggested formats; anything else is left blank rather
     than stored as one cataloguer typed it.
   - Google Books only knows the edition, so `Year` (first release) is left empty rather than set to a reprint's year.
@@ -508,12 +518,36 @@ record.
   are fetched in one `thing` request (BGG's limit), and those are ordered by how many people rated them, which puts the
   game most people mean first. An expansion's base game becomes its series.
 
+**Series.** Open Library has no one place for it, and a lookup that read only the edition's free-text `series` field gave
+3 of 16 series books on one shelf a series and none a number. What exists, in the order used:
+1. The search index's `series_name` and `series_position`, structured, but only for some works (all of the Dark Tower,
+   none of the Wheel of Time).
+2. The edition's `series` field, free text: "Wheel of Time (11)", "The Wheel of Time, Book Ten;", "The Dark Tower VII".
+3. Series text written into the title or subtitle by a cataloguer: "(The Wheel of Time, Book 6)", "Book Two of 'The
+   Wheel of Time'". This is taken out of the title as well as read, so the title is left clean.
+4. The same in the work's title and subtitle.
+
+The name is the first source's, and the number the first one among sources naming that same series. A title that is
+only the series and a number ("The Dark Tower III", with "The Waste Lands" as subtitle) gives way to its subtitle, but
+only when the series is known from another source, since a title like *Rocky II* looks the same. Titles are otherwise
+parsed cautiously: a bare trailing number counts in a series field but not a title (*Fahrenheit 451*), and a bracketed
+note without a number ("(Movie Tie-In)", "(Wheel of Time)") is left alone. On the 23-book shelf this gives every Dark
+Tower book its series and number, and 11 of 14 Wheel of Time books; the rest have no number anywhere in Open Library.
+
+Sources spell one series differently ("Wheel of Time", "The Wheel of Time"). Whenever a lookup fills a series in (the add
+page, adding from a scan), `LibrarySeries.MatchExisting` swaps in the spelling the library already uses, comparing
+letters and digits without a leading "the". Not at save time: then respelling one item to fix a series would be undone
+by the others still spelled the old way. The series box also suggests the library's names (`GET libraries/{id}/series`).
+
 **Rejected:**
 - **UPC databases** (e.g. UPCitemdb's free tier). Their results for movies and games are thin and inconsistent, and
   the free tiers are rate limited to around 100 a day, which a first inventory run blows through.
 - **Google Books without a key.** It was the plan, on "allowed at low volume". In practice the shared keyless quota is
   zero: every keyless request is a 429 (`quota_limit_value: 0`), so the fallback never worked and an ISBN Open Library
   lacked showed "Google Books is limiting how often it's asked". It now needs `GoogleBooksKey` and is skipped without.
+- **A choice of source on the add page.** Considered when series came out inconsistent, before finding that Open Library
+  had most of what was wanted in fields the lookup wasn't reading. Google Books has no structured series in its public
+  api. Hardcover has good structured series and would be the one to add if this comes back.
 - **An `ILibraryLookupProvider` interface.** The providers don't share a shape (ISBN for books only, search plus fetch
   for the rest), so the interface would have been mostly unsupported methods.
 

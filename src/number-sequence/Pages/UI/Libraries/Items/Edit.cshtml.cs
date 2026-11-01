@@ -34,6 +34,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
             {
                 return this.NotFound();
             }
+            await this.LoadSeriesNamesAsync(libraryId, cancellationToken);
             return this.Page();
         }
 
@@ -46,6 +47,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
             this.Item.Id = itemId;
             if (!this.ModelState.IsValid)
             {
+                await this.LoadSeriesNamesAsync(libraryId, cancellationToken);
                 return this.Page();
             }
 
@@ -78,6 +80,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
             catch (NsTcpWtfClientException ex)
             {
                 this.FormError = ErrorText(ex);
+                await this.LoadSeriesNamesAsync(libraryId, cancellationToken);
                 return this.Page();
             }
 

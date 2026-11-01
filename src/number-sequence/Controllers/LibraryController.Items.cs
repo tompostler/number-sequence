@@ -258,5 +258,27 @@ namespace number_sequence.Controllers
             to.ExternalIds = from.ExternalIds;
             to.Attributes = from.Attributes;
         }
+
+        /// <summary>
+        /// Every series name in use in the library, for suggesting as one is typed and for matching a looked-up series to
+        /// the spelling already used (<see cref="LibrarySeries.MatchExisting"/>).
+        /// </summary>
+        [HttpGet("libraries/{libraryId}/series")]
+        public async Task<IActionResult> GetSeriesAsync(long libraryId, CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            _ = await nsContext.GetLibraryWithAccessAsync(libraryId, this.AccountName, LibraryPermission.Viewer, cancellationToken);
+            return this.Ok(await SeriesNamesAsync(nsContext, libraryId, cancellationToken));
+        }
+
+        private static Task<List<string>> SeriesNamesAsync(NsContext nsContext, long libraryId, CancellationToken cancellationToken)
+            => nsContext.LibraryItems
+                .Where(x => x.LibraryId == libraryId && x.Series != null && x.Series != string.Empty)
+                .Select(x => x.Series)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToListAsync(cancellationToken);
     }
 }

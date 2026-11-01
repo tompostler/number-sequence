@@ -252,7 +252,7 @@ namespace number_sequence.Controllers
                         Title = result.Title,
                         Subtitle = result.Subtitle,
                         Creators = result.Creators,
-                        Series = result.Series,
+                        Series = LibrarySeries.MatchExisting(result.Series, await SeriesNamesAsync(nsContext, libraryId, cancellationToken)),
                         SeriesNumber = result.SeriesNumber,
                         Year = result.Year,
                         Summary = result.Summary,

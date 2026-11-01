@@ -13,6 +13,11 @@ namespace number_sequence.Pages.UI.Libraries
     /// </summary>
     public static class LibraryDisplay
     {
+        /// <summary>
+        /// The view data key <c>_ItemFields</c> reads series suggestions from; see <c>LibraryPageModel.LoadSeriesNamesAsync</c>.
+        /// </summary>
+        public const string SeriesNamesKey = "LibrarySeriesNames";
+
         public static string MediaType(LibraryMediaType mediaType) => mediaType switch
         {
             LibraryMediaType.BoardGame => "Board game",
