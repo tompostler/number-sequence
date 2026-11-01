@@ -1,11 +1,14 @@
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using TcpWtf.NumberSequence.Contracts.Libraries;
 
 namespace number_sequence.Services.Libraries
 {
     /// <summary>
-    /// Books from Google Books, asked only for an ISBN that Open Library has no record of. Used without a key: that is
-    /// allowed at low volume, and as a fallback it rarely gets asked.
+    /// Books from Google Books, asked only for an ISBN that Open Library has no record of, and only with a key. Keyless
+    /// requests share a quota that is zero (every one is a 429), so without a key it is off like an unconfigured TMDB.
+    /// The key goes in the <c>X-Goog-Api-Key</c> header rather than the <c>key</c> query parameter, which would be logged
+    /// with the url.
     /// <para>
     /// Google only knows the edition, so <see cref="LibraryLookupResult.Year"/> is left empty rather than set to a reprint's
     /// year; the edition's year goes on the copy.
@@ -16,15 +19,19 @@ namespace number_sequence.Services.Libraries
         private const string Name = "Google Books";
 
         private readonly LibraryLookupHttp http;
+        private readonly string key;
 
-        public GoogleBooksProvider(LibraryLookupHttp http)
+        public GoogleBooksProvider(LibraryLookupHttp http, IOptions<Options.LibraryLookup> options)
         {
             this.http = http;
+            this.key = LookupText.ConfiguredToken(options.Value.GoogleBooksKey);
         }
+
+        public bool IsConfigured => this.key != null;
 
         public async Task<LibraryLookupResult> GetByIsbnAsync(string isbn13, CancellationToken cancellationToken)
         {
-            using JsonDocument doc = await this.http.GetJsonAsync(Name, $"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn13}&maxResults=1", cancellationToken);
+            using JsonDocument doc = await this.http.GetJsonAsync(Name, $"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn13}&maxResults=1", cancellationToken, apiKeyHeader: ("X-Goog-Api-Key", this.key));
             JsonElement? volume = doc == null ? null : LookupText.Array(doc.RootElement, "items").Select(x => (JsonElement?)x).FirstOrDefault();
             if (!volume.HasValue || !volume.Value.TryGetProperty("volumeInfo", out JsonElement info))
             {

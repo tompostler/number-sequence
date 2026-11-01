@@ -24,15 +24,20 @@ namespace number_sequence.Services.Libraries
         }
 
         /// <summary>
-        /// The response body, or null on a 404.
+        /// The response body, or null on a 404. A credential goes in a header, either <paramref name="bearerToken"/> or
+        /// <paramref name="apiKeyHeader"/>, never in the url: the url is logged.
         /// </summary>
-        public async Task<string> GetStringAsync(string provider, string url, CancellationToken cancellationToken, string bearerToken = null)
+        public async Task<string> GetStringAsync(string provider, string url, CancellationToken cancellationToken, string bearerToken = null, (string Name, string Value)? apiKeyHeader = null)
         {
             Stopwatch sw = Stopwatch.StartNew();
             using HttpRequestMessage request = new(HttpMethod.Get, url);
             if (bearerToken != null)
             {
                 request.Headers.Authorization = new("Bearer", bearerToken);
+            }
+            if (apiKeyHeader.HasValue)
+            {
+                request.Headers.Add(apiKeyHeader.Value.Name, apiKeyHeader.Value.Value);
             }
 
             HttpResponseMessage response;
@@ -75,9 +80,9 @@ namespace number_sequence.Services.Libraries
         /// <summary>
         /// <see cref="GetStringAsync"/> parsed as json, or null on a 404. A body that isn't json is a provider failure.
         /// </summary>
-        public async Task<JsonDocument> GetJsonAsync(string provider, string url, CancellationToken cancellationToken, string bearerToken = null)
+        public async Task<JsonDocument> GetJsonAsync(string provider, string url, CancellationToken cancellationToken, string bearerToken = null, (string Name, string Value)? apiKeyHeader = null)
         {
-            string body = await this.GetStringAsync(provider, url, cancellationToken, bearerToken);
+            string body = await this.GetStringAsync(provider, url, cancellationToken, bearerToken, apiKeyHeader);
             if (body == null)
             {
                 return null;

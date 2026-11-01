@@ -52,6 +52,12 @@ namespace number_sequence
             /// A BoardGameGeek registered application token, for board games.
             /// </summary>
             public string BggToken { get; set; }
+
+            /// <summary>
+            /// A Google Cloud API key with the Books API enabled, for books Open Library doesn't have. Without one Google
+            /// Books isn't asked: its keyless quota is zero.
+            /// </summary>
+            public string GoogleBooksKey { get; set; }
         }
 
         public sealed class Sql

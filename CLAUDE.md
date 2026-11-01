@@ -169,6 +169,7 @@ Full design notes: [`docs/library.md`](docs/library.md). Constraints that will b
   saved under the old key.
 - **A lookup token needs Key Vault, the `tompostler` variable group, `deploy-code.yml`, `AppServiceSettings.json` and
   `devinit.ps1`.** A secret missing from the variable group reaches the app as the literal `$(name)`, which counts as no
-  token, so forgetting it leaves that lookup quietly off rather than failing the deploy.
+  token, so forgetting it leaves that lookup quietly off rather than failing the deploy. The credential goes in a header,
+  never the url: `LibraryLookupHttp` logs every request url.
 - **The namespace and pages folder are `Libraries`, not `Library`**, because the root entity is `Library` and a type named
   like its own namespace breaks name resolution (CS0118).

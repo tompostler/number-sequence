@@ -221,7 +221,7 @@ namespace number_sequence.Controllers
                 return this.BadRequest($"{entryRecord.Barcode} isn't an ISBN, so it can't be looked up by itself. Add it from the add page.");
             }
             LibraryLookupResult result = await this.serviceProvider.GetRequiredService<LibraryLookup>().LookupIsbnAsync(code.Value, cancellationToken)
-                ?? throw new NotFoundException($"Neither Open Library nor Google Books knows ISBN {code.Value}. Add it from the add page.");
+                ?? throw new NotFoundException($"No book lookup source knows ISBN {code.Value}. Add it from the add page.");
             if (string.IsNullOrWhiteSpace(result.Title))
             {
                 throw new NotFoundException($"The lookup found ISBN {code.Value} but no title for it. Add it from the add page.");

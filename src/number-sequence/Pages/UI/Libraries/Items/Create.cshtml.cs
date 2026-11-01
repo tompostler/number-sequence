@@ -182,7 +182,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
                     }
                     else
                     {
-                        this.LookupNote = $"Neither Open Library nor Google Books knows ISBN {this.Copy.Isbn}. Search by title above, or fill it in below.";
+                        this.LookupNote = $"No book lookup source knows ISBN {this.Copy.Isbn}. Search by title above, or fill it in below.";
                     }
                 }
                 else if (parsed?.Kind == LibraryBarcodeKind.Gtin)

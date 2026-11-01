@@ -26,6 +26,9 @@
     "libraryLookupBggToken": {
       "type": "securestring"
     },
+    "libraryLookupGoogleBooksKey": {
+      "type": "securestring"
+    },
     "libraryLookupTmdbToken": {
       "type": "securestring"
     },
@@ -70,6 +73,7 @@
         "Email__Password": "[parameters('emailPassword')]",
         "LANG": "en_US.UTF-8",
         "LibraryLookup__BggToken": "[parameters('libraryLookupBggToken')]",
+        "LibraryLookup__GoogleBooksKey": "[parameters('libraryLookupGoogleBooksKey')]",
         "LibraryLookup__TmdbToken": "[parameters('libraryLookupTmdbToken')]",
         "Sql__ConnectionString": "[variables('sqlConnectionString')]",
         "Storage__ConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",

@@ -42,8 +42,8 @@ namespace number_sequence.Services.Libraries
         }
 
         /// <summary>
-        /// A book by its ISBN-13 from Open Library, or Google Books when Open Library has no record or is down. Null when
-        /// neither has it.
+        /// A book by its ISBN-13 from Open Library, or Google Books (when it has a key) when Open Library has no record or is
+        /// down. Null when neither has it.
         /// </summary>
         public Task<LibraryLookupResult> LookupIsbnAsync(string isbn13, CancellationToken cancellationToken)
             => this.CachedAsync($"isbn:{isbn13}", () => this.LookupIsbnUncachedAsync(isbn13, cancellationToken));
@@ -63,6 +63,14 @@ namespace number_sequence.Services.Libraries
                 openLibraryFailure = ex;
             }
 
+            if (!this.googleBooks.IsConfigured)
+            {
+                if (openLibraryFailure != null)
+                {
+                    throw openLibraryFailure;
+                }
+                return null;
+            }
             LibraryLookupResult fallback = await this.googleBooks.GetByIsbnAsync(isbn13, cancellationToken);
             if (fallback == null && openLibraryFailure != null)
             {
