@@ -350,6 +350,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Option<bool> itemLoanedOutOption = new("--loaned-out") { Description = "Only items with a copy on loan." };
             Option<int> skipOption = new("--skip") { Description = "How many results to skip.", DefaultValueFactory = _ => 0 };
             Option<int> takeOption = new("--take") { Description = "How many results to return, at most 500.", DefaultValueFactory = _ => 100 };
+            Option<LibraryItemSort?> itemSortOption = new("--sort") { Description = "Shelf (the default: author, series, number, title), Title, or Added (newest first)." };
             Command itemListCommand = new("list", "Search or browse the items in a library.")
             {
                 stampOption,
@@ -361,6 +362,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 itemLoanedOutOption,
                 skipOption,
                 takeOption,
+                itemSortOption,
                 rawOption,
             };
             itemListCommand.AddListAliases();
@@ -377,8 +379,9 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     bool loanedOut = parseResult.GetValue(itemLoanedOutOption);
                     int skip = parseResult.GetRequiredValue(skipOption);
                     int take = parseResult.GetRequiredValue(takeOption);
+                    LibraryItemSort? sort = parseResult.GetValue(itemSortOption);
                     bool raw = parseResult.GetValue(rawOption);
-                    return HandleItemListAsync(libraryId, query, mediaType, locationId, loanedOut, skip, take, raw, stamp, verbosity);
+                    return HandleItemListAsync(libraryId, query, mediaType, locationId, loanedOut, skip, take, sort, raw, stamp, verbosity);
                 });
 
             itemCommand.Subcommands.Add(itemCreateCommand);

@@ -82,6 +82,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             bool loanedOut,
             int skip,
             int take,
+            LibraryItemSort? sort,
             bool raw,
             Stamp stamp,
             Verbosity verbosity)
@@ -89,7 +90,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
             long id = await ResolveLibraryIdAsync(client, libraryId);
 
-            List<LibraryItem> items = await client.Library.GetItemsAsync(id, query, mediaType, locationId, loanedOut, skip, take);
+            List<LibraryItem> items = await client.Library.GetItemsAsync(id, query, mediaType, locationId, loanedOut, skip, take, sort);
             if (raw)
             {
                 Console.WriteLine(items.ToJsonString(indented: true));

@@ -29,6 +29,12 @@ namespace number_sequence.Pages.UI.Libraries
         [BindProperty(SupportsGet = true)]
         public int Skip { get; set; }
 
+        /// <summary>
+        /// Null for shelf order, so the plain url is the default.
+        /// </summary>
+        [BindProperty(SupportsGet = true)]
+        public LibraryItemSort? Sort { get; set; }
+
         public List<LibraryLocation> Locations { get; private set; }
 
         public Dictionary<long, string> Paths { get; private set; }
@@ -54,7 +60,7 @@ namespace number_sequence.Pages.UI.Libraries
             this.Paths = LibraryDisplay.Paths(this.Locations);
             try
             {
-                this.Items = await this.NsClient.Library.GetItemsAsync(libraryId, this.Q, this.Type, this.Location, this.LoanedOut, Math.Max(0, this.Skip), PageSize, cancellationToken);
+                this.Items = await this.NsClient.Library.GetItemsAsync(libraryId, this.Q, this.Type, this.Location, this.LoanedOut, Math.Max(0, this.Skip), PageSize, this.Sort, cancellationToken);
             }
             catch (NsTcpWtfClientException ex)
             {
@@ -85,6 +91,10 @@ namespace number_sequence.Pages.UI.Libraries
             if (this.LoanedOut)
             {
                 query["loanedOut"] = "true";
+            }
+            if (this.Sort.HasValue && this.Sort != LibraryItemSort.Shelf)
+            {
+                query["sort"] = this.Sort.ToString();
             }
             if (skip > 0)
             {

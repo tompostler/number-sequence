@@ -22,6 +22,7 @@ namespace number_sequence.Controllers
         /// <param name="externalIdKey">With <paramref name="externalIdValue"/>, only items whose
         /// <see cref="LibraryItem.ExternalIds"/> has that entry. How a lookup result finds the item it's already in the
         /// library as.</param>
+        /// <param name="sort">Shelf order unless asked otherwise; see <see cref="LibrarySort"/>.</param>
         [HttpGet("libraries/{libraryId}/items")]
         public async Task<IActionResult> GetItemsAsync(
             long libraryId,
@@ -33,7 +34,8 @@ namespace number_sequence.Controllers
             [FromQuery] string externalIdKey = null,
             [FromQuery] string externalIdValue = null,
             [FromQuery] int skip = 0,
-            [FromQuery] int take = 100)
+            [FromQuery] int take = 100,
+            [FromQuery] LibraryItemSort sort = LibraryItemSort.Shelf)
         {
             if (take < 1 || take > 500)
             {
@@ -77,13 +79,44 @@ namespace number_sequence.Controllers
                 query = query.Where(x => matching.Contains(x.Id));
             }
 
+            // The page's ids first. Shelf and title order need a last name and article-free titles, which sql can't do, so
+            // every match's sort fields are read and sorted here; see LibrarySort.
+            int matched;
+            List<long> pageIds;
+            if (sort == LibraryItemSort.Added)
+            {
+                pageIds = await query
+                    .OrderByDescending(x => x.Copies.Max(c => (DateTimeOffset?)c.CreatedDate) ?? x.CreatedDate)
+                    .ThenByDescending(x => x.Id)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(x => x.Id)
+                    .ToListAsync(cancellationToken);
+                matched = -1;
+            }
+            else
+            {
+                List<LibraryItem> keys = await query
+                    .Select(x => new LibraryItem
+                    {
+                        Id = x.Id,
+                        Title = x.Title,
+                        Subtitle = x.Subtitle,
+                        Creators = x.Creators,
+                        Series = x.Series,
+                        SeriesNumber = x.SeriesNumber,
+                        Year = x.Year,
+                    })
+                    .ToListAsync(cancellationToken);
+                matched = keys.Count;
+                pageIds = LibrarySort.Order(keys, sort).Skip(skip).Take(take).Select(x => x.Id).ToList();
+            }
+
             // The item is the only partial row in the response: summary, external ids and attributes are the large columns,
             // and a page can be 500 items. Copies and open loans come back whole and are attached to their item below.
-            var rows = await query
-                .OrderBy(x => x.Title)
-                .ThenBy(x => x.Id)
-                .Skip(skip)
-                .Take(take)
+            var rows = await nsContext.LibraryItems
+                .AsNoTracking()
+                .Where(x => pageIds.Contains(x.Id))
                 .Select(x => new
                 {
                     Item = new LibraryItem
@@ -108,8 +141,9 @@ namespace number_sequence.Controllers
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken);
 
+            Dictionary<long, int> position = pageIds.Select((id, i) => (id, i)).ToDictionary(x => x.id, x => x.i);
             List<LibraryItem> items = [];
-            foreach (var row in rows)
+            foreach (var row in rows.OrderBy(x => position[x.Item.Id]))
             {
                 foreach (LibraryCopy copy in row.Copies)
                 {
@@ -119,7 +153,7 @@ namespace number_sequence.Controllers
                 items.Add(row.Item);
             }
 
-            this.logger.LogInformation($"[{this.AccountName}] searched library [{libraryId}] q=[{q}] mediaType=[{mediaType}] locationId=[{locationId}] loanedOut=[{loanedOut}] externalId=[{externalIdKey}:{externalIdValue}] skip={skip} take={take}: {items.Count} items in {sw.ElapsedMilliseconds}ms.");
+            this.logger.LogInformation($"[{this.AccountName}] searched library [{libraryId}] q=[{q}] mediaType=[{mediaType}] locationId=[{locationId}] loanedOut=[{loanedOut}] externalId=[{externalIdKey}:{externalIdValue}] sort={sort} skip={skip} take={take}: {items.Count} items{(matched < 0 ? string.Empty : $" of {matched} sorted")} in {sw.ElapsedMilliseconds}ms.");
             return this.Ok(items);
         }
 

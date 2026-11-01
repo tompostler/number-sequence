@@ -40,6 +40,7 @@ namespace TcpWtf.NumberSequence.Client
         /// <para>
         /// <c>q</c> is matched against title, subtitle, creators and series, and against copy barcodes if it parses as one.
         /// <c>locationId</c> includes everything inside that location. <c>loanedOut</c> keeps only items with a copy on loan.
+        /// <c>sort</c> is shelf order when not given.
         /// </para>
         /// </summary>
         public async Task<List<LibraryItem>> GetItemsAsync(
@@ -50,9 +51,14 @@ namespace TcpWtf.NumberSequence.Client
             bool loanedOut = false,
             int skip = 0,
             int take = 100,
+            LibraryItemSort? sort = null,
             CancellationToken cancellationToken = default)
         {
             List<string> queryParams = [$"skip={skip}", $"take={take}"];
+            if (sort.HasValue)
+            {
+                queryParams.Add($"sort={sort.Value}");
+            }
             if (!string.IsNullOrWhiteSpace(q))
             {
                 queryParams.Add($"q={Uri.EscapeDataString(q)}");

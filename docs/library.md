@@ -286,6 +286,23 @@ libraries:
 - `lookup/isbn/{isbn}`, `lookup/search?mediaType=&q=`, `lookup/{source}/{sourceId}` and `lookup/cover?url=` call
   outside services and save nothing. See [External lookup](#external-lookup).
 
+**Item order** (`items?sort=`, `LibrarySort`) is shelf order unless asked otherwise: the first creator's last name, then
+the series (or the title, for a book outside one), then the number in the series (unnumbered ones after, by year), then
+the title, with a leading "The", "A" or "An" ignored throughout. Grouping by series *or* title keeps a series together
+while filing it among the author's other books, so the Dark Tower sits under D between *Cujo* and *Firestarter*, as on a
+shelf. `Title` (article-free) and `Added` (newest first) are the other two. Added counts a copy's date too, so a new copy
+of an item already here comes up with what a scan just brought in.
+- **Location isn't a sort.** It belongs to copies, and an item with a hardcover in one room and a paperback in another
+  has no one place. Filtering to a location gives the order of that shelf instead.
+- **The last name is worked out, not stored.** `Creators` is one free-text field, so the key is the first creator's last
+  word, with a trailing Jr., Sr. or roman numeral dropped and a particle (le, van, de…) kept with it: *Le Guin* files
+  under L, as a library would. A name already written "Last, First" is taken as it is. A rare name will still file wrong;
+  a "sort as" field waits for a real one.
+- **Sorted in memory, not sql.** Sql can't do the last name or the articles, and a stored sort key would go stale the
+  first time a path that writes items forgot it. Every match's sort fields (a few short columns) are read and sorted,
+  and then the page is fetched by id. A library is at most a few thousand items, so that's cheap. Added is a plain date,
+  so sql sorts it.
+
 **Copies change location, status and loans only through dedicated actions** (`copies/{id}/move`, `/status`, `/loan`,
 `/return`), because each one writes a `LibraryCopyEvent`. The general PUT of a copy leaves all three alone. It does
 allow changing `ItemId` to another item in the same library: that is how a copy added as its own item gets merged into
@@ -375,6 +392,7 @@ Choices that aren't obvious from `--help`:
   duplicate gets merged.
 - **`item read` shows the item, a table of copies and one combined history**, with event dates from the server's
   event-time helper. Moves show location paths and loans show the borrower. `--raw` gives the json instead.
+- **`item list --sort`** takes the api's [item order](#api): `Shelf` (the default), `Title` or `Added`.
 - **Deleting a library, item or copy asks for confirmation** and points at disposing instead, which keeps history.
   Deleting a location doesn't ask, since the server refuses unless it's empty.
 
@@ -397,6 +415,8 @@ and home card show for the `Library` role.
   library. It runs the item search once per library rather than adding a cross-library search endpoint, since an account
   sees a handful of libraries at most. A barcode with no match says so and offers "Add to *library*" with the barcode
   filled in.
+- **A library's page sorts** by shelf order, title or recently added ([item order](#api)). Shelf order leaves the url
+  plain, so a bookmark of the library is its shelf.
 - **Adding an item adds its first copy in the same form.** Before creating, the page looks for an item this might already
   be: one with a copy carrying the same barcode, or one with exactly the same title. If it finds one, it offers "Add copy
   here" on each match, which keeps everything typed for the copy, or "Create a new item anyway". The barcode is checked
