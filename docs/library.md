@@ -404,6 +404,10 @@ Choices that aren't obvious from `--help`:
 - **`item read` shows the item, a table of copies and one combined history**, with event dates from the server's
   event-time helper. Moves show location paths and loans show the borrower. `--raw` gives the json instead.
 - **`item list --sort`** takes the api's [item order](#api): `Shelf` (the default), `Title` or `Added`.
+- **`series set <name> <id[=n]>...`** or **`series set <name> --query <q>`** is the [bulk series fix](#external-lookup).
+  With ids, a bare `id` keeps its number and `id=n` sets it. With `--query` it lists the matches in likely series order
+  and asks for each one's number (blank keeps it, `-` for none, `x` leaves the item out), then confirms. A name of `-`
+  takes the items out of any series. `series list` gives the names in use.
 - **Deleting a library, item or copy asks for confirmation** and points at disposing instead, which keeps history.
   Deleting a location doesn't ask, since the server refuses unless it's empty.
 - **`item refresh <itemId>` or `item refresh --all`** goes through refresh one item at a time: a table of what would
@@ -430,6 +434,9 @@ and home card show for the `Library` role.
   library. It runs the item search once per library rather than adding a cross-library search endpoint, since an account
   sees a handful of libraries at most. A barcode with no match says so and offers "Add to *library*" with the barcode
   filled in.
+- **Series** (from a library's page, for editors) is the [bulk series fix](#external-lookup): search, tick, name the
+  series once, a number per book. With no search it lists the library's series, each a link that searches for it,
+  which is the way to fix one's spelling everywhere.
 - **A library's page sorts** by shelf order, title or recently added ([item order](#api)). Shelf order leaves the url
   plain, so a bookmark of the library is its shelf.
 - **Adding an item adds its first copy in the same form.** Before creating, the page looks for an item this might already
@@ -596,6 +603,22 @@ Sources spell one series differently ("Wheel of Time", "The Wheel of Time"). Whe
 page, adding from a scan, refresh), `LibrarySeries.MatchExisting` swaps in the spelling the library already uses, comparing
 letters and digits without a leading "the". Not at save time: then respelling one item to fix a series would be undone
 by the others still spelled the old way. The series box also suggests the library's names (`GET libraries/{id}/series`).
+
+**Fixing a series by hand is per series, not per book.** After two shelves it was clear that no source has series data
+worth more parsing rules: Open Library has it for some works in whatever form a cataloguer typed, Google Books not at
+all, and each new shelf brought its own quirk. The rest of a lookup (title, author, publisher, cover) held up. So the
+parsing stops at the forms above, and what it misses is fixed in bulk: `PUT libraries/{id}/series` sets one name on many
+items, each with its own number, and the Series page and `series set` are built on it.
+- **The name is used as given**, not matched to an existing spelling, because correcting a spelling ("H.i.v.e --" to
+  "H.I.V.E.") is often the point. Search for the old spelling, tick everything, type the new one.
+- **A number is sent for every item**, and null means none, so a client keeps a number by sending it back. The page
+  prefills each box with the saved number; the Tool's bare `id` fetches it. A blank name clears numbers too, since a
+  number without a series means nothing.
+- **All or nothing:** an id not in the library refuses the whole request, so a typo doesn't leave half a series set.
+- **The list is in likely series order** (saved number, then year, then title), not shelf order, and "Number ticked 1, 2,
+  3…" numbers the ticked rows in that order. For a series with no numbers saved, year is usually publication order, so
+  that's most of the numbering done; a missing year sorts last and needs its number typed.
+- Hardcover, which has structured series, stays the option if this turns out to be too much hand work.
 
 **Rejected:**
 - **UPC databases** (e.g. UPCitemdb's free tier). Their results for movies and games are thin and inconsistent, and

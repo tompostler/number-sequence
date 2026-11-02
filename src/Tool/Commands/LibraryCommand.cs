@@ -425,6 +425,63 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             #endregion // Item
 
 
+            #region Series
+
+            Command seriesCommand = new("series", "Set one series on several items at once, each with its own number: for a series a lookup misspelled or left out.");
+
+            Command seriesListCommand = new("list", "List the series names in use in a library.")
+            {
+                stampOption,
+                verbosityOption,
+                libraryOption,
+                rawOption,
+            };
+            seriesListCommand.AddListAliases();
+            seriesListCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long? libraryId = parseResult.GetValue(libraryOption);
+                    bool raw = parseResult.GetValue(rawOption);
+                    return HandleSeriesListAsync(libraryId, raw, stamp, verbosity);
+                });
+
+            Argument<string> seriesNameArgument = new("name") { Description = "The series name, used exactly as given. - takes the items out of any series." };
+            Argument<List<string>> seriesItemsArgument = new("items")
+            {
+                Description = "Item ids: id keeps its number, id=n sets it, id=- clears it. Leave out with --query.",
+                Arity = ArgumentArity.ZeroOrMore,
+            };
+            Option<string> seriesQueryOption = new("--query", "-q") { Description = "Choose from the items matching this (an author, a title, or the series as it's spelled now), with a prompt for each one's number." };
+            Command seriesSetCommand = new("set", "Put items in a series, each with its own number, or rename a series by choosing --query <old name>.")
+            {
+                stampOption,
+                verbosityOption,
+                libraryOption,
+                seriesNameArgument,
+                seriesItemsArgument,
+                seriesQueryOption,
+            };
+            seriesSetCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long? libraryId = parseResult.GetValue(libraryOption);
+                    string name = parseResult.GetRequiredValue(seriesNameArgument);
+                    List<string> items = parseResult.GetValue(seriesItemsArgument);
+                    string query = parseResult.GetValue(seriesQueryOption);
+                    return HandleSeriesSetAsync(libraryId, name, items, query, stamp, verbosity);
+                });
+
+            seriesCommand.Subcommands.Add(seriesListCommand);
+            seriesCommand.Subcommands.Add(seriesSetCommand);
+            rootCommand.Subcommands.Add(seriesCommand);
+
+            #endregion // Series
+
+
             #region Copy
 
             Command copyCommand = new("copy", "Manage copies (one physical object: a format, a barcode, a location and loans).");

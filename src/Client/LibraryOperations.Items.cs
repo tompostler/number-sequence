@@ -112,6 +112,23 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Set one series on several items, each with its own number. A blank name takes them out of any series. Returns
+        /// the items as saved.
+        /// </summary>
+        public async Task<List<LibraryItem>> SetSeriesAsync(long libraryId, LibrarySeriesAssign assign, CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Put,
+                    $"library/libraries/{libraryId}/series")
+                {
+                    Content = assign.ToJsonContent()
+                },
+                cancellationToken);
+            return await response.Content.ReadJsonAsAsync<List<LibraryItem>>(cancellationToken);
+        }
+
+        /// <summary>
         /// Look an item up again and compare: each field where the lookup has a different value. A book is looked up by a
         /// copy's ISBN, <paramref name="copyId"/>'s or else the first one's. Changes nothing.
         /// </summary>

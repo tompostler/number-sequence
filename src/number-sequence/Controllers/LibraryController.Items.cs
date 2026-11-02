@@ -307,6 +307,69 @@ namespace number_sequence.Controllers
             return this.Ok(await SeriesNamesAsync(nsContext, libraryId, cancellationToken));
         }
 
+        /// <summary>
+        /// Sets one series on several items, each with its own number: the bulk fix for a series a lookup misspelled or left
+        /// out. The name is used as given, not matched to an existing spelling, since fixing a spelling is often the point.
+        /// Every item must be in the library, or nothing changes. Returns the items as saved, in the order sent.
+        /// </summary>
+        [HttpPut("libraries/{libraryId}/series")]
+        public async Task<IActionResult> SetSeriesAsync(long libraryId, [FromBody] LibrarySeriesAssign assign, CancellationToken cancellationToken)
+        {
+            const int maxItems = 500;
+            string series = string.IsNullOrWhiteSpace(assign?.Series) ? null : assign.Series.Trim();
+            List<LibrarySeriesAssignItem> entries = assign?.Items ?? [];
+            if (entries.Count == 0 || entries.Count > maxItems)
+            {
+                return this.BadRequest($"Give between 1 and {maxItems} items.");
+            }
+            if (series?.Length > 128)
+            {
+                return this.BadRequest("A series name can be at most 128 characters.");
+            }
+            if (entries.Select(x => x.ItemId).Distinct().Count() != entries.Count)
+            {
+                return this.BadRequest("An item is listed more than once.");
+            }
+            // The column is decimal(8, 2).
+            if (entries.FirstOrDefault(x => x.Number is < 0 or >= 1_000_000 || (x.Number.HasValue && decimal.Round(x.Number.Value, 2) != x.Number.Value)) is LibrarySeriesAssignItem bad)
+            {
+                return this.BadRequest($"[{bad.Number}] for item [{bad.ItemId}] isn't a number in a series: it must be between 0 and 999999.99, with at most two decimal places.");
+            }
+
+            using IServiceScope scope = this.serviceProvider.CreateScope();
+            using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
+
+            _ = await nsContext.GetLibraryWithAccessAsync(libraryId, this.AccountName, LibraryPermission.Editor, cancellationToken);
+            List<long> ids = entries.Select(x => x.ItemId).ToList();
+            Dictionary<long, LibraryItem> records = await nsContext.LibraryItems
+                .Where(x => x.LibraryId == libraryId && ids.Contains(x.Id))
+                .ToDictionaryAsync(x => x.Id, cancellationToken);
+            List<long> missing = ids.Where(x => !records.ContainsKey(x)).ToList();
+            if (missing.Count > 0)
+            {
+                return this.NotFound($"Item{(missing.Count == 1 ? string.Empty : "s")} [{string.Join(", ", missing)}] not found in library [{libraryId}].");
+            }
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            int changed = 0;
+            foreach (LibrarySeriesAssignItem entry in entries)
+            {
+                LibraryItem record = records[entry.ItemId];
+                decimal? number = series == null ? null : entry.Number;
+                if (record.Series != series || record.SeriesNumber != number)
+                {
+                    record.Series = series;
+                    record.SeriesNumber = number;
+                    record.ModifiedDate = now;
+                    changed++;
+                }
+            }
+            _ = await nsContext.SaveChangesAsync(cancellationToken);
+
+            this.logger.LogInformation($"[{this.AccountName}] set series [{series}] on {entries.Count} items in library [{libraryId}], {changed} changed: {string.Join(", ", entries.Select(x => $"{x.ItemId}={x.Number}"))}.");
+            return this.Ok(ids.Select(x => records[x]).ToList());
+        }
+
         private static Task<List<string>> SeriesNamesAsync(NsContext nsContext, long libraryId, CancellationToken cancellationToken)
             => nsContext.LibraryItems
                 .Where(x => x.LibraryId == libraryId && x.Series != null && x.Series != string.Empty)
