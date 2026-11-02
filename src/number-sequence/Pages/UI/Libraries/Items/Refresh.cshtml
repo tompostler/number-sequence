@@ -1,0 +1,170 @@
+@page "/ui/library/{libraryId:long}/items/{itemId:long}/refresh"
+@model number_sequence.Pages.UI.Libraries.Items.RefreshModel
+@{
+  LibraryItem item = Model.Item;
+  ViewData["Title"] = $"Refresh {item.Title}";
+  LibraryItemRefresh refresh = Model.Refresh;
+  bool found = refresh?.Source != null;
+  bool coverOffered = found && refresh.CoverUrls.Count > 0;
+  string itemUrl = $"/ui/library/{Model.Library.Id}/items/{item.Id}";
+  Func<string, string> capitalize = x => string.IsNullOrEmpty(x) ? x : char.ToUpperInvariant(x[0]) + x[1..];
+}
+
+<div class="d-flex align-items-center gap-2 mb-1">
+  <a href="@itemUrl" class="btn btn-sm btn-outline-secondary">&larr;</a>
+  <h2 class="mb-0 text-truncate">Refresh from lookup</h2>
+</div>
+<div class="text-muted mb-3 text-truncate">@item.Title</div>
+
+<partial name="_LibraryFlash" model="Model" />
+
+<div class="col-12 col-md-8 col-lg-6">
+  @if (refresh?.IsbnCopyIds.Count > 1)
+  {
+    <div class="small mb-2">
+      Look up the edition of:
+      @foreach (LibraryCopy copy in item.Copies.Where(x => refresh.IsbnCopyIds.Contains(x.Id)))
+      {
+        string label = string.Join(" · ", new[] { copy.Format, copy.Publisher, copy.Isbn ?? copy.Barcode }.Where(x => !string.IsNullOrWhiteSpace(x)));
+        if (copy.Id == refresh.CopyId)
+        {
+          <span class="badge text-bg-primary">@label</span>
+        }
+        else
+        {
+          <a href="?copy=@copy.Id" class="badge text-bg-light border text-decoration-none">@label</a>
+        }
+      }
+    </div>
+  }
+
+  @if (refresh?.LookedUpBy != null)
+  {
+    <p class="small text-muted mb-2">
+      Looked up by @refresh.LookedUpBy@(found ? " at " : ".")
+      @if (found)
+      {
+        if (refresh.SourceUrl != null)
+        {
+          <a href="@refresh.SourceUrl" target="_blank" rel="noopener">@LibraryDisplay.LookupSourceName(refresh.Source)</a>@(".")
+        }
+        else
+        {
+          @(LibraryDisplay.LookupSourceName(refresh.Source) + ".")
+        }
+      }
+    </p>
+  }
+
+  @if (Model.LookupNote != null)
+  {
+    <div class="alert alert-warning py-2">@Model.LookupNote</div>
+    <a href="@itemUrl" class="btn btn-outline-secondary mb-4">Back</a>
+  }
+  else if (found && refresh.Changes.Count == 0 && !coverOffered)
+  {
+    <p>Everything the lookup has already matches what's saved.</p>
+    <a href="@itemUrl" class="btn btn-outline-secondary mb-4">Back</a>
+  }
+  else if (found)
+  {
+    <form method="post">
+      @if (refresh.CopyId.HasValue)
+      {
+        <input type="hidden" name="copy" value="@refresh.CopyId" />
+      }
+
+      <p class="small text-muted mb-2">Ticked ones replace what's saved. Each box can be changed before taking it, such as a series respelled to match the rest.</p>
+
+      @foreach (LibraryItemRefreshChange change in refresh.Changes)
+      {
+        string id = $"take-{change.Field}";
+        string name = $"Value[{change.Field}]";
+        string aria = $"New {change.Label}";
+        <div class="border rounded p-2 mb-2">
+          <div class="form-check mb-1">
+            <input type="checkbox" name="Take" value="@change.Field" id="@id" class="form-check-input" checked />
+            <label for="@id" class="form-check-label fw-semibold">@capitalize(change.Label)</label>
+          </div>
+          <div class="small text-muted mb-1 text-break" style="@(change.Field == LibraryItemRefreshFields.Summary ? "white-space: pre-line; max-height: 8em; overflow-y: auto" : null)">Now: @(change.Current ?? "(empty)")</div>
+          @switch (change.Field)
+          {
+            case LibraryItemRefreshFields.Summary:
+              <textarea name="@name" class="form-control form-control-sm" rows="4" maxlength="4000" aria-label="@aria">@change.Offered</textarea>
+              break;
+            case LibraryItemRefreshFields.SeriesNumber:
+              <input name="@name" value="@change.Offered" type="number" step="any" inputmode="decimal" class="form-control form-control-sm" aria-label="@aria" />
+              break;
+            case LibraryItemRefreshFields.Year:
+            case LibraryItemRefreshFields.PublishedYear:
+              <input name="@name" value="@change.Offered" type="number" inputmode="numeric" class="form-control form-control-sm" aria-label="@aria" />
+              break;
+            case LibraryItemRefreshFields.Series:
+              <input name="@name" value="@change.Offered" class="form-control form-control-sm" maxlength="128" list="library-series-names" autocomplete="off" aria-label="@aria" />
+              break;
+            case LibraryItemRefreshFields.Attributes:
+            case LibraryItemRefreshFields.ExternalIds:
+              @* What's saved with the lookup's entries added; nothing to type. *@
+              <div class="small text-break">Lookup: @change.Offered</div>
+              break;
+            default:
+              <input name="@name" value="@change.Offered" class="form-control form-control-sm" aria-label="@aria" />
+              break;
+          }
+        </div>
+      }
+
+      @if (coverOffered)
+      {
+        <div class="border rounded p-2 mb-2">
+          <div class="form-check mb-1">
+            <input type="checkbox" name="Take" value="@LibraryItemRefreshFields.Cover" id="take-cover" class="form-check-input" checked="@(!item.HasCover)" />
+            <label for="take-cover" class="form-check-label fw-semibold">Cover</label>
+          </div>
+          <div class="d-flex gap-3 align-items-end">
+            <div class="text-center small text-muted">
+              @if (item.HasCover)
+              {
+                <img src="@LibraryDisplay.CoverUrl(item, thumbnail: true)" alt="Saved cover" class="d-block rounded border mb-1" style="width: 64px; height: 96px; object-fit: cover" />
+              }
+              else
+              {
+                <div class="rounded border mb-1 d-flex align-items-center justify-content-center" style="width: 64px; height: 96px">none</div>
+              }
+              Now
+            </div>
+            <div class="text-center small text-muted">
+              <img src="@LibraryDisplay.LookupCoverUrl(refresh.CoverUrls[^1])" alt="Looked-up cover" class="d-block rounded border mb-1" style="width: 64px; height: 96px; object-fit: cover" />
+              Lookup
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (refresh.Same.Count > 0)
+      {
+        <p class="small text-muted">Already the same: @string.Join(", ", refresh.Same).</p>
+      }
+
+      @if (Model.SeriesNames.Count > 0)
+      {
+        <datalist id="library-series-names">
+          @foreach (string seriesName in Model.SeriesNames)
+          {
+            <option value="@seriesName"></option>
+          }
+        </datalist>
+      }
+
+      <div class="d-flex gap-2 mb-4">
+        <button type="submit" class="btn btn-primary">Take ticked</button>
+        <a href="@itemUrl" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  }
+
+  @if (found)
+  {
+    <partial name="_LookupAttribution" model="new[] { refresh.Source }" />
+  }
+</div>

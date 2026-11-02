@@ -384,11 +384,42 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     return HandleItemListAsync(libraryId, query, mediaType, locationId, loanedOut, skip, take, sort, raw, stamp, verbosity);
                 });
 
+            Argument<long?> itemRefreshIdArgument = new("itemId")
+            {
+                Description = "The id of the item. Leave out with --all.",
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            Option<bool> itemRefreshAllOption = new("--all") { Description = "Every item in the library, one at a time, staying quiet about the ones that match." };
+            Option<long?> itemRefreshCopyOption = new("--copy") { Description = "Look up this copy's ISBN instead of the first copy's, for an item with copies of several editions." };
+            Command itemRefreshCommand = new("refresh", "Look items up again and choose what to take from the lookup, field by field: for items added before the lookup improved, or after fixing a record on Open Library.")
+            {
+                stampOption,
+                verbosityOption,
+                libraryOption,
+                itemRefreshIdArgument,
+                itemRefreshAllOption,
+                itemMediaTypeOption,
+                itemRefreshCopyOption,
+            };
+            itemRefreshCommand.SetAction(
+                (parseResult, cancellationToken) =>
+                {
+                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
+                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
+                    long? libraryId = parseResult.GetValue(libraryOption);
+                    long? itemId = parseResult.GetValue(itemRefreshIdArgument);
+                    bool all = parseResult.GetValue(itemRefreshAllOption);
+                    LibraryMediaType? mediaType = parseResult.GetValue(itemMediaTypeOption);
+                    long? copyId = parseResult.GetValue(itemRefreshCopyOption);
+                    return HandleItemRefreshAsync(libraryId, itemId, all, mediaType, copyId, stamp, verbosity);
+                });
+
             itemCommand.Subcommands.Add(itemCreateCommand);
             itemCommand.Subcommands.Add(itemReadCommand);
             itemCommand.Subcommands.Add(itemUpdateCommand);
             itemCommand.Subcommands.Add(itemDeleteCommand);
             itemCommand.Subcommands.Add(itemListCommand);
+            itemCommand.Subcommands.Add(itemRefreshCommand);
             rootCommand.Subcommands.Add(itemCommand);
 
             #endregion // Item
