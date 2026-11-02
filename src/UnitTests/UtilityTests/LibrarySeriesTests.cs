@@ -16,6 +16,11 @@ namespace number_sequence.UnitTests.UtilityTests
         [DataRow("The Dark Tower, IV", "The Dark Tower", "4")]
         [DataRow("Foundation, vol. 2", "Foundation", "2")]
         [DataRow("Earthsea 1.5", "Earthsea", "1.5")]
+        [DataRow("H.i.v.e -- 3", "H.i.v.e", "3")]
+        [DataRow("H.I.V.E -- [#5]", "H.I.V.E", "5")]
+        [DataRow("H.I.V.E -- [6]", "H.I.V.E", "6")]
+        [DataRow("Spider-Man 2", "Spider-Man", "2")]
+        [DataRow("H.I.V.E --", "H.I.V.E", null)]
         [DataRow("Wheel of Time", "Wheel of Time", null)]
         [DataRow("A Discworld novel", "A Discworld novel", null)]
         public void ParseFieldFindsNameAndNumber(string field, string name, string number)
@@ -51,6 +56,8 @@ namespace number_sequence.UnitTests.UtilityTests
         [DataRow("Rocky II", DisplayName = "A bare numeral")]
         [DataRow("Book of the Dead", DisplayName = "A title starting with Book")]
         [DataRow("Dune (Movie Tie-In)", DisplayName = "A bracketed note")]
+        [DataRow("H.I.V.E.", DisplayName = "A trailing period")]
+        [DataRow("'Salem's Lot", DisplayName = "A leading apostrophe")]
         public void ExtractLeavesOrdinaryTitlesAlone(string text)
         {
             // Act
@@ -62,14 +69,20 @@ namespace number_sequence.UnitTests.UtilityTests
         }
 
         [TestMethod]
-        public void IsSeriesTitleNeedsTheKnownSeries()
+        public void IsSeriesLabelNeedsTheKnownSeriesAndASubtitle()
         {
             // Act and assert
-            _ = LibrarySeries.IsSeriesTitle("The Dark Tower III", new("The Dark Tower", 3), out decimal? number).Should().BeTrue();
+            _ = LibrarySeries.IsSeriesLabel("The Dark Tower III", "The Waste Lands", new("The Dark Tower", 3), out decimal? number).Should().BeTrue();
             _ = number.Should().Be(3);
-            _ = LibrarySeries.IsSeriesTitle("Dark Tower III", new("The Dark Tower", null), out _).Should().BeTrue();
-            _ = LibrarySeries.IsSeriesTitle("Rocky II", new("The Dark Tower", 3), out _).Should().BeFalse();
-            _ = LibrarySeries.IsSeriesTitle("The Dark Tower", new("The Dark Tower", 7), out _).Should().BeFalse();
+            _ = LibrarySeries.IsSeriesLabel("Dark Tower III", "The Waste Lands", new("The Dark Tower", null), out _).Should().BeTrue();
+            _ = LibrarySeries.IsSeriesLabel("H.I.V.E.", "escape velocity", new("H.i.v.e", 3), out number).Should().BeTrue();
+            _ = number.Should().BeNull();
+            _ = LibrarySeries.IsSeriesLabel("Rocky II", "The Waste Lands", new("The Dark Tower", 3), out _).Should().BeFalse();
+            _ = LibrarySeries.IsSeriesLabel("The Dark Tower III", null, new("The Dark Tower", 3), out _).Should().BeFalse();
+            // Book 7 is titled for the series; book 1 often is.
+            _ = LibrarySeries.IsSeriesLabel("The Dark Tower", null, new("The Dark Tower", 7), out _).Should().BeFalse();
+            _ = LibrarySeries.IsSeriesLabel("H.I.V.E.", "the Higher Institute of Villainous Education", new("H.I.V.E.", 1), out _).Should().BeFalse();
+            _ = LibrarySeries.IsSeriesLabel("Artemis Fowl", "The Arctic Incident", new("Artemis Fowl", null), out _).Should().BeFalse();
         }
 
         [TestMethod]

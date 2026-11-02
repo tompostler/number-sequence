@@ -511,6 +511,11 @@ record.
 
 - **Books by ISBN:** Open Library first, then Google Books when Open Library has no record or is down, if a Google
   Books key is configured.
+  - **An Open Library record with no author is treated as a stub**, and Google Books fills in each field it left empty
+    (author, publisher, summary, cover, pages and so on) while Open Library stays the source. Found on a real shelf: a
+    2019 reissue of Artemis Fowl whose ISBNs Open Library mostly doesn't know (so Google answered) except one, which
+    someone had started with a title and nothing else, and which therefore came back with no author. Author is the test
+    because no real book record lacks one, and every other field can legitimately be empty.
   - Open Library spreads a book over three records: the edition (publisher, format, pages, cover), the work (summary)
     and the search index, which already has the author names resolved. Using the index saves a request per author.
     Its record is only used when its work id matches, because a search that misread the query would return another
@@ -542,17 +547,31 @@ record.
 3 of 16 series books on one shelf a series and none a number. What exists, in the order used:
 1. The search index's `series_name` and `series_position`, structured, but only for some works (all of the Dark Tower,
    none of the Wheel of Time).
-2. The edition's `series` field, free text: "Wheel of Time (11)", "The Wheel of Time, Book Ten;", "The Dark Tower VII".
+2. The edition's `series` field, free text: "Wheel of Time (11)", "The Wheel of Time, Book Ten;", "The Dark Tower VII",
+   and the library-catalogue form "H.I.V.E -- [#5]". A dash separates only with a space before it, so "Spider-Man 2"
+   keeps its name.
 3. Series text written into the title or subtitle by a cataloguer: "(The Wheel of Time, Book 6)", "Book Two of 'The
    Wheel of Time'". This is taken out of the title as well as read, so the title is left clean.
 4. The same in the work's title and subtitle.
 
 The name is the first source's, and the number the first one among sources naming that same series. A title that is
-only the series and a number ("The Dark Tower III", with "The Waste Lands" as subtitle) gives way to its subtitle, but
-only when the series is known from another source, since a title like *Rocky II* looks the same. Titles are otherwise
-parsed cautiously: a bare trailing number counts in a series field but not a title (*Fahrenheit 451*), and a bracketed
-note without a number ("(Movie Tie-In)", "(Wheel of Time)") is left alone. On the 23-book shelf this gives every Dark
-Tower book its series and number, and 11 of 14 Wheel of Time books; the rest have no number anywhere in Open Library.
+only a label for the series gives way to its subtitle, but only when the series is known from another source, since a
+title like *Rocky II* looks the same. A label is the series and a number ("The Dark Tower III", with "The Waste Lands" as
+subtitle), or the series name alone for a book known to be past the first ("H.I.V.E." over "escape velocity", book 3).
+The name alone doesn't count for book 1, which is often named for its series (*Artemis Fowl*), or with no subtitle to
+fall back on: the seventh Dark Tower book really is titled *The Dark Tower*. A promoted subtitle gets a capital first
+letter, since cataloguers write it lowercase after a colon.
+
+Titles are otherwise parsed cautiously: a bare trailing number counts in a series field but not a title (*Fahrenheit
+451*), and a bracketed note without a number ("(Movie Tie-In)", "(Wheel of Time)") is left alone. A title with no series
+text in it comes back only trimmed. Tidying (quotes, trailing punctuation) is for series text, and once took the period
+off "H.I.V.E." and would take the apostrophe off *'Salem's Lot*.
+
+On the first 23-book shelf this gives every Dark Tower book its series and number, and 11 of 14 Wheel of Time books; the
+rest have no number anywhere in Open Library. The second shelf, H.I.V.E. and Artemis Fowl, is mostly Open Library data
+rather than parsing: three of the nine H.I.V.E. editions carry a series and the other six have none anywhere usable, book 1's edition belongs
+to a duplicate work so the index (and its year) can't be used, and no Artemis Fowl work has a series at all. Those are
+fixed on Open Library, then refreshed, or by hand.
 
 Sources spell one series differently ("Wheel of Time", "The Wheel of Time"). Whenever a lookup fills a series in (the add
 page, adding from a scan), `LibrarySeries.MatchExisting` swaps in the spelling the library already uses, comparing

@@ -21,7 +21,7 @@ namespace number_sequence.Utilities
     /// Titles are parsed more cautiously than a series field. A title may legitimately end in a number (<i>Fahrenheit
     /// 451</i>), so in a title only a bracketed series with a marker word ("Book", "#", "Vol") or a whole "Book N of X"
     /// subtitle counts. A bare trailing number or numeral only counts in a series field, or in a title when the series
-    /// name is already known from somewhere else (<see cref="IsSeriesTitle"/>).
+    /// name is already known from somewhere else (<see cref="IsSeriesLabel"/>).
     /// </para>
     /// </summary>
     public static partial class LibrarySeries
@@ -33,8 +33,9 @@ namespace number_sequence.Utilities
         ];
 
         /// <summary>
-        /// A series field such as "Discworld (3)", "Harry Potter #1", "The Wheel of Time, Book Ten;", "The Dark Tower VII" or
-        /// "Discworld ; 3". One with no number recognizable at the end is the name alone. Null for blank input.
+        /// A series field such as "Discworld (3)", "Harry Potter #1", "The Wheel of Time, Book Ten;", "The Dark Tower VII",
+        /// "Discworld ; 3" or "H.I.V.E -- [#5]". One with no number recognizable at the end is the name alone. Null for blank
+        /// input.
         /// </summary>
         public static LibrarySeriesPart? ParseField(string text)
         {
@@ -55,7 +56,8 @@ namespace number_sequence.Utilities
         /// <summary>
         /// Takes a series written into a title or subtitle out of it: a trailing "(The Wheel of Time, Book 6)", or the whole of
         /// "Book Two of 'The Wheel of Time'". Returns the text without it (null when nothing is left) and the series, or the
-        /// text unchanged and null when there's no series in it.
+        /// text unchanged (only trimmed) and null when there's no series in it: tidying is for series text, and would take the
+        /// period off "H.I.V.E." and the apostrophe off "'Salem's Lot".
         /// </summary>
         public static (string Text, LibrarySeriesPart? Series) Extract(string text)
         {
@@ -77,22 +79,30 @@ namespace number_sequence.Utilities
                 return (Tidy(bracketed.Groups["rest"].Value), new(name, number));
             }
 
-            return (trimmed, null);
+            return (text.Trim(), null);
         }
 
         /// <summary>
-        /// Whether <paramref name="title"/> is nothing but <paramref name="series"/> and a number, such as an edition titled
-        /// "The Dark Tower III" with "The Waste Lands" as its subtitle. The caller then uses the subtitle as the title.
+        /// Whether <paramref name="title"/> is only a label for <paramref name="series"/>, with the book's own title in the
+        /// subtitle, so the caller uses the subtitle instead. Either the series and a number ("The Dark Tower III" over "The
+        /// Waste Lands"), or the series name alone when the book is known to be past the first ("H.I.V.E." over "Escape
+        /// Velocity", book 3). The name alone doesn't count for book 1, which is often named for the series (<i>Artemis
+        /// Fowl</i>), nor without a subtitle: the seventh Dark Tower book is titled "The Dark Tower". <paramref name="number"/>
+        /// is the number in the title, if it had one.
         /// </summary>
-        public static bool IsSeriesTitle(string title, LibrarySeriesPart series, out decimal? number)
+        public static bool IsSeriesLabel(string title, string subtitle, LibrarySeriesPart series, out decimal? number)
         {
             number = null;
+            if (Tidy(subtitle) == null || Key(series.Name).Length == 0)
+            {
+                return false;
+            }
             if (ParseField(title) is LibrarySeriesPart parsed && parsed.Number.HasValue && Key(parsed.Name) == Key(series.Name))
             {
                 number = parsed.Number;
                 return true;
             }
-            return false;
+            return Key(title) == Key(series.Name) && series.Number > 1;
         }
 
         /// <summary>
@@ -173,23 +183,26 @@ namespace number_sequence.Utilities
         private static int RomanDigit(char c) => c switch { 'I' => 1, 'V' => 5, 'X' => 10, _ => 0 };
 
         /// <summary>
-        /// Trimmed of whitespace, the quotes some cataloguers wrap a series in, and trailing punctuation; null when blank.
+        /// Trimmed of whitespace, the quotes some cataloguers wrap a series in, and trailing punctuation, including the
+        /// "--" of a library-catalogue series ("H.i.v.e -- 3"); null when blank.
         /// </summary>
         private static string Tidy(string text)
         {
-            string trimmed = text?.Trim().Trim('\'', '"', '‘', '’', '“', '”').TrimEnd(';', ',', '.', ':').Trim();
+            string trimmed = text?.Trim().Trim('\'', '"', '‘', '’', '“', '”').TrimEnd(';', ',', '.', ':', '-', '–', '—', ' ').Trim();
             return string.IsNullOrEmpty(trimmed) ? null : trimmed;
         }
 
         private static string Capitalize(string name) => name.StartsWith("the ", StringComparison.Ordinal) ? "T" + name[1..] : name;
 
         private const string Number = @"\d+(?:\.\d+)?|[IVXivx]+|[A-Za-z]+";
+        private const string Separator = @"(?:\s+[-–—]+\s*|[\s,;:]*)";
         private const string Marker = @"(?:#|\bbook\b|\bbk\.?|\bvol(?:ume)?\.?|\bno\.?|\bpart\b)";
 
         /// <summary>
-        /// A name, then a number after a marker, inside brackets, or after a separator.
+        /// A name, then a number after a marker, inside brackets, or after a separator. A dash only separates with space
+        /// around it ("H.i.v.e -- 3"), so "Spider-Man 2" keeps its name.
         /// </summary>
-        [GeneratedRegex(@"^(?<name>.+?)(?:[\s,;:]*[(\[]?\s*" + Marker + @"\s*|[\s,;:]*[(\[]\s*|[\s,;:]+)(?<number>" + Number + @")\s*[)\]]?$", RegexOptions.IgnoreCase)]
+        [GeneratedRegex(@"^(?<name>.+?)(?:" + Separator + @"[(\[]?\s*" + Marker + @"\s*|" + Separator + @"[(\[]\s*|(?:\s+[-–—]+\s+|[\s,;:]+))(?<number>" + Number + @")\s*[)\]]?$", RegexOptions.IgnoreCase)]
         private static partial Regex FieldRegex();
 
         /// <summary>

@@ -230,9 +230,10 @@ namespace number_sequence.Services.Libraries
             result.Series = name;
             result.SeriesNumber = found.Where(x => LibrarySeries.Key(x.Name) == key).Select(x => x.Number).FirstOrDefault(x => x.HasValue);
 
-            if (result.Subtitle != null && LibrarySeries.IsSeriesTitle(result.Title, found[0], out decimal? titleNumber))
+            if (LibrarySeries.IsSeriesLabel(result.Title, result.Subtitle, new(name, result.SeriesNumber), out decimal? titleNumber))
             {
-                result.Title = result.Subtitle;
+                // A subtitle is often lowercase after a colon ("escape velocity"); as the title it needs its capital.
+                result.Title = char.ToUpperInvariant(result.Subtitle[0]) + result.Subtitle[1..];
                 result.Subtitle = null;
                 result.SeriesNumber ??= titleNumber;
             }
