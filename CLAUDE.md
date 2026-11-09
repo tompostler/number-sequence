@@ -172,7 +172,7 @@ Full design notes: [`docs/library.md`](docs/library.md). Constraints that will b
   token, so forgetting it leaves that lookup quietly off rather than failing the deploy. The credential goes in a header,
   never the url: `LibraryLookupHttp` logs every request url.
 - **Never modify a `LibraryLookupResult` that `LibraryLookup` returned.** It's the cached object, shared by every
-  caller for an hour, so respelling its series for one library (as refresh does) would hand that spelling to all of them.
-  Copy the value into a local.
+  caller for an hour, so changing it for one caller (respelling its series to match a library's, say) would hand that change
+  to every other caller. Copy the value into a local.
 - **The namespace and pages folder are `Libraries`, not `Library`**, because the root entity is `Library` and a type named
   like its own namespace breaks name resolution (CS0118).

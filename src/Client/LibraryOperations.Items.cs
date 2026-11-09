@@ -129,36 +129,6 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
-        /// Look an item up again and compare: each field where the lookup has a different value. A book is looked up by a
-        /// copy's ISBN, <paramref name="copyId"/>'s or else the first one's. Changes nothing.
-        /// </summary>
-        public async Task<LibraryItemRefresh> GetItemRefreshAsync(long libraryId, long itemId, long? copyId = null, CancellationToken cancellationToken = default)
-        {
-            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
-                () => new HttpRequestMessage(
-                    HttpMethod.Get,
-                    $"library/libraries/{libraryId}/items/{itemId}/refresh{(copyId.HasValue ? $"?copyId={copyId}" : string.Empty)}"),
-                cancellationToken);
-            return await response.Content.ReadJsonAsAsync<LibraryItemRefresh>(cancellationToken);
-        }
-
-        /// <summary>
-        /// Take chosen fields from <see cref="GetItemRefreshAsync"/>.
-        /// </summary>
-        public async Task<LibraryItemRefreshApplied> ApplyItemRefreshAsync(long libraryId, long itemId, LibraryItemRefreshApply apply, CancellationToken cancellationToken = default)
-        {
-            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
-                () => new HttpRequestMessage(
-                    HttpMethod.Post,
-                    $"library/libraries/{libraryId}/items/{itemId}/refresh")
-                {
-                    Content = apply.ToJsonContent()
-                },
-                cancellationToken);
-            return await response.Content.ReadJsonAsAsync<LibraryItemRefreshApplied>(cancellationToken);
-        }
-
-        /// <summary>
         /// Update an existing item's descriptive fields.
         /// </summary>
         public async Task<LibraryItem> UpdateItemAsync(long libraryId, LibraryItem item, CancellationToken cancellationToken = default)

@@ -303,17 +303,6 @@ of an item already here comes up with what a scan just brought in.
   and then the page is fetched by id. A library is at most a few thousand items, so that's cheap. Added is a plain date,
   so sql sorts it.
 
-**Refresh** (`items/{id}/refresh`, `LibraryController.Refresh.cs`): GET looks a saved item up again and returns each
-field where the lookup has a different, non-empty value; POST takes chosen fields. The comparison is the api's, not the
-page's, so the item page and the Tool can't drift apart on which copy is looked up, how series are respelled, or what's
-offered. A book is looked up by a copy's ISBN (`?copyId=` to choose among editions), which also offers that copy's
-format, publisher and year; anything else by the lookup id it was added with. A field the lookup has nothing for is
-never offered, since taking it would only blank what's saved. The POST sends a value per text field, as typed, so it can
-be changed while taking it. Attributes, lookup ids and the cover take no value: the POST makes the lookup again (cached,
-so the same answer) and merges the dictionaries (the lookup's keys added or replaced, the item's others kept). The
-looked-up series is respelled into a local, never onto the result: lookup results are cached objects shared by every
-library.
-
 **Copies change location, status and loans only through dedicated actions** (`copies/{id}/move`, `/status`, `/loan`,
 `/return`), because each one writes a `LibraryCopyEvent`. The general PUT of a copy leaves all three alone. It does
 allow changing `ItemId` to another item in the same library: that is how a copy added as its own item gets merged into
@@ -410,10 +399,6 @@ Choices that aren't obvious from `--help`:
   takes the items out of any series. `series list` gives the names in use.
 - **Deleting a library, item or copy asks for confirmation** and points at disposing instead, which keeps history.
   Deleting a location doesn't ask, since the server refuses unless it's empty.
-- **`item refresh <itemId>` or `item refresh --all`** goes through refresh one item at a time: a table of what would
-  change, then "take all" or a yes/no per field. `--all` runs in shelf order (the api's) and says nothing about items that already
-  match, so a whole library after a round of Open Library fixes is mostly the ones that changed. "Take all" never replaces
-  a saved cover, since whether the lookup's is better can't be judged from a terminal; it's asked separately.
 
 `lookup <isbn|title>` (`--type` for a title search, `--source` to get one record by id) writes the same columns
 whatever was asked. `export <libraryId> [file]` waits for an export endpoint. The UI is the main way to manage a library, and the Tool is
@@ -470,10 +455,6 @@ and home card show for the `Library` role.
   the api can cache covers for a month. The api streams each cover from blob storage to the response rather than
   reading it into memory first, since a page of cards asks for dozens at once.
 - **Credits:** pages showing looked-up data name the source (`_LookupAttribution`), as TMDB's terms require.
-- **Refresh from lookup** (`Items/Refresh`, from the item page) shows the api's [refresh](#api) comparison, each field
-  ticked, next to what's saved. It's for items added before the lookup improved, and for an Open Library record fixed
-  since, which is the better fix than editing one copy of the data by hand. Each offered value is an editable box, so a
-  series can be respelled while taking it. The cover is offered with both images, ticked only when there's none saved.
 
 **Scan buttons** sit next to the search boxes on the library home and a library's page, and the lookup box on the add
 page. A read puts the code in the box and submits it, so a scan does exactly what typing the code does: "do I own this?"
@@ -597,10 +578,10 @@ On the first 23-book shelf this gives every Dark Tower book its series and numbe
 rest have no number anywhere in Open Library. The second shelf, H.I.V.E. and Artemis Fowl, is mostly Open Library data
 rather than parsing: three of the nine H.I.V.E. editions carry a series and the other six have none anywhere usable, book 1's edition belongs
 to a duplicate work so the index (and its year) can't be used, and no Artemis Fowl work has a series at all. Those are
-fixed on Open Library, then refreshed, or by hand.
+fixed by hand.
 
 Sources spell one series differently ("Wheel of Time", "The Wheel of Time"). Whenever a lookup fills a series in (the add
-page, adding from a scan, refresh), `LibrarySeries.MatchExisting` swaps in the spelling the library already uses, comparing
+page, adding from a scan), `LibrarySeries.MatchExisting` swaps in the spelling the library already uses, comparing
 letters and digits without a leading "the". Not at save time: then respelling one item to fix a series would be undone
 by the others still spelled the old way. The series box also suggests the library's names (`GET libraries/{id}/series`).
 
