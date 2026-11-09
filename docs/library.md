@@ -454,8 +454,11 @@ and home card show for the `Library` role.
   here" shows before anything is typed.
 - **Adding a looked-up copy to an item typed in by hand** gives that item the lookup's external ids it lacks, so the
   next edition finds it by id rather than by title. Ids it already has are never changed.
-- **Covers** show on cards (thumbnail) and the item page. They are set only from the lookup pick when an item is
-  created; the item's edit page can remove a wrong one, and nothing else. The `<img>` tags
+- **Covers** show on cards (thumbnail) and the item page. They come only from lookups: the pick when an item is
+  created, or "Find a cover" on the item's edit page. That is a title search, starting from the item's title, listing
+  only results with a cover; picking one sets the cover and nothing else, so details corrected by hand stay corrected.
+  The pick posts the result's source and id, and the page fetches the record again for its cover urls rather than taking
+  urls from the form. The edit page can also remove a cover. The `<img>` tags
   point at the api route directly, which the token cookie authenticates, with the item's modified date in the query so
   the api can cache covers for a month. The api streams each cover from blob storage to the response rather than
   reading it into memory first, since a page of cards asks for dozens at once.
@@ -627,8 +630,8 @@ format, so changing the format means renaming or re-encoding the existing covers
   would fetch any url for anyone with the Library role, including addresses inside the app service.
 - **Rejected: uploading a cover**, such as a phone photo of the book. It was built and removed: a cover is a nicety,
   the lookup's is good enough for the books, movies and games that have one, and the upload was a second way in for
-  untrusted bytes. An item added by hand has no cover. `LibraryCover` now carries only `SourceUrls`. "Remove cover"
-  stays, as the one way to clear a wrong cover from a lookup.
+  untrusted bytes. An item added by hand, or whose cover was wrong, gets one from "Find a cover" on its edit page.
+  `LibraryCover` now carries only `SourceUrls`.
 - **Limits:** 15 MB in and 50 megapixels, since a small file can claim enormous dimensions and decoding allocates for all
   of them.
 - **Deletes:** deleting an item or a library deletes its cover blobs after the rows are gone, so a failure leaves an

@@ -6,6 +6,10 @@ using TcpWtf.NumberSequence.Contracts.Libraries;
 
 namespace number_sequence.Pages.UI.Libraries.Items
 {
+    /// <summary>
+    /// Edits an item's fields, and its cover. A cover comes only from a lookup: <c>coverQ</c> is a title search whose
+    /// results with a cover are offered, and picking one sets only the cover, leaving the item's fields as they are.
+    /// </summary>
     [RequiresToken(AccountRoles.Library)]
     public sealed class EditModel : LibraryPageModel
     {
@@ -13,6 +17,27 @@ namespace number_sequence.Pages.UI.Libraries.Items
 
         [BindProperty]
         public LibraryItem Item { get; set; }
+
+        /// <summary>
+        /// The title searched for a cover, or null when no search was made.
+        /// </summary>
+        [BindProperty(SupportsGet = true, Name = "coverQ")]
+        public string CoverQ { get; set; }
+
+        /// <summary>
+        /// Search results that have a cover, or null when no search was made.
+        /// </summary>
+        public List<LibraryLookupResult> CoverCandidates { get; private set; }
+
+        /// <summary>
+        /// Why the cover search didn't work, such as a provider that's down.
+        /// </summary>
+        public string CoverNote { get; private set; }
+
+        /// <summary>
+        /// Whether the item's media type has a lookup to take a cover from.
+        /// </summary>
+        public bool CanFindCover => this.Item?.MediaType is LibraryMediaType.Book or LibraryMediaType.Movie or LibraryMediaType.BoardGame;
 
         public async Task<IActionResult> OnGetAsync(long libraryId, long itemId, CancellationToken cancellationToken)
         {
@@ -34,6 +59,20 @@ namespace number_sequence.Pages.UI.Libraries.Items
                 return this.NotFound();
             }
             await this.LoadSeriesNamesAsync(libraryId, cancellationToken);
+
+            this.CoverQ = this.CoverQ?.Trim();
+            if (this.CanFindCover && !string.IsNullOrEmpty(this.CoverQ))
+            {
+                try
+                {
+                    List<LibraryLookupResult> results = await this.NsClient.Library.SearchLookupAsync(this.Item.MediaType, this.CoverQ, cancellationToken);
+                    this.CoverCandidates = results.Where(x => x.CoverUrls?.Count > 0).ToList();
+                }
+                catch (NsTcpWtfClientException ex)
+                {
+                    this.CoverNote = $"The search didn't work: {ErrorText(ex)}";
+                }
+            }
             return this.Page();
         }
 
@@ -88,7 +127,36 @@ namespace number_sequence.Pages.UI.Libraries.Items
         }
 
         /// <summary>
-        /// Clears a wrong cover from a lookup. Covers are never uploaded, so this is the only change to one after adding.
+        /// Sets the cover from a search result picked on this page. The record is fetched again by id rather than taking
+        /// cover urls from the form, so what's stored is the lookup's own cover; the api checks the hosts either way.
+        /// </summary>
+        public async Task<IActionResult> OnPostSetCoverAsync(long libraryId, long itemId, string source, string sourceId, CancellationToken cancellationToken)
+        {
+            string here = $"/ui/library/{libraryId}/items/{itemId}/edit";
+            LibraryLookupResult result;
+            try
+            {
+                result = await this.NsClient.Library.GetLookupAsync(source, sourceId, cancellationToken);
+            }
+            catch (NsTcpWtfClientException ex)
+            {
+                this.ErrorMessage = $"The cover couldn't be looked up: {ErrorText(ex)}";
+                return this.Redirect(here);
+            }
+            if (!(result?.CoverUrls?.Count > 0))
+            {
+                this.ErrorMessage = "That result has no cover.";
+                return this.Redirect(here);
+            }
+
+            return await this.RunAndRedirectAsync(
+                () => this.NsClient.Library.SetItemCoverAsync(libraryId, itemId, new LibraryCover { SourceUrls = result.CoverUrls }, cancellationToken),
+                "Cover saved.",
+                here);
+        }
+
+        /// <summary>
+        /// Clears a wrong cover from a lookup, for an item that's better with none.
         /// </summary>
         public Task<IActionResult> OnPostRemoveCoverAsync(long libraryId, long itemId, CancellationToken cancellationToken)
             => this.RunAndRedirectAsync(

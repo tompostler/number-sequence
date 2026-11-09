@@ -20,19 +20,63 @@
   </div>
 </form>
 
-@if (Model.Item.HasCover)
+@if (Model.Item.HasCover || Model.CanFindCover)
 {
-  @* Covers come only from the lookup pick when an item is added; removing a wrong one is the only change after that. *@
-  <div class="col-12 col-md-8 col-lg-6 border rounded p-2 mb-4">
+  @* Covers come only from lookups: the pick when an item is added, or a search here. There are no uploads. *@
+  <div class="col-12 col-md-8 col-lg-6 border rounded p-2 mb-4" id="cover">
     <h6>Cover</h6>
-    <div class="d-flex gap-3 align-items-start">
-      <img src="@LibraryDisplay.CoverUrl(Model.Item)" alt="Cover" class="rounded border flex-shrink-0" style="width: 96px" />
-      <div class="flex-grow-1">
-        <div class="form-text mb-2">From the lookup it was added from. Remove it if it's the wrong one.</div>
+    @if (Model.Item.HasCover)
+    {
+      <div class="d-flex gap-3 align-items-start mb-2">
+        <img src="@LibraryDisplay.CoverUrl(Model.Item)" alt="Cover" class="rounded border flex-shrink-0" style="width: 96px" />
         <form method="post" asp-page-handler="RemoveCover" data-confirm="Remove the cover of @Model.Item.Title?" onsubmit="return confirm(this.dataset.confirm)">
           <button type="submit" class="btn btn-sm btn-outline-danger">Remove cover</button>
         </form>
       </div>
-    </div>
+    }
+    @if (Model.CanFindCover)
+    {
+      @* The fragment keeps the results in view on a phone, where they're well below the item form. *@
+      <form method="get" action="/ui/library/@Model.Library.Id/items/@Model.Item.Id/edit#cover" class="input-group input-group-sm mb-1">
+        <input name="coverQ" value="@(Model.CoverQ ?? Model.Item.Title)" class="form-control" placeholder="Title" autocomplete="off" inputmode="search" enterkeyhint="search" aria-label="Title to find a cover for" />
+        <button type="submit" class="btn btn-outline-secondary">Find a cover</button>
+      </form>
+      <div class="form-text mb-2">Picking a result sets only the cover; the item's details stay as they are.</div>
+      @if (Model.CoverNote != null)
+      {
+        <div class="alert alert-info py-2 small">@Model.CoverNote</div>
+      }
+      @if (Model.CoverCandidates != null)
+      {
+        @if (Model.CoverCandidates.Count == 0)
+        {
+          <div class="small text-muted">No results with a cover for "@Model.CoverQ".</div>
+        }
+        else
+        {
+          <div class="list-group mb-2">
+            @foreach (LibraryLookupResult candidate in Model.CoverCandidates)
+            {
+              <form method="post" asp-page-handler="SetCover" class="list-group-item py-2">
+                <input type="hidden" name="source" value="@candidate.Source" />
+                <input type="hidden" name="sourceId" value="@candidate.SourceId" />
+                <div class="d-flex gap-2 align-items-center">
+                  <img src="@LibraryDisplay.LookupCoverUrl(candidate.CoverUrls[^1])" alt="" loading="lazy" class="flex-shrink-0 rounded border" style="width: 40px; height: 60px; object-fit: cover" />
+                  <div class="flex-grow-1" style="min-width: 0">
+                    <div class="fw-semibold">@candidate.Title @(candidate.Year.HasValue ? $"({candidate.Year})" : "")</div>
+                    @if (!string.IsNullOrWhiteSpace(candidate.Creators))
+                    {
+                      <div class="small text-truncate">@candidate.Creators.Replace(";", ",")</div>
+                    }
+                  </div>
+                  <button type="submit" class="btn btn-sm btn-outline-primary flex-shrink-0">Use</button>
+                </div>
+              </form>
+            }
+          </div>
+          <partial name="_LookupAttribution" model="@Model.CoverCandidates.Select(x => x.Source).Distinct().ToList()" />
+        }
+      }
+    }
   </div>
 }
