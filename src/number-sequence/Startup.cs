@@ -132,7 +132,6 @@ namespace number_sequence
                 .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
             _ = services.AddSingleton<Services.Libraries.LibraryLookupHttp>();
             _ = services.AddSingleton<Services.Libraries.OpenLibraryProvider>();
-            _ = services.AddSingleton<Services.Libraries.GoogleBooksProvider>();
             _ = services.AddSingleton<Services.Libraries.TmdbProvider>();
             _ = services.AddSingleton<Services.Libraries.BoardGameGeekProvider>();
             _ = services.AddSingleton<Services.Libraries.LibraryLookup>();

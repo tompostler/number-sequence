@@ -28,7 +28,6 @@ jobs:
         -emailUsername "$(email-username)"
         -emailPassword "$(email-password)"
         -libraryLookupBggToken "$(library-lookup-bgg-token)"
-        -libraryLookupGoogleBooksKey "$(library-lookup-google-books-key)"
         -libraryLookupTmdbToken "$(library-lookup-tmdb-token)"
         -sqlServerName tompostler
         -sqlAdminPassword "$(tompostler-sqladmin-password)"

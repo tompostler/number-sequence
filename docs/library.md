@@ -516,13 +516,7 @@ publisher, year), external ids, attributes and cover urls. It saves nothing. A s
 fields (TMDB's search has no director), and the chosen one is fetched again by `Source` and `SourceId` for the full
 record.
 
-- **Books by ISBN:** Open Library first, then Google Books when Open Library has no record or is down, if a Google
-  Books key is configured.
-  - **An Open Library record with no author is treated as a stub**, and Google Books fills in each field it left empty
-    (author, publisher, summary, cover, pages and so on) while Open Library stays the source. Found on a real shelf: a
-    2019 reissue of Artemis Fowl whose ISBNs Open Library mostly doesn't know (so Google answered) except one, which
-    someone had started with a title and nothing else, and which therefore came back with no author. Author is the test
-    because no real book record lacks one, and every other field can legitimately be empty.
+- **Books by ISBN:** Open Library.
   - Open Library spreads a book over three records: the edition (publisher, format, pages, cover), the work (summary)
     and the search index, which already has the author names resolved. Using the index saves a request per author.
     Its record is only used when its work id matches, because a search that misread the query would return another
@@ -540,7 +534,6 @@ record.
     it's an Open Library data problem, fixed there or by hand.
   - Open Library's free-text physical format is mapped onto the suggested formats; anything else is left blank rather
     than stored as one cataloguer typed it.
-  - Google Books only knows the edition, so `Year` (first release) is left empty rather than set to a reprint's year.
 - **Books by title:** Open Library's search, which is also how a book with no ISBN gets details.
 - **Movies by title:** TMDB `search/multi` (movies and TV in one request), then `movie/{id}?append_to_response=credits`
   or `tv/{id}`. A UPC doesn't identify a movie in TMDB, so a scanned UPC is saved on the copy (a rescan finds it) and
@@ -587,7 +580,7 @@ by the others still spelled the old way. The series box also suggests the librar
 
 **Fixing a series by hand is per series, not per book.** After two shelves it was clear that no source has series data
 worth more parsing rules: Open Library has it for some works in whatever form a cataloguer typed, Google Books not at
-all, and each new shelf brought its own quirk. The rest of a lookup (title, author, publisher, cover) held up. So the
+all (see Rejected), and each new shelf brought its own quirk. The rest of a lookup (title, author, publisher, cover) held up. So the
 parsing stops at the forms above, and what it misses is fixed in bulk: `PUT libraries/{id}/series` sets one name on many
 items, each with its own number, and the Series page and `series set` are built on it.
 - **The name is used as given**, not matched to an existing spelling, because correcting a spelling ("H.i.v.e --" to
@@ -604,9 +597,12 @@ items, each with its own number, and the Series page and `series set` are built 
 **Rejected:**
 - **UPC databases** (e.g. UPCitemdb's free tier). Their results for movies and games are thin and inconsistent, and
   the free tiers are rate limited to around 100 a day, which a first inventory run blows through.
-- **Google Books without a key.** It was the plan, on "allowed at low volume". In practice the shared keyless quota is
-  zero: every keyless request is a 429 (`quota_limit_value: 0`), so the fallback never worked and an ISBN Open Library
-  lacked showed "Google Books is limiting how often it's asked". It now needs `GoogleBooksKey` and is skipped without.
+- **Google Books**, as the fallback for an ISBN Open Library doesn't know. It was first used without a key, on "allowed
+  at low volume", but the shared keyless quota is zero: every keyless request is a 429 (`quota_limit_value: 0`). With a
+  key it answered, but only knows the edition (no first-release year), has no series, and was mostly needed to fill in
+  Open Library stubs: a 2019 Artemis Fowl reissue whose ISBNs Open Library mostly didn't know, and one it had with a
+  title and no author. It was removed with the rest of the cleanup, along with its key: books the lookups get wrong are
+  typed in by hand instead.
 - **A choice of source on the add page.** Considered when series came out inconsistent, before finding that Open Library
   had most of what was wanted in fields the lookup wasn't reading. Google Books has no structured series in its public
   api. Hardcover has good structured series and would be the one to add if this comes back.
@@ -627,15 +623,14 @@ key must match its kind's shape (`/works/OL…W`, `/books/OL…M`, `/authors/OL�
 must be digits, since they go into a query unescaped. A source link that isn't http or https is dropped, because the
 add page puts it in an `href`.
 
-**Tokens:** `Options.LibraryLookup` (`TmdbToken`, `BggToken`, `GoogleBooksKey`). A blank token turns that provider off;
-searching that media type is a 400 saying so, and a missing Google key just skips the fallback. They come from Key Vault
-(`library-lookup-tmdb-token`, `library-lookup-bgg-token`, `library-lookup-google-books-key`) through the `tompostler` variable group into `deploy-code.yml` and `AppServiceSettings.json`, and through
+**Tokens:** `Options.LibraryLookup` (`TmdbToken`, `BggToken`). A blank token turns that provider off; searching that
+media type is a 400 saying so. They come from Key Vault (`library-lookup-tmdb-token`, `library-lookup-bgg-token`)
+through the `tompostler` variable group into `deploy-code.yml` and `AppServiceSettings.json`, and through
 `devinit.ps1`, which leaves a missing one unset rather than failing. Azure Pipelines passes `$(name)` through literally
 when the group has no such secret, so a token starting `$(` also counts as unset. That lets the app deploy before a
 token is registered.
 
-The Google key is a Google Cloud API key with only the Books API enabled, restricted to that API. It goes in the
-`X-Goog-Api-Key` header, not the `key` query parameter, because `LibraryLookupHttp` logs every request url.
+A token goes in a header, never a query parameter, because `LibraryLookupHttp` logs every request url.
 
 **Credits:** TMDB's terms require the line "This product uses the TMDB API but is not endorsed or certified by TMDB"
 on pages showing its data, and BoardGameGeek asks for credit too. `_LookupAttribution` shows a line per source, on the

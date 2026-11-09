@@ -11,11 +11,6 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public const string OpenLibrary = "openlibrary";
 
         /// <summary>
-        /// Google Books, the fallback for an ISBN Open Library doesn't have. Only returned by an ISBN lookup.
-        /// </summary>
-        public const string GoogleBooks = "googlebooks";
-
-        /// <summary>
         /// A movie at TMDB.
         /// </summary>
         public const string TmdbMovie = "tmdb-movie";

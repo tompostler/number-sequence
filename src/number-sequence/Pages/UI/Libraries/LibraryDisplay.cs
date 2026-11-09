@@ -51,7 +51,6 @@ namespace number_sequence.Pages.UI.Libraries
         public static string LookupSourceName(string source) => source switch
         {
             LibraryLookupSources.OpenLibrary => "Open Library",
-            LibraryLookupSources.GoogleBooks => "Google Books",
             LibraryLookupSources.TmdbMovie or LibraryLookupSources.TmdbTv => "TMDB",
             LibraryLookupSources.BoardGameGeek => "BoardGameGeek",
             _ => source,
@@ -66,10 +65,6 @@ namespace number_sequence.Pages.UI.Libraries
             if (ids.ContainsKey(LibraryExternalIds.OpenLibraryWork) || ids.ContainsKey(LibraryExternalIds.OpenLibraryEdition))
             {
                 yield return LibraryLookupSources.OpenLibrary;
-            }
-            if (ids.ContainsKey(LibraryExternalIds.GoogleBooks))
-            {
-                yield return LibraryLookupSources.GoogleBooks;
             }
             if (ids.ContainsKey(LibraryExternalIds.TmdbMovie) || ids.ContainsKey(LibraryExternalIds.TmdbTv))
             {

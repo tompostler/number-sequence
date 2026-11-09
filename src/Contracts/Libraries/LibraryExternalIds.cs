@@ -18,11 +18,6 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public const string OpenLibraryEdition = "openLibraryEdition";
 
         /// <summary>
-        /// The Google Books volume id.
-        /// </summary>
-        public const string GoogleBooks = "googleBooks";
-
-        /// <summary>
         /// The TMDB movie id.
         /// </summary>
         public const string TmdbMovie = "tmdbMovie";

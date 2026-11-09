@@ -11,7 +11,7 @@ namespace number_sequence.Controllers
     public sealed partial class LibraryController
     {
         /// <summary>
-        /// A book by ISBN: one result, or none when neither Open Library nor Google Books has it.
+        /// A book by ISBN: one result, or none when Open Library doesn't have it.
         /// </summary>
         [HttpGet("lookup/isbn/{isbn}")]
         public async Task<IActionResult> LookupIsbnAsync(string isbn, CancellationToken cancellationToken)

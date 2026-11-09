@@ -19,7 +19,6 @@ namespace number_sequence.Services.Libraries
         private static readonly TimeSpan CacheFor = TimeSpan.FromHours(1);
 
         private readonly OpenLibraryProvider openLibrary;
-        private readonly GoogleBooksProvider googleBooks;
         private readonly TmdbProvider tmdb;
         private readonly BoardGameGeekProvider boardGameGeek;
         private readonly IMemoryCache memoryCache;
@@ -27,14 +26,12 @@ namespace number_sequence.Services.Libraries
 
         public LibraryLookup(
             OpenLibraryProvider openLibrary,
-            GoogleBooksProvider googleBooks,
             TmdbProvider tmdb,
             BoardGameGeekProvider boardGameGeek,
             IMemoryCache memoryCache,
             ILogger<LibraryLookup> logger)
         {
             this.openLibrary = openLibrary;
-            this.googleBooks = googleBooks;
             this.tmdb = tmdb;
             this.boardGameGeek = boardGameGeek;
             this.memoryCache = memoryCache;
@@ -42,111 +39,10 @@ namespace number_sequence.Services.Libraries
         }
 
         /// <summary>
-        /// A book by its ISBN-13 from Open Library, or Google Books (when it has a key) when Open Library has no record or is
-        /// down. Null when neither has it. An Open Library record with no author is a stub someone started (found: a whole
-        /// reissue's ISBNs, one with a title and nothing else), so Google Books fills in what it left empty.
+        /// A book by its ISBN-13 from Open Library, or null when it doesn't have one.
         /// </summary>
         public Task<LibraryLookupResult> LookupIsbnAsync(string isbn13, CancellationToken cancellationToken)
-            => this.CachedAsync($"isbn:{isbn13}", () => this.LookupIsbnUncachedAsync(isbn13, cancellationToken));
-
-        private async Task<LibraryLookupResult> LookupIsbnUncachedAsync(string isbn13, CancellationToken cancellationToken)
-        {
-            FailedDependencyException openLibraryFailure = null;
-            try
-            {
-                if (await this.openLibrary.GetByIsbnAsync(isbn13, cancellationToken) is LibraryLookupResult found)
-                {
-                    return string.IsNullOrWhiteSpace(found.Creators) && this.googleBooks.IsConfigured
-                        ? await this.FillFromGoogleBooksAsync(found, isbn13, cancellationToken)
-                        : found;
-                }
-            }
-            catch (FailedDependencyException ex)
-            {
-                openLibraryFailure = ex;
-            }
-
-            if (!this.googleBooks.IsConfigured)
-            {
-                if (openLibraryFailure != null)
-                {
-                    throw openLibraryFailure;
-                }
-                return null;
-            }
-            LibraryLookupResult fallback = await this.googleBooks.GetByIsbnAsync(isbn13, cancellationToken);
-            if (fallback == null && openLibraryFailure != null)
-            {
-                // Google not having it says nothing about Open Library, so this is a failure to report, not a miss to cache.
-                throw openLibraryFailure;
-            }
-            return fallback;
-        }
-
-        /// <summary>
-        /// <paramref name="found"/> with every empty field Google Books has filled in from it. Open Library stays the
-        /// source, since its record (and so its link and work id) is still the one found. Google failing just leaves the
-        /// stub as it was.
-        /// </summary>
-        private async Task<LibraryLookupResult> FillFromGoogleBooksAsync(LibraryLookupResult found, string isbn13, CancellationToken cancellationToken)
-        {
-            LibraryLookupResult google;
-            try
-            {
-                google = await this.googleBooks.GetByIsbnAsync(isbn13, cancellationToken);
-            }
-            catch (FailedDependencyException ex)
-            {
-                this.logger.LogInformation($"Open Library's record for ISBN {isbn13} has no author, and Google Books couldn't fill it in: {ex.Message}");
-                return found;
-            }
-            if (google == null)
-            {
-                this.logger.LogInformation($"Open Library's record for ISBN {isbn13} has no author, and Google Books doesn't know it either.");
-                return found;
-            }
-
-            List<string> filled = [];
-            T Fill<T>(T mine, T theirs, string field)
-            {
-                bool empty = mine is null || (mine is string text && string.IsNullOrWhiteSpace(text));
-                bool has = theirs is not null && !(theirs is string other && string.IsNullOrWhiteSpace(other));
-                if (empty && has)
-                {
-                    filled.Add(field);
-                    return theirs;
-                }
-                return mine;
-            }
-            found.Title = Fill(found.Title, google.Title, nameof(found.Title));
-            found.Subtitle = Fill(found.Subtitle, google.Subtitle, nameof(found.Subtitle));
-            found.Creators = Fill(found.Creators, google.Creators, nameof(found.Creators));
-            found.Summary = Fill(found.Summary, google.Summary, nameof(found.Summary));
-            found.Format = Fill(found.Format, google.Format, nameof(found.Format));
-            found.Publisher = Fill(found.Publisher, google.Publisher, nameof(found.Publisher));
-            found.PublishedYear = Fill(found.PublishedYear, google.PublishedYear, nameof(found.PublishedYear));
-            if ((found.CoverUrls?.Count ?? 0) == 0 && google.CoverUrls?.Count > 0)
-            {
-                found.CoverUrls = google.CoverUrls;
-                filled.Add(nameof(found.CoverUrls));
-            }
-            foreach ((string key, string value) in google.Attributes ?? [])
-            {
-                found.Attributes ??= [];
-                if (found.Attributes.TryAdd(key, value))
-                {
-                    filled.Add(key);
-                }
-            }
-            foreach ((string key, string value) in google.ExternalIds ?? [])
-            {
-                found.ExternalIds ??= [];
-                _ = found.ExternalIds.TryAdd(key, value);
-            }
-
-            this.logger.LogInformation($"Open Library's record for ISBN {isbn13} has no author; Google Books filled in {(filled.Count == 0 ? "nothing" : string.Join(", ", filled))}.");
-            return found;
-        }
+            => this.CachedAsync($"isbn:{isbn13}", () => this.openLibrary.GetByIsbnAsync(isbn13, cancellationToken));
 
         /// <summary>
         /// Candidates for <paramref name="q"/> as a title. A 400 for a media type that has no lookup or whose provider has no

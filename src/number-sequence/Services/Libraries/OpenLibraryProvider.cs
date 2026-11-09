@@ -7,7 +7,7 @@ namespace number_sequence.Services.Libraries
 {
     /// <summary>
     /// Books from Open Library, which needs no key. Its work id is what recognizes a second edition of a book already in the
-    /// library, so it is asked first and Google Books only fills in when it has no record.
+    /// library.
     /// <para>
     /// A book's details are spread over three records: the edition (publisher, format, pages, cover), the work (summary,
     /// first publication) and the search index, which carries author names and first publication year already resolved.

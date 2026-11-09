@@ -66,8 +66,6 @@ namespace number_sequence.Services.Libraries
         [
             "openlibrary.org",
             "archive.org",
-            "books.google.com",
-            "googleusercontent.com",
             "tmdb.org",
             "geekdo-images.com",
         ];

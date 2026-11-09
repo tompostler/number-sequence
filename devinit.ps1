@@ -74,9 +74,8 @@ $localSettings = [PSCustomObject]@{
         LocalDevToOverride = (git config --get user.email);
     };
     LibraryLookup       = [PSCustomObject]@{
-        BggToken       = (Get-OptionalSecret 'library-lookup-bgg-token');
-        GoogleBooksKey = (Get-OptionalSecret 'library-lookup-google-books-key');
-        TmdbToken      = (Get-OptionalSecret 'library-lookup-tmdb-token');
+        BggToken  = (Get-OptionalSecret 'library-lookup-bgg-token');
+        TmdbToken = (Get-OptionalSecret 'library-lookup-tmdb-token');
     };
     Sql                 = [PSCustomObject]@{
         ConnectionString = (
