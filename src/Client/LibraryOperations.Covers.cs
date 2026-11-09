@@ -5,8 +5,8 @@ namespace TcpWtf.NumberSequence.Client
     public sealed partial class LibraryOperations
     {
         /// <summary>
-        /// Set an item's cover, replacing any it has, from an image or from a lookup result's cover urls. The server
-        /// re-encodes it. Returns the item without its copies.
+        /// Set an item's cover, replacing any it has, from a lookup result's cover urls. The server fetches and re-encodes
+        /// it. Returns the item without its copies.
         /// </summary>
         public async Task<LibraryItem> SetItemCoverAsync(long libraryId, long itemId, LibraryCover cover, CancellationToken cancellationToken = default)
         {

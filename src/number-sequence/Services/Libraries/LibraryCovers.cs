@@ -49,8 +49,7 @@ namespace number_sequence.Services.Libraries
         public const int ThumbnailMaxEdge = 240;
 
         /// <summary>
-        /// The largest image accepted, uploaded or fetched. A phone photo is 3–8 MB; BoardGameGeek's original images can be
-        /// several MB too.
+        /// The largest image fetched. BoardGameGeek's original images can be several MB.
         /// </summary>
         public const int MaxInputBytes = 15 * 1024 * 1024;
 

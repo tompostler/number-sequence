@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using number_sequence.Filters;
-using number_sequence.Services.Libraries;
 using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Libraries;
@@ -89,30 +88,8 @@ namespace number_sequence.Pages.UI.Libraries.Items
         }
 
         /// <summary>
-        /// Replaces the cover with an uploaded image, such as a photo taken on the phone. The api resizes it.
+        /// Clears a wrong cover from a lookup. Covers are never uploaded, so this is the only change to one after adding.
         /// </summary>
-        public async Task<IActionResult> OnPostCoverAsync(long libraryId, long itemId, IFormFile coverFile, CancellationToken cancellationToken)
-        {
-            string here = $"/ui/library/{libraryId}/items/{itemId}/edit";
-            if (coverFile == null || coverFile.Length == 0)
-            {
-                this.ErrorMessage = "Choose an image first.";
-                return this.Redirect(here);
-            }
-            if (coverFile.Length > LibraryCovers.MaxInputBytes)
-            {
-                this.ErrorMessage = $"That image is {coverFile.Length / 1024 / 1024} MB; the most accepted is {LibraryCovers.MaxInputBytes / 1024 / 1024} MB.";
-                return this.Redirect(here);
-            }
-
-            using MemoryStream buffer = new();
-            await coverFile.CopyToAsync(buffer, cancellationToken);
-            return await this.RunAndRedirectAsync(
-                () => this.NsClient.Library.SetItemCoverAsync(libraryId, itemId, new LibraryCover { Data = buffer.ToArray() }, cancellationToken),
-                "Cover saved.",
-                here);
-        }
-
         public Task<IActionResult> OnPostRemoveCoverAsync(long libraryId, long itemId, CancellationToken cancellationToken)
             => this.RunAndRedirectAsync(
                 () => this.NsClient.Library.DeleteItemCoverAsync(libraryId, itemId, cancellationToken),

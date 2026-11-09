@@ -20,25 +20,19 @@
   </div>
 </form>
 
-<div class="col-12 col-md-8 col-lg-6 border rounded p-2 mb-4">
-  <h6>Cover</h6>
-  <div class="d-flex gap-3 align-items-start">
-    @if (Model.Item.HasCover)
-    {
+@if (Model.Item.HasCover)
+{
+  @* Covers come only from the lookup pick when an item is added; removing a wrong one is the only change after that. *@
+  <div class="col-12 col-md-8 col-lg-6 border rounded p-2 mb-4">
+    <h6>Cover</h6>
+    <div class="d-flex gap-3 align-items-start">
       <img src="@LibraryDisplay.CoverUrl(Model.Item)" alt="Cover" class="rounded border flex-shrink-0" style="width: 96px" />
-    }
-    <div class="flex-grow-1">
-      <form method="post" asp-page-handler="Cover" enctype="multipart/form-data" class="mb-2">
-        <input type="file" name="coverFile" accept="image/*" class="form-control form-control-sm mb-2" required />
-        <button type="submit" class="btn btn-sm btn-outline-primary">@(Model.Item.HasCover ? "Replace cover" : "Add cover")</button>
-      </form>
-      <div class="form-text mb-2">A photo of the cover works. It's turned upright and resized when saved.</div>
-      @if (Model.Item.HasCover)
-      {
+      <div class="flex-grow-1">
+        <div class="form-text mb-2">From the lookup it was added from. Remove it if it's the wrong one.</div>
         <form method="post" asp-page-handler="RemoveCover" data-confirm="Remove the cover of @Model.Item.Title?" onsubmit="return confirm(this.dataset.confirm)">
           <button type="submit" class="btn btn-sm btn-outline-danger">Remove cover</button>
         </form>
-      }
+      </div>
     </div>
   </div>
-</div>
+}

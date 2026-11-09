@@ -454,8 +454,8 @@ and home card show for the `Library` role.
   here" shows before anything is typed.
 - **Adding a looked-up copy to an item typed in by hand** gives that item the lookup's external ids it lacks, so the
   next edition finds it by id rather than by title. Ids it already has are never changed.
-- **Covers** show on cards (thumbnail) and the item page, and are set from the lookup when an item is created, or
-  uploaded on the item's edit page. A phone photo is fine: the server turns it upright and resizes it. The `<img>` tags
+- **Covers** show on cards (thumbnail) and the item page. They are set only from the lookup pick when an item is
+  created; the item's edit page can remove a wrong one, and nothing else. The `<img>` tags
   point at the api route directly, which the token cookie authenticates, with the item's modified date in the query so
   the api can cache covers for a month. The api streams each cover from blob storage to the response rather than
   reading it into memory first, since a page of cards asks for dozens at once.
@@ -612,9 +612,9 @@ hand from the storage account opens; the app serves the content type from `Libra
 format, so changing the format means renaming or re-encoding the existing covers along with it.
 
 - **Every cover is re-encoded** by `LibraryCovers` with SkiaSharp (already in the app for ScottPlot): turned upright from
-  its EXIF orientation, which phone photos depend on, scaled to fit 900px and 240px, and saved as WebP on white. That
-  keeps lists light (a 240px thumbnail is a few KB) and makes serving them safe: what's stored is an image this code
-  drew, so nothing uploaded or fetched is ever served from this site as-is. That includes the add page's preview of a
+  its EXIF orientation, scaled to fit 900px and 240px, and saved as WebP on white. That keeps lists light (a 240px
+  thumbnail is a few KB) and makes serving them safe: what's stored is an image this code drew, so nothing fetched is
+  ever served from this site as-is. That includes the add page's preview of a
   lookup cover (`lookup/cover`), which is re-encoded the same way.
 - **WebP at quality 90.** WebP is a quarter to a third smaller than JPEG at the same quality, and every current browser
   shows it. PNG was rejected: covers are photos and artwork, which lossless compression makes several times larger for
@@ -625,6 +625,10 @@ format, so changing the format means renaming or re-encoding the existing covers
   The cover HttpClient follows no redirects itself; `LibraryCovers` follows up to three, checking each host. Open
   Library's cover urls redirect to archive.org, which is why it's on the list. Without the check, the cover endpoint
   would fetch any url for anyone with the Library role, including addresses inside the app service.
+- **Rejected: uploading a cover**, such as a phone photo of the book. It was built and removed: a cover is a nicety,
+  the lookup's is good enough for the books, movies and games that have one, and the upload was a second way in for
+  untrusted bytes. An item added by hand has no cover. `LibraryCover` now carries only `SourceUrls`. "Remove cover"
+  stays, as the one way to clear a wrong cover from a lookup.
 - **Limits:** 15 MB in and 50 megapixels, since a small file can claim enormous dimensions and decoding allocates for all
   of them.
 - **Deletes:** deleting an item or a library deletes its cover blobs after the rows are gone, so a failure leaves an

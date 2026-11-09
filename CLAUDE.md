@@ -163,7 +163,7 @@ Full design notes: [`docs/library.md`](docs/library.md). Constraints that will b
   doesn't carry, such as `ExternalIds` and `Attributes`. Apply the form onto the fetched entity and send that.
 - **Covers only ever pass through `LibraryCovers`**, which fetches from lookup provider hosts alone (checked on every
   redirect) and re-encodes every image. Fetching a cover url anywhere else is an open fetch-any-url endpoint, and serving
-  uploaded or fetched bytes as-is lets an html or svg file be served from this site.
+  fetched bytes as-is lets an html or svg file be served from this site.
 - **`LibraryExternalIds` keys are how the add page finds an existing item.** Renaming one silently stops matching items
   saved under the old key.
 - **A lookup token needs Key Vault, the `tompostler` variable group, `deploy-code.yml`, `AppServiceSettings.json` and

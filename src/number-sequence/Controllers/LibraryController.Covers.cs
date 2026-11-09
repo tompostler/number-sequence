@@ -54,8 +54,7 @@ namespace number_sequence.Controllers
         }
 
         /// <summary>
-        /// Sets an item's cover from an uploaded image or from a lookup result's cover urls. Returns the item, without its
-        /// copies.
+        /// Sets an item's cover from a lookup result's cover urls. Returns the item, without its copies.
         /// </summary>
         [HttpPut("libraries/{libraryId}/items/{itemId}/cover")]
         public async Task<IActionResult> SetItemCoverAsync(long libraryId, long itemId, [FromBody] LibraryCover cover, CancellationToken cancellationToken)
@@ -70,43 +69,26 @@ namespace number_sequence.Controllers
                 return this.NotFound($"Item [{itemId}] not found in library [{libraryId}].");
             }
 
-            LibraryCovers covers = this.serviceProvider.GetRequiredService<LibraryCovers>();
-            LibraryCovers.Prepared prepared;
-            string from;
-            if (cover?.Data?.Length > 0)
+            if (!(cover?.SourceUrls?.Count > 0))
             {
-                if (cover.Data.Length > LibraryCovers.MaxInputBytes)
-                {
-                    return this.BadRequest($"The image is {cover.Data.Length:N0} bytes; the most accepted is {LibraryCovers.MaxInputBytes:N0}.");
-                }
-                prepared = covers.Prepare(cover.Data) ?? throw new BadRequestException("That isn't an image that can be read. Use a JPEG, PNG, GIF or WebP.");
-                from = $"an upload of {cover.Data.Length:N0} bytes";
+                return this.BadRequest("Send the lookup result's cover urls to fetch it from.");
             }
-            else if (cover?.SourceUrls?.Count > 0)
+            if (!cover.SourceUrls.All(LibraryCovers.IsAllowed))
             {
-                if (!cover.SourceUrls.All(LibraryCovers.IsAllowed))
-                {
-                    return this.BadRequest("Covers are only fetched from lookup providers.");
-                }
-                prepared = await covers.FetchAndPrepareAsync(cover.SourceUrls, cancellationToken)
-                    ?? throw new FailedDependencyException("None of the cover images could be fetched.");
-                from = string.Join(", ", cover.SourceUrls);
+                return this.BadRequest("Covers are only fetched from lookup providers.");
             }
-            else
-            {
-                return this.BadRequest("Send either the image or the urls to fetch it from.");
-            }
+            LibraryCovers.Prepared prepared = await this.serviceProvider.GetRequiredService<LibraryCovers>().FetchAndPrepareAsync(cover.SourceUrls, cancellationToken)
+                ?? throw new FailedDependencyException("None of the cover images could be fetched.");
 
             await this.StoreCoverAsync(itemRecord, prepared, cancellationToken);
             _ = await nsContext.SaveChangesAsync(cancellationToken);
 
-            this.logger.LogInformation($"[{this.AccountName}] set the cover of item [{itemId}] in library [{libraryId}] from {from}.");
+            this.logger.LogInformation($"[{this.AccountName}] set the cover of item [{itemId}] in library [{libraryId}] from {string.Join(", ", cover.SourceUrls)}.");
             return this.Ok(itemRecord);
         }
 
         /// <summary>
-        /// Uploads both blobs and marks the tracked <paramref name="itemRecord"/> as having a cover; the caller saves. Shared
-        /// by setting a cover and adding an item from a scan.
+        /// Uploads both blobs and marks the tracked <paramref name="itemRecord"/> as having a cover; the caller saves.
         /// </summary>
         private async Task StoreCoverAsync(LibraryItem itemRecord, LibraryCovers.Prepared prepared, CancellationToken cancellationToken)
         {
