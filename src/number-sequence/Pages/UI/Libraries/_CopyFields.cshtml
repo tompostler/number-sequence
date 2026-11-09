@@ -1,10 +1,11 @@
 @model LibraryCopy
 @* Rendered with <partial for="..."> so the field names carry the page's property prefix. The page sets
    ViewData["MediaType"] for the format suggestions. Location and status are not here: they change through their own
-   actions, which record history. *@
+   actions, which record history. The barcode's Scan button needs <partial name="_LibraryScanner" /> on the page. *@
 @{
   string[] formats = LibraryDisplay.FormatSuggestions(ViewData["MediaType"] as LibraryMediaType?);
   string formatsId = $"formats-{ViewData.TemplateInfo.HtmlFieldPrefix}";
+  string barcodeSelector = $"#{Html.IdFor(m => m.Barcode)}";
 }
 
 <div class="row g-2 mb-2">
@@ -25,11 +26,14 @@
 </div>
 @if (ViewData["MediaType"] as LibraryMediaType? is LibraryMediaType.Book or null || !string.IsNullOrWhiteSpace(Model?.Isbn))
 {
-  @* Books only: the ISBN is what a book is looked up by, and differs from the barcode when that's a retail UPC. *@
+  @* Books only: the ISBN differs from the barcode when that's a retail UPC. *@
   <div class="row g-2 mb-2">
     <div class="col-6">
       <label asp-for="Barcode" class="form-label">Barcode</label>
-      <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="As printed" />
+      <div class="input-group">
+        <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="Optional" />
+        <button type="button" class="btn btn-outline-secondary" data-library-scan="@barcodeSelector" data-library-scan-fill hidden>Scan</button>
+      </div>
       <span asp-validation-for="Barcode" class="text-danger small"></span>
     </div>
     <div class="col-6">
@@ -40,13 +44,16 @@
       <span asp-validation-for="Isbn" class="text-danger small"></span>
     </div>
   </div>
-  <div class="form-text mb-2 mt-n1">A book with a UPC on the back takes its ISBN from the copyright page; if it ends in X, leave the X off. Either code finds it.</div>
+  <div class="form-text mb-2 mt-n1">Scanning it later finds this copy. A book with a UPC on the back can also take its ISBN from the copyright page; if it ends in X, leave the X off. Either code finds it.</div>
 }
 else
 {
   <div class="mb-2">
     <label asp-for="Barcode" class="form-label">Barcode</label>
-    <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="UPC or EAN" />
+    <div class="input-group">
+      <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="Optional" />
+      <button type="button" class="btn btn-outline-secondary" data-library-scan="@barcodeSelector" data-library-scan-fill hidden>Scan</button>
+    </div>
     <span asp-validation-for="Barcode" class="text-danger small"></span>
   </div>
 }

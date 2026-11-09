@@ -2,8 +2,8 @@
 
 A personal inventory of physical media: books, movies and board games, plus anything else loanable. For each copy it
 records where it lives, who borrowed it, the history of both, and acquisition details. A library can be shared with other
-accounts as read-only or editable. The phone is the main tool, used two ways: checking "do I already own this?" while
-shopping, and scanning barcodes to build the first inventory and later to reconcile one location at a time.
+accounts as read-only or editable. The phone is the main tool: finding things by title, author or series, adding them
+by title search, and scanning barcodes to confirm one location's inventory at a time.
 
 This is deliberately not a full library system. There are no holds, fines, patrons or cataloguing standards.
 
@@ -23,7 +23,7 @@ duplicates:
   condition, acquisition details and status.
 
 A hardcover and a paperback are one item with two copies. Two identical paperbacks in different rooms are also one item
-with two copies. The "do I own this?" answer reads naturally from that: *The Hobbit — 2 copies: Hardcover (Office ›
+with two copies. A search result reads naturally from that: *The Hobbit — 2 copies: Hardcover (Office ›
 Shelf 3), Paperback (Kids' room)*.
 
 **Rejected: work → edition → copy.** That is the "correct" bibliographic model (roughly FRBR), and it avoids repeating
@@ -67,7 +67,7 @@ zero. A path that skips this stores a form the others don't match, and lookups q
   say. This is what lets the "other loanable items" media type work with your own labels.
 
 **A copy has a barcode and an ISBN**, and a code matches a copy by either (`LibraryBarcode.MatchesCopy`, used by item
-search, the "do I own this?" check, the add page's duplicate check, and scan resolution). The barcode is what's printed
+search, the add page's duplicate check, and scan resolution). The barcode is what's printed
 and scanned; the ISBN is a book's second code, from its copyright page. For most books they are the same, and the server fills the ISBN
 from an ISBN barcode on every write, so nothing extra is entered. They differ on a book printed with only a retail UPC,
 common on US mass-market paperbacks: the UPC is on the back and often inside the cover too, and the ISBN is only text on
@@ -275,13 +275,9 @@ resolve to the namespace first. The Razor Pages folder has the same problem (`Pa
 ## API
 
 `LibraryController` (a partial class, one file per sub-resource like Ledger) is at `/library`, with
-`RequiresToken(AccountRoles.Library)`. Everything is nested under `libraries/{libraryId}` except the routes that span
-libraries:
+`RequiresToken(AccountRoles.Library)`. Everything is nested under `libraries/{libraryId}` except the lookup routes, which
+belong to no library:
 
-- `barcodes/{barcode}` is the "do I own this?" check across **every library the caller can access**, so the shopping
-  case doesn't start by choosing a library. It returns matching copies that aren't disposed, with their item and open
-  loan. It only matches the exact barcode, so a different edition of something owned won't show up. The add page's
-  duplicate check is what matches by Open Library work id.
 - `lookup/search?mediaType=&q=`, `lookup/{source}/{sourceId}` and `lookup/cover?url=` call
   outside services and save nothing. See [External lookup](#external-lookup).
 
@@ -375,7 +371,7 @@ The Client is `LibraryOperations` (partial, one file per sub-resource) exposed a
 per API route. Deletes return nothing, because the API answers them with 204.
 
 The Tool is `ns library` (alias `lib`). Libraries themselves are managed at the top level (`lib ls`, `lib create`), with
-`share`, `location`, `item`, `copy` and `loan` beneath it, plus `owned <barcode>`. Each takes the usual CRUD aliases.
+`share`, `location`, `item`, `copy` and `loan` beneath it. Each takes the usual CRUD aliases.
 Choices that aren't obvious from `--help`:
 
 - **`--library`/`-L` can be left out** when the caller can access exactly one library, which is the common case. With
@@ -414,15 +410,25 @@ and home card show for the `Library` role.
 - **Every action posts, then redirects back** with the outcome in a `[TempData]` message, so reload and the back button
   never resubmit. A form shown again in the same request, with what was typed, uses `FormError` instead: a `[TempData]`
   property set without a redirect is still saved, and the message shows a second time on the next page.
-- **The home search covers every library you can see**, because "do I already own this?" shouldn't start by picking a
+- **The home search covers every library you can see**, because "do we have this?" shouldn't start by picking a
   library. It runs the item search once per library rather than adding a cross-library search endpoint, since an account
-  sees a handful of libraries at most. A barcode with no match says so and offers "Add to *library*" with the barcode
+  sees a handful of libraries at most. Searching is by title, author or series. A barcode still finds the copy that
+  carries it, which is how the book in hand is pulled up to lend. A barcode with no match says to try the title, since
+  another edition or a copy added without its barcode won't match, and offers "Add to *library*" with the barcode
   filled in.
+- **Rejected: a "do I own this?" check by barcode.** A cross-library `barcodes/{barcode}` endpoint and the Tool's
+  `owned` command answered it for a code scanned in a shop. They were removed: a different edition of the same book has a
+  different barcode, so "not owned" didn't mean not owned. A title search, on the site or `ns lib item list -q`, is
+  the reliable answer.
 - **Series** (from a library's page, for editors) is the [bulk series fix](#external-lookup): search, tick, name the
   series once, a number per book. With no search it lists the library's series, each a link that searches for it,
   which is the way to fix one's spelling everywhere.
 - **A library's page sorts** by shelf order, title or recently added ([item order](#api)). Shelf order leaves the url
   plain, so a bookmark of the library is its shelf.
+- **Adding is title first.** The add page starts with a title search, then the item form, filled in from the pick or by
+  hand, then the copy, whose barcode is optional and last. Scanning before the title was the old order, built around
+  looking books up by ISBN; once that went (see [External lookup](#external-lookup)) a barcode had nothing to fill in,
+  and putting it first only meant a code to carry around while the title was searched for.
 - **Adding an item adds its first copy in the same form.** Before creating, the page looks for an item this might already
   be: one with a copy carrying the same barcode, or one with exactly the same title. If it finds one, it offers "Add copy
   here" on each match, which keeps everything typed for the copy, or "Create a new item anyway". The barcode is checked
@@ -441,9 +447,9 @@ and home card show for the `Library` role.
   "Disposed" are on the item page.
 
 - **Lookup is all GET on the add page.** A title lists candidates, and picking one comes back with `source` and
-  `sourceId`. A code (in the lookup box, or passed as `barcode` from the home page's "Not owned" or a scan) goes on the
-  copy and isn't looked up. Each step carries the barcode, location and "add another" along, so a code typed in before
-  a title search still lands on the copy. The lookup's external ids, attributes and cover urls aren't form fields, so they ride along as hidden
+  `sourceId`. The lookup box takes titles only. A code passed as `barcode` (from a search that found nothing, or a
+  scan's reconcile view) goes on the copy and isn't looked up. Each step carries the barcode, location and "add
+  another" along, so that code still lands on the copy after the title search. The lookup's external ids, attributes and cover urls aren't form fields, so they ride along as hidden
   inputs. The duplicate check runs as soon as the form is filled in, not only on submit, so "this might already be
   here" shows before anything is typed.
 - **Adding a looked-up copy to an item typed in by hand** gives that item the lookup's external ids it lacks, so the
@@ -455,22 +461,21 @@ and home card show for the `Library` role.
   reading it into memory first, since a page of cards asks for dozens at once.
 - **Credits:** pages showing looked-up data name the source (`_LookupAttribution`), as TMDB's terms require.
 
-**Scan buttons** sit next to the search boxes on the library home and a library's page, and the lookup box on the add
-page. A read puts the code in the box and submits it, so a scan does exactly what typing the code does: "do I own this?"
-on the home page, and the copy's barcode on the add page. A code a library's page doesn't find offers "Add it", which opens the
-add page with the code. On the add page a code taken as a barcode is cleared from the box and carried in the hidden
-barcode field, with the box focused, because a barcode is followed by a title search.
+**Scan buttons** sit next to the search boxes on the library home and a library's page, and next to the copy form's
+Barcode field (on the add page, adding a copy, and editing one). In a search box a read puts the code in the box and
+submits it, so a scan does exactly what typing the code does. A code a library's page doesn't find offers "Add it",
+which opens the add page with the code. In the copy form the read only fills the field (`data-library-scan-fill`),
+since submitting would save a half-filled form. Editing a copy is how one added without a barcode gets it later.
 
-**Books with a UPC.** The box takes codes in any order: an ISBN becomes the copy's ISBN, and its barcode too
-unless the barcode is already a UPC; a UPC becomes the barcode and leaves the ISBN alone. Both ride along in hidden
-fields through a title search or a pick, like the barcode always did. The copy form shows the ISBN field for books only,
-blank when it is just the barcode.
+The add page's lookup box has no Scan button. It takes titles, and a barcode has nothing to look up.
 
-**The numeric keypad for ISBNs.** The copy form's ISBN field always uses it, and the lookup box does right after a
-book's UPC is scanned (Book selected, nothing filled in yet), when the ISBN is what gets typed next. Everywhere else the
-box keeps the full keyboard for titles. The keypad has no X, and older mass-market paperbacks, the ones with UPCs, often
-print only an ISBN-10, about one in eleven of which ends in X. So those two places take an ISBN-10's first nine digits
-alone ("ends in X? leave the X off", `LibraryBarcode.TryParseIsbn`). That's lossless: converting to ISBN-13 drops the
+**Books with a UPC.** The copy form shows the ISBN field for books only, blank when it is just the barcode. A book
+printed with only a retail UPC keeps the UPC as its barcode, since that's what a rescan reads, and can take the ISBN from
+the copyright page as a second code.
+
+**The numeric keypad for ISBNs.** The copy form's ISBN field uses it. The keypad has no X, and older mass-market
+paperbacks, the ones with UPCs, often print only an ISBN-10, about one in eleven of which ends in X. So that field takes
+an ISBN-10's first nine digits alone ("ends in X? leave the X off", `LibraryBarcode.TryParseIsbn`). That's lossless: converting to ISBN-13 drops the
 ISBN-10 check character and computes a new one. Anywhere a code could be anything, nine digits stay a plain label.
 
 ## Gource export (planned)
@@ -655,9 +660,9 @@ scanner types into the box like a keyboard.
 - **The camera closes when the page is hidden.** A locked phone suspends the stream and it doesn't reliably resume.
 - **Audio** is unlocked by the tap that opens the scanner, since iOS only plays sound from a context created in a user
   gesture.
-- **Searching scans quietly** (`data-library-scan-quiet`, on the home and library pages): vibration, no beep. That's
-  the "do I own this?" check, done in a shop, where a success beep is noise. Adding and scan sessions beep, since they're done at home, often
-  without looking at the screen.
+- **Searching scans quietly** (`data-library-scan-quiet`, on the home and library pages): vibration, no beep. It was
+  built for checking "do I own this?" in a shop, where a success beep is noise, and stays because it does no harm.
+  Adding and scan sessions beep, since they're done often without looking at the screen.
 
 ## Scanning and reconciling
 

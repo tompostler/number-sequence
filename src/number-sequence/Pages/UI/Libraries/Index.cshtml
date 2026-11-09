@@ -11,11 +11,11 @@
 
 <form method="get" class="mb-3">
   <div class="input-group input-group-lg">
-    <input id="q" name="q" value="@Model.Q" class="form-control" placeholder="Title, author, or barcode" autocomplete="off" inputmode="search" enterkeyhint="search" autofocus="@(Model.Q == null)" />
+    <input id="q" name="q" value="@Model.Q" class="form-control" placeholder="Title, author or series" autocomplete="off" inputmode="search" enterkeyhint="search" autofocus="@(Model.Q == null)" />
     <button type="button" class="btn btn-outline-secondary" data-library-scan="#q" data-library-scan-quiet hidden>Scan</button>
     <button type="submit" class="btn btn-primary">Search</button>
   </div>
-  <div class="form-text">Searches every library you can see. Scan, type or paste an ISBN or UPC to check whether you already own it.</div>
+  <div class="form-text">Searches every library you can see by title, author or series. Scanning a copy's barcode finds that exact copy.</div>
 </form>
 
 @if (!string.IsNullOrWhiteSpace(Model.Q))
@@ -26,8 +26,8 @@
       <div class="alert alert-secondary">
         @if (Model.QueryBarcode != null)
         {
-          <div class="fw-semibold">Not owned.</div>
-          <div class="small">Nothing with barcode @Model.QueryBarcode in any library you can see.</div>
+          <div class="fw-semibold">No copy has barcode @Model.QueryBarcode.</div>
+          <div class="small">Try the title: another edition, or a copy added without its barcode, won't match this code.</div>
           @foreach (Library library in editable)
           {
             <a href="/ui/library/@library.Id/items/create?barcode=@Uri.EscapeDataString(Model.QueryBarcode)" class="btn btn-sm btn-outline-primary mt-2 me-1">Add to @library.Name</a>

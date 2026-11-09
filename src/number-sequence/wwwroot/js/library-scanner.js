@@ -4,7 +4,8 @@
 // A button with data-library-scan="<selector of a text input>" opens the camera. The first barcode read goes into that
 // input and its form is submitted, so the page does exactly what it does when the code is typed. Buttons start hidden and
 // are shown only where there is a camera api (https or localhost), so the text box is always the fallback. Adding
-// data-library-scan-quiet skips the beep (a read still vibrates), for scanning in a shop.
+// data-library-scan-quiet skips the beep (a read still vibrates). Adding data-library-scan-fill only fills the input,
+// for a field in a bigger form, such as a copy's barcode, where submitting would save a half-filled form.
 //
 // The scan session page uses window.LibraryScanner.open with continuous: true instead, which keeps the camera open and
 // hands each new code to the page along with a handle for the result's status text and tone.
@@ -262,10 +263,13 @@
     }
     button.hidden = false;
     var options = { quiet: button.hasAttribute('data-library-scan-quiet') };
+    var fillOnly = button.hasAttribute('data-library-scan-fill');
     button.addEventListener('click', function () {
       open(function (code) {
         input.value = code;
-        if (input.form.requestSubmit) {
+        if (fillOnly) {
+          input.focus();
+        } else if (input.form.requestSubmit) {
           input.form.requestSubmit();
         } else {
           input.form.submit();

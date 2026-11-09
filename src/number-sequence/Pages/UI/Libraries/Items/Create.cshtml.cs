@@ -12,10 +12,10 @@ namespace number_sequence.Pages.UI.Libraries.Items
     /// (same barcode, same lookup record, or same title) and offers to add the copy to that instead, which is the main guard
     /// against duplicate items.
     /// <para>
-    /// The lookup is all GET: a title in <c>find</c> lists candidates, and picking one comes back with <c>source</c> and
-    /// <c>sourceId</c>. A code in <c>barcode</c>, <c>isbn</c> or <c>find</c> goes on the copy and isn't looked up. Each of
-    /// those carries the barcode, ISBN, location and "add another" along, so a code scanned before a title search still
-    /// lands on the copy.
+    /// Title first: the lookup is all GET, a title in <c>find</c> lists candidates, and picking one comes back with
+    /// <c>source</c> and <c>sourceId</c>. The copy's barcode is last and optional. One can arrive in <c>barcode</c>, from a
+    /// scan's reconcile view or a search that found nothing; it goes on the copy, is never looked up, and is carried
+    /// through the title search with the location and "add another".
     /// </para>
     /// </summary>
     [RequiresToken(AccountRoles.Library)]
@@ -82,7 +82,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
         public string LookupSourceUrl { get; set; }
 
         /// <summary>
-        /// What was typed in the lookup box.
+        /// The title searched for.
         /// </summary>
         public string Find { get; private set; }
 
@@ -92,8 +92,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
         public List<LibraryLookupResult> Candidates { get; private set; }
 
         /// <summary>
-        /// Why nothing was filled in, such as a barcode (which isn't looked up) or a provider that's down. Advice, not an error: the
-        /// form still works by hand.
+        /// Why nothing was filled in, such as a provider that's down. Advice, not an error: the form still works by hand.
         /// </summary>
         public string LookupNote { get; private set; }
 
@@ -103,22 +102,9 @@ namespace number_sequence.Pages.UI.Libraries.Items
 
         public List<LibraryItem> Duplicates { get; private set; } = [];
 
-        /// <summary>
-        /// A book whose barcode is a retail UPC, still without an ISBN or details: what's typed in the box next may be the
-        /// ISBN from the copyright page, kept as the copy's second code, so the box gets the numeric keypad and takes nine digits as an
-        /// ISBN-10 without its X (<see cref="LibraryBarcode.TryParseIsbn"/>).
-        /// </summary>
-        public bool IsbnExpected
-            => this.Item?.MediaType == LibraryMediaType.Book
-                && this.Copy?.Isbn == null
-                && this.LookupSource == null
-                && LibraryBarcode.TryParse(this.Copy?.Barcode, out LibraryBarcode barcode, out _)
-                && barcode.Kind == LibraryBarcodeKind.Gtin;
-
         public async Task<IActionResult> OnGetAsync(
             long libraryId,
             string barcode,
-            string isbn,
             LibraryMediaType? type,
             long? location,
             bool another,
@@ -138,29 +124,9 @@ namespace number_sequence.Pages.UI.Libraries.Items
             this.AddAnother = another;
             this.Find = find?.Trim();
 
-            // Carried codes first, then whatever is in the lookup box on top of them; anything else in the box is a title.
-            this.TakeCode(barcode);
-            this.TakeCode(isbn);
-            string titleSearch = null;
-            if (!string.IsNullOrWhiteSpace(this.Find))
+            if (LibraryBarcode.TryParse(barcode, out LibraryBarcode parsed, out _))
             {
-                if (this.TakeCode(this.Find, isbnExpected: this.IsbnExpected))
-                {
-                    // It rides along in the hidden fields now, leaving the box empty for what comes next: a title search
-                    // for a movie or game, or the ISBN of a book whose barcode is a UPC.
-                    this.Find = null;
-                }
-                else
-                {
-                    titleSearch = this.Find;
-                }
-            }
-
-            LibraryBarcode? parsed = this.Copy.Barcode != null && LibraryBarcode.TryParse(this.Copy.Barcode, out LibraryBarcode b, out _) ? b : null;
-            if (parsed?.Kind == LibraryBarcodeKind.Gtin && this.Copy.Isbn == null)
-            {
-                // A scanned code that isn't an ISBN is far more often a movie or game than a book.
-                this.Item.MediaType = type ?? LibraryMediaType.Movie;
+                this.Copy.Barcode = parsed.Value;
             }
 
             try
@@ -169,14 +135,9 @@ namespace number_sequence.Pages.UI.Libraries.Items
                 {
                     this.Apply(await this.NsClient.Library.GetLookupAsync(source, sourceId, cancellationToken));
                 }
-                else if (titleSearch != null)
+                else if (!string.IsNullOrWhiteSpace(this.Find))
                 {
-                    this.Candidates = await this.NsClient.Library.SearchLookupAsync(this.Item.MediaType, titleSearch, cancellationToken);
-                }
-                else if (parsed.HasValue || this.Copy.Isbn != null)
-                {
-                    // Nothing is looked up by barcode: lookups are by title only.
-                    this.LookupNote = "The barcode is kept for the copy. Search by title above to fill in the details, or fill them in below.";
+                    this.Candidates = await this.NsClient.Library.SearchLookupAsync(this.Item.MediaType, this.Find, cancellationToken);
                 }
             }
             catch (NsTcpWtfClientException ex)
@@ -184,7 +145,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
                 this.LookupNote = $"Lookup didn't work: {ErrorText(ex)} Fill it in below.";
             }
 
-            if (this.LookupSource != null || parsed.HasValue || this.Copy.Isbn != null)
+            if (this.LookupSource != null || this.Copy.Barcode != null)
             {
                 try
                 {
@@ -325,7 +286,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
         }
 
         /// <summary>
-        /// The link for picking a search candidate, carrying the barcode, ISBN, location and "add another" along.
+        /// The link for picking a search candidate, carrying the barcode, location and "add another" along.
         /// </summary>
         public string PickUrl(LibraryLookupResult candidate)
         {
@@ -338,10 +299,6 @@ namespace number_sequence.Pages.UI.Libraries.Items
             if (!string.IsNullOrWhiteSpace(this.Copy?.Barcode))
             {
                 query.Add($"barcode={Uri.EscapeDataString(this.Copy.Barcode)}");
-            }
-            if (!string.IsNullOrWhiteSpace(this.Copy?.Isbn))
-            {
-                query.Add($"isbn={Uri.EscapeDataString(this.Copy.Isbn)}");
             }
             if (this.LocationId.HasValue)
             {
@@ -356,40 +313,6 @@ namespace number_sequence.Pages.UI.Libraries.Items
                 query.Add($"scan={this.ScanId}&scanEntry={this.ScanEntryId}");
             }
             return $"/ui/library/{this.Library.Id}/items/create?{string.Join("&", query)}";
-        }
-
-        /// <summary>
-        /// Puts a scanned or typed code on the copy, returning false when it isn't a product code (so it's a title). An ISBN
-        /// is the copy's ISBN, and its barcode too unless the barcode is a retail UPC: a book printed with only a UPC keeps
-        /// it as the barcode, so a rescan finds it, and is looked up by the ISBN typed from the copyright page. A UPC or
-        /// EAN replaces the barcode and leaves the ISBN alone. With <paramref name="isbnExpected"/>, nine digits are an
-        /// ISBN-10 without its X.
-        /// </summary>
-        private bool TakeCode(string code, bool isbnExpected = false)
-        {
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                return false;
-            }
-            if (!(isbnExpected && LibraryBarcode.TryParseIsbn(code, out LibraryBarcode parsed, out _))
-                && (!LibraryBarcode.TryParse(code, out parsed, out _) || parsed.Kind == LibraryBarcodeKind.Other))
-            {
-                return false;
-            }
-            if (parsed.Kind == LibraryBarcodeKind.Isbn)
-            {
-                this.Copy.Isbn = parsed.Value;
-                bool barcodeIsUpc = LibraryBarcode.TryParse(this.Copy.Barcode, out LibraryBarcode current, out _) && current.Kind == LibraryBarcodeKind.Gtin;
-                if (!barcodeIsUpc)
-                {
-                    this.Copy.Barcode = parsed.Value;
-                }
-            }
-            else
-            {
-                this.Copy.Barcode = parsed.Value;
-            }
-            return true;
         }
 
         /// <summary>

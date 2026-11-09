@@ -4,8 +4,7 @@
   ViewData["Title"] = $"Add to {Model.Library.Name}";
   ViewData["MediaType"] = Model.Item?.MediaType;
   bool filledIn = Model.LookupSource != null;
-  @* The box is the next step unless something is already filled in, listed, or possibly here already. That includes a
-     scanned UPC, which is followed by a title search. *@
+  @* The title search is the next step unless something is already filled in, listed, or possibly here already. *@
   bool findNext = !filledIn && Model.Candidates == null && Model.Duplicates.Count == 0;
   List<string> attributes = LibraryDisplay.Attributes(Model.Item?.Attributes);
   List<string> creditedSources = (Model.Candidates?.Select(x => x.Source) ?? []).Append(Model.LookupSource).Where(x => x != null).ToList();
@@ -42,12 +41,8 @@
     }
     @if (!string.IsNullOrWhiteSpace(Model.Copy?.Barcode))
     {
-      @* Kept through a title search, so a scanned UPC still lands on the copy. A barcode typed in the box replaces it. *@
+      @* Kept through a title search, so a code from a scan still lands on the copy. *@
       <input type="hidden" name="barcode" value="@Model.Copy.Barcode" />
-    }
-    @if (!string.IsNullOrWhiteSpace(Model.Copy?.Isbn))
-    {
-      <input type="hidden" name="isbn" value="@Model.Copy.Isbn" />
     }
     <label for="find" class="form-label">Look it up</label>
     <div class="input-group">
@@ -57,19 +52,14 @@
           <option value="@mediaType" selected="@(Model.Item?.MediaType == mediaType)">@LibraryDisplay.MediaType(mediaType)</option>
         }
       </select>
-      @* After a book's UPC, the ISBN from the copyright page is what's typed next, so the numeric keypad. *@
-      <input id="find" name="find" value="@Model.Find" class="form-control" placeholder="@(Model.IsbnExpected ? "ISBN from the copyright page" : "Title, or a barcode")" inputmode="@(Model.IsbnExpected ? "numeric" : null)" autocomplete="off" autofocus="@findNext" />
-      <button type="button" class="btn btn-outline-secondary" data-library-scan="#find" hidden>Scan</button>
+      <input id="find" name="find" value="@Model.Find" class="form-control" placeholder="Title or author" autocomplete="off" inputmode="search" enterkeyhint="search" autofocus="@findNext" />
       <button type="submit" class="btn btn-outline-primary">Look up</button>
     </div>
     <div class="form-text">
-      @if (Model.IsbnExpected)
+      Pick a result to fill in the form, or fill it in by hand below.
+      @if (!string.IsNullOrWhiteSpace(Model.Copy?.Barcode))
       {
-        @("Ends in X? Leave the X off.")
-      }
-      else
-      {
-        @("Search by title or author. A scanned or typed barcode is kept for the copy, not looked up.")
+        @($"Barcode {Model.Copy.Barcode} goes on the copy.")
       }
     </div>
   </form>

@@ -8,8 +8,8 @@ using TcpWtf.NumberSequence.Contracts.Libraries;
 namespace number_sequence.Pages.UI.Libraries
 {
     /// <summary>
-    /// The libraries the caller can see, and one search across all of them. That search is the "do I already own this?"
-    /// check while shopping, so it doesn't ask for a library first.
+    /// The libraries the caller can see, and one search across all of them, by title, author or series, so "do we have
+    /// this?" doesn't start by picking a library. A scanned barcode finds that exact copy.
     /// </summary>
     [RequiresToken(AccountRoles.Library)]
     public sealed class IndexModel : LibraryPageModel

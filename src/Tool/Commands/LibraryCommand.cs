@@ -805,30 +805,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             #endregion // Lookup
 
 
-            #region Owned
-
-            Command ownedCommand = new("owned", "Do I already own this? Looks a barcode up across every library you can access.")
-            {
-                stampOption,
-                verbosityOption,
-                new Argument<string>("barcode") { Description = "The barcode: ISBN-10 or -13, UPC or EAN. Dashes and spaces are fine." },
-                rawOption,
-            };
-            ownedCommand.Aliases.Add("own");
-            ownedCommand.SetAction(
-                (parseResult, cancellationToken) =>
-                {
-                    Stamp stamp = parseResult.GetRequiredValue(stampOption);
-                    Verbosity verbosity = parseResult.GetRequiredValue(verbosityOption);
-                    string barcode = parseResult.GetRequiredValue<string>("barcode");
-                    bool raw = parseResult.GetValue(rawOption);
-                    return HandleOwnedAsync(barcode, raw, stamp, verbosity);
-                });
-            rootCommand.Subcommands.Add(ownedCommand);
-
-            #endregion // Owned
-
-
             return rootCommand;
         }
     }

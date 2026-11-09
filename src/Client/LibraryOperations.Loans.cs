@@ -17,19 +17,5 @@ namespace TcpWtf.NumberSequence.Client
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<List<LibraryLoan>>(cancellationToken);
         }
-
-        /// <summary>
-        /// "Do I already own this?" Copies with this exact barcode, across every library the caller can access, each with its
-        /// item and open loan. Disposed copies are left out.
-        /// </summary>
-        public async Task<List<LibraryCopy>> GetCopiesByBarcodeAsync(string barcode, CancellationToken cancellationToken = default)
-        {
-            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
-                () => new HttpRequestMessage(
-                    HttpMethod.Get,
-                    $"library/barcodes/{Uri.EscapeDataString(barcode)}"),
-                cancellationToken);
-            return await response.Content.ReadJsonAsAsync<List<LibraryCopy>>(cancellationToken);
-        }
     }
 }
