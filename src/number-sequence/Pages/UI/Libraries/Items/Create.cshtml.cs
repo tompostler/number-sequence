@@ -12,10 +12,10 @@ namespace number_sequence.Pages.UI.Libraries.Items
     /// (same barcode, same lookup record, or same title) and offers to add the copy to that instead, which is the main guard
     /// against duplicate items.
     /// <para>
-    /// The lookup is all GET: an ISBN in <c>barcode</c>, <c>isbn</c> or <c>find</c> fills the form in, a title in
-    /// <c>find</c> lists candidates, and picking one comes back with <c>source</c> and <c>sourceId</c>. Each of those carries
-    /// the barcode, ISBN, location and "add another" along, so a UPC scanned before a title search or an ISBN still lands
-    /// on the copy.
+    /// The lookup is all GET: a title in <c>find</c> lists candidates, and picking one comes back with <c>source</c> and
+    /// <c>sourceId</c>. A code in <c>barcode</c>, <c>isbn</c> or <c>find</c> goes on the copy and isn't looked up. Each of
+    /// those carries the barcode, ISBN, location and "add another" along, so a code scanned before a title search still
+    /// lands on the copy.
     /// </para>
     /// </summary>
     [RequiresToken(AccountRoles.Library)]
@@ -92,7 +92,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
         public List<LibraryLookupResult> Candidates { get; private set; }
 
         /// <summary>
-        /// Why nothing was filled in, such as an ISBN no provider knows or a provider that's down. Advice, not an error: the
+        /// Why nothing was filled in, such as a barcode (which isn't looked up) or a provider that's down. Advice, not an error: the
         /// form still works by hand.
         /// </summary>
         public string LookupNote { get; private set; }
@@ -104,8 +104,8 @@ namespace number_sequence.Pages.UI.Libraries.Items
         public List<LibraryItem> Duplicates { get; private set; } = [];
 
         /// <summary>
-        /// A book whose barcode is a retail UPC, still without an ISBN or details: what's typed in the lookup box next is
-        /// most likely the ISBN from the copyright page, so the box gets the numeric keypad and takes nine digits as an
+        /// A book whose barcode is a retail UPC, still without an ISBN or details: what's typed in the box next may be the
+        /// ISBN from the copyright page, kept as the copy's second code, so the box gets the numeric keypad and takes nine digits as an
         /// ISBN-10 without its X (<see cref="LibraryBarcode.TryParseIsbn"/>).
         /// </summary>
         public bool IsbnExpected
@@ -173,25 +173,10 @@ namespace number_sequence.Pages.UI.Libraries.Items
                 {
                     this.Candidates = await this.NsClient.Library.SearchLookupAsync(this.Item.MediaType, titleSearch, cancellationToken);
                 }
-                else if (this.Copy.Isbn != null)
+                else if (parsed.HasValue || this.Copy.Isbn != null)
                 {
-                    List<LibraryLookupResult> found = await this.NsClient.Library.LookupIsbnAsync(this.Copy.Isbn, cancellationToken);
-                    if (found.Count > 0)
-                    {
-                        this.Apply(found[0]);
-                    }
-                    else
-                    {
-                        this.LookupNote = $"No book lookup source knows ISBN {this.Copy.Isbn}. Search by title above, or fill it in below.";
-                    }
-                }
-                else if (parsed?.Kind == LibraryBarcodeKind.Gtin)
-                {
-                    // Many US books, mass-market paperbacks especially, carry a retail UPC on the back cover, with the ISBN
-                    // barcode inside the front cover. The UPC doesn't contain the ISBN, so it can't be looked up.
-                    this.LookupNote = this.Item.MediaType == LibraryMediaType.Book
-                        ? $"{parsed.Value.Value} is a retail barcode, not an ISBN. It's kept as the copy's barcode. Type the ISBN from the copyright page above to look the book up (both will find it), or search by title."
-                        : "TMDB and BoardGameGeek find things by title, not barcode. Search by title above to fill in the details; the barcode stays with the copy.";
+                    // Nothing is looked up by barcode: lookups are by title only.
+                    this.LookupNote = "The barcode is kept for the copy. Search by title above to fill in the details, or fill them in below.";
                 }
             }
             catch (NsTcpWtfClientException ex)

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using number_sequence.Filters;
-using number_sequence.Utilities;
 using TcpWtf.NumberSequence.Client;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Libraries;
@@ -52,11 +51,8 @@ namespace number_sequence.Pages.UI.Libraries.Scans
             .Where(x => x.Resolution is LibraryScanResolution.Expected or LibraryScanResolution.Elsewhere)
             .Where(x => x.ResolvedCopy != null && x.ResolvedCopy.Status != LibraryCopyStatus.Disposed);
 
-        public static bool IsIsbn(LibraryScanEntry entry)
-            => LibraryBarcode.TryParse(entry.Barcode, out LibraryBarcode code, out _) && code.Kind == LibraryBarcodeKind.Isbn;
-
         /// <summary>
-        /// The add page for a scan that can't be added by lookup alone, coming back here once saved.
+        /// The add page for a new code, coming back here once saved.
         /// </summary>
         public string AddUrl(LibraryScanEntry entry)
             => $"/ui/library/{this.Library.Id}/items/create?barcode={Uri.EscapeDataString(entry.Barcode)}&location={this.Session.LocationId}&scan={this.Session.Id}&scanEntry={entry.Id}";

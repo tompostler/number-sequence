@@ -9,7 +9,7 @@ namespace number_sequence.Pages.UI.Libraries
 {
     /// <summary>
     /// Sets one series on several items at once: search, tick, type the name once, and a number per book. The bulk fix
-    /// for series that lookups misspell or leave out, and for renaming a misspelled series everywhere it's used.
+    /// for books added without their series, and for renaming a misspelled series everywhere it's used.
     /// </summary>
     [RequiresToken(AccountRoles.Library)]
     public sealed class SeriesModel : LibraryPageModel

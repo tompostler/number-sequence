@@ -13,11 +13,6 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public const string OpenLibraryWork = "openLibraryWork";
 
         /// <summary>
-        /// The Open Library edition, such as <c>OL7353617M</c>.
-        /// </summary>
-        public const string OpenLibraryEdition = "openLibraryEdition";
-
-        /// <summary>
         /// The TMDB movie id.
         /// </summary>
         public const string TmdbMovie = "tmdbMovie";

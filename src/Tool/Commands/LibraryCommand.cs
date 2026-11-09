@@ -396,7 +396,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             #region Series
 
-            Command seriesCommand = new("series", "Set one series on several items at once, each with its own number: for a series a lookup misspelled or left out.");
+            Command seriesCommand = new("series", "Set one series on several items at once, each with its own number: for books added without one, or a misspelled series.");
 
             Command seriesListCommand = new("list", "List the series names in use in a library.")
             {
@@ -773,18 +773,18 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Option<LibraryMediaType> lookupTypeOption = new("--type")
             {
-                Description = "What to search for by title. Not needed for an ISBN.",
+                Description = "What to search for by title.",
                 DefaultValueFactory = _ => LibraryMediaType.Book,
             };
             Option<string> lookupSourceOption = new("--source")
             {
                 Description = $"Get one record by id from this source instead of searching: {LibraryLookupSources.OpenLibrary}, {LibraryLookupSources.TmdbMovie}, {LibraryLookupSources.TmdbTv} or {LibraryLookupSources.BoardGameGeek}. The source and id are the first two columns of a search.",
             };
-            Command lookupCommand = new("lookup", "Look up a book by ISBN, or search by title, in the outside services the add page uses. Saves nothing. Writes a table with fixed columns, or json with --raw, and nothing else.")
+            Command lookupCommand = new("lookup", "Search by title in the outside services the add page uses. Saves nothing. Writes a table with fixed columns, or json with --raw, and nothing else.")
             {
                 stampOption,
                 verbosityOption,
-                new Argument<string>("query") { Description = "An ISBN, a title, or with --source the record's id." },
+                new Argument<string>("query") { Description = "A title, or with --source the record's id." },
                 lookupTypeOption,
                 lookupSourceOption,
                 rawOption,

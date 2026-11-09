@@ -39,12 +39,6 @@ namespace number_sequence.Services.Libraries
         }
 
         /// <summary>
-        /// A book by its ISBN-13 from Open Library, or null when it doesn't have one.
-        /// </summary>
-        public Task<LibraryLookupResult> LookupIsbnAsync(string isbn13, CancellationToken cancellationToken)
-            => this.CachedAsync($"isbn:{isbn13}", () => this.openLibrary.GetByIsbnAsync(isbn13, cancellationToken));
-
-        /// <summary>
         /// Candidates for <paramref name="q"/> as a title. A 400 for a media type that has no lookup or whose provider has no
         /// token configured, with the reason.
         /// </summary>

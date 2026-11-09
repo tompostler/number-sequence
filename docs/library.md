@@ -11,8 +11,7 @@ This is deliberately not a full library system. There are no holds, fines, patro
 `Migrations/*_AddLibrary*`), as do the Client, Tool and UI (`Pages/UI/Libraries/`), and so do three helpers the API is
 built on: barcode normalization (`Utilities/LibraryBarcode.cs`), the access check (`DataAccess/LibraryAccess.cs`) and
 event times (`Utilities/LibraryEventTimes.cs`). External lookup and covers exist too (`Services/Libraries/`), and so does
-the camera scanner (`wwwroot/js/library-scanner.js`) and scan sessions with their reconcile view, and series parsing
-(`Utilities/LibrarySeries.cs`). Export, described below, is the remaining work.
+the camera scanner (`wwwroot/js/library-scanner.js`) and scan sessions with their reconcile view. Export, described below, is the remaining work.
 
 ## Data model: item → copy
 
@@ -33,10 +32,10 @@ and repeating a publisher and year on two rows is cheap. A third level, on the o
 into every add and every scan. Edition details live on the copy. If a lookup returns edition-level data, such as a
 cover that differs per edition, the item gets it from the first copy added.
 
-**Recognizing an existing item.** Scanning an ISBN that isn't in the library yet doesn't automatically create a new
-item. The ISBN lookup returns an Open Library work id, which is stored in `LibraryItem.ExternalIds`. If an item in the
-library already shares any external id with the lookup, has a copy with the same barcode, or has exactly the same title
-(ignoring case), the add flow offers "add as another copy of *X*". That is how a paperback joins the hardcover's item
+**Recognizing an existing item.** Adding something that's already in the library doesn't automatically create a new
+item. Picking a lookup result stores its id (an Open Library work, a TMDB movie or a BoardGameGeek game) in
+`LibraryItem.ExternalIds`. If an item in the library already shares any external id with the pick, has a copy with the
+same barcode, or has exactly the same title (ignoring case), the add flow offers "add as another copy of *X*". That is how a paperback joins the hardcover's item
 instead of creating a duplicate. The keys in `LibraryExternalIds` are part of that match, so renaming one quietly stops
 it finding items saved under the old name.
 
@@ -69,11 +68,11 @@ zero. A path that skips this stores a form the others don't match, and lookups q
 
 **A copy has a barcode and an ISBN**, and a code matches a copy by either (`LibraryBarcode.MatchesCopy`, used by item
 search, the "do I own this?" check, the add page's duplicate check, and scan resolution). The barcode is what's printed
-and scanned; the ISBN is what a book is looked up by. For most books they are the same, and the server fills the ISBN
+and scanned; the ISBN is a book's second code, from its copyright page. For most books they are the same, and the server fills the ISBN
 from an ISBN barcode on every write, so nothing extra is entered. They differ on a book printed with only a retail UPC,
 common on US mass-market paperbacks: the UPC is on the back and often inside the cover too, and the ISBN is only text on
-the copyright page. The UPC encodes the publisher and price, not the ISBN, so it can't be looked up, and it can't be
-dropped either, because it is what a rescan reads. Two columns rather than a list of codes per copy, because nothing
+the copyright page. The UPC encodes the publisher and price, not the ISBN, and it can't be dropped, because it is what
+a rescan reads. Two columns rather than a list of codes per copy, because nothing
 else carries two product codes, and one extra column keeps every query a plain `OR`.
 
 **History.** `LibraryCopyEvent` is append-only and written by the server whenever a copy's location, loan or status
@@ -283,7 +282,7 @@ libraries:
   case doesn't start by choosing a library. It returns matching copies that aren't disposed, with their item and open
   loan. It only matches the exact barcode, so a different edition of something owned won't show up. The add page's
   duplicate check is what matches by Open Library work id.
-- `lookup/isbn/{isbn}`, `lookup/search?mediaType=&q=`, `lookup/{source}/{sourceId}` and `lookup/cover?url=` call
+- `lookup/search?mediaType=&q=`, `lookup/{source}/{sourceId}` and `lookup/cover?url=` call
   outside services and save nothing. See [External lookup](#external-lookup).
 
 **Item order** (`items?sort=`, `LibrarySort`) is shelf order unless asked otherwise: the first creator's last name, then
@@ -400,7 +399,7 @@ Choices that aren't obvious from `--help`:
 - **Deleting a library, item or copy asks for confirmation** and points at disposing instead, which keeps history.
   Deleting a location doesn't ask, since the server refuses unless it's empty.
 
-`lookup <isbn|title>` (`--type` for a title search, `--source` to get one record by id) writes the same columns
+`lookup <title>` (`--type` for what to search, `--source` to get one record by id) writes the same columns
 whatever was asked. `export <libraryId> [file]` waits for an export endpoint. The UI is the main way to manage a library, and the Tool is
 for scripting: piping the export into gource, or diffing it against a spreadsheet. So `export` and `lookup` write
 plain output with stable columns, to stdout unless a file is given, and print no prompts or other chatter.
@@ -441,10 +440,10 @@ and home card show for the `Library` role.
 - **Deleting a copy is only on its edit page**, so a misplaced tap on the item page can't do it. Status changes and
   "Disposed" are on the item page.
 
-- **Lookup is all GET on the add page.** An ISBN (in the lookup box, or passed as `barcode` from the home page's "Not
-  owned") fills the form in. A title lists candidates, and picking one comes back with `source` and `sourceId`. Each
-  step carries the barcode, location and "add another" along, so a UPC typed in before a title search still lands on
-  the copy. The lookup's external ids, attributes and cover urls aren't form fields, so they ride along as hidden
+- **Lookup is all GET on the add page.** A title lists candidates, and picking one comes back with `source` and
+  `sourceId`. A code (in the lookup box, or passed as `barcode` from the home page's "Not owned" or a scan) goes on the
+  copy and isn't looked up. Each step carries the barcode, location and "add another" along, so a code typed in before
+  a title search still lands on the copy. The lookup's external ids, attributes and cover urls aren't form fields, so they ride along as hidden
   inputs. The duplicate check runs as soon as the form is filled in, not only on submit, so "this might already be
   here" shows before anything is typed.
 - **Adding a looked-up copy to an item typed in by hand** gives that item the lookup's external ids it lacks, so the
@@ -458,13 +457,11 @@ and home card show for the `Library` role.
 
 **Scan buttons** sit next to the search boxes on the library home and a library's page, and the lookup box on the add
 page. A read puts the code in the box and submits it, so a scan does exactly what typing the code does: "do I own this?"
-on the home page, and a lookup on the add page. A code a library's page doesn't find offers "Add it", which opens the
+on the home page, and the copy's barcode on the add page. A code a library's page doesn't find offers "Add it", which opens the
 add page with the code. On the add page a code taken as a barcode is cleared from the box and carried in the hidden
-barcode field, with the box focused, because a movie's or game's UPC is followed by a title search.
+barcode field, with the box focused, because a barcode is followed by a title search.
 
-**Books with a UPC.** A non-ISBN code with Book selected says the UPC is kept as the barcode and to type the ISBN from
-the copyright page, rather than the movie and game advice. The add page decides by the code, not the type dropdown,
-which only steers title searches. The box takes codes in any order: an ISBN becomes the copy's ISBN, and its barcode too
+**Books with a UPC.** The box takes codes in any order: an ISBN becomes the copy's ISBN, and its barcode too
 unless the barcode is already a UPC; a UPC becomes the barcode and leaves the ISBN alone. Both ride along in hidden
 fields through a title search or a pick, like the barcode always did. The copy form shows the ISBN field for books only,
 blank when it is just the barcode.
@@ -511,80 +508,39 @@ new name for its whole history. A deleted location shows as `(deleted location #
 ## External lookup
 
 `Services/Libraries/`. `LibraryLookup` picks the provider for a request and caches answers; one class per provider does
-the calls. A lookup returns a `LibraryLookupResult`: item fields, edition fields for the first copy (barcode, format,
-publisher, year), external ids, attributes and cover urls. It saves nothing. A search returns candidates that may lack
-fields (TMDB's search has no director), and the chosen one is fetched again by `Source` and `SourceId` for the full
-record.
+the calls. Every lookup is a title search: a search returns candidates that may lack fields (TMDB's search has no
+director), and the chosen one is fetched again by `Source` and `SourceId` for the full record, a `LibraryLookupResult`
+of item fields, a format for the first copy, external ids, attributes and cover urls. It saves nothing, and nothing is
+looked up by barcode.
 
-- **Books by ISBN:** Open Library.
-  - Open Library spreads a book over three records: the edition (publisher, format, pages, cover), the work (summary)
-    and the search index, which already has the author names resolved. Using the index saves a request per author.
-    Its record is only used when its work id matches, because a search that misread the query would return another
-    book's authors without anyone noticing. When it doesn't match, each author's record is fetched instead.
-  - **The title and subtitle are the edition's**, as a pair, falling back to the work's. A work groups every edition,
-    translations included, under whatever title its first cataloguer typed. Found on a real shelf: an English
-    *The Waste Lands* whose work is titled "A Torre Negra / As Terras Devastadas", and works titled "The Great Hunt (The
-    Wheel of Time Book 2)" over editions titled plainly. The work's title was first choice originally, on the idea that
-    it's the same across editions; it isn't any cleaner, and the edition's is what's printed on the book.
-  - The edition's cover is preferred over the work's, which may show another edition.
-  - **Series** (`LibrarySeries`, below).
+- **Books:** Open Library's search, then the chosen work.
+  - A work's details are spread over the work (title, summary, first publication, covers) and the search index, which
+    already has the author names resolved. Using the index saves a request per author. Its record is only used when its
+    work id matches, because a search that misread the query would return another book's authors without anyone
+    noticing. When it doesn't match, each author's record is fetched instead.
+  - **The title is the work's**, as Open Library has it. A work groups every edition under whatever title its first
+    cataloguer typed, sometimes with the series written in ("The Great Hunt (The Wheel of Time Book 2)") or in another
+    language. It's corrected on the add form.
+  - **No series is filled in.** See below.
   - `Year` is the search index's `first_publish_year`, which is the earliest year of any edition in the work, so one
-    misdated or misfiled edition drags it early (*Song of Susannah* as 1999, not 2004). The work's own
-    `first_publish_date` was compared on 23 real books and was wrong about as often, in other places, so neither wins;
-    it's an Open Library data problem, fixed there or by hand.
-  - Open Library's free-text physical format is mapped onto the suggested formats; anything else is left blank rather
-    than stored as one cataloguer typed it.
-- **Books by title:** Open Library's search, which is also how a book with no ISBN gets details.
-- **Movies by title:** TMDB `search/multi` (movies and TV in one request), then `movie/{id}?append_to_response=credits`
-  or `tv/{id}`. A UPC doesn't identify a movie in TMDB, so a scanned UPC is saved on the copy (a rescan finds it) and
-  the details come from a title search. A movie's TMDB collection becomes its series.
-- **Board games by title:** BoardGameGeek XML API2. Its search returns every game with a matching name, in no useful
+    misdated or misfiled edition drags it early (*Song of Susannah* as 1999, not 2004).
+- **Movies:** TMDB `search/multi` (movies and TV in one request), then `movie/{id}?append_to_response=credits`
+  or `tv/{id}`. A movie's TMDB collection becomes its series.
+- **Board games:** BoardGameGeek XML API2. Its search returns every game with a matching name, in no useful
   order, with names and years only; "Catan" matches hundreds. So names are ranked (exact, prefix, shortest), the best 20
   are fetched in one `thing` request (BGG's limit), and those are ordered by how many people rated them, which puts the
   game most people mean first. An expansion's base game becomes its series.
 
-**Series.** Open Library has no one place for it, and a lookup that read only the edition's free-text `series` field gave
-3 of 16 series books on one shelf a series and none a number. What exists, in the order used:
-1. The search index's `series_name` and `series_position`, structured, but only for some works (all of the Dark Tower,
-   none of the Wheel of Time).
-2. The edition's `series` field, free text: "Wheel of Time (11)", "The Wheel of Time, Book Ten;", "The Dark Tower VII",
-   and the library-catalogue form "H.I.V.E -- [#5]". A dash separates only with a space before it, so "Spider-Man 2"
-   keeps its name.
-3. Series text written into the title or subtitle by a cataloguer: "(The Wheel of Time, Book 6)", "Book Two of 'The
-   Wheel of Time'". This is taken out of the title as well as read, so the title is left clean.
-4. The same in the work's title and subtitle.
+**Series** come from TMDB collections and BoardGameGeek base games, whose data is clean, and are otherwise typed by hand.
+Sources spell one series differently ("Wheel of Time", "The Wheel of Time"), so when a lookup fills a series in,
+`LibrarySeries.MatchExisting` swaps in the spelling the library already uses, comparing letters and digits without a
+leading "the". Not at save time: then respelling one item to fix a series would be undone by the others still spelled the
+old way. The series box also suggests the library's names (`GET libraries/{id}/series`).
 
-The name is the first source's, and the number the first one among sources naming that same series. A title that is
-only a label for the series gives way to its subtitle, but only when the series is known from another source, since a
-title like *Rocky II* looks the same. A label is the series and a number ("The Dark Tower III", with "The Waste Lands" as
-subtitle), or the series name alone for a book known to be past the first ("H.I.V.E." over "escape velocity", book 3).
-The name alone doesn't count for book 1, which is often named for its series (*Artemis Fowl*), or with no subtitle to
-fall back on: the seventh Dark Tower book really is titled *The Dark Tower*. A promoted subtitle gets a capital first
-letter, since cataloguers write it lowercase after a colon.
-
-Titles are otherwise parsed cautiously: a bare trailing number counts in a series field but not a title (*Fahrenheit
-451*), and a bracketed note without a number ("(Movie Tie-In)", "(Wheel of Time)") is left alone. A title with no series
-text in it comes back only trimmed. Tidying (quotes, trailing punctuation) is for series text, and once took the period
-off "H.I.V.E." and would take the apostrophe off *'Salem's Lot*.
-
-On the first 23-book shelf this gives every Dark Tower book its series and number, and 11 of 14 Wheel of Time books; the
-rest have no number anywhere in Open Library. The second shelf, H.I.V.E. and Artemis Fowl, is mostly Open Library data
-rather than parsing: three of the nine H.I.V.E. editions carry a series and the other six have none anywhere usable, book 1's edition belongs
-to a duplicate work so the index (and its year) can't be used, and no Artemis Fowl work has a series at all. Those are
-fixed by hand.
-
-Sources spell one series differently ("Wheel of Time", "The Wheel of Time"). Whenever a lookup fills a series in (the add
-page, adding from a scan), `LibrarySeries.MatchExisting` swaps in the spelling the library already uses, comparing
-letters and digits without a leading "the". Not at save time: then respelling one item to fix a series would be undone
-by the others still spelled the old way. The series box also suggests the library's names (`GET libraries/{id}/series`).
-
-**Fixing a series by hand is per series, not per book.** After two shelves it was clear that no source has series data
-worth more parsing rules: Open Library has it for some works in whatever form a cataloguer typed, Google Books not at
-all (see Rejected), and each new shelf brought its own quirk. The rest of a lookup (title, author, publisher, cover) held up. So the
-parsing stops at the forms above, and what it misses is fixed in bulk: `PUT libraries/{id}/series` sets one name on many
-items, each with its own number, and the Series page and `series set` are built on it.
-- **The name is used as given**, not matched to an existing spelling, because correcting a spelling ("H.i.v.e --" to
-  "H.I.V.E.") is often the point. Search for the old spelling, tick everything, type the new one.
+**Fixing a series by hand is per series, not per book:** `PUT libraries/{id}/series` sets one name on many items, each
+with its own number, and the Series page and `series set` are built on it.
+- **The name is used as given**, not matched to an existing spelling, because correcting a spelling is often the point.
+  Search for the old spelling, tick everything, type the new one.
 - **A number is sent for every item**, and null means none, so a client keeps a number by sending it back. The page
   prefills each box with the saved number; the Tool's bare `id` fetches it. A blank name clears numbers too, since a
   number without a series means nothing.
@@ -592,22 +548,27 @@ items, each with its own number, and the Series page and `series set` are built 
 - **The list is in likely series order** (saved number, then year, then title), not shelf order, and "Number ticked 1, 2,
   3…" numbers the ticked rows in that order. For a series with no numbers saved, year is usually publication order, so
   that's most of the numbering done; a missing year sorts last and needs its number typed.
-- Hardcover, which has structured series, stays the option if this turns out to be too much hand work.
 
 **Rejected:**
-- **UPC databases** (e.g. UPCitemdb's free tier). Their results for movies and games are thin and inconsistent, and
-  the free tiers are rate limited to around 100 a day, which a first inventory run blows through.
+- **Looking books up by ISBN** (Open Library's edition, then Google Books when it had no record). It was the original
+  plan, since a scan is quicker than typing, and it was built and then removed after two shelves. The data was the
+  problem, not the parsing:
+  - Edition titles, work titles and series were each wrong in a different way per shelf. Works titled in Portuguese for
+    an English book, series written into titles in a dozen forms, series fields present on three of nine editions of
+    one series, a book's edition filed under a duplicate work, a whole reissue Open Library mostly didn't know.
+  - Each shelf needed new parsing rules (`LibrarySeries` grew to parse series fields, bracketed series in titles,
+    "Book Two of …" subtitles, titles that were only a series label) and a refresh to re-apply them to saved items.
+  - A title search where you pick the right work and correct it costs one step more than a scan and leaves nothing to
+    clean up later. The barcode is still scanned, for the copy.
 - **Google Books**, as the fallback for an ISBN Open Library doesn't know. It was first used without a key, on "allowed
   at low volume", but the shared keyless quota is zero: every keyless request is a 429 (`quota_limit_value: 0`). With a
   key it answered, but only knows the edition (no first-release year), has no series, and was mostly needed to fill in
-  Open Library stubs: a 2019 Artemis Fowl reissue whose ISBNs Open Library mostly didn't know, and one it had with a
-  title and no author. It was removed with the rest of the cleanup, along with its key: books the lookups get wrong are
-  typed in by hand instead.
-- **A choice of source on the add page.** Considered when series came out inconsistent, before finding that Open Library
-  had most of what was wanted in fields the lookup wasn't reading. Google Books has no structured series in its public
-  api. Hardcover has good structured series and would be the one to add if this comes back.
-- **An `ILibraryLookupProvider` interface.** The providers don't share a shape (ISBN for books only, search plus fetch
-  for the rest), so the interface would have been mostly unsupported methods.
+  Open Library stubs. It went with ISBN lookup.
+- **UPC databases** (e.g. UPCitemdb's free tier). Their results for movies and games are thin and inconsistent, and
+  the free tiers are rate limited to around 100 a day, which a first inventory run blows through.
+- **Hardcover**, which has structured series. It's the one to try if series by hand turns out to be too much work.
+- **An `ILibraryLookupProvider` interface.** The providers don't share much of a shape, so the interface would have
+  been mostly unsupported methods.
 
 **Caching:** answers are cached in `IMemoryCache` for an hour, misses included, since one add asks about the same record
 several times (search, pick, the form shown again). Failures aren't cached.
@@ -619,7 +580,7 @@ into a page that hangs. The add page shows the message and carries on with typin
 **Provider values aren't trusted in urls.** Only the cover client has a host allowlist, so anything taken from a response
 is checked before it goes into a request or a link. Open Library's keys carry their leading slash (`/works/OL45883W`) and
 are appended straight after the host, where a key like `@other.host/x` would send the request to another host. So each
-key must match its kind's shape (`/works/OL…W`, `/books/OL…M`, `/authors/OL…A`) or is ignored. BoardGameGeek's ids
+key must match its kind's shape (`/works/OL…W`, `/authors/OL…A`) or is ignored. BoardGameGeek's ids
 must be digits, since they go into a query unescaped. A source link that isn't http or https is dropped, because the
 add page puts it in an `href`.
 
@@ -712,11 +673,11 @@ under `Pages/UI/Libraries/Scans/`, `wwwroot/js/library-scan-session.js`, and `li
    - here: verified on apply;
    - recorded somewhere else: ticked to move here, by default;
    - recorded here but not scanned: left as is unless ticked to mark missing (a copy on loan is listed but can't be);
-   - new codes: an ISBN is added by lookup, one at a time or "add all"; anything else goes through the add page.
+   - new codes: each is added through the add page, which comes back here.
 5. Applying writes the events and sets `CompletedDate`, in one save.
 
-For a first inventory nothing is expected anywhere yet, so every entry is `NotInLibrary` and the reconcile becomes "add
-all".
+For a first inventory nothing is expected anywhere yet, so every entry is `NotInLibrary`. Adding a shelf by title on
+the add page, scanning each barcode onto its copy, is quicker than a scan followed by an add per code.
 
 ```mermaid
 flowchart TD
@@ -732,7 +693,7 @@ flowchart TD
     finish --> m["Copy recorded elsewhere, if ticked → <b>Moved</b>"]
     finish --> r["Copy on loan, if ticked → <b>Returned</b>"]
     finish --> u["Copies recorded here with no entry →<br/>left, or <b>MarkedMissing</b> if ticked"]
-    finish --> n["NotInLibrary → add by ISBN lookup,<br/>or the add page → <b>Added</b>"]
+    finish --> n["NotInLibrary → the add page → <b>Added</b>"]
 ```
 
 **Duplicates while scanning.** Each scan matches at most one copy, and an earlier scan in the same session claims its
@@ -762,13 +723,13 @@ loan that isn't scanned isn't expected on the shelf, so it can't be marked missi
 
 **Adding new codes.** `NotInLibrary` entries become `Added` (a resolution the plan didn't have) once a copy exists for
 them, so applying doesn't also verify a copy whose `Acquired` event already says where it is.
-- **An ISBN** is added by `POST .../entries/{id}/add`, one request per book, so the page shows progress through a stack.
-  It looks the ISBN up, puts the copy at the session's location on the item that shares an external id with the lookup
-  (what the add page's duplicate check would offer) or on a new item, and fetches the cover for a new item. A title-only
-  match isn't used: without someone looking, it would join the wrong book as often as the right one. The entry is matched
-  again first, so a retry after a half-finished request, or a copy added some other way meanwhile, doesn't add twice.
-- **Anything else** opens the add page with the barcode, location, and the scan and entry ids. Saving there marks the
-  entry added (`.../resolve/{copyId}`) and returns to the reconcile view.
+Each one's "Add…" opens the add page with the barcode, location, and the scan and entry ids. Saving there marks the
+entry added (`.../resolve/{copyId}`) and returns to the reconcile view.
+- **Rejected: one-tap add by ISBN** (`POST .../entries/{id}/add`, and "add all"). It looked the ISBN up and saved the
+  book with no form, and went with ISBN lookup (see [External lookup](#external-lookup)): what it saved was what needed
+  fixing afterwards.
+- **Rejected: attaching a new code to an existing copy** that has no barcode yet. A copy added by title without one gets
+  its barcode on its edit page instead, so the shelf scan only adds new copies.
 
 **The scan page** is a shell; `library-scan-session.js` does the work against the `/library/...` api with `fetch` and
 the `ns-token` cookie. That avoids page handlers and antiforgery tokens, and is safe because the cookie is

@@ -308,8 +308,8 @@ namespace number_sequence.Controllers
         }
 
         /// <summary>
-        /// Sets one series on several items, each with its own number: the bulk fix for a series a lookup misspelled or left
-        /// out. The name is used as given, not matched to an existing spelling, since fixing a spelling is often the point.
+        /// Sets one series on several items, each with its own number: the bulk fix for books added without one, or a
+        /// misspelled series. The name is used as given, not matched to an existing spelling, since fixing a spelling is often the point.
         /// Every item must be in the library, or nothing changes. Returns the items as saved, in the order sent.
         /// </summary>
         [HttpPut("libraries/{libraryId}/series")]

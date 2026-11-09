@@ -1,8 +1,8 @@
 namespace TcpWtf.NumberSequence.Contracts.Libraries
 {
     /// <summary>
-    /// One series for several items at once, each with its own number. For fixing a series after a lookup got it wrong or
-    /// left it out: the name is typed once, not per book.
+    /// One series for several items at once, each with its own number. For books added without their series, or a misspelled
+    /// series: the name is typed once, not per book.
     /// </summary>
     public sealed class LibrarySeriesAssign
     {

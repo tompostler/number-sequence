@@ -58,7 +58,7 @@
         }
       </select>
       @* After a book's UPC, the ISBN from the copyright page is what's typed next, so the numeric keypad. *@
-      <input id="find" name="find" value="@Model.Find" class="form-control" placeholder="@(Model.IsbnExpected ? "ISBN from the copyright page" : "ISBN, barcode or title")" inputmode="@(Model.IsbnExpected ? "numeric" : null)" autocomplete="off" autofocus="@findNext" />
+      <input id="find" name="find" value="@Model.Find" class="form-control" placeholder="@(Model.IsbnExpected ? "ISBN from the copyright page" : "Title, or a barcode")" inputmode="@(Model.IsbnExpected ? "numeric" : null)" autocomplete="off" autofocus="@findNext" />
       <button type="button" class="btn btn-outline-secondary" data-library-scan="#find" hidden>Scan</button>
       <button type="submit" class="btn btn-outline-primary">Look up</button>
     </div>
@@ -69,7 +69,7 @@
       }
       else
       {
-        @("An ISBN fills in a book. Movies and games are found by title; a scanned UPC is kept for the copy.")
+        @("Search by title or author. A scanned or typed barcode is kept for the copy, not looked up.")
       }
     </div>
   </form>

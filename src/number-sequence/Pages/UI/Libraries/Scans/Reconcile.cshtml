@@ -9,7 +9,6 @@
   List<LibraryScanEntry> news = Model.New;
   List<LibraryScanEntry> added = Model.Added;
   List<LibraryCopy> notScanned = Model.Applied ? [] : Model.Reconcile.NotScanned;
-  int newIsbns = news.Count(ReconcileModel.IsIsbn);
 }
 
 <div class="d-flex align-items-center gap-2 mb-1">
@@ -99,36 +98,20 @@
 
     @if (news.Count > 0)
     {
-      <div class="d-flex justify-content-between align-items-baseline">
-        <h5>New <span class="text-muted">(@news.Count)</span></h5>
-        @if (editable && newIsbns > 1)
-        {
-          <button type="button" class="btn btn-sm btn-primary" data-add-all>Add all @newIsbns books</button>
-        }
-      </div>
+      <h5>New <span class="text-muted">(@news.Count)</span></h5>
       <p class="small text-muted mb-1">
-        Not in this library, or more copies than it has. A book is looked up by its ISBN and added here, on the item it
-        matches if there is one. Anything else goes through the add page.
+        Not in this library, or more copies than it has. Add each on the add page, which has this barcode and location
+        filled in and comes back here.
       </p>
-      <ul class="list-group mb-3" data-add-api="/library/libraries/@Model.Library.Id/scans/@Model.Session.Id/entries/">
+      <ul class="list-group mb-3">
         @foreach (LibraryScanEntry entry in news)
         {
-          bool isbn = ReconcileModel.IsIsbn(entry);
           <li class="list-group-item py-2">
             <div class="d-flex justify-content-between align-items-center gap-2">
-              <div>
-                <div class="font-monospace">@entry.Barcode</div>
-                <div class="small text-muted" data-add-status>@(isbn ? "ISBN" : "Not an ISBN")</div>
-              </div>
+              <div class="font-monospace">@entry.Barcode</div>
               @if (editable)
               {
-                <div class="d-flex gap-1 flex-shrink-0">
-                  @if (isbn)
-                  {
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-entry="@entry.Id">Add</button>
-                  }
-                  <a href="@Model.AddUrl(entry)" class="btn btn-sm btn-outline-secondary">@(isbn ? "By hand" : "Add…")</a>
-                </div>
+                <a href="@Model.AddUrl(entry)" class="btn btn-sm btn-outline-primary flex-shrink-0">Add…</a>
               }
             </div>
           </li>
@@ -189,74 +172,3 @@
     </form>
   }
 </div>
-
-@if (editable && news.Count > 0)
-{
-  <script>
-    // Adds new ISBNs through the api one at a time, so a stack of books shows progress row by row. A success reloads
-    // the page so the book moves to the added list, except during "add all", which reloads once at the end if every one
-    // worked and otherwise leaves each row saying what happened.
-    (function () {
-      var list = document.querySelector('[data-add-api]');
-      var api = list.dataset.addApi;
-
-      async function message(response) {
-        var text = await response.text();
-        try {
-          var parsed = JSON.parse(text);
-          return typeof parsed === 'string' ? parsed : (parsed.title || text);
-        } catch (e) {
-          return text || ('The server returned ' + response.status + '.');
-        }
-      }
-
-      async function add(button) {
-        var status = button.closest('li').querySelector('[data-add-status]');
-        button.disabled = true;
-        status.className = 'small text-muted';
-        status.textContent = 'Looking it up…';
-        try {
-          var response = await fetch(api + button.dataset.addEntry + '/add', { method: 'POST', credentials: 'same-origin' });
-          if (response.ok) {
-            var entry = await response.json();
-            status.className = 'small text-success';
-            status.textContent = 'Added' + (entry.resolvedCopy && entry.resolvedCopy.item ? ': ' + entry.resolvedCopy.item.title : '');
-            return true;
-          }
-          status.className = 'small text-danger';
-          status.textContent = await message(response);
-        } catch (e) {
-          status.className = 'small text-danger';
-          status.textContent = 'Couldn\'t reach the server. Try again.';
-        }
-        button.disabled = false;
-        return false;
-      }
-
-      list.querySelectorAll('[data-add-entry]').forEach(function (button) {
-        button.addEventListener('click', async function () {
-          if (await add(button)) {
-            location.reload();
-          }
-        });
-      });
-
-      var all = document.querySelector('[data-add-all]');
-      if (all) {
-        all.addEventListener('click', async function () {
-          all.disabled = true;
-          var ok = true;
-          for (var button of list.querySelectorAll('[data-add-entry]:not(:disabled)')) {
-            ok = (await add(button)) && ok;
-          }
-          if (ok) {
-            location.reload();
-          } else {
-            all.disabled = false;
-            all.textContent = 'Retry the rest';
-          }
-        });
-      }
-    })();
-  </script>
-}

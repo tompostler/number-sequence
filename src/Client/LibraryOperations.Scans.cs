@@ -89,20 +89,6 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
-        /// Add a not-in-library ISBN from a scan: look it up and put a copy at the session's location, on the matching
-        /// item or a new one.
-        /// </summary>
-        public async Task<LibraryScanEntry> AddScanEntryToLibraryAsync(long libraryId, long sessionId, long entryId, CancellationToken cancellationToken = default)
-        {
-            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
-                () => new HttpRequestMessage(
-                    HttpMethod.Post,
-                    $"library/libraries/{libraryId}/scans/{sessionId}/entries/{entryId}/add"),
-                cancellationToken);
-            return await response.Content.ReadJsonAsAsync<LibraryScanEntry>(cancellationToken);
-        }
-
-        /// <summary>
         /// Mark a not-in-library entry as added, after its copy was created on the add page.
         /// </summary>
         public async Task<LibraryScanEntry> ResolveScanEntryAsync(long libraryId, long sessionId, long entryId, long copyId, CancellationToken cancellationToken = default)

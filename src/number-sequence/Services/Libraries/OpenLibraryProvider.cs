@@ -1,4 +1,3 @@
-using number_sequence.Utilities;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using TcpWtf.NumberSequence.Contracts.Libraries;
@@ -6,77 +5,29 @@ using TcpWtf.NumberSequence.Contracts.Libraries;
 namespace number_sequence.Services.Libraries
 {
     /// <summary>
-    /// Books from Open Library, which needs no key. Its work id is what recognizes a second edition of a book already in the
-    /// library.
+    /// Books from Open Library by title, which needs no key. A search finds works, and the chosen one is fetched as a work.
+    /// Its work id is what recognizes a second copy of a book already in the library.
     /// <para>
-    /// A book's details are spread over three records: the edition (publisher, format, pages, cover), the work (summary,
-    /// first publication) and the search index, which carries author names and first publication year already resolved.
-    /// Using the search index saves a request per author.
+    /// A work's details are spread over two records: the work (title, summary, first publication, covers) and the search
+    /// index, which carries author names and first publication year already resolved. Using the search index saves a
+    /// request per author.
     /// </para>
     /// <para>
-    /// Looked up by ISBN, the title is the edition's: it's what is printed on the book in hand. A work groups every edition,
-    /// translations included, and its title is whatever the first cataloguer typed, which has been seen in Portuguese for
-    /// an English book and with the series written into it. The series comes from wherever Open Library has it; see
-    /// <see cref="ApplySeries"/>.
+    /// No series is filled in. Open Library has one for only some works, in whatever form a cataloguer typed, so it's
+    /// typed by hand (or set in bulk on the Series page) instead. The title is the work's as Open Library has it, which
+    /// can have the series written into it; that's corrected on the add form.
     /// </para>
     /// </summary>
     public sealed partial class OpenLibraryProvider
     {
         private const string Name = "Open Library";
-        private const string SearchFields = "key,title,subtitle,author_name,first_publish_year,cover_i,number_of_pages_median,series_name,series_position";
+        private const string SearchFields = "key,title,subtitle,author_name,first_publish_year,cover_i,number_of_pages_median";
 
         private readonly LibraryLookupHttp http;
 
         public OpenLibraryProvider(LibraryLookupHttp http)
         {
             this.http = http;
-        }
-
-        /// <summary>
-        /// The edition with this ISBN-13 and its work, or null when Open Library doesn't have it.
-        /// </summary>
-        public async Task<LibraryLookupResult> GetByIsbnAsync(string isbn13, CancellationToken cancellationToken)
-        {
-            Task<JsonDocument> editionTask = this.http.GetJsonAsync(Name, $"https://openlibrary.org/isbn/{isbn13}.json", cancellationToken);
-            Task<JsonDocument> searchTask = this.http.GetJsonAsync(Name, $"https://openlibrary.org/search.json?isbn={isbn13}&fields={SearchFields}&limit=1", cancellationToken);
-            using JsonDocument editionDoc = await editionTask;
-            using JsonDocument searchDoc = await searchTask;
-            if (editionDoc == null)
-            {
-                return null;
-            }
-
-            JsonElement edition = editionDoc.RootElement;
-            string editionWorkKey = LookupText.Array(edition, "works").Select(x => Key(LookupText.Str(x, "key"), WorkKeyRegex())).FirstOrDefault(x => x != null);
-            JsonElement? indexed = FirstDoc(searchDoc, editionWorkKey);
-            string workKey = editionWorkKey ?? (indexed.HasValue ? Key(LookupText.Str(indexed.Value, "key"), WorkKeyRegex()) : null);
-
-            using JsonDocument workDoc = workKey == null ? null : await this.http.GetJsonAsync(Name, $"https://openlibrary.org{workKey}.json", cancellationToken);
-            JsonElement? work = workDoc?.RootElement;
-
-            LibraryLookupResult result = await this.BuildAsync(workKey, work, indexed, edition, cancellationToken);
-            result.Barcode = isbn13;
-            result.Publisher = LookupText.Strings(edition, "publishers").FirstOrDefault();
-            result.PublishedYear = LookupText.Year(LookupText.Str(edition, "publish_date"));
-            result.Format = Format(LookupText.Str(edition, "physical_format"));
-
-            string editionKey = Key(LookupText.Str(edition, "key"), EditionKeyRegex());
-            if (editionKey != null)
-            {
-                result.ExternalIds[LibraryExternalIds.OpenLibraryEdition] = editionKey.Replace("/books/", string.Empty);
-                result.SourceUrl = $"https://openlibrary.org{editionKey}";
-            }
-            if (LookupText.Int(edition, "number_of_pages") is int pages && pages > 0)
-            {
-                result.Attributes[LibraryAttributes.Pages] = pages.ToString();
-            }
-            // The edition's own cover beats the work's, which may be another edition's.
-            List<string> covers = CoverUrls(LookupText.Array(edition, "covers"));
-            if (covers.Count > 0)
-            {
-                result.CoverUrls = covers;
-            }
-            return result;
         }
 
         /// <summary>
@@ -101,7 +52,6 @@ namespace number_sequence.Services.Libraries
                 }
                 LibraryLookupResult result = NewResult(workKey);
                 ApplyIndexed(result, doc);
-                ApplySeries(result, doc, edition: null, work: null);
                 results.Add(result);
             }
             return results;
@@ -125,15 +75,14 @@ namespace number_sequence.Services.Libraries
             {
                 return null;
             }
-            return await this.BuildAsync(workKey, workDoc.RootElement, FirstDoc(searchDoc, workKey), edition: null, cancellationToken);
+            return await this.BuildAsync(workKey, workDoc.RootElement, FirstDoc(searchDoc, workKey), cancellationToken);
         }
 
         /// <summary>
-        /// The item fields, from the work where it has them, else the search index, else the edition, except the title and
-        /// subtitle, which are the edition's when there is one. Authors fall back to fetching each author's record when the
-        /// search index didn't have the book.
+        /// The item fields, from the work where it has them, else the search index. Authors fall back to fetching each
+        /// author's record when the search index didn't have the work.
         /// </summary>
-        private async Task<LibraryLookupResult> BuildAsync(string workKey, JsonElement? work, JsonElement? indexed, JsonElement? edition, CancellationToken cancellationToken)
+        private async Task<LibraryLookupResult> BuildAsync(string workKey, JsonElement work, JsonElement? indexed, CancellationToken cancellationToken)
         {
             LibraryLookupResult result = NewResult(workKey);
             if (indexed.HasValue)
@@ -141,102 +90,23 @@ namespace number_sequence.Services.Libraries
                 ApplyIndexed(result, indexed.Value);
             }
 
-            if (work.HasValue)
+            result.Title = LookupText.Str(work, "title") ?? result.Title;
+            result.Subtitle = LookupText.Str(work, "subtitle") ?? result.Subtitle;
+            result.Summary = LookupText.Summary(Description(work));
+            result.Year ??= LookupText.Year(LookupText.Str(work, "first_publish_date"));
+            if (result.CoverUrls == null && CoverUrls(LookupText.Array(work, "covers")) is { Count: > 0 } workCovers)
             {
-                result.Title = LookupText.Str(work.Value, "title") ?? result.Title;
-                result.Subtitle = LookupText.Str(work.Value, "subtitle") ?? result.Subtitle;
-                result.Summary = LookupText.Summary(Description(work.Value));
-                result.Year ??= LookupText.Year(LookupText.Str(work.Value, "first_publish_date"));
-                if (result.CoverUrls == null && CoverUrls(LookupText.Array(work.Value, "covers")) is { Count: > 0 } workCovers)
-                {
-                    result.CoverUrls = workCovers;
-                }
-            }
-
-            if (edition.HasValue)
-            {
-                // Title and subtitle as a pair, so an edition's title doesn't get the work's subtitle.
-                if (LookupText.Str(edition.Value, "title") is string editionTitle)
-                {
-                    result.Title = editionTitle;
-                    result.Subtitle = LookupText.Str(edition.Value, "subtitle");
-                }
-                result.Summary ??= LookupText.Summary(Description(edition.Value));
+                result.CoverUrls = workCovers;
             }
 
             if (result.Creators == null)
             {
-                IEnumerable<string> authorKeys = work.HasValue
-                    ? LookupText.Array(work.Value, "authors").Select(x => x.ValueKind == JsonValueKind.Object && x.TryGetProperty("author", out JsonElement author) ? Key(LookupText.Str(author, "key"), AuthorKeyRegex()) : null)
-                    : [];
-                if (!authorKeys.Any(x => x != null) && edition.HasValue)
-                {
-                    authorKeys = LookupText.Array(edition.Value, "authors").Select(x => Key(LookupText.Str(x, "key"), AuthorKeyRegex()));
-                }
+                IEnumerable<string> authorKeys = LookupText.Array(work, "authors")
+                    .Select(x => x.ValueKind == JsonValueKind.Object && x.TryGetProperty("author", out JsonElement author) ? Key(LookupText.Str(author, "key"), AuthorKeyRegex()) : null);
                 string[] names = await Task.WhenAll(authorKeys.Where(x => x != null).Distinct().Take(4).Select(x => this.GetAuthorNameAsync(x, cancellationToken)));
                 result.Creators = LookupText.Creators(names);
             }
-
-            ApplySeries(result, indexed, edition, work);
             return result;
-        }
-
-        /// <summary>
-        /// Sets the series, and takes it out of the title and subtitle where a cataloguer wrote it in. Sources in order: the
-        /// search index's structured series, the edition's free-text series field, then series text in the title, the
-        /// subtitle, and the work's title and subtitle. The name is the first source's; the number is the first number among
-        /// the sources naming that same series, so a field saying only "Wheel of Time" still gets its number from "(The Wheel
-        /// of Time, Book 11)" in the title. Last, a title that is only the series and a number ("The Dark Tower III", with
-        /// "The Waste Lands" as subtitle) gives way to the subtitle.
-        /// </summary>
-        private static void ApplySeries(LibraryLookupResult result, JsonElement? indexed, JsonElement? edition, JsonElement? work)
-        {
-            List<LibrarySeriesPart> found = [];
-            if (indexed.HasValue)
-            {
-                List<string> names = LookupText.Strings(indexed.Value, "series_name").ToList();
-                List<string> positions = LookupText.Strings(indexed.Value, "series_position").ToList();
-                if (names.Count > 0)
-                {
-                    found.Add(new(names[0], positions.Count > 0 ? LibrarySeries.ParseNumber(positions[0]) : null));
-                }
-            }
-            if (edition.HasValue)
-            {
-                found.AddRange(LookupText.Strings(edition.Value, "series").Select(LibrarySeries.ParseField).OfType<LibrarySeriesPart>());
-            }
-
-            (result.Title, LibrarySeriesPart? inTitle) = LibrarySeries.Extract(result.Title);
-            (result.Subtitle, LibrarySeriesPart? inSubtitle) = LibrarySeries.Extract(result.Subtitle);
-            found.AddRange(new[] { inTitle, inSubtitle }.OfType<LibrarySeriesPart>());
-            if (work.HasValue)
-            {
-                found.AddRange(new[] { "title", "subtitle" }.Select(x => LibrarySeries.Extract(LookupText.Str(work.Value, x)).Series).OfType<LibrarySeriesPart>());
-            }
-
-            if (result.Title == null)
-            {
-                // The whole title was series text, such as "(The Wheel of Time, Book 6)".
-                result.Title = result.Subtitle;
-                result.Subtitle = null;
-            }
-            if (found.Count == 0)
-            {
-                return;
-            }
-
-            string name = found[0].Name;
-            string key = LibrarySeries.Key(name);
-            result.Series = name;
-            result.SeriesNumber = found.Where(x => LibrarySeries.Key(x.Name) == key).Select(x => x.Number).FirstOrDefault(x => x.HasValue);
-
-            if (LibrarySeries.IsSeriesLabel(result.Title, result.Subtitle, new(name, result.SeriesNumber), out decimal? titleNumber))
-            {
-                // A subtitle is often lowercase after a colon ("escape velocity"); as the title it needs its capital.
-                result.Title = char.ToUpperInvariant(result.Subtitle[0]) + result.Subtitle[1..];
-                result.Subtitle = null;
-                result.SeriesNumber ??= titleNumber;
-            }
         }
 
         private async Task<string> GetAuthorNameAsync(string authorKey, CancellationToken cancellationToken)
@@ -318,32 +188,11 @@ namespace number_sequence.Services.Libraries
             return coverId.HasValue ? [$"https://covers.openlibrary.org/b/id/{coverId}-L.jpg", $"https://covers.openlibrary.org/b/id/{coverId}-M.jpg"] : [];
         }
 
-        /// <summary>
-        /// Maps Open Library's free-text physical format onto the suggested <c>LibraryCopy.Format</c> values. Anything else
-        /// is left blank rather than stored in whatever form one cataloguer typed it.
-        /// </summary>
-        private static string Format(string physicalFormat)
-        {
-            string format = physicalFormat?.ToLowerInvariant() ?? string.Empty;
-            return format switch
-            {
-                _ when format.Contains("mass market") => "Mass market",
-                _ when format.Contains("hardcover") || format.Contains("hardback") || format.Contains("library binding") => "Hardcover",
-                _ when format.Contains("paperback") || format.Contains("softcover") || format.Contains("trade paper") => "Paperback",
-                _ when format.Contains("audio") => "Audiobook",
-                _ when format.Contains("ebook") || format.Contains("e-book") => "eBook",
-                _ => null,
-            };
-        }
-
         [GeneratedRegex(@"^OL\d+W\z")]
         private static partial Regex WorkIdRegex();
 
         [GeneratedRegex(@"^/works/OL\d+W\z")]
         private static partial Regex WorkKeyRegex();
-
-        [GeneratedRegex(@"^/books/OL\d+M\z")]
-        private static partial Regex EditionKeyRegex();
 
         [GeneratedRegex(@"^/authors/OL\d+A\z")]
         private static partial Regex AuthorKeyRegex();

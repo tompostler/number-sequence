@@ -11,26 +11,6 @@ namespace number_sequence.Controllers
     public sealed partial class LibraryController
     {
         /// <summary>
-        /// A book by ISBN: one result, or none when Open Library doesn't have it.
-        /// </summary>
-        [HttpGet("lookup/isbn/{isbn}")]
-        public async Task<IActionResult> LookupIsbnAsync(string isbn, CancellationToken cancellationToken)
-        {
-            if (!LibraryBarcode.TryParse(isbn, out LibraryBarcode barcode, out string error))
-            {
-                return this.BadRequest(error);
-            }
-            if (barcode.Kind != LibraryBarcodeKind.Isbn)
-            {
-                return this.BadRequest($"[{isbn}] isn't an ISBN. Movies and games are looked up by title.");
-            }
-
-            LibraryLookupResult result = await this.serviceProvider.GetRequiredService<LibraryLookup>().LookupIsbnAsync(barcode.Value, cancellationToken);
-            this.logger.LogInformation($"[{this.AccountName}] looked up ISBN [{barcode.Value}]: {(result == null ? "not found" : $"{result.Source} [{result.SourceId}]")}.");
-            return this.Ok(result == null ? new List<LibraryLookupResult>() : [result]);
-        }
-
-        /// <summary>
         /// Candidates for a title. Each may lack fields; fetch the chosen one with <see cref="GetLookupAsync"/>.
         /// </summary>
         [HttpGet("lookup/search")]

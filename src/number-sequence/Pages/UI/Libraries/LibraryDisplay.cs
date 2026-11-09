@@ -62,7 +62,7 @@ namespace number_sequence.Pages.UI.Libraries
         public static IEnumerable<string> LookupSources(LibraryItem item)
         {
             Dictionary<string, string> ids = item.ExternalIds ?? [];
-            if (ids.ContainsKey(LibraryExternalIds.OpenLibraryWork) || ids.ContainsKey(LibraryExternalIds.OpenLibraryEdition))
+            if (ids.ContainsKey(LibraryExternalIds.OpenLibraryWork))
             {
                 yield return LibraryLookupSources.OpenLibrary;
             }
