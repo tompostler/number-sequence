@@ -38,7 +38,7 @@ namespace TcpWtf.NumberSequence.Client
         /// and <see cref="LibraryItem.Attributes"/>, and each copy's <see cref="LibraryCopy.Loans"/> holds only its open loan;
         /// <see cref="GetItemAsync"/> has the rest.
         /// <para>
-        /// <c>q</c> is matched against title, subtitle, creators and series, and against copy barcodes if it parses as one.
+        /// <c>q</c> is matched against title, subtitle, creators, series and notes, and against copy barcodes if it parses as one.
         /// <c>locationId</c> includes everything inside that location. <c>loanedOut</c> keeps only items with a copy on loan.
         /// <c>sort</c> is shelf order when not given.
         /// </para>

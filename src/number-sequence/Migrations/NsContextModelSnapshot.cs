@@ -845,6 +845,10 @@ namespace number_sequence.Migrations
                         .HasColumnType("datetimeoffset")
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
                     b.Property<string>("Series")
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");

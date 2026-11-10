@@ -18,7 +18,9 @@ the camera scanner (`wwwroot/js/library-scanner.js`) and scan sessions with thei
 The Contracts classes are the EF entities, the same as Ledger. There are two levels, and that split is what handles
 duplicates:
 
-- **`LibraryItem`** is the work, e.g. *The Hobbit*. It holds the title, creators, series, summary, cover and external ids.
+- **`LibraryItem`** is the work, e.g. *The Hobbit*. It holds the title, creators, series, summary, notes, cover and
+  external ids. Notes are your own (a gift from whom, whose it is); the summary is the lookup's description. Notes on one
+  physical copy, such as a signed one, go on the copy instead.
 - **`LibraryCopy`** is one physical object. It holds format, barcode, edition details (publisher, year), location,
   condition, acquisition details and status.
 
@@ -334,7 +336,9 @@ Two alternatives were rejected:
   column default, and it doesn't fit the way every other table here gets its id.
 
 **Search** (`items?q=&mediaType=&locationId=&loanedOut=`):
-- **Text:** `q` is matched with `LIKE` against title, subtitle, creators and series.
+- **Text:** `q` is matched with `LIKE` against title, subtitle, creators, series and the item's notes. Notes are
+  searched because they're where anything without its own field ends up, so searching them is the spreadsheet's
+  Ctrl-F. The summary isn't, since a lookup's blurb matches far too much.
 - **Barcodes:** if `q` parses as a barcode, a copy with that barcode also matches, so a scanned code can go in the
   same search box.
 - **Locations:** `locationId` includes everything inside that location, so "Office" finds its shelves.
@@ -342,7 +346,7 @@ Two alternatives were rejected:
   is json, which EF sees only through the dictionary converter, so this one filter is sql (`JSON_VALUE`). The key
   becomes a json path, so it is limited to letters and digits.
 - **Columns:** each item comes without its summary, external ids and attributes, which are null in the results even
-  when set. Those are the large columns, and a page can hold 500 items. Copies come back whole, and each copy's `Loans`
+  when set. Notes do come back, so `item list --raw` carries them. Those three are the large columns, and a page can hold 500 items. Copies come back whole, and each copy's `Loans`
   holds only its open loan. `items/{id}` has everything, including each copy's history with `OccurredDate` filled in by
   `LibraryEventTimes`.
 

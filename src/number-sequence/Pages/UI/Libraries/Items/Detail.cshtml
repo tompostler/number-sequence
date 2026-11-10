@@ -52,6 +52,10 @@
       }
     </div>
   </div>
+  @if (!string.IsNullOrWhiteSpace(item.Notes))
+  {
+    <div class="mt-2 mb-0 small border-start border-3 ps-2" style="white-space: pre-line"><span class="text-muted">Notes:</span> @item.Notes</div>
+  }
   @if (!string.IsNullOrWhiteSpace(item.Summary))
   {
     <p class="mt-2 mb-0 small" style="white-space: pre-line">@item.Summary</p>

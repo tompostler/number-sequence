@@ -139,6 +139,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             item.SeriesNumber = item.Series == null ? null : PromptValue(nameof(item.SeriesNumber), item.SeriesNumber);
             item.Year = PromptValue(nameof(item.Year), item.Year);
             item.Summary = PromptString(nameof(item.Summary), item.Summary);
+            item.Notes = PromptString(nameof(item.Notes), item.Notes);
             item.Tags = PromptString($"{nameof(item.Tags)} (semicolon-separated)", item.Tags);
         }
 
@@ -172,6 +173,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             if (item.Tags != null)
             {
                 Console.WriteLine($"Tags: {item.Tags}");
+            }
+            if (item.Notes != null)
+            {
+                Console.WriteLine($"Notes: {item.Notes}");
             }
             if (item.Summary != null)
             {

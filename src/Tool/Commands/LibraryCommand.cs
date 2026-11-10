@@ -342,7 +342,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
 
             Argument<string> itemQueryArgument = new("query")
             {
-                Description = "Text to match against title, subtitle, creators and series, or a barcode.",
+                Description = "Text to match against title, subtitle, creators, series and notes, or a barcode.",
                 Arity = ArgumentArity.ZeroOrOne,
             };
             Option<LibraryMediaType?> itemMediaTypeOption = new("--type") { Description = "Only this media type." };

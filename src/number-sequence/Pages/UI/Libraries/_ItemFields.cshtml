@@ -58,6 +58,10 @@
   <input asp-for="Tags" class="form-control" maxlength="256" placeholder="Separate with a semicolon" />
 </div>
 <div class="mb-2">
+  <label asp-for="Notes" class="form-label">Notes</label>
+  <textarea asp-for="Notes" class="form-control" rows="2" maxlength="2048" placeholder="Gift from, whose it is, anything to remember"></textarea>
+</div>
+<div class="mb-2">
   <label asp-for="Summary" class="form-label">Summary</label>
   <textarea asp-for="Summary" class="form-control" rows="3" maxlength="4000"></textarea>
 </div>

@@ -67,6 +67,13 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public string Summary { get; set; }
 
         /// <summary>
+        /// Your own notes on the item, such as who it was a gift from or which kid it belongs to. Notes on one physical copy
+        /// go on <see cref="LibraryCopy.Notes"/>. Item search matches these.
+        /// </summary>
+        [MaxLength(2048)]
+        public string Notes { get; set; }
+
+        /// <summary>
         /// Free-form tags, semicolon separated.
         /// </summary>
         [MaxLength(256)]

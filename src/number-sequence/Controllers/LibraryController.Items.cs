@@ -15,7 +15,7 @@ namespace number_sequence.Controllers
         /// and <see cref="LibraryItem.Attributes"/> (null here even when set), with every copy whole and each copy's
         /// <see cref="LibraryCopy.Loans"/> holding only its open loan. <see cref="GetItemAsync"/> has the rest.
         /// </summary>
-        /// <param name="q">Matched against title, subtitle, creators and series. If it parses as a barcode, items with a copy
+        /// <param name="q">Matched against title, subtitle, creators, series and notes. If it parses as a barcode, items with a copy
         /// carrying that barcode match too, so a scanned code can be pasted into the same search box.</param>
         /// <param name="locationId">Items with a copy at this location or anywhere inside it.</param>
         /// <param name="loanedOut">Only items with a copy currently on loan.</param>
@@ -58,6 +58,7 @@ namespace number_sequence.Controllers
                     || x.Subtitle.Contains(term)
                     || x.Creators.Contains(term)
                     || x.Series.Contains(term)
+                    || x.Notes.Contains(term)
                     || (barcode != null && x.Copies.AsQueryable().Any(LibraryBarcode.MatchesCopy(barcode))));
             }
             if (mediaType.HasValue)
@@ -131,6 +132,7 @@ namespace number_sequence.Controllers
                         SeriesNumber = x.SeriesNumber,
                         Year = x.Year,
                         Tags = x.Tags,
+                        Notes = x.Notes,
                         HasCover = x.HasCover,
                         CreatedDate = x.CreatedDate,
                         ModifiedDate = x.ModifiedDate,
@@ -288,6 +290,7 @@ namespace number_sequence.Controllers
             to.SeriesNumber = from.SeriesNumber;
             to.Year = from.Year;
             to.Summary = from.Summary;
+            to.Notes = from.Notes;
             to.Tags = from.Tags;
             to.ExternalIds = from.ExternalIds;
             to.Attributes = from.Attributes;

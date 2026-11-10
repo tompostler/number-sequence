@@ -108,6 +108,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
             stored.SeriesNumber = this.Item.SeriesNumber;
             stored.Year = this.Item.Year;
             stored.Summary = this.Item.Summary?.Trim();
+            stored.Notes = this.Item.Notes?.Trim();
             stored.Tags = this.Item.Tags?.Trim();
             stored.Copies = null;
 
