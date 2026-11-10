@@ -85,6 +85,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             EmailDocument emailDocument = new()
             {
                 Id = context.OrchestrationInstance.InstanceId,
+                AccountName = record.AccountName,
                 To = chiroInput.ToEmail,
                 // CC moved to batch processing to handle clients with multiple patients.
                 Subject = subject,
@@ -98,6 +99,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             {
                 _ = nsContext.ChiroEmailBatches.Add(new()
                 {
+                    AccountName = record.AccountName,
                     ClinicAbbreviation = chiroInput.ClinicAbbreviation,
                     AttachmentName = attachmentName,
                     FileLength = ms.Length,
@@ -109,6 +111,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             {
                 _ = nsContext.ChiroEmailBatches.Add(new()
                 {
+                    AccountName = record.AccountName,
                     CcEmail = ccEmail,
                     AttachmentName = attachmentName,
                     FileLength = ms.Length,

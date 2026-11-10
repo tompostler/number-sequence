@@ -108,7 +108,7 @@ break things if forgotten:
 
 ## PDF status page
 
-Full design notes: [`docs/pdf-status.md`](docs/pdf-status.md). Constraint that will break things if forgotten:
+Full design notes: [`docs/pdf-status.md`](docs/pdf-status.md). Constraints that will break things if forgotten:
 
 - **The pending-count section deliberately ignores `daysLookback`/`takeAmount`.** It exists specifically to
   surface stragglers the windowed list views hide.
@@ -119,6 +119,9 @@ Full design notes: [`docs/pdf-status.md`](docs/pdf-status.md). Constraint that w
 - **Backfilling a missed `ChiroEmailBatches` row by hand must copy `CreatedDate` from the matching
   `EmailDocuments` row**, not let it default to now — the blob path is keyed by `CreatedDate.Year`, so a
   default from a different calendar year than the original pdf points at the wrong folder.
+- **`AccountName` on `ChiroRecords`, `EmailDocuments` and `ChiroEmailBatches` is copied by value, not a foreign key**,
+  so deleting an account never cascades into pdf history. A new site that creates one of these rows has to copy it
+  from its source row, or that row shows no account.
 
 ## Chiro pdf generation retry
 

@@ -9,6 +9,9 @@ namespace number_sequence.Models
         [MaxLength(64)]
         public string Id { get; set; }
 
+        [MaxLength(64)]
+        public string AccountName { get; set; }
+
         [Required]
         [MaxLength(64)]
         public string To { get; set; }

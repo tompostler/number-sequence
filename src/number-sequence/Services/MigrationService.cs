@@ -27,6 +27,9 @@ namespace number_sequence.Services
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
+            // Scoped to this context instance only.
+            // A migration that backfills runs one statement over whole tables, which can outlast the 30 second default that is right for a request.
+            nsContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(3));
             await nsContext.Database.MigrateAsync(cancellationToken);
 
             this.logger.LogInformation("Migrations complete.");

@@ -44,6 +44,7 @@ else
     <thead>
       <tr>
         <th class="text-nowrap">ID</th>
+        <th class="text-nowrap">Account</th>
         <th class="text-nowrap">Data entered</th>
         <th class="text-nowrap">Recorded</th>
         <th class="text-nowrap">Processed</th>
@@ -56,6 +57,7 @@ else
       {
         <tr>
           <td>@record.Id</td>
+          <td class="text-nowrap">@record.AccountName</td>
           <td class="text-nowrap">@record.DataEnteredAt</td>
           <td class="text-nowrap">@record.RecordedAt</td>
           <td class="text-nowrap">
@@ -94,6 +96,7 @@ else
     <thead>
       <tr>
         <th class="text-nowrap">ID</th>
+        <th class="text-nowrap">Account</th>
         <th class="text-nowrap">Data entered</th>
         <th class="text-nowrap">Recorded</th>
         <th class="text-nowrap">Delay</th>
@@ -105,6 +108,7 @@ else
       {
         <tr>
           <td>@record.Id</td>
+          <td class="text-nowrap">@record.AccountName</td>
           <td class="text-nowrap">@record.DataEnteredAt</td>
           <td class="text-nowrap">@record.RecordedAt</td>
           <td class="text-nowrap">@record.Delay</td>
@@ -133,6 +137,7 @@ else
     <thead>
       <tr>
         <th class="text-nowrap">ID</th>
+        <th class="text-nowrap">Account</th>
         <th>Subject</th>
         <th class="text-nowrap">Attachment</th>
         <th class="text-nowrap">Size</th>
@@ -146,6 +151,7 @@ else
       {
         <tr>
           <td>@doc.Id</td>
+          <td class="text-nowrap">@doc.AccountName</td>
           <td>@doc.Subject</td>
           <td>@doc.AttachmentName</td>
           <td class="text-nowrap">@doc.FileLength</td>
@@ -185,6 +191,7 @@ else
     <thead>
       <tr>
         <th class="text-nowrap">ID</th>
+        <th class="text-nowrap">Account</th>
         <th class="text-nowrap">Recipient</th>
         <th class="text-nowrap">Attachment</th>
         <th class="text-nowrap">Size</th>
@@ -198,6 +205,7 @@ else
       {
         <tr>
           <td>@batch.Id</td>
+          <td class="text-nowrap">@batch.AccountName</td>
           <td class="text-nowrap">@batch.Recipient</td>
           <td>@batch.AttachmentName</td>
           <td class="text-nowrap">@batch.FileLength</td>
@@ -258,7 +266,19 @@ else
 @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
 {
   <div class="mb-4">
-    <img src="/ui/pdf-status/chart?daysLookback=@Model.DaysLookback&hoursOffset=@Model.HoursOffset" class="img-fluid" alt="Chiro forms per clinic chart" />
+    <img src="/ui/pdf-status/chart?daysLookback=@Model.DaysLookback&hoursOffset=@Model.HoursOffset&groupBy=Clinic" class="img-fluid" alt="Chiro forms per clinic chart" />
+  </div>
+}
+else
+{
+  <p class="text-muted">No access.</p>
+}
+
+<h5>Chiro Forms Per Account</h5>
+@if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
+{
+  <div class="mb-4">
+    <img src="/ui/pdf-status/chart?daysLookback=@Model.DaysLookback&hoursOffset=@Model.HoursOffset&groupBy=Account" class="img-fluid" alt="Chiro forms per account chart" />
   </div>
 }
 else

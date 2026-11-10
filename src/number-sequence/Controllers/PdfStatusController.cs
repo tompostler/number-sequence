@@ -18,10 +18,10 @@ namespace number_sequence.Controllers
         /// The columns of a <see cref="Models.ChiroRecord"/> the status lists show. Projecting to it leaves
         /// <see cref="Models.ChiroRecord.InputJson"/>, the whole filled-out form, in the database.
         /// </summary>
-        private sealed record ChiroRecordRow(string RowId, DateTimeOffset DataEnteredAt, DateTimeOffset RecordedAt, DateTimeOffset? ProcessedAt, int ProcessAttempt);
+        private sealed record ChiroRecordRow(string RowId, string AccountName, DateTimeOffset DataEnteredAt, DateTimeOffset RecordedAt, DateTimeOffset? ProcessedAt, int ProcessAttempt);
 
         private static readonly Expression<Func<Models.ChiroRecord, ChiroRecordRow>> toChiroRecordRow =
-            r => new ChiroRecordRow(r.RowId, r.DataEnteredAt, r.RecordedAt, r.ProcessedAt, r.ProcessAttempt);
+            r => new ChiroRecordRow(r.RowId, r.AccountName, r.DataEnteredAt, r.RecordedAt, r.ProcessedAt, r.ProcessAttempt);
 
         public PdfStatusController(IServiceProvider serviceProvider)
         {
@@ -147,6 +147,7 @@ namespace number_sequence.Controllers
                     x => new PdfStatus.ChiroRecord
                     {
                         Id = x.RowId,
+                        AccountName = x.AccountName,
                         DataEnteredAt = x.DataEnteredAt.AddHours(hoursOffset).ToString(dateTimeFormat),
                         RecordedAt = x.RecordedAt.AddHours(hoursOffset).ToString(dateTimeFormat),
                         ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
@@ -158,6 +159,7 @@ namespace number_sequence.Controllers
                     x => new PdfStatus.EmailDocument
                     {
                         Id = x.Id,
+                        AccountName = x.AccountName,
                         Subject = x.Subject,
                         AttachmentName = x.AttachmentName,
                         FileLength = formatFileLength(x.FileLength),
@@ -170,6 +172,7 @@ namespace number_sequence.Controllers
                     x => new PdfStatus.ChiroBatch
                     {
                         Id = x.Id,
+                        AccountName = x.AccountName,
                         Recipient = x.ClinicAbbreviation ?? x.CcEmail,
                         AttachmentName = x.AttachmentName,
                         FileLength = formatFileLength(x.FileLength),
@@ -182,6 +185,7 @@ namespace number_sequence.Controllers
                     x => new PdfStatus.ChiroRecord
                     {
                         Id = x.RowId,
+                        AccountName = x.AccountName,
                         DataEnteredAt = x.DataEnteredAt.AddHours(hoursOffset).ToString(dateTimeFormat),
                         RecordedAt = x.RecordedAt.AddHours(hoursOffset).ToString(dateTimeFormat),
                         Delay = chiroRecordDelay(x).ToString(pendingChiroRecordsTimeSpanFormat),
@@ -209,6 +213,7 @@ namespace number_sequence.Controllers
             [FromQuery] double hoursOffset = 0,
             [FromQuery] int width = 2560,
             [FromQuery] int height = 1440,
+            [FromQuery] ChiroChartGrouping groupBy = ChiroChartGrouping.Clinic,
             CancellationToken cancellationToken = default)
         {
             bool hasChiroAccess = this.User.IsInRole(AccountRoles.Chiro) || this.User.IsInRole(AccountRoles.PdfStatus);
@@ -227,29 +232,48 @@ namespace number_sequence.Controllers
 
             DateTimeOffset daysAgo = DateTimeOffset.UtcNow.AddDays(-daysLookback);
 
-            var chiroRecords = await nsContext.ChiroRecords
-                                            .Where(r => r.RecordedAt > daysAgo)
-                                            .Select(r => new { r.RecordedAt, r.InputJson })
-                                            .ToListAsync(cancellationToken);
+            IQueryable<Models.ChiroRecord> inWindow = nsContext.ChiroRecords.Where(r => r.RecordedAt > daysAgo);
+
+            // Each record becomes (recorded at, segment label). A record with no value gets a
+            // placeholder label rather than being dropped, so day totals still match total submissions.
+            string noneLabel;
+            List<(DateTimeOffset RecordedAt, string Group)> chiroRecords;
+            if (groupBy == ChiroChartGrouping.Account)
+            {
+                noneLabel = "(no account)";
+                chiroRecords = (await inWindow
+                                    .Select(r => new { r.RecordedAt, r.AccountName })
+                                    .ToListAsync(cancellationToken))
+                    .Select(r => (r.RecordedAt, string.IsNullOrWhiteSpace(r.AccountName) ? noneLabel : r.AccountName))
+                    .ToList();
+            }
+            else
+            {
+                // Clinic isn't an indexed column - it only exists inside the serialized InputJson - so
+                // this deserializes every row in the window. Volumes are small.
+                noneLabel = "(no clinic)";
+                string clinicOf(string inputJson)
+                {
+                    string abbreviation = string.IsNullOrWhiteSpace(inputJson)
+                        ? null
+                        : JsonSerializer.Deserialize<ChiroInput>(inputJson, RelaxedJson.Options)?.ClinicAbbreviation;
+                    return string.IsNullOrWhiteSpace(abbreviation) ? noneLabel : abbreviation;
+                }
+
+                chiroRecords = (await inWindow
+                                    .Select(r => new { r.RecordedAt, r.InputJson })
+                                    .ToListAsync(cancellationToken))
+                    .Select(r => (r.RecordedAt, clinicOf(r.InputJson)))
+                    .ToList();
+            }
 
             if (chiroRecords.Count == 0)
             {
                 return this.NoContent();
             }
 
-            // Bucket by (local day, clinic). Clinic isn't an indexed column - it only exists inside the
-            // serialized InputJson - so this deserializes every row in the window. Volumes are small.
-            const string noClinicLabel = "(no clinic)";
-            static string clinicOf(string inputJson)
-            {
-                string abbreviation = string.IsNullOrWhiteSpace(inputJson)
-                    ? null
-                    : JsonSerializer.Deserialize<ChiroInput>(inputJson, RelaxedJson.Options)?.ClinicAbbreviation;
-                return string.IsNullOrWhiteSpace(abbreviation) ? noClinicLabel : abbreviation;
-            }
-
-            Dictionary<(DateTime Day, string Clinic), int> byDayAndClinic = chiroRecords
-                .GroupBy(r => (Day: r.RecordedAt.AddHours(hoursOffset).Date, Clinic: clinicOf(r.InputJson)))
+            Dictionary<(DateTime Day, string Group), int> byDayAndGroup = chiroRecords
+                .GroupBy(r => (Day: r.RecordedAt.AddHours(hoursOffset).Date, r.Group))
                 .ToDictionary(g => g.Key, g => g.Count());
 
             // Every day in the window gets a position, even with zero forms, so gaps between
@@ -258,19 +282,27 @@ namespace number_sequence.Controllers
             List<DateTime> days = Enumerable.Range(0, daysLookback)
                 .Select(i => todayLocal.AddDays(i - daysLookback + 1))
                 .ToList();
-            List<string> clinics = byDayAndClinic.Keys.Select(k => k.Clinic).Distinct()
-                .OrderBy(c => c == noClinicLabel ? 0 : 1)
-                .ThenBy(c => c, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            Dictionary<string, int> totalByGroup = byDayAndGroup
+                .GroupBy(kv => kv.Key.Group)
+                .ToDictionary(g => g.Key, g => g.Sum(kv => kv.Value));
+
+            // The placeholder always sorts first, so it reads as a deliberate category rather than clutter.
+            // Clinics are a short fixed set and read best alphabetically; accounts are ordered by volume,
+            // since who submitted the most is the question that chart answers.
+            IOrderedEnumerable<string> orderedGroups = totalByGroup.Keys.OrderBy(g => g == noneLabel ? 0 : 1);
+            orderedGroups = groupBy == ChiroChartGrouping.Account
+                ? orderedGroups.ThenByDescending(g => totalByGroup[g]).ThenBy(g => g, StringComparer.OrdinalIgnoreCase)
+                : orderedGroups.ThenBy(g => g, StringComparer.OrdinalIgnoreCase);
+            List<string> groups = orderedGroups.ToList();
 
             ScottPlot.Palettes.Category10 palette = new();
             List<ScottPlot.Bar> bars = [];
             for (int dayIndex = 0; dayIndex < days.Count; dayIndex++)
             {
                 double cumulative = 0;
-                for (int clinicIndex = 0; clinicIndex < clinics.Count; clinicIndex++)
+                for (int groupIndex = 0; groupIndex < groups.Count; groupIndex++)
                 {
-                    if (!byDayAndClinic.TryGetValue((days[dayIndex], clinics[clinicIndex]), out int count))
+                    if (!byDayAndGroup.TryGetValue((days[dayIndex], groups[groupIndex]), out int count))
                     {
                         continue;
                     }
@@ -280,7 +312,7 @@ namespace number_sequence.Controllers
                         Position = dayIndex,
                         ValueBase = cumulative,
                         Value = cumulative + count,
-                        FillColor = palette.GetColor(clinicIndex),
+                        FillColor = palette.GetColor(groupIndex),
                     });
                     cumulative += count;
                 }
@@ -307,15 +339,12 @@ namespace number_sequence.Controllers
             // the bars appear to float above the x-axis instead of sitting flush on it.
             plot.Axes.Margins(bottom: 0);
 
-            Dictionary<string, int> totalByClinic = byDayAndClinic
-                .GroupBy(kv => kv.Key.Clinic)
-                .ToDictionary(g => g.Key, g => g.Sum(kv => kv.Value));
-            ScottPlot.LegendItem[] legendItems = [.. clinics.Select((c, i) => new ScottPlot.LegendItem { LabelText = $"{c} ({totalByClinic[c]})", FillColor = palette.GetColor(i) })];
+            ScottPlot.LegendItem[] legendItems = [.. groups.Select((g, i) => new ScottPlot.LegendItem { LabelText = $"{g} ({totalByGroup[g]})", FillColor = palette.GetColor(i) })];
             ScottPlot.Panels.LegendPanel legendPanel = plot.ShowLegend(ScottPlot.Edge.Bottom);
             legendPanel.Legend.ManualItems.AddRange(legendItems);
             legendPanel.Legend.Orientation = ScottPlot.Orientation.Horizontal;
 
-            plot.Title($"Chiro forms per clinic, last {daysLookback} days ({totalByClinic.Values.Sum()})");
+            plot.Title($"Chiro forms per {(groupBy == ChiroChartGrouping.Account ? "account" : "clinic")}, last {daysLookback} days ({totalByGroup.Values.Sum()})");
             _ = plot.Add.Annotation($"Generated {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC", ScottPlot.Alignment.UpperLeft);
 
             byte[] bytes = plot.GetImage(width, height).GetImageBytes();

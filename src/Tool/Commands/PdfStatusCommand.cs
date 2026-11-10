@@ -21,7 +21,12 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             };
             Option<FileInfo> chartOption = new("--chart")
             {
-                Description = "If specified, writes a PNG stacked bar chart of chiro forms per clinic per day to this file instead of printing the tables.",
+                Description = "If specified, writes a PNG stacked bar chart of chiro forms per day to this file instead of printing the tables.",
+            };
+            Option<ChiroChartGrouping> chartGroupByOption = new("--chart-group-by")
+            {
+                Description = "What each day's bar in --chart is segmented by.",
+                DefaultValueFactory = _ => ChiroChartGrouping.Clinic,
             };
             Command command = new("pdf-status", "Get the status of the pdf background services. Defaults to local time.")
             {
@@ -30,6 +35,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 takeAmountOption,
                 daysLookbackOption,
                 chartOption,
+                chartGroupByOption,
             };
             command.SetAction(
                 (parseResult, cancellationToken) =>
@@ -39,18 +45,19 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     int takeAmount = parseResult.GetRequiredValue(takeAmountOption);
                     int daysLookback = parseResult.GetRequiredValue(daysLookbackOption);
                     FileInfo chart = parseResult.GetValue(chartOption);
-                    return HandleAsync(stamp, takeAmount, daysLookback, chart, verbosity);
+                    ChiroChartGrouping chartGroupBy = parseResult.GetRequiredValue(chartGroupByOption);
+                    return HandleAsync(stamp, takeAmount, daysLookback, chart, chartGroupBy, verbosity);
                 });
             return command;
         }
 
-        private static async Task HandleAsync(Stamp stamp, int takeAmount, int daysLookback, FileInfo chart, Verbosity verbosity)
+        private static async Task HandleAsync(Stamp stamp, int takeAmount, int daysLookback, FileInfo chart, ChiroChartGrouping chartGroupBy, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
 
             if (chart != null)
             {
-                byte[] bytes = await client.PdfStatus.GetChartAsync(daysLookback, TimeZoneInfo.Local.BaseUtcOffset.TotalHours);
+                byte[] bytes = await client.PdfStatus.GetChartAsync(daysLookback, TimeZoneInfo.Local.BaseUtcOffset.TotalHours, groupBy: chartGroupBy);
                 if (bytes == null)
                 {
                     Console.WriteLine("No chiro records to chart.");
@@ -71,6 +78,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Output.WriteTable(
                 pdfStatus.ChiroRecords,
                 nameof(PdfStatus.ChiroRecord.Id),
+                nameof(PdfStatus.ChiroRecord.AccountName),
                 nameof(PdfStatus.ChiroRecord.DataEnteredAt),
                 nameof(PdfStatus.ChiroRecord.RecordedAt),
                 nameof(PdfStatus.ChiroRecord.ProcessedAt),
@@ -81,6 +89,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Output.WriteTable(
                 pdfStatus.EmailDocuments,
                 nameof(PdfStatus.EmailDocument.Id),
+                nameof(PdfStatus.EmailDocument.AccountName),
                 nameof(PdfStatus.EmailDocument.Subject),
                 nameof(PdfStatus.EmailDocument.AttachmentName),
                 nameof(PdfStatus.EmailDocument.FileLength),
@@ -92,6 +101,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Output.WriteTable(
                 pdfStatus.ChiroBatches,
                 nameof(PdfStatus.ChiroBatch.Id),
+                nameof(PdfStatus.ChiroBatch.AccountName),
                 nameof(PdfStatus.ChiroBatch.Recipient),
                 nameof(PdfStatus.ChiroBatch.AttachmentName),
                 nameof(PdfStatus.ChiroBatch.FileLength),
@@ -103,6 +113,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Output.WriteTable(
                 pdfStatus.ChiroRecordsPending,
                 nameof(PdfStatus.ChiroRecord.Id),
+                nameof(PdfStatus.ChiroRecord.AccountName),
                 nameof(PdfStatus.ChiroRecord.DataEnteredAt),
                 nameof(PdfStatus.ChiroRecord.RecordedAt),
                 nameof(PdfStatus.ChiroRecord.Delay),

@@ -33,6 +33,30 @@ filled-out form) never leaves the database for a page that only shows timestamps
 is the unbounded one, and it grows exactly when something is wrong. The chart below needs `InputJson` and projects to
 just that and `RecordedAt`. The page's other queries are `AsNoTracking`, since the endpoint never saves.
 
+## Account name
+
+`ChiroRecords`, `EmailDocuments` and `ChiroEmailBatches` each carry the `AccountName` that submitted the work, and
+every list on the page shows it (the pending counts don't, being grouped by recipient). It is copied forward at each
+step rather than looked up: `ChiroController` stamps the record from the caller's identity,
+`ChiroPdfGenerationActivity` copies the record's value onto the email document and every batch row it writes, and the
+ledger pdf activities copy the invoice's or statement's own `AccountName`. Every row is self-describing, so the page
+never has to join back through the chain, which matters for batch rows: their only link to a pdf is `AttachmentName`.
+
+It is deliberately not a foreign key to `Accounts`. A cascade would delete the pdf history along with the account, and
+a restrict would block the account's deletion on rows nobody wants to clean up first. A stale name on an old row is the
+better failure. It is nullable for the same reason, and because older rows predate it.
+
+The migration that added it (`AddPdfAccountName`) backfilled what was derivable. It filled records from
+`Source = 'ui/{account}'`, chiro email documents from the instance id's `MakeHumanFriendly` RowId prefix, ledger email
+documents from `{FriendlyId}_invoice`/`_statement`, and batches by `AttachmentName`. A step that matched more than one
+account left the row null rather than guess. Records from the spreadsheet era, and everything downstream of them,
+have no account to recover and stay null.
+
+The backfill was first written as correlated `CROSS APPLY`s, one scan of the other table per row, and that ran past
+the 30 second command timeout. Each match side is now grouped once and equality-joined. `MigrationService` also raises
+the command timeout to 10 minutes on its own context, so a backfill isn't held to a limit meant for requests. The
+app-wide timeout stays at the default, since a request that takes 30 seconds is a bug worth hearing about.
+
 ## Chiro forms per clinic chart
 
 The "Chiro Forms Per Clinic" section renders a PNG stacked bar chart, one bar per day over the
@@ -79,6 +103,24 @@ backward from the most recent day so today always keeps a label. 40px/label is t
 default 30-day window already renders comfortably at the UI's 1200px chart, so the 30-day case is
 untouched (`step == 1`) and only wider windows thin out. Every day still gets a bar - only the axis
 text gets sparser - so this doesn't cost any resolution the way capping `daysLookback` would.
+
+## Chiro forms per account chart
+
+"Chiro Forms Per Account" is the same chart from the same endpoint, `GET pdfstatus/chart?groupBy=Account`
+(`ChiroChartGrouping`), with each day's bar segmented by the submitting account instead of the clinic. It is a
+parameter rather than a second endpoint because only the segment label differs. The day axis, stacking, legend and
+label thinning above all apply unchanged, and a second copy of the plotting code would drift. `groupBy` defaults to
+`Clinic`, so existing callers and the CLI's `--chart` keep their output (`--chart-group-by Account` for this one).
+
+The account comes from the `ChiroRecords.AccountName` column (see [Account name](#account-name)), so this grouping
+projects to `RecordedAt` and `AccountName` alone and never loads `InputJson`. Records with no account, from before the
+column existed or that the backfill couldn't attribute, bucket into `(no account)`. That's the same treatment as
+`(no clinic)`, so day totals match the clinic chart's.
+
+Segment order is the one place the two charts differ. Clinics are a short fixed set and stay alphabetical. Accounts
+are sorted by their window total, highest first, so the largest submitter sits at the bottom of every stack and leads
+the legend. That chart exists to answer who submitted the most, and the order answers it. The placeholder bucket sorts
+first in both.
 
 ## Manually backfilling a batch row
 

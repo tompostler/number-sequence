@@ -9,6 +9,9 @@ namespace number_sequence.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
 
+        [MaxLength(64)]
+        public string AccountName { get; set; }
+
         [MaxLength(16)]
         public string ClinicAbbreviation { get; set; }
 

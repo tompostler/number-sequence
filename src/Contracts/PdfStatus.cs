@@ -9,6 +9,7 @@
         public sealed class ChiroRecord
         {
             public string Id { get; set; }
+            public string AccountName { get; set; }
             public string DataEnteredAt { get; set; }
             public string RecordedAt { get; set; }
             public string ProcessedAt { get; set; }
@@ -18,6 +19,7 @@
         public sealed class EmailDocument
         {
             public string Id { get; set; }
+            public string AccountName { get; set; }
             public string Subject { get; set; }
             public string AttachmentName { get; set; }
             public string FileLength { get; set; }
@@ -28,6 +30,7 @@
         public sealed class ChiroBatch
         {
             public string Id { get; set; }
+            public string AccountName { get; set; }
             public string Recipient { get; set; }
             public string AttachmentName { get; set; }
             public string FileLength { get; set; }

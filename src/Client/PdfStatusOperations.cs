@@ -32,7 +32,7 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
-        /// Get a PNG stacked bar chart of chiro forms per clinic per day, over the given lookback window.
+        /// Get a PNG stacked bar chart of chiro forms per day, each day segmented by <paramref name="groupBy"/>, over the given lookback window.
         /// Returns null if there are no records in that window.
         /// </summary>
         public async Task<byte[]> GetChartAsync(
@@ -40,12 +40,13 @@ namespace TcpWtf.NumberSequence.Client
             double hoursOffset = 0,
             int width = 2560,
             int height = 1440,
+            ChiroChartGrouping groupBy = ChiroChartGrouping.Clinic,
             CancellationToken cancellationToken = default)
         {
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Get,
-                    $"pdfstatus/chart?{nameof(daysLookback)}={daysLookback}&{nameof(hoursOffset)}={hoursOffset}&{nameof(width)}={width}&{nameof(height)}={height}"),
+                    $"pdfstatus/chart?{nameof(daysLookback)}={daysLookback}&{nameof(hoursOffset)}={hoursOffset}&{nameof(width)}={width}&{nameof(height)}={height}&{nameof(groupBy)}={groupBy}"),
                 cancellationToken);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NoContent)

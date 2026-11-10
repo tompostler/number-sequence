@@ -106,6 +106,7 @@ namespace number_sequence.Controllers
             {
                 Source = source,
                 RowId = rowId,
+                AccountName = this.User.Identity.Name,
                 DataEnteredAt = DateTimeOffset.UtcNow,
                 InputJson = JsonSerializer.Serialize(input, RelaxedJson.Options),
             };

@@ -1129,6 +1129,10 @@ namespace number_sequence.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasDefaultValueSql("CAST(NEXT VALUE FOR dbo.ChiroEmailBatchIds AS nvarchar(20))");
 
+                    b.Property<string>("AccountName")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<string>("AttachmentName")
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
@@ -1163,6 +1167,10 @@ namespace number_sequence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<string>("AccountName")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<DateTimeOffset>("DataEnteredAt")
                         .HasColumnType("datetimeoffset");
 
@@ -1193,6 +1201,10 @@ namespace number_sequence.Migrations
             modelBuilder.Entity("number_sequence.Models.EmailDocument", b =>
                 {
                     b.Property<string>("Id")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("AccountName")
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 

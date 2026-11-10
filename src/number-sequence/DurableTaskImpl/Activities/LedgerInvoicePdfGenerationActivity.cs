@@ -97,6 +97,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             EmailDocument emailDocument = new()
             {
                 Id = context.OrchestrationInstance.InstanceId,
+                AccountName = invoice.AccountName,
                 To = invoice.Business.Contact,
                 Subject = subject,
                 AttachmentName = attachmentName,

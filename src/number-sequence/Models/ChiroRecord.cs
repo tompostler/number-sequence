@@ -13,6 +13,9 @@ namespace number_sequence.Models
         [MaxLength(128)]
         public string Source { get; set; }
 
+        [MaxLength(64)]
+        public string AccountName { get; set; }
+
         public DateTimeOffset DataEnteredAt { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
