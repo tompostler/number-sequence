@@ -325,15 +325,7 @@ namespace number_sequence.Controllers
         {
             to.Format = from.Format;
             to.Barcode = NormalizeBarcodeOrThrow(from.Barcode);
-            // An ISBN barcode is the ISBN, so only a book printed with a UPC needs one entered separately.
-            to.Isbn = NormalizeIsbnOrThrow(from.Isbn)
-                ?? (to.Barcode != null && LibraryBarcode.TryParse(to.Barcode, out LibraryBarcode printed, out _) && printed.Kind == LibraryBarcodeKind.Isbn ? to.Barcode : null);
-            to.Publisher = from.Publisher;
-            to.PublishedYear = from.PublishedYear;
-            to.Condition = from.Condition;
             to.AcquiredDate = from.AcquiredDate;
-            to.AcquiredFrom = from.AcquiredFrom;
-            to.PricePaid = from.PricePaid;
             to.Notes = from.Notes;
         }
     }

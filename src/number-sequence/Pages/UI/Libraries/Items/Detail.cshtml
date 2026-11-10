@@ -41,15 +41,6 @@
       {
         <div class="small text-muted">@string.Join(" · ", attributes)</div>
       }
-      @if (!string.IsNullOrWhiteSpace(item.Tags))
-      {
-        <div class="mt-1">
-          @foreach (string tag in item.Tags.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-          {
-            <a href="/ui/library/@Model.Library.Id?q=@Uri.EscapeDataString(tag)" class="badge text-bg-light text-decoration-none border me-1">@tag</a>
-          }
-        </div>
-      }
     </div>
   </div>
   @if (!string.IsNullOrWhiteSpace(item.Notes))
@@ -77,14 +68,7 @@
 @foreach (LibraryCopy copy in item.Copies)
 {
   LibraryLoan openLoan = LibraryDisplay.OpenLoan(copy);
-  string heading = string.Join(" · ", new[] { item.Copies.Count > 1 ? $"#{copyNumbers[copy.Id]}" : null, copy.Format, copy.Condition }.Where(x => !string.IsNullOrWhiteSpace(x)));
-  string edition = string.Join(" · ", new[] { copy.Publisher, copy.PublishedYear?.ToString() }.Where(x => !string.IsNullOrWhiteSpace(x)));
-  string acquired = string.Join(" · ", new[]
-  {
-    copy.AcquiredDate.HasValue ? $"Acquired {copy.AcquiredDate:yyyy-MM-dd}" : null,
-    string.IsNullOrWhiteSpace(copy.AcquiredFrom) ? null : $"from {copy.AcquiredFrom}",
-    copy.PricePaid?.ToCurrencyDisplay(),
-  }.Where(x => x != null));
+  string heading = string.Join(" · ", new[] { item.Copies.Count > 1 ? $"#{copyNumbers[copy.Id]}" : null, copy.Format }.Where(x => !string.IsNullOrWhiteSpace(x)));
 
   <div class="card mb-2 @(copy.Status == LibraryCopyStatus.Disposed ? "opacity-75" : "")">
     <div class="card-body p-2">
@@ -106,17 +90,9 @@
       {
         <div class="small text-muted font-monospace">@copy.Barcode</div>
       }
-      @if (!string.IsNullOrWhiteSpace(copy.Isbn) && copy.Isbn != copy.Barcode)
+      @if (copy.AcquiredDate.HasValue)
       {
-        <div class="small text-muted font-monospace">ISBN @copy.Isbn</div>
-      }
-      @if (edition.Length > 0)
-      {
-        <div class="small text-muted">@edition</div>
-      }
-      @if (acquired.Length > 0)
-      {
-        <div class="small text-muted">@acquired</div>
+        <div class="small text-muted">Acquired @copy.AcquiredDate.Value.ToString("yyyy-MM-dd")</div>
       }
       @if (!string.IsNullOrWhiteSpace(copy.Notes))
       {

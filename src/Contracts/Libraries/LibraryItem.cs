@@ -56,7 +56,7 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public decimal? SeriesNumber { get; set; }
 
         /// <summary>
-        /// The year the work was first released. Edition-specific years go on <see cref="LibraryCopy.PublishedYear"/>.
+        /// The year the work was first released.
         /// </summary>
         public int? Year { get; set; }
 
@@ -72,12 +72,6 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         /// </summary>
         [MaxLength(2048)]
         public string Notes { get; set; }
-
-        /// <summary>
-        /// Free-form tags, semicolon separated.
-        /// </summary>
-        [MaxLength(256)]
-        public string Tags { get; set; }
 
         /// <summary>
         /// Identifiers from external lookup sources, such as an Open Library work key, a TMDB id, or a BoardGameGeek id.

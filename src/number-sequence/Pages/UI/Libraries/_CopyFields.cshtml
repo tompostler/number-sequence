@@ -20,72 +20,24 @@
     </datalist>
   </div>
   <div class="col-6">
-    <label asp-for="Condition" class="form-label">Condition</label>
-    <input asp-for="Condition" class="form-control" maxlength="32" placeholder="e.g. Like new" />
-  </div>
-</div>
-@if (ViewData["MediaType"] as LibraryMediaType? is LibraryMediaType.Book or null || !string.IsNullOrWhiteSpace(Model?.Isbn))
-{
-  @* Books only: the ISBN differs from the barcode when that's a retail UPC. *@
-  <div class="row g-2 mb-2">
-    <div class="col-6">
-      <label asp-for="Barcode" class="form-label">Barcode</label>
-      <div class="input-group">
-        <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="Optional" />
-        <button type="button" class="btn btn-outline-secondary" data-library-scan="@barcodeSelector" data-library-scan-fill hidden>Scan</button>
-      </div>
-      <span asp-validation-for="Barcode" class="text-danger small"></span>
-    </div>
-    <div class="col-6">
-      <label asp-for="Isbn" class="form-label">ISBN</label>
-      @* Blank when it's just the barcode, which the server fills it from, so changing the barcode can't leave a stale ISBN.
-         The numeric keypad has no X, so an ISBN-10 is taken without it (LibraryBarcode.TryParseIsbn). *@
-      <input asp-for="Isbn" value="@(Model?.Isbn == Model?.Barcode ? null : Model?.Isbn)" class="form-control" maxlength="17" autocomplete="off" inputmode="numeric" placeholder="If not the barcode" />
-      <span asp-validation-for="Isbn" class="text-danger small"></span>
-    </div>
-  </div>
-  <div class="form-text mb-2 mt-n1">Scanning it later finds this copy. A book with a UPC on the back can also take its ISBN from the copyright page; if it ends in X, leave the X off. Either code finds it.</div>
-}
-else
-{
-  <div class="mb-2">
-    <label asp-for="Barcode" class="form-label">Barcode</label>
-    <div class="input-group">
-      <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="Optional" />
-      <button type="button" class="btn btn-outline-secondary" data-library-scan="@barcodeSelector" data-library-scan-fill hidden>Scan</button>
-    </div>
-    <span asp-validation-for="Barcode" class="text-danger small"></span>
-  </div>
-}
-<div class="row g-2 mb-2">
-  <div class="col-8">
-    <label asp-for="Publisher" class="form-label">Publisher</label>
-    <input asp-for="Publisher" class="form-control" maxlength="128" placeholder="Or studio" />
-  </div>
-  <div class="col-4">
-    <label asp-for="PublishedYear" class="form-label">Year</label>
-    <input asp-for="PublishedYear" type="number" inputmode="numeric" class="form-control" placeholder="Edition" />
-  </div>
-</div>
-<div class="row g-2 mb-2">
-  <div class="col-6">
     <div class="d-flex justify-content-between align-items-baseline">
       <label asp-for="AcquiredDate" class="form-label">Acquired</label>
       <button type="button" class="btn btn-link btn-sm p-0 small" onclick="this.closest('div.col-6').querySelector('input').valueAsDate = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)">Today</button>
     </div>
     <input asp-for="AcquiredDate" type="date" class="form-control" />
-    <div class="form-text">Blank if you don't know. It places the copy in history.</div>
-  </div>
-  <div class="col-6">
-    <label asp-for="PricePaid" class="form-label">Price paid</label>
-    <input asp-for="PricePaid" type="number" step="0.01" min="0" inputmode="decimal" class="form-control" />
   </div>
 </div>
+<div class="form-text mb-2 mt-n1">Leave Acquired blank if you don't know. It places the copy in history.</div>
 <div class="mb-2">
-  <label asp-for="AcquiredFrom" class="form-label">Acquired from</label>
-  <input asp-for="AcquiredFrom" class="form-control" maxlength="128" placeholder="Store, or who gave it" />
+  <label asp-for="Barcode" class="form-label">Barcode</label>
+  <div class="input-group">
+    <input asp-for="Barcode" class="form-control" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="Optional" />
+    <button type="button" class="btn btn-outline-secondary" data-library-scan="@barcodeSelector" data-library-scan-fill hidden>Scan</button>
+  </div>
+  <span asp-validation-for="Barcode" class="text-danger small"></span>
+  <div class="form-text">The code printed on this copy. Scanning it later finds this copy.</div>
 </div>
 <div class="mb-2">
-  <label asp-for="Notes" class="form-label">Notes</label>
+  <label asp-for="Notes" class="form-label">Copy notes</label>
   <textarea asp-for="Notes" class="form-control" rows="2" maxlength="1024" placeholder="Signed, inscription, missing pieces"></textarea>
 </div>

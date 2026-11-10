@@ -691,15 +691,7 @@ namespace number_sequence.Migrations
                     b.Property<DateOnly?>("AcquiredDate")
                         .HasColumnType("date");
 
-                    b.Property<string>("AcquiredFrom")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
                     b.Property<string>("Barcode")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("Condition")
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
@@ -711,10 +703,6 @@ namespace number_sequence.Migrations
                     b.Property<string>("Format")
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("Isbn")
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
 
                     b.Property<long>("ItemId")
                         .HasColumnType("bigint");
@@ -734,17 +722,6 @@ namespace number_sequence.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
-                    b.Property<decimal?>("PricePaid")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("PublishedYear")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Publisher")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("NVARCHAR(16)");
@@ -756,8 +733,6 @@ namespace number_sequence.Migrations
                     b.HasIndex("LocationId");
 
                     b.HasIndex("LibraryId", "Barcode");
-
-                    b.HasIndex("LibraryId", "Isbn");
 
                     b.ToTable("LibraryCopies");
                 });
@@ -864,10 +839,6 @@ namespace number_sequence.Migrations
                     b.Property<string>("Summary")
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
-
-                    b.Property<string>("Tags")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Title")
                         .IsRequired()

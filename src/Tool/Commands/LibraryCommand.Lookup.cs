@@ -45,10 +45,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     x.Subtitle,
                     x.Creators,
                     x.Year,
-                    x.Barcode,
                     x.Format,
-                    x.Publisher,
-                    x.PublishedYear,
                 }),
                 "Source",
                 "SourceId",
@@ -57,10 +54,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 "Subtitle",
                 "Creators",
                 "Year",
-                "Barcode",
-                "Format",
-                "Publisher",
-                "PublishedYear");
+                "Format");
         }
     }
 }

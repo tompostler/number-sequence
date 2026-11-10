@@ -124,7 +124,6 @@ namespace number_sequence.Services.Libraries
             result.Creators = LookupText.Fit(result.Creators, 512);
             result.Series = LookupText.Fit(result.Series, 128);
             result.Summary = LookupText.Fit(result.Summary, LookupText.MaxSummaryLength);
-            result.Publisher = LookupText.Fit(result.Publisher, 128);
             result.Format = LookupText.Fit(result.Format, 32);
         }
 

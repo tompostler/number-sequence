@@ -187,17 +187,6 @@ namespace number_sequence.Pages.UI.Libraries.Items
                     this.ModelState.AddModelError($"{nameof(this.Copy)}.{nameof(this.Copy.Barcode)}", error);
                 }
             }
-            if (this.AddCopy && !string.IsNullOrWhiteSpace(this.Copy?.Isbn))
-            {
-                if (LibraryBarcode.TryParseIsbn(this.Copy.Isbn, out LibraryBarcode parsed, out string error))
-                {
-                    this.Copy.Isbn = parsed.Value;
-                }
-                else
-                {
-                    this.ModelState.AddModelError($"{nameof(this.Copy)}.{nameof(this.Copy.Isbn)}", error);
-                }
-            }
             if (!this.ModelState.IsValid)
             {
                 return this.Page();
@@ -316,7 +305,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
         }
 
         /// <summary>
-        /// Fills the form in from a lookup result. A barcode already on the copy is kept: it's what was scanned.
+        /// Fills the form in from a lookup result. The copy keeps its barcode, which the lookup knows nothing about.
         /// </summary>
         private void Apply(LibraryLookupResult result)
         {
@@ -331,11 +320,7 @@ namespace number_sequence.Pages.UI.Libraries.Items
             this.Item.ExternalIds = result.ExternalIds;
             this.Item.Attributes = result.Attributes;
 
-            this.Copy.Barcode ??= result.Barcode;
-            this.Copy.Isbn ??= result.Barcode;
             this.Copy.Format = result.Format;
-            this.Copy.Publisher = result.Publisher;
-            this.Copy.PublishedYear = result.PublishedYear;
 
             this.CoverUrls = result.CoverUrls ?? [];
             this.LookupSource = result.Source;
@@ -343,17 +328,17 @@ namespace number_sequence.Pages.UI.Libraries.Items
         }
 
         /// <summary>
-        /// Items this might already be: one with a copy carrying the same barcode or ISBN (either one matching either column,
-        /// as everywhere else), one with the same lookup record (any shared external id, which is how a paperback finds the
+        /// Items this might already be: one with a copy carrying the same barcode, one with the same lookup record (any shared external id, which is how a paperback finds the
         /// hardcover's item), or one with the same title.
         /// </summary>
         private async Task<List<LibraryItem>> FindDuplicatesAsync(long libraryId, CancellationToken cancellationToken)
         {
             List<LibraryItem> found = [];
-            foreach (string code in new[] { this.Copy?.Barcode, this.Copy?.Isbn }.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct())
+            string code = this.Copy?.Barcode;
+            if (!string.IsNullOrWhiteSpace(code))
             {
                 List<LibraryItem> byCode = await this.NsClient.Library.GetItemsAsync(libraryId, code, take: 10, cancellationToken: cancellationToken);
-                found.AddRange(byCode.Where(x => x.Copies.Any(c => c.Barcode == code || c.Isbn == code)));
+                found.AddRange(byCode.Where(x => x.Copies.Any(c => c.Barcode == code)));
             }
 
             foreach ((string key, string value) in this.Item.ExternalIds ?? [])

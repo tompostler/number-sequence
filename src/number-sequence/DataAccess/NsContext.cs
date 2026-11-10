@@ -324,9 +324,6 @@ namespace number_sequence.DataAccess
                 .Property(x => x.ModifiedDate)
                 .HasDefaultValueSql("SYSDATETIMEOFFSET()");
             _ = modelBuilder.Entity<LibraryCopy>()
-                .Property(x => x.PricePaid)
-                .HasPrecision(18, 2);
-            _ = modelBuilder.Entity<LibraryCopy>()
                 .HasOne(x => x.Item)
                 .WithMany(x => x.Copies)
                 .HasForeignKey(x => x.ItemId)
@@ -341,11 +338,9 @@ namespace number_sequence.DataAccess
                 .WithMany()
                 .HasForeignKey(x => x.LocationId)
                 .OnDelete(DeleteBehavior.NoAction);
-            // The "do I own this?" lookup and every scan resolve by barcode or ISBN (LibraryBarcode.MatchesCopy).
+            // Item search by barcode and every scan resolve by barcode (LibraryBarcode.MatchesCopy).
             _ = modelBuilder.Entity<LibraryCopy>()
                 .HasIndex(x => new { x.LibraryId, x.Barcode });
-            _ = modelBuilder.Entity<LibraryCopy>()
-                .HasIndex(x => new { x.LibraryId, x.Isbn });
 
             _ = modelBuilder.Entity<LibraryLoan>()
                 .Property(x => x.Id)

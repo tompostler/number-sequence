@@ -39,50 +39,14 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public string Barcode { get; set; }
 
         /// <summary>
-        /// The edition's ISBN-13, which is what a book is looked up by. Usually the same as <see cref="Barcode"/>, and filled
-        /// in from it when that is an ISBN. It differs on a book printed with only a retail UPC, common on US mass-market
-        /// paperbacks, whose ISBN is printed as text on the copyright page. A scanned or searched code matches either.
-        /// </summary>
-        [MaxLength(13)]
-        public string Isbn { get; set; }
-
-        /// <summary>
-        /// The publisher or studio of this edition.
-        /// </summary>
-        [MaxLength(128)]
-        public string Publisher { get; set; }
-
-        /// <summary>
-        /// The year this edition was published.
-        /// </summary>
-        public int? PublishedYear { get; set; }
-
-        /// <summary>
         /// Where the copy lives, if recorded. See <see cref="LibraryLocation.Id"/>.
         /// </summary>
         public long? LocationId { get; set; }
 
         /// <summary>
-        /// Free-form condition, such as "Like new" or "Box damaged".
-        /// </summary>
-        [MaxLength(32)]
-        public string Condition { get; set; }
-
-        /// <summary>
         /// When the copy was acquired.
         /// </summary>
         public DateOnly? AcquiredDate { get; set; }
-
-        /// <summary>
-        /// Where the copy came from, such as a store or the person who gave it.
-        /// </summary>
-        [MaxLength(128)]
-        public string AcquiredFrom { get; set; }
-
-        /// <summary>
-        /// What was paid for the copy.
-        /// </summary>
-        public decimal? PricePaid { get; set; }
 
         /// <summary>
         /// Whether the copy is still part of the library.
@@ -91,7 +55,7 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
         public LibraryCopyStatus Status { get; set; }
 
         /// <summary>
-        /// Optional notes, such as a signature or inscription.
+        /// Optional notes on this one copy, such as a signature, an inscription or missing pieces.
         /// </summary>
         [MaxLength(1024)]
         public string Notes { get; set; }

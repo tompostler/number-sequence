@@ -1,11 +1,14 @@
 # Library
 
 A personal inventory of physical media: books, movies and board games, plus anything else loanable. For each copy it
-records where it lives, who borrowed it, the history of both, and acquisition details. A library can be shared with other
+records where it lives, who borrowed it, and the history of both. A library can be shared with other
 accounts as read-only or editable. The phone is the main tool: finding things by title, author or series, adding them
 by title search, and scanning barcodes to confirm one location's inventory at a time.
 
-This is deliberately not a full library system. There are no holds, fines, patrons or cataloguing standards.
+This is deliberately not a full library system. There are no holds, fines, patrons or cataloguing standards. It started
+out closer to one, with ISBN lookup, edition details, tags and prices, and was cut back to roughly a spreadsheet of titles,
+series and authors with a notes column, plus copies, locations, loans and history. The cut fields are listed under
+[Removed fields](#removed-fields).
 
 **Status.** The data model, migration and API exist (`src/Contracts/Libraries/`, `NsContext` `#region Library`,
 `Migrations/*_AddLibrary*`), as do the Client, Tool and UI (`Pages/UI/Libraries/`), and so do three helpers the API is
@@ -21,8 +24,8 @@ duplicates:
 - **`LibraryItem`** is the work, e.g. *The Hobbit*. It holds the title, creators, series, summary, notes, cover and
   external ids. Notes are your own (a gift from whom, whose it is); the summary is the lookup's description. Notes on one
   physical copy, such as a signed one, go on the copy instead.
-- **`LibraryCopy`** is one physical object. It holds format, barcode, edition details (publisher, year), location,
-  condition, acquisition details and status.
+- **`LibraryCopy`** is one physical object. It holds format, barcode, acquired date, location, status and its own
+  notes. Copies exist for owning the same thing twice, such as a board book and a paperback of one kids' book.
 
 A hardcover and a paperback are one item with two copies. Two identical paperbacks in different rooms are also one item
 with two copies. A search result reads naturally from that: *The Hobbit — 2 copies: Hardcover (Office ›
@@ -30,9 +33,8 @@ Shelf 3), Paperback (Kids' room)*.
 
 **Rejected: work → edition → copy.** That is the "correct" bibliographic model (roughly FRBR), and it avoids repeating
 edition details when you own two copies of the same edition. It was rejected because owning two identical copies is rare,
-and repeating a publisher and year on two rows is cheap. A third level, on the other hand, puts an extra screen or choice
-into every add and every scan. Edition details live on the copy. If a lookup returns edition-level data, such as a
-cover that differs per edition, the item gets it from the first copy added.
+and a third level puts an extra screen or choice into every add and every scan. Edition details were later dropped
+altogether (see [Removed fields](#removed-fields)); the format is the only thing about an edition a copy records.
 
 **Recognizing an existing item.** Adding something that's already in the library doesn't automatically create a new
 item. Picking a lookup result stores its id (an Open Library work, a TMDB movie or a BoardGameGeek game) in
@@ -47,11 +49,11 @@ go in `LibraryItem.Attributes`, a string dictionary stored as a JSON column. Tha
 or a table per type. `Format` on the copy is a free string with suggested values per media type, not an enum. New
 formats show up (Steelbook, 4K + Blu-ray combo), and none of them change any behaviour.
 
-**Creators and tags** are single semicolon-separated strings, like `Account.Roles`, searched with `LIKE`. A creators
+**Creators** is a single semicolon-separated string, like `Account.Roles`, searched with `LIKE`. A creators
 table would allow "everything by this author" with an exact match, but at personal-library volumes a `LIKE` on one
 column is just as good and much less code.
 
-**Barcodes are stored normalized** on `LibraryCopy.Barcode`, `LibraryCopy.Isbn` and `LibraryScanEntry.Barcode`, and
+**Barcodes are stored normalized** on `LibraryCopy.Barcode` and `LibraryScanEntry.Barcode`, and
 every search normalizes its input the same way. All of that goes through `LibraryBarcode.TryParse` (`Utilities/LibraryBarcode.cs`).
 The same physical barcode reaches the server in several forms:
 - A book scanned from its cover is an ISBN-13, but typed in from the copyright page it is often an ISBN-10.
@@ -68,14 +70,11 @@ zero. A path that skips this stores a form the others don't match, and lookups q
 - **Anything else** is kept, uppercased with spaces and dashes removed: a Code 128 or QR sticker you printed for a tool,
   say. This is what lets the "other loanable items" media type work with your own labels.
 
-**A copy has a barcode and an ISBN**, and a code matches a copy by either (`LibraryBarcode.MatchesCopy`, used by item
-search, the add page's duplicate check, and scan resolution). The barcode is what's printed
-and scanned; the ISBN is a book's second code, from its copyright page. For most books they are the same, and the server fills the ISBN
-from an ISBN barcode on every write, so nothing extra is entered. They differ on a book printed with only a retail UPC,
-common on US mass-market paperbacks: the UPC is on the back and often inside the cover too, and the ISBN is only text on
-the copyright page. The UPC encodes the publisher and price, not the ISBN, and it can't be dropped, because it is what
-a rescan reads. Two columns rather than a list of codes per copy, because nothing
-else carries two product codes, and one extra column keeps every query a plain `OR`.
+**A copy has one barcode**, whatever is printed on it, and a code matches a copy only by that
+(`LibraryBarcode.MatchesCopy`, used by item search, the add page's duplicate check, and scan resolution). Keep finding
+copies through it, so how a code matches stays decided in one place. A book printed with only a retail UPC, common on US
+mass-market paperbacks, keeps the UPC: it's what a rescan reads. The copy used to carry the ISBN from the copyright page
+as a second code, because the ISBN was what books were looked up by; with ISBN lookup gone it had no use.
 
 **History.** `LibraryCopyEvent` is append-only and written by the server whenever a copy's location, loan or status
 changes. It also records which account made the change, because editors exist. `CreatedDate` is when the event was
@@ -122,6 +121,17 @@ key's index and drops the unfiltered one, leaving a copy's returned loans with n
 
 **Loanees** are a free-text `BorrowerName`, optionally linked to an account via `BorrowerAccountName`. Most borrowers
 are friends without accounts. The link exists so a borrower with an account could later see what they have out.
+
+### Removed fields
+
+Dropped by the `TrimLibraryFields` migration, after the library was reset, so no data was carried over:
+
+- **`LibraryItem.Tags`.** Never used, and the tag badges linked to a search that didn't search tags. Notes cover it.
+- **`LibraryCopy.Isbn`**, the second code for a book with a UPC barcode, along with its numeric-keypad field and
+  `LibraryBarcode.TryParseIsbn`. See above.
+- **`LibraryCopy.Publisher` and `PublishedYear`.** Filled from the ISBN lookup's edition, and nobody would type them.
+- **`LibraryCopy.Condition`, `AcquiredFrom` and `PricePaid`.** A list of what we own doesn't need them; anything worth
+  remembering goes in the copy's notes.
 
 ### Delete behaviour
 
@@ -180,7 +190,6 @@ erDiagram
         long LocationId FK "nullable"
         string Format
         string Barcode "normalized"
-        string Isbn "normalized, books"
         enum Status
     }
     LibraryLoan {
@@ -476,14 +485,7 @@ since submitting would save a half-filled form. Editing a copy is how one added 
 
 The add page's lookup box has no Scan button. It takes titles, and a barcode has nothing to look up.
 
-**Books with a UPC.** The copy form shows the ISBN field for books only, blank when it is just the barcode. A book
-printed with only a retail UPC keeps the UPC as its barcode, since that's what a rescan reads, and can take the ISBN from
-the copyright page as a second code.
-
-**The numeric keypad for ISBNs.** The copy form's ISBN field uses it. The keypad has no X, and older mass-market
-paperbacks, the ones with UPCs, often print only an ISBN-10, about one in eleven of which ends in X. So that field takes
-an ISBN-10's first nine digits alone ("ends in X? leave the X off", `LibraryBarcode.TryParseIsbn`). That's lossless: converting to ISBN-13 drops the
-ISBN-10 check character and computes a new one. Anywhere a code could be anything, nine digits stay a plain label.
+**Books with a UPC** keep the UPC as their barcode, since that's what a rescan reads.
 
 ## Gource export (planned)
 
@@ -683,7 +685,7 @@ under `Pages/UI/Libraries/Scans/`, `wwwroot/js/library-scan-session.js`, and `li
 1. Pick a location (the library page's "Scan a shelf", or a location's Scan link). This starts a `LibraryScanSession`.
 2. Scan continuously. Each code becomes a `LibraryScanEntry`, stored on the server as it is scanned, so a phone that
    locks or reloads mid-shelf loses nothing. Keeping the state in browser memory was rejected for exactly that reason.
-3. Each entry is matched when scanned: `Expected` (a copy with this barcode or ISBN is recorded here), `Elsewhere`
+3. Each entry is matched when scanned: `Expected` (a copy with this barcode is recorded here), `Elsewhere`
    (recorded at another location or none), or `NotInLibrary`.
 4. **Finish** shows the reconcile view:
    - here: verified on apply;
@@ -698,7 +700,7 @@ the add page, scanning each barcode onto its copy, is quicker than a scan follow
 ```mermaid
 flowchart TD
     scan([Barcode read]) --> norm["Normalize: LibraryBarcode.TryParse<br/>(ISBN-10 and UPC-A to 13 digits)"]
-    norm --> any{"Any unclaimed Active or Missing copy<br/>in this library with this barcode or ISBN?"}
+    norm --> any{"Any unclaimed Active or Missing copy<br/>in this library with this barcode?"}
     any -- no --> nil["<b>NotInLibrary</b><br/>no copy claimed"]
     any -- yes --> here{"Is one of them recorded<br/>at the session's location?"}
     here -- yes --> exp["<b>Expected</b><br/>claim that copy"]

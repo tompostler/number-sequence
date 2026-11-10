@@ -140,7 +140,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             item.Year = PromptValue(nameof(item.Year), item.Year);
             item.Summary = PromptString(nameof(item.Summary), item.Summary);
             item.Notes = PromptString(nameof(item.Notes), item.Notes);
-            item.Tags = PromptString($"{nameof(item.Tags)} (semicolon-separated)", item.Tags);
         }
 
         /// <summary>
@@ -170,10 +169,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             {
                 Console.WriteLine(string.Join(" · ", details));
             }
-            if (item.Tags != null)
-            {
-                Console.WriteLine($"Tags: {item.Tags}");
-            }
             if (item.Notes != null)
             {
                 Console.WriteLine($"Notes: {item.Notes}");
@@ -196,7 +191,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     CopyId = c.Id,
                     c.Format,
                     c.Barcode,
-                    Isbn = c.Isbn == c.Barcode ? null : c.Isbn,
                     Location = LocationPath(paths, c.LocationId),
                     c.Status,
                     OnLoanTo = c.Loans.Where(l => l.ReturnedDate == null).Select(l => l.DueDate.HasValue ? $"{l.BorrowerName}, due {l.DueDate:yyyy-MM-dd}" : l.BorrowerName).FirstOrDefault(),
@@ -205,7 +199,6 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 "CopyId",
                 "Format",
                 "Barcode",
-                "Isbn",
                 "Location",
                 "Status",
                 "OnLoanTo",

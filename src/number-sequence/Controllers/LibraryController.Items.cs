@@ -131,7 +131,6 @@ namespace number_sequence.Controllers
                         Series = x.Series,
                         SeriesNumber = x.SeriesNumber,
                         Year = x.Year,
-                        Tags = x.Tags,
                         Notes = x.Notes,
                         HasCover = x.HasCover,
                         CreatedDate = x.CreatedDate,
@@ -291,7 +290,6 @@ namespace number_sequence.Controllers
             to.Year = from.Year;
             to.Summary = from.Summary;
             to.Notes = from.Notes;
-            to.Tags = from.Tags;
             to.ExternalIds = from.ExternalIds;
             to.Attributes = from.Attributes;
         }

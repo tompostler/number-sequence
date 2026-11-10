@@ -77,28 +77,13 @@ namespace TcpWtf.NumberSequence.Contracts.Libraries
 
         /// <summary>
         /// Cover images at the source, best first. Later ones are smaller, for when an earlier one is missing or too large to
-        /// store. Pass them to the item's cover upload rather than linking to them.
+        /// store. Pass them to the item's cover (<see cref="LibraryCover.SourceUrls"/>) rather than linking to them.
         /// </summary>
         public List<string> CoverUrls { get; set; }
-
-        /// <summary>
-        /// See <see cref="LibraryCopy.Barcode"/>. Only set by a barcode lookup.
-        /// </summary>
-        public string Barcode { get; set; }
 
         /// <summary>
         /// See <see cref="LibraryCopy.Format"/>.
         /// </summary>
         public string Format { get; set; }
-
-        /// <summary>
-        /// See <see cref="LibraryCopy.Publisher"/>.
-        /// </summary>
-        public string Publisher { get; set; }
-
-        /// <summary>
-        /// See <see cref="LibraryCopy.PublishedYear"/>.
-        /// </summary>
-        public int? PublishedYear { get; set; }
     }
 }
