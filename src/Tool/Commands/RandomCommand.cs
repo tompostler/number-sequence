@@ -37,6 +37,13 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 Console.WriteLine(await CreateClient(parseResult, stampOption, verbosityOption).Random.GetCoinFlipAsync(cancellationToken)));
             command.Subcommands.Add(coinCommand);
 
+            // dice
+            Argument<string> diceExpressionArgument = new("expression") { Description = "Dice to roll in standard notation, e.g. 1d20, d8, 4d6+2d4-1.", DefaultValueFactory = _ => "1d20" };
+            Command diceCommand = new("dice", "Roll dice.") { stampOption, verbosityOption, diceExpressionArgument };
+            diceCommand.SetAction(async (parseResult, cancellationToken) =>
+                Console.WriteLine(await CreateClient(parseResult, stampOption, verbosityOption).Random.RollDiceAsync(parseResult.GetValue(diceExpressionArgument), cancellationToken)));
+            command.Subcommands.Add(diceCommand);
+
             // gibbs
             Option<string> gibbsNameOption = new("--name") { Description = "The name to use for the rule." };
             Command gibbsCommand = new("gibbs", "Get a Gibbs rule.") { stampOption, verbosityOption, gibbsNameOption };

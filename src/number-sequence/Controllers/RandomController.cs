@@ -2550,6 +2550,19 @@ namespace number_sequence.Controllers
                             : "Tails");
         }
 
+        // The expression is a path segment, not a query value, because a query string decodes '+' as a space and
+        // 'random/dice?roll=4d6+2' would arrive as '4d6 2'. Defaults to 1d20.
+        [HttpGet("dice/{expression?}")]
+        public IActionResult Dice(string expression = "1d20")
+        {
+            if (!DiceNotation.TryRoll(expression, Random.Shared, out DiceRoll roll, out string error))
+            {
+                return this.BadRequest(error);
+            }
+
+            return this.Ok(roll);
+        }
+
         // Initialized 2025-03-20
         #region Razors
 

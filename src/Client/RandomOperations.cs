@@ -281,6 +281,20 @@ namespace TcpWtf.NumberSequence.Client
         }
 
         /// <summary>
+        /// Rolls a dice expression in standard notation, such as <c>1d20</c>, <c>d8</c> or <c>4d6+2d4-1</c>.
+        /// </summary>
+        public async Task<DiceRoll> RollDiceAsync(string expression = "1d20", CancellationToken cancellationToken = default)
+        {
+            HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
+                () => new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "random/dice/" + Uri.EscapeDataString(expression)),
+                cancellationToken,
+                needsPreparation: false);
+            return await response.Content.ReadJsonAsAsync<DiceRoll>(cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a random philosophical razor.
         /// </summary>
         public async Task<Razor> GetPhilosophicalRazorAsync(string name = default, CancellationToken cancellationToken = default)

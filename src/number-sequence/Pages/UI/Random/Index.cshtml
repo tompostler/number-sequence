@@ -28,6 +28,27 @@
   <div class="col-12 col-md-6 col-lg-4 mb-3">
     <div class="card h-100">
       <div class="card-body">
+        <h6 class="card-title">Dice</h6>
+        <input type="text" id="diceExpression" value="1d20" placeholder="e.g. 4d6+2d4-1" class="form-control form-control-sm mb-2"
+               autocomplete="off" spellcheck="false" onkeydown="if (event.key === 'Enter') rollDice()" />
+        <div class="btn-group btn-group-sm flex-wrap mb-2" role="group" aria-label="Quick dice">
+          @foreach (int sides in new[] { 4, 6, 8, 10, 12, 20, 100 })
+          {
+            <button type="button" class="btn btn-outline-secondary" onclick="rollDice('1d@(sides)')">d@(sides)</button>
+          }
+        </div>
+        <div><code id="diceTotal" class="fs-5">—</code></div>
+        <div id="diceBreakdown" class="small text-muted text-break"></div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-outline-primary" onclick="rollDice()">Roll</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
         <h6 class="card-title">GUID</h6>
         <code id="guidResult" class="fs-6">—</code>
       </div>
@@ -196,6 +217,35 @@
     const min = document.getElementById('numMin').value;
     const max = document.getElementById('numMax').value;
     await roll(`random?min=${min}&max=${max}`, 'numResult');
+  }
+
+  // Reads DiceRoll by property name: total, terms[].notation, subtract, sides, rolls.
+  async function rollDice(expression) {
+    const input = document.getElementById('diceExpression');
+    if (expression) input.value = expression;
+    const totalEl = document.getElementById('diceTotal');
+    const breakdownEl = document.getElementById('diceBreakdown');
+    totalEl.textContent = '…';
+    breakdownEl.textContent = '';
+    try {
+      const res = await fetch('/random/dice/' + encodeURIComponent(input.value.trim()));
+      const text = await res.text();
+      if (!res.ok) {
+        let message = text;
+        try { const parsed = JSON.parse(text); message = typeof parsed === 'string' ? parsed : (parsed.title ?? text); } catch { }
+        totalEl.textContent = 'Error';
+        breakdownEl.textContent = message;
+        return;
+      }
+      const data = JSON.parse(text);
+      totalEl.textContent = String(data.total);
+      breakdownEl.textContent = data.terms.map((t, i) => {
+        const sign = t.subtract ? (i > 0 ? ' − ' : '−') : (i > 0 ? ' + ' : '');
+        return sign + t.notation + (t.sides ? ' [' + t.rolls.join(', ') + ']' : '');
+      }).join('');
+    } catch {
+      totalEl.textContent = 'Error';
+    }
   }
 
   function rollName() {

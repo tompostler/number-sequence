@@ -175,3 +175,12 @@ Full design notes: [`docs/library.md`](docs/library.md). Constraints that will b
   to every other caller. Copy the value into a local.
 - **The namespace and pages folder are `Libraries`, not `Library`**, because the root entity is `Library` and a type named
   like its own namespace breaks name resolution (CS0118).
+
+## Random dice
+
+Full design notes: [`docs/random-dice.md`](docs/random-dice.md). Constraints that will break things if forgotten:
+
+- **The expression is a path segment (`random/dice/{expression}`), never a query value.** A query string decodes `+`
+  as a space, so `4d6+2` would arrive as `4d6 2`.
+- **The random page's script reads `DiceRoll` by property name** (`total`, `terms`, `notation`, `subtract`, `sides`,
+  `rolls`). Renaming one breaks the dice card at runtime, not build.
