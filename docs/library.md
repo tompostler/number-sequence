@@ -271,7 +271,7 @@ resolve to the namespace first. The Razor Pages folder has the same problem (`Pa
 - `Library.CallerPermission` is `[NotMapped]`. The API fills it per request so the UI knows which controls to show.
 - **Every library-scoped API action goes through `DataAccess/LibraryAccess.cs`.** `GetLibraryWithAccessAsync(libraryId,
   accountName, minimum)` loads the library with `CallerPermission` set. `GetAccessibleLibrariesAsync` lists every
-  library an account can reach. `AccessibleLibraryIds` is a subquery for the cross-library barcode check. Nothing
+  library an account can reach. Nothing
   filters on `AccountName == User.Identity.Name` directly. That is the Ledger pattern, and copied here it would quietly
   lock out everyone a library is shared with. Ownership is compared in SQL rather than C#, so it uses the same
   case-insensitive collation as the account key.

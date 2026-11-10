@@ -91,14 +91,5 @@ namespace number_sequence.DataAccess
                 .Select(x => x.Library)
                 .ToList();
         }
-
-        /// <summary>
-        /// The ids of every library <paramref name="accountName"/> can see, for queries that span libraries, such as the
-        /// "do I own this?" barcode check.
-        /// </summary>
-        public static IQueryable<long> AccessibleLibraryIds(this NsContext nsContext, string accountName)
-            => nsContext.Libraries
-                .Where(x => x.AccountName == accountName || x.Shares.Any(s => s.AccountName == accountName))
-                .Select(x => x.Id);
     }
 }

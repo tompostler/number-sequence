@@ -3,7 +3,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using number_sequence.DataAccess;
 using number_sequence.Exceptions;
-using number_sequence.Utilities;
 using TcpWtf.NumberSequence.Contracts;
 using TcpWtf.NumberSequence.Contracts.Libraries;
 

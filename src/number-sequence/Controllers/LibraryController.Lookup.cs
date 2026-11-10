@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using number_sequence.Services.Libraries;
-using number_sequence.Utilities;
 using TcpWtf.NumberSequence.Contracts.Libraries;
 
 namespace number_sequence.Controllers
