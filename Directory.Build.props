@@ -9,6 +9,8 @@
   <PropertyGroup>
     <!-- A plural TargetFrameworks, even with one entry, makes 'dotnet watch' prompt for a framework. -->
     <TargetFramework>net10.0</TargetFramework>
+    <!-- What the published packages (Client, Contracts, Tool) ship for. When the repo moves up a framework, add the previous one here, e.g. '$(TargetFramework);net10.0'. -->
+    <ShippedTargetFrameworks>$(TargetFramework)</ShippedTargetFrameworks>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <DebugSymbols>true</DebugSymbols>

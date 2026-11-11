@@ -18,11 +18,7 @@ namespace TcpWtf.NumberSequence.Tool
 
     internal class Logger : ILogger
     {
-#if NET10_0_OR_GREATER
         private static readonly Lock consoleLock = new();
-#else
-        private static readonly object consoleLock = new();
-#endif
         private readonly LogLevel minimumLogLevel;
 
         public Logger(Verbosity verbosity)

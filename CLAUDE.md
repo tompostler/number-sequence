@@ -24,6 +24,14 @@ compilation has already succeeded — that failure is benign and doesn't mean th
 errors (`CS####`) show up before that copy step regardless of the lock, so read for those rather than treating
 every red "Build FAILED" as a problem to chase.
 
+## Versioning
+
+`version.json` (Nerdbank.GitVersioning) holds `major.minor`; the patch is git height, so never set it by hand. Bump it by
+semver without asking, in the same change as the work; the user reviews it. Major for a break to anyone consuming the
+published packages (`Client`, `Contracts`, `Tool`) or the api: a dropped target framework, a removed or renamed public
+member or contract property. Minor for a feature, a user-visible change, or a dependency update. Nothing for a pure fix or
+internal cleanup.
+
 ## Preferences
 
 - **Running the code beats maintaining unit tests here** — but the user does that running, not Claude. Don't

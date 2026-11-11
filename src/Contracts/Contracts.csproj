@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFramework);net8.0</TargetFrameworks>
+    <TargetFrameworks>$(ShippedTargetFrameworks)</TargetFrameworks>
     <TargetFramework></TargetFramework>
     <RootNamespace>TcpWtf.NumberSequence.Contracts</RootNamespace>
     <AssemblyName>TcpWtf.NumberSequence.Contracts</AssemblyName>

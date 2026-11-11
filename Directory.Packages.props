@@ -8,25 +8,25 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- dotnet -->
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
-    <PackageVersion Include="Anthropic" Version="13.3.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.15" />
+    <PackageVersion Include="Anthropic" Version="13.8.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.15" />
     <!-- EFCore -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.15" />
     <!-- Transitive pin only. Microsoft.Data.SqlClient (through EFCore.SqlServer and DurableTask.SqlServer) brings in 9.0.11, which has known vulnerabilities (NU1902/NU1903). Drop once SqlClient brings in a fixed version on its own. -->
-    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.15" />
     <!-- Azure -->
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.30.1" />
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.2.0" />
     <!-- Tests -->
     <PackageVersion Include="FluentAssertions" Version="8.11.0" />
-    <PackageVersion Include="MSTest" Version="4.5.1" />
+    <PackageVersion Include="MSTest" Version="4.5.2" />
     <!-- Everything else -->
     <PackageVersion Include="Cronos" Version="0.13.0" />
     <PackageVersion Include="Microsoft.DurableTask.SqlServer" Version="1.8.1" />
@@ -38,6 +38,6 @@
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
     <PackageVersion Include="Unlimitedinf.Utilities" Version="5.1.7" />
     <PackageVersion Include="ScottPlot" Version="5.1.59" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.14" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.15" />
   </ItemGroup>
 </Project>
