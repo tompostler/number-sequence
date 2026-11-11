@@ -129,7 +129,7 @@
       </div>
     </div>
   </div>
-  @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
+  @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Admin) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Ledger))
   {
     <div class="col-12 col-md-6 col-lg-4 mb-4">
       <div class="card h-100">

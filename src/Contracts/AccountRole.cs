@@ -28,11 +28,6 @@ namespace TcpWtf.NumberSequence.Contracts
         public const string Library = nameof(Library);
 
         /// <summary>
-        /// Ability to view the status of the pdf document generation.
-        /// </summary>
-        public const string PdfStatus = nameof(PdfStatus);
-
-        /// <summary>
         /// Verify that roles are working by being granted this role and using the ping endpoint.
         /// </summary>
         public const string Ping = nameof(Ping);

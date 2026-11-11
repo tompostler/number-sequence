@@ -43,10 +43,15 @@ namespace number_sequence.Controllers
             List<ChiroRecordRow> pendingChiroRecords = [];
             List<Models.ChiroEmailBatch> chiroBatches = [];
             List<Models.ChiroEmailBatch> pendingChiroBatches = [];
-            List <Models.EmailDocument> emailDocuments = [];
+            List<Models.EmailDocument> chiroEmailDocuments = [];
+            List<Models.EmailDocument> ledgerEmailDocuments = [];
+            List<Models.EmailDocument> unclassifiedEmailDocuments = [];
 
-            bool hasChiroAccess = this.User.IsInRole(AccountRoles.Chiro) || this.User.IsInRole(AccountRoles.PdfStatus);
-            bool hasEmailAccess = this.User.IsInRole(AccountRoles.PdfStatus);
+            // Admin sees every section and every email document, whatever its kind or account.
+            bool isAdmin = this.User.IsInRole(AccountRoles.Admin);
+            bool hasChiroAccess = isAdmin || this.User.IsInRole(AccountRoles.Chiro);
+            bool hasLedgerAccess = this.User.IsInRole(AccountRoles.Ledger);
+            string accountName = this.User.Identity.Name;
 
             if (hasChiroAccess)
             {
@@ -76,14 +81,31 @@ namespace number_sequence.Controllers
                                                 .Select(toChiroRecordRow)
                                                 .ToListAsync();
             }
-            if (hasEmailAccess)
+            // One query per kind, so takeAmount applies per section and a busy week of one kind can't push the
+            // other off the page.
+            Task<List<Models.EmailDocument>> emailDocumentsAsync(Expression<Func<Models.EmailDocument, bool>> filter)
+                => nsContext.EmailDocuments
+                            .AsNoTracking()
+                            .Where(r => r.CreatedDate > daysAgo)
+                            .Where(filter)
+                            .OrderByDescending(r => r.CreatedDate)
+                            .Take(takeAmount)
+                            .ToListAsync();
+
+            // Chiro documents are shared by every chiro account, the same as the records above.
+            if (hasChiroAccess)
             {
-                emailDocuments = await nsContext.EmailDocuments
-                                                .AsNoTracking()
-                                                .Where(r => r.CreatedDate > daysAgo)
-                                                .OrderByDescending(r => r.CreatedDate)
-                                                .Take(takeAmount)
-                                                .ToListAsync();
+                chiroEmailDocuments = await emailDocumentsAsync(r => r.Kind == Models.EmailDocumentKind.Chiro);
+            }
+            // Ledger data is partitioned by account, so a ledger account sees only its own.
+            if (isAdmin || hasLedgerAccess)
+            {
+                ledgerEmailDocuments = await emailDocumentsAsync(r => r.Kind == Models.EmailDocumentKind.Ledger && (isAdmin || r.AccountName == accountName));
+            }
+            // Anything else is a creation site that forgot to set Kind. Admin-only, so a bug surfaces instead of hiding.
+            if (isAdmin)
+            {
+                unclassifiedEmailDocuments = await emailDocumentsAsync(r => r.Kind != Models.EmailDocumentKind.Chiro && r.Kind != Models.EmailDocumentKind.Ledger);
             }
 
             static string determineTimeSpanFormat(IEnumerable<TimeSpan> spans)
@@ -137,9 +159,29 @@ namespace number_sequence.Controllers
 
             const string dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
             string chiroRecordsTimeSpanFormat = determineTimeSpanFormat(chiroRecords.Select(chiroRecordDelay));
-            string emailDocumentTimeSpanFormat = determineTimeSpanFormat(emailDocuments.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
             string chiroBatchTimeSpanFormat = determineTimeSpanFormat(chiroBatches.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
             string pendingChiroRecordsTimeSpanFormat = determineTimeSpanFormat(pendingChiroRecords.Select(chiroRecordDelay));
+
+            static TimeSpan emailDocumentDelay(Models.EmailDocument document)
+                => (document.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(document.CreatedDate);
+
+            List<PdfStatus.EmailDocument> toEmailDocuments(List<Models.EmailDocument> documents)
+            {
+                string timeSpanFormat = determineTimeSpanFormat(documents.Select(emailDocumentDelay));
+                return documents.Select(
+                    x => new PdfStatus.EmailDocument
+                    {
+                        Id = x.Id,
+                        AccountName = x.AccountName,
+                        Subject = x.Subject,
+                        AttachmentName = x.AttachmentName,
+                        FileLength = formatFileLength(x.FileLength),
+                        CreatedDate = x.CreatedDate.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        Delay = emailDocumentDelay(x).ToString(timeSpanFormat),
+                    })
+                    .ToList();
+            }
 
             PdfStatus pdfStatus = new()
             {
@@ -155,19 +197,9 @@ namespace number_sequence.Controllers
                         ProcessAttempt = x.ProcessAttempt,
                     })
                     .ToList(),
-                EmailDocuments = emailDocuments.Select(
-                    x => new PdfStatus.EmailDocument
-                    {
-                        Id = x.Id,
-                        AccountName = x.AccountName,
-                        Subject = x.Subject,
-                        AttachmentName = x.AttachmentName,
-                        FileLength = formatFileLength(x.FileLength),
-                        CreatedDate = x.CreatedDate.AddHours(hoursOffset).ToString(dateTimeFormat),
-                        ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
-                        Delay = (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate).ToString(emailDocumentTimeSpanFormat),
-                    })
-                    .ToList(),
+                ChiroEmailDocuments = toEmailDocuments(chiroEmailDocuments),
+                LedgerEmailDocuments = toEmailDocuments(ledgerEmailDocuments),
+                UnclassifiedEmailDocuments = toEmailDocuments(unclassifiedEmailDocuments),
                 ChiroBatches = chiroBatches.Select(
                     x => new PdfStatus.ChiroBatch
                     {
@@ -216,8 +248,7 @@ namespace number_sequence.Controllers
             [FromQuery] ChiroChartGrouping groupBy = ChiroChartGrouping.Clinic,
             CancellationToken cancellationToken = default)
         {
-            bool hasChiroAccess = this.User.IsInRole(AccountRoles.Chiro) || this.User.IsInRole(AccountRoles.PdfStatus);
-            if (!hasChiroAccess)
+            if (!this.User.IsInRole(AccountRoles.Admin) && !this.User.IsInRole(AccountRoles.Chiro))
             {
                 return this.Forbid();
             }

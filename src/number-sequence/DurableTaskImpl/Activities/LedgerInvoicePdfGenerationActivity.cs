@@ -98,6 +98,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             {
                 Id = context.OrchestrationInstance.InstanceId,
                 AccountName = invoice.AccountName,
+                Kind = EmailDocumentKind.Ledger,
                 To = invoice.Business.Contact,
                 Subject = subject,
                 AttachmentName = attachmentName,

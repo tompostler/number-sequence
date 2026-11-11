@@ -1228,6 +1228,10 @@ namespace number_sequence.Migrations
                     b.Property<long>("FileLength")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(8)");
+
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("datetimeoffset");
 

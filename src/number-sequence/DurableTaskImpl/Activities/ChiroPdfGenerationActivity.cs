@@ -86,6 +86,7 @@ namespace number_sequence.DurableTaskImpl.Activities
             {
                 Id = context.OrchestrationInstance.InstanceId,
                 AccountName = record.AccountName,
+                Kind = EmailDocumentKind.Chiro,
                 To = chiroInput.ToEmail,
                 // CC moved to batch processing to handle clients with multiple patients.
                 Subject = subject,

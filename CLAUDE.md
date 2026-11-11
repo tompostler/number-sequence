@@ -122,6 +122,9 @@ Full design notes: [`docs/pdf-status.md`](docs/pdf-status.md). Constraints that 
 - **`AccountName` on `ChiroRecords`, `EmailDocuments` and `ChiroEmailBatches` is copied by value, not a foreign key**,
   so deleting an account never cascades into pdf history. A new site that creates one of these rows has to copy it
   from its source row, or that row shows no account.
+- **Every `EmailDocument` creation site must set `Kind`.** It decides which section the row lands in; left at `Unknown`,
+  it shows only in the admin-only unclassified section. Ledger rows are also filtered by `AccountName`, so a ledger row
+  without one is admin-only too.
 
 ## Chiro pdf generation retry
 

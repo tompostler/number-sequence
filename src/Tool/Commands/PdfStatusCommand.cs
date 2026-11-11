@@ -85,17 +85,27 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 nameof(PdfStatus.ChiroRecord.Delay),
                 nameof(PdfStatus.ChiroRecord.ProcessAttempt));
 
-            Console.WriteLine($"{nameof(PdfStatus.EmailDocuments)} ({pdfStatus.EmailDocuments.Count}):");
-            Output.WriteTable(
-                pdfStatus.EmailDocuments,
-                nameof(PdfStatus.EmailDocument.Id),
-                nameof(PdfStatus.EmailDocument.AccountName),
-                nameof(PdfStatus.EmailDocument.Subject),
-                nameof(PdfStatus.EmailDocument.AttachmentName),
-                nameof(PdfStatus.EmailDocument.FileLength),
-                nameof(PdfStatus.EmailDocument.CreatedDate),
-                nameof(PdfStatus.EmailDocument.ProcessedAt),
-                nameof(PdfStatus.EmailDocument.Delay));
+            static void writeEmailDocuments(string name, List<PdfStatus.EmailDocument> documents)
+            {
+                Console.WriteLine($"{name} ({documents.Count}):");
+                Output.WriteTable(
+                    documents,
+                    nameof(PdfStatus.EmailDocument.Id),
+                    nameof(PdfStatus.EmailDocument.AccountName),
+                    nameof(PdfStatus.EmailDocument.Subject),
+                    nameof(PdfStatus.EmailDocument.AttachmentName),
+                    nameof(PdfStatus.EmailDocument.FileLength),
+                    nameof(PdfStatus.EmailDocument.CreatedDate),
+                    nameof(PdfStatus.EmailDocument.ProcessedAt),
+                    nameof(PdfStatus.EmailDocument.Delay));
+            }
+
+            writeEmailDocuments(nameof(PdfStatus.ChiroEmailDocuments), pdfStatus.ChiroEmailDocuments);
+            writeEmailDocuments(nameof(PdfStatus.LedgerEmailDocuments), pdfStatus.LedgerEmailDocuments);
+            if (pdfStatus.UnclassifiedEmailDocuments.Count > 0)
+            {
+                writeEmailDocuments(nameof(PdfStatus.UnclassifiedEmailDocuments), pdfStatus.UnclassifiedEmailDocuments);
+            }
 
             Console.WriteLine($"{nameof(PdfStatus.ChiroBatches)} ({pdfStatus.ChiroBatches.Count}):");
             Output.WriteTable(

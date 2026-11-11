@@ -46,7 +46,9 @@
         }
 
         public List<ChiroRecord> ChiroRecords { get; set; }
-        public List<EmailDocument> EmailDocuments { get; set; }
+        public List<EmailDocument> ChiroEmailDocuments { get; set; }
+        public List<EmailDocument> LedgerEmailDocuments { get; set; }
+        public List<EmailDocument> UnclassifiedEmailDocuments { get; set; }
         public List<ChiroBatch> ChiroBatches { get; set; }
         public List<ChiroRecord> ChiroRecordsPending { get; set; }
         public List<ChiroBatchPendingCount> ChiroBatchPendingCounts { get; set; }

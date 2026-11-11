@@ -56,7 +56,7 @@
               <a class="nav-link" href="/ui/library">Library</a>
             </li>
           }
-          @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.PdfStatus))
+          @if (User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Admin) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Chiro) || User.IsInRole(TcpWtf.NumberSequence.Contracts.AccountRoles.Ledger))
           {
             <li class="nav-item">
               <a class="nav-link" href="/ui/pdf-status">PDF Status</a>

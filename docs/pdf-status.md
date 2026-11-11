@@ -54,7 +54,7 @@ have no account to recover and stay null.
 
 The backfill was first written as correlated `CROSS APPLY`s, one scan of the other table per row, and that ran past
 the 30 second command timeout. Each match side is now grouped once and equality-joined. `MigrationService` also raises
-the command timeout to 10 minutes on its own context, so a backfill isn't held to a limit meant for requests. The
+the command timeout to 3 minutes on its own context, so a backfill isn't held to a limit meant for requests. The
 app-wide timeout stays at the default, since a request that takes 30 seconds is a bug worth hearing about.
 
 ## Chiro forms per clinic chart
@@ -160,10 +160,37 @@ queries stopped matching anything - see git history if this needs revisiting.
 
 ## Access
 
-The page accepts either the `Chiro` or `PdfStatus` role (`[RequiresToken(AccountRoles.Chiro,
-AccountRoles.PdfStatus)]`) — `RequiresTokenAttribute`/`RequiresTokenFilter` treat multiple roles as
-OR, not AND. `PdfStatusController` then re-checks role per section: `Chiro` sees the chiro
-records/batches/pending-counts tables, `PdfStatus` additionally sees email documents. A
-`Chiro`-only account passing the page-level check but failing a section's role check gets an empty
-table with "No access." instead of the data, per the `User.IsInRole` checks already in
-`Index.cshtml`.
+There is no pdf status role. Each section is visible to the role whose feature produced its rows, and `Admin` sees
+every section. The page accepts `Admin`, `Chiro` or `Ledger` (`RequiresTokenAttribute`/`RequiresTokenFilter` treat
+multiple roles as OR). `PdfStatusController` re-checks per section and leaves a list empty when the viewer can't see it:
+
+- **Chiro records, chiro email documents, batches, pending counts and both charts:** `Chiro`. Every chiro account sees
+  all of them, the same data the chiro forms already share.
+- **Ledger email documents:** `Ledger`, but only the documents whose `AccountName` is the viewer's own. Ledger data is
+  partitioned by account everywhere else, and a status page shouldn't be the one place it isn't. `Admin` sees every
+  account's, including rows with no `AccountName` that the account-name backfill couldn't attribute.
+- **Unclassified email documents:** `Admin` only, and only rendered when there are any. They are rows whose `Kind` is
+  neither `Chiro` nor `Ledger`, which only a creation site that forgot to set `Kind` produces, so the section surfaces
+  the bug instead of the row silently going missing.
+
+A section the viewer's roles don't reach isn't rendered at all; `IndexModel.ShowChiro`/`ShowLedger`/`ShowUnclassified`
+mirror the controller's checks. A visible section that says "None." therefore means there are no rows, never no
+access. That replaced an earlier "No access." placeholder per section, which left a ledger-only account looking at a
+page that was mostly placeholders.
+
+Email documents come back as three lists (`ChiroEmailDocuments`, `LedgerEmailDocuments`,
+`UnclassifiedEmailDocuments`), one query each, rather than one list split on the page. `takeAmount` applies per
+section, so a busy week of chiro pdfs can't push every ledger row out of a shared top-N.
+
+It stays one page rather than a chiro page and a ledger page because the ledger side is a single table, and `Admin`,
+the account watching the whole pipeline, is better served by one view. Splitting is worth revisiting if ledger grows
+sections of its own.
+
+`Kind` is stored rather than read off the id or subject. Both of those have changed shape over the years, so filtering
+on them would tie access control to naming. The `AddEmailDocumentKind` migration used the id once, to classify existing
+rows: anything containing `invoice` or `statement` is `Ledger` (that covers both the current `_invoice`/`_statement` and
+the older `invoice-postler`/`statement-postler`), and everything else is `Chiro`. `Unknown` is the enum's zero value on
+purpose: forgetting to set `Kind` lands a row in the admin-only unclassified section, never in front of the wrong role.
+
+`PdfStatus` used to be a role that unlocked email documents. Its constant is gone, so it's no longer grantable. An
+account that still has it stored shows it struck through on the admin accounts page, where unchecking it removes it.

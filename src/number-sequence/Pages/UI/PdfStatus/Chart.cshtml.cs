@@ -6,7 +6,7 @@ using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.Pages.UI.PdfStatus
 {
-    [RequiresToken(AccountRoles.Chiro, AccountRoles.PdfStatus)]
+    [RequiresToken(AccountRoles.Admin, AccountRoles.Chiro)]
     public sealed class ChartModel : PageModel
     {
         private readonly NsTcpWtfClient nsClient;

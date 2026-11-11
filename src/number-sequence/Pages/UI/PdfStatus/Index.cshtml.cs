@@ -6,7 +6,7 @@ using TcpWtf.NumberSequence.Contracts;
 
 namespace number_sequence.Pages.UI.PdfStatus
 {
-    [RequiresToken(AccountRoles.Chiro, AccountRoles.PdfStatus)]
+    [RequiresToken(AccountRoles.Admin, AccountRoles.Chiro, AccountRoles.Ledger)]
     public sealed class IndexModel : PageModel
     {
         private readonly NsTcpWtfClient nsClient;
@@ -17,6 +17,12 @@ namespace number_sequence.Pages.UI.PdfStatus
         }
 
         public TcpWtf.NumberSequence.Contracts.PdfStatus Status { get; private set; }
+
+        // A section the viewer's roles don't reach isn't rendered at all. These mirror the per-section checks in
+        // PdfStatusController, which leaves those lists empty.
+        public bool ShowChiro => this.User.IsInRole(AccountRoles.Admin) || this.User.IsInRole(AccountRoles.Chiro);
+        public bool ShowLedger => this.User.IsInRole(AccountRoles.Admin) || this.User.IsInRole(AccountRoles.Ledger);
+        public bool ShowUnclassified => this.User.IsInRole(AccountRoles.Admin) && this.Status.UnclassifiedEmailDocuments.Count > 0;
 
         [FromQuery]
         public double HoursOffset { get; set; } = 0;
