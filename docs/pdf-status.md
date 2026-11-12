@@ -4,6 +4,15 @@
 pipeline: chiro records waiting for pdf generation, email documents waiting to send, and chiro
 batch rows (one row per clinic/CC destination per generated pdf) waiting to be sent out.
 
+## Chiro record timings
+
+The chiro record lists' Entry and Review columns time the doctor's form, and Delay times the pdf pipeline from
+`RecordedAt`. Where those times come from, and how to read rows older than them, is in
+[`docs/chiro-entry-timing.md`](chiro-entry-timing.md).
+
+Every table on the page sits in a `.table-responsive` wrapper, so one wider than the container scrolls inside it
+rather than spilling out past the layout. Cells are `text-nowrap` and the ids can't wrap, so on a phone they all would.
+
 ## Chiro batch pending counts
 
 The "Chiro Batches" table is windowed by `daysLookback`/`takeAmount` like the other sections, so a

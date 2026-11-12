@@ -14,6 +14,15 @@ namespace TcpWtf.NumberSequence.Contracts
         /// <summary>Assigned by the service from the route.</summary>
         public ChiroSpecies Species { get; set; }
 
+        // Entry timing. Taken from the caller, unlike the metadata above, because only the form knows when it was
+        // opened. The service moves both onto the record's own columns and leaves them out of the stored input.
+
+        /// <summary>When the form was opened. Left null, the service uses the time it received the record.</summary>
+        public DateTimeOffset? DataEntryStartedAt { get; set; }
+
+        /// <summary>When the most recent dictation parse filled in the form, or null if none did.</summary>
+        public DateTimeOffset? DictationParsedAt { get; set; }
+
         // Patient / visit
         [Required]
         [MaxLength(128)]

@@ -17,7 +17,7 @@ namespace number_sequence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.14")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -1172,6 +1172,9 @@ namespace number_sequence.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTimeOffset>("DataEnteredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DictationParsedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("InputJson")

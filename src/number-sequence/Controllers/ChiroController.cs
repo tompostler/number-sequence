@@ -42,6 +42,23 @@ namespace number_sequence.Controllers
         }
 
         /// <summary>
+        /// The longest a form can plausibly have been open. A tab left open past this says nothing about how long the
+        /// record took, so the time is dropped instead of skewing the numbers.
+        /// </summary>
+        private static readonly TimeSpan MaxEntryDuration = TimeSpan.FromDays(1);
+
+        /// <summary>
+        /// The form stamps its times with the server's clock, but App Service may serve the page and the api from
+        /// different instances, so a little time in the future is clock skew rather than a bad value.
+        /// </summary>
+        private static readonly TimeSpan AllowedClockSkew = TimeSpan.FromMinutes(1);
+
+        private static DateTimeOffset? PlausibleEntryTime(DateTimeOffset? sent, DateTimeOffset now)
+            => sent.HasValue && sent.Value <= now + AllowedClockSkew && sent.Value >= now - MaxEntryDuration
+                ? (sent.Value > now ? now : sent.Value)
+                : null;
+
+        /// <summary>
         /// The array lengths are species-specific and the pdf generation activity indexes into them without
         /// null checks, so reject anything that doesn't line up before it gets recorded.
         /// A <see cref="ChiroSpeciesDefinition.LumbarIntertransverseCount"/> of 0 means the species does not
@@ -102,16 +119,31 @@ namespace number_sequence.Controllers
                 source = source[..128];
             }
 
+            // The entry times come from hidden fields, so anything implausible is dropped rather than recorded. They
+            // live on the record's columns, not in the stored input.
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            DateTimeOffset? sentDataEntryStartedAt = input.DataEntryStartedAt;
+            DateTimeOffset? sentDictationParsedAt = input.DictationParsedAt;
+            DateTimeOffset? dataEntryStartedAt = PlausibleEntryTime(sentDataEntryStartedAt, now);
+            DateTimeOffset? dictationParsedAt = PlausibleEntryTime(sentDictationParsedAt, now);
+            input.DataEntryStartedAt = default;
+            input.DictationParsedAt = default;
+
             ChiroRecord record = new()
             {
                 Source = source,
                 RowId = rowId,
                 AccountName = this.User.Identity.Name,
-                DataEnteredAt = DateTimeOffset.UtcNow,
+                DataEnteredAt = dataEntryStartedAt ?? now,
+                DictationParsedAt = dictationParsedAt,
                 InputJson = JsonSerializer.Serialize(input, RelaxedJson.Options),
             };
             _ = nsContext.ChiroRecords.Add(record);
             _ = await nsContext.SaveChangesAsync(cancellationToken);
+            this.logger.LogInformation(
+                $"Recorded {rowId}: sent start {sentDataEntryStartedAt?.ToString("O") ?? "none"}, sent parse {sentDictationParsedAt?.ToString("O") ?? "none"}; "
+                + $"entry took {now - record.DataEnteredAt}"
+                + (dictationParsedAt.HasValue ? $", {now - dictationParsedAt.Value} of it after the dictation parse." : ", with no dictation parse."));
 
             TaskHubClient taskHubClient = await this.sentinals.DurableOrchestrationClient.WaitForCompletionAsync(cancellationToken);
             OrchestrationInstance instance = await taskHubClient.CreateOrchestrationInstanceAsync(

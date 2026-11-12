@@ -18,10 +18,10 @@ namespace number_sequence.Controllers
         /// The columns of a <see cref="Models.ChiroRecord"/> the status lists show. Projecting to it leaves
         /// <see cref="Models.ChiroRecord.InputJson"/>, the whole filled-out form, in the database.
         /// </summary>
-        private sealed record ChiroRecordRow(string RowId, string AccountName, DateTimeOffset DataEnteredAt, DateTimeOffset RecordedAt, DateTimeOffset? ProcessedAt, int ProcessAttempt);
+        private sealed record ChiroRecordRow(string RowId, string AccountName, DateTimeOffset DataEnteredAt, DateTimeOffset? DictationParsedAt, DateTimeOffset RecordedAt, DateTimeOffset? ProcessedAt, int ProcessAttempt);
 
         private static readonly Expression<Func<Models.ChiroRecord, ChiroRecordRow>> toChiroRecordRow =
-            r => new ChiroRecordRow(r.RowId, r.AccountName, r.DataEnteredAt, r.RecordedAt, r.ProcessedAt, r.ProcessAttempt);
+            r => new ChiroRecordRow(r.RowId, r.AccountName, r.DataEnteredAt, r.DictationParsedAt, r.RecordedAt, r.ProcessedAt, r.ProcessAttempt);
 
         public PdfStatusController(IServiceProvider serviceProvider)
         {
@@ -139,18 +139,22 @@ namespace number_sequence.Controllers
                 {
                     return @"ss\.fff";
                 }
-                else if (largest.TotalSeconds >= 1)
+                else
                 {
                     return @"s\.fff";
                 }
-                else
-                {
-                    return @"dd\.hh\:mm\:ss\.fff";
-                }
             }
 
+            // Measured from RecordedAt, so it is the pipeline's time alone. It was measured from DataEnteredAt until that
+            // became the form being opened, which would have added the doctor's time filling it in.
             static TimeSpan chiroRecordDelay(ChiroRecordRow record)
-                => (record.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(record.DataEnteredAt);
+                => (record.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(record.RecordedAt);
+
+            static TimeSpan chiroRecordEntryTime(ChiroRecordRow record)
+                => record.RecordedAt.Subtract(record.DataEnteredAt);
+
+            static TimeSpan? chiroRecordReviewTime(ChiroRecordRow record)
+                => record.RecordedAt - record.DictationParsedAt;
 
             static string formatFileLength(long bytes)
                 => bytes >= 1_000_000
@@ -159,6 +163,9 @@ namespace number_sequence.Controllers
 
             const string dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
             string chiroRecordsTimeSpanFormat = determineTimeSpanFormat(chiroRecords.Select(chiroRecordDelay));
+            // Entry and review share a format so the two columns line up against each other.
+            string chiroRecordsEntryTimeSpanFormat = determineTimeSpanFormat(
+                chiroRecords.Select(chiroRecordEntryTime).Concat(chiroRecords.Select(chiroRecordReviewTime).OfType<TimeSpan>()));
             string chiroBatchTimeSpanFormat = determineTimeSpanFormat(chiroBatches.Select(x => (x.ProcessedAt ?? DateTimeOffset.UtcNow).Subtract(x.CreatedDate)));
             string pendingChiroRecordsTimeSpanFormat = determineTimeSpanFormat(pendingChiroRecords.Select(chiroRecordDelay));
 
@@ -191,8 +198,11 @@ namespace number_sequence.Controllers
                         Id = x.RowId,
                         AccountName = x.AccountName,
                         DataEnteredAt = x.DataEnteredAt.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        DictationParsedAt = x.DictationParsedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
                         RecordedAt = x.RecordedAt.AddHours(hoursOffset).ToString(dateTimeFormat),
                         ProcessedAt = x.ProcessedAt?.AddHours(hoursOffset).ToString(dateTimeFormat),
+                        EntryTime = chiroRecordEntryTime(x).ToString(chiroRecordsEntryTimeSpanFormat),
+                        ReviewTime = chiroRecordReviewTime(x)?.ToString(chiroRecordsEntryTimeSpanFormat),
                         Delay = chiroRecordDelay(x).ToString(chiroRecordsTimeSpanFormat),
                         ProcessAttempt = x.ProcessAttempt,
                     })

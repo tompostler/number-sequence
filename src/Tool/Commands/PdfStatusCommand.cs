@@ -79,9 +79,11 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 pdfStatus.ChiroRecords,
                 nameof(PdfStatus.ChiroRecord.Id),
                 nameof(PdfStatus.ChiroRecord.AccountName),
-                nameof(PdfStatus.ChiroRecord.DataEnteredAt),
+                // DataEnteredAt and DictationParsedAt are RecordedAt less EntryTime and ReviewTime, and too wide to also show.
                 nameof(PdfStatus.ChiroRecord.RecordedAt),
                 nameof(PdfStatus.ChiroRecord.ProcessedAt),
+                nameof(PdfStatus.ChiroRecord.EntryTime),
+                nameof(PdfStatus.ChiroRecord.ReviewTime),
                 nameof(PdfStatus.ChiroRecord.Delay),
                 nameof(PdfStatus.ChiroRecord.ProcessAttempt));
 

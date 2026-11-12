@@ -5,42 +5,44 @@
 }
 else
 {
-  <table class="table table-striped table-sm mb-4">
-    <thead>
-      <tr>
-        <th class="text-nowrap">ID</th>
-        <th class="text-nowrap">Account</th>
-        <th>Subject</th>
-        <th class="text-nowrap">Attachment</th>
-        <th class="text-nowrap">Size</th>
-        <th class="text-nowrap">Created</th>
-        <th class="text-nowrap">Processed</th>
-        <th class="text-nowrap">Delay</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach (var doc in Model)
-      {
+  <div class="table-responsive mb-4">
+    <table class="table table-striped table-sm mb-0">
+      <thead>
         <tr>
-          <td>@doc.Id</td>
-          <td class="text-nowrap">@doc.AccountName</td>
-          <td>@doc.Subject</td>
-          <td>@doc.AttachmentName</td>
-          <td class="text-nowrap">@doc.FileLength</td>
-          <td class="text-nowrap">@doc.CreatedDate</td>
-          <td class="text-nowrap">
-            @if (doc.ProcessedAt == null)
-            {
-              <span class="badge bg-warning text-dark">Pending</span>
-            }
-            else
-            {
-              @doc.ProcessedAt
-            }
-          </td>
-          <td class="text-nowrap">@doc.Delay</td>
+          <th class="text-nowrap">ID</th>
+          <th class="text-nowrap">Account</th>
+          <th>Subject</th>
+          <th class="text-nowrap">Attachment</th>
+          <th class="text-nowrap">Size</th>
+          <th class="text-nowrap">Created</th>
+          <th class="text-nowrap">Processed</th>
+          <th class="text-nowrap">Delay</th>
         </tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @foreach (var doc in Model)
+        {
+          <tr>
+            <td>@doc.Id</td>
+            <td class="text-nowrap">@doc.AccountName</td>
+            <td>@doc.Subject</td>
+            <td>@doc.AttachmentName</td>
+            <td class="text-nowrap">@doc.FileLength</td>
+            <td class="text-nowrap">@doc.CreatedDate</td>
+            <td class="text-nowrap">
+              @if (doc.ProcessedAt == null)
+              {
+                <span class="badge bg-warning text-dark">Pending</span>
+              }
+              else
+              {
+                @doc.ProcessedAt
+              }
+            </td>
+            <td class="text-nowrap">@doc.Delay</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
 }

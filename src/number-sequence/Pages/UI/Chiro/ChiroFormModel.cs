@@ -69,10 +69,33 @@ namespace number_sequence.Pages.UI.Chiro
 
         public string ErrorMessage { get; protected set; }
 
+        /// <summary>
+        /// When the form was opened, stamped by the server on the first load and carried through every post after it
+        /// in a hidden field, since nothing else remembers it between posts. Both forms on the page carry it: a post
+        /// from a form without it would drop it.
+        /// </summary>
+        [BindProperty]
+        public DateTimeOffset? DataEntryStartedAt { get; set; }
+
+        /// <summary>When the most recent parse filled in the form. Carried like <see cref="DataEntryStartedAt"/>.</summary>
+        [BindProperty]
+        public DateTimeOffset? DictationParsedAt { get; set; }
+
         public virtual IActionResult OnGet()
         {
             this.DateOfService = DateOnly.FromDateTime(DateTime.Now);
+            this.DataEntryStartedAt = DateTimeOffset.UtcNow;
             return this.Page();
+        }
+
+        /// <summary>
+        /// Sends the record with the form's entry times. Every species submits through here so none can forget them.
+        /// </summary>
+        protected Task<ChiroInputCreated> SubmitRecordAsync(ChiroSpecies species, ChiroInput input, CancellationToken cancellationToken)
+        {
+            input.DataEntryStartedAt = this.DataEntryStartedAt;
+            input.DictationParsedAt = this.DictationParsedAt;
+            return this.NsClient.Chiro.SubmitAsync(species, input, cancellationToken);
         }
 
         /// <summary>
@@ -118,6 +141,7 @@ namespace number_sequence.Pages.UI.Chiro
             this.ParseFlags = result.Flags;
             this.ParseUsage = result.Usage;
             this.ParseElapsedMilliseconds = result.ElapsedMilliseconds;
+            this.DictationParsedAt = DateTimeOffset.UtcNow;
 
             // Tag helpers render from ModelState in preference to the model, and ModelState still holds whatever was
             // posted. Without this the page would come back showing the pre-parse values.

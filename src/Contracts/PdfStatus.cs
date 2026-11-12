@@ -11,8 +11,11 @@
             public string Id { get; set; }
             public string AccountName { get; set; }
             public string DataEnteredAt { get; set; }
+            public string DictationParsedAt { get; set; }
             public string RecordedAt { get; set; }
             public string ProcessedAt { get; set; }
+            public string EntryTime { get; set; }
+            public string ReviewTime { get; set; }
             public string Delay { get; set; }
             public int ProcessAttempt { get; set; }
         }

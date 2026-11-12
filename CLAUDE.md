@@ -134,6 +134,17 @@ Full design notes: [`docs/pdf-status.md`](docs/pdf-status.md). Constraints that 
   it shows only in the admin-only unclassified section. Ledger rows are also filtered by `AccountName`, so a ledger row
   without one is admin-only too.
 
+## Chiro entry timing
+
+Full design notes: [`docs/chiro-entry-timing.md`](docs/chiro-entry-timing.md). Constraints that will break things if
+forgotten:
+
+- **The form's start and parse times ride in hidden fields from `_ChiroEntryTimes`, which both the transcript form
+  and the record form must include.** Each post carries only its own form's fields, so a form without it silently
+  drops the times.
+- **Species forms submit through `ChiroFormModel.SubmitRecordAsync`**, which attaches the times. Calling
+  `NsClient.Chiro.SubmitAsync` directly records an entry time of zero.
+
 ## Chiro pdf generation retry
 
 Full design notes: [`docs/chiro-pdf-retry.md`](docs/chiro-pdf-retry.md). Constraint that will break things if

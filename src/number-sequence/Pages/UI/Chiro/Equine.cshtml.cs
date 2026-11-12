@@ -383,7 +383,7 @@ namespace number_sequence.Pages.UI.Chiro
 
             try
             {
-                ChiroInputCreated created = await this.NsClient.Chiro.SubmitAsync(ChiroSpecies.Equine, input, cancellationToken);
+                ChiroInputCreated created = await this.SubmitRecordAsync(ChiroSpecies.Equine, input, cancellationToken);
                 return this.RedirectToSubmitted(ChiroSpecies.Equine, input, created);
             }
             catch (NsTcpWtfClientException ex)

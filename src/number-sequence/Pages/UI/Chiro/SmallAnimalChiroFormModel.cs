@@ -429,7 +429,7 @@ namespace number_sequence.Pages.UI.Chiro
 
             try
             {
-                ChiroInputCreated created = await this.NsClient.Chiro.SubmitAsync(species, input, cancellationToken);
+                ChiroInputCreated created = await this.SubmitRecordAsync(species, input, cancellationToken);
                 return this.RedirectToSubmitted(species, input, created);
             }
             catch (NsTcpWtfClientException ex)

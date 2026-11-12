@@ -18,6 +18,8 @@ namespace number_sequence.Models
 
         public DateTimeOffset DataEnteredAt { get; set; }
 
+        public DateTimeOffset? DictationParsedAt { get; set; }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset RecordedAt { get; set; }
 

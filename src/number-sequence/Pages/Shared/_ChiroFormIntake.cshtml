@@ -1,6 +1,8 @@
 @using number_sequence.Pages.UI.Chiro
 @model ChiroFormModel
 
+@await Html.PartialAsync("_ChiroEntryTimes", Model)
+
 <div class="card mb-4" id="patient">
   <div class="card-body">
     <div class="row">

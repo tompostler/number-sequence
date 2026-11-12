@@ -1,0 +1,10 @@
+@using number_sequence.Pages.UI.Chiro
+@model ChiroFormModel
+
+@* Included in both the transcript form and the record form. Each post carries only its own form's fields, so a
+   time left out of either one is lost the first time that form posts.
+
+   Written by hand rather than with asp-for: the tag helper formats a DateTimeOffset in the current culture and
+   drops the fraction of a second, where the round-trip format binds back exactly in any culture. *@
+<input type="hidden" name="@nameof(ChiroFormModel.DataEntryStartedAt)" value="@Model.DataEntryStartedAt?.ToString("O")" />
+<input type="hidden" name="@nameof(ChiroFormModel.DictationParsedAt)" value="@Model.DictationParsedAt?.ToString("O")" />
