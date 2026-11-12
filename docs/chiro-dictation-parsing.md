@@ -2,153 +2,128 @@
 
 Turns a dictation transcript into a prefilled canine or equine chiro form, for a human to check and submit.
 
-Scribenote records the visit and produces the transcript. The chiro pastes it into the textarea on
-`/ui/chiro/{species}`, presses Parse, and the form comes back filled in with a short list of things to check.
+Scribenote records the visit and produces the transcript.
+The chiro pastes it into the textarea on `/ui/chiro/{species}`, presses Parse, and the form comes back filled in with a short list of things to check.
 Nothing is recorded until they press Submit.
 
-Scribenote also produces a structured version of the exam, with its own numbered option lists. **That output is
-deliberately not used.** Its option list was a hand-maintained copy of this form and had drifted in six places, so
-mapping through it was lossy: it emitted sided posterior levels and sided SCP options the form cannot express, and
-a forelimb hypermobility option that does not exist clinically. Going straight from the transcript removed four of
-those six mismatches outright, and the other two turned out to be Scribenote template bugs rather than gaps here.
+Scribenote also produces a structured version of the exam, with its own numbered option lists.
+**That output is deliberately not used.** Its option list was a hand-maintained copy of this form and had drifted in six places, so mapping through it was lossy: it emitted sided posterior levels and sided SCP options the form cannot express, and a forelimb hypermobility option that does not exist clinically.
+Going straight from the transcript removed four of those six mismatches outright, and the other two turned out to be Scribenote template bugs rather than gaps here.
 
 ## Why it is shaped this way
 
-**The form's own arrays are the source of truth.** `CanineModel` and `EquineModel` hold the choice arrays the
-checkboxes render from. The model's JSON schema is generated from those same arrays at request time, so the values
-it can return and the values the form can render cannot diverge. This is the whole reason the Scribenote hop was
-removed; reintroducing any hand-kept second copy of the vocabulary brings the drift back.
+**The form's own arrays are the source of truth.**
+`CanineModel` and `EquineModel` hold the choice arrays the checkboxes render from.
+The model's JSON schema is generated from those same arrays at request time, so the values it can return and the values the form can render cannot diverge.
+This is the whole reason the Scribenote hop was removed; reintroducing any hand-kept second copy of the vocabulary brings the drift back.
 
-**Enums are the guardrail, prose is not.** Every selectable value is an enum member in the schema. The model
-physically cannot return an option that is not on the form. The prompt only carries things a schema cannot express:
-that the input is speech-to-text, what counts as a finding, and what to do when the words fit nothing.
+**Enums are the guardrail, prose is not.** Every selectable value is an enum member in the schema.
+The model physically cannot return an option that is not on the form.
+The prompt only carries things a schema cannot express: that the input is speech-to-text, what counts as a finding, and what to do when the words fit nothing.
 
-**Everything the server can decide, the server decides.** Clinical rules are applied in `Resolve`, not asked of the
-model. They are rules, not judgements, and a rule the model cannot forget is worth more than the tokens spent
-restating it. This was learned the hard way twice: Scribenote's equivalent rule fabricated findings on all 13 ribs,
-and an early version of our prompt had the model inferring mobilization across a run-on list of levels that had in
-fact been adjusted.
+**Everything the server can decide, the server decides.**
+Clinical rules are applied in `Resolve`, not asked of the model.
+They are rules, not judgements, and a rule the model cannot forget is worth more than the tokens spent restating it.
+This was learned the hard way twice: Scribenote's equivalent rule fabricated findings on all 13 ribs, and an early version of our prompt had the model inferring mobilization across a run-on list of levels that had in fact been adjusted.
 
-The exception is a rule whose trigger is linguistic. Expanding an underspecified finding has to be done by the
-model, because the server only ever sees the resulting selections and cannot tell "carpal hypomobility" said
-without a qualifier from a specific option deliberately chosen. Those rules live in the prompt of necessity, not by
-preference — if a rule can be decided from the selections alone, it belongs in `Resolve`.
+The exception is a rule whose trigger is linguistic.
+Expanding an underspecified finding has to be done by the model, because the server only ever sees the resulting selections and cannot tell "carpal hypomobility" said without a qualifier from a specific option deliberately chosen.
+Those rules live in the prompt of necessity, not by preference — if a rule can be decided from the selections alone, it belongs in `Resolve`.
 
-**The form is parsed in six regions, concurrently.** Not a tuning choice — one request for the whole form compiles
-a grammar the API rejects:
+**The form is parsed in six regions, concurrently.**
+Not a tuning choice — one request for the whole form compiles a grammar the API rejects:
 
 > The compiled grammar is too large, which would cause performance issues.
 
-The whole-form schema was 11,563 chars. Per region it is 2.7–4.7 KB, with forelimbs the largest. Keep a region
-under roughly 6 KB. The happy side effect is that a parse takes about as long as the slowest region rather than the
-sum of all of them.
+The whole-form schema was 11,563 chars.
+Per region it is 2.7–4.7 KB, with forelimbs the largest.
+Keep a region under roughly 6 KB.
+The happy side effect is that a parse takes about as long as the slowest region rather than the sum of all of them.
 
-Five regions cover the animal. The sixth, "visit and plan", has no questions at all — it exists because the other
-five are told to ignore everything outside their own area and that notes fields are not a catch-all, which is what
-stops coxofemoral text landing in `PelvicNotes`. `ExtendedOtherNotes` is a catch-all by definition, so asking a
-region to honour both rules at once made it hit-and-miss. It now has a request whose prompt is the inverse: pass
-over every finding, keep everything else. That request also carries the intake fields, which are likewise about the
-visit rather than about a part of the animal.
+Five regions cover the animal.
+The sixth, "visit and plan", has no questions at all — it exists because the other five are told to ignore everything outside their own area and that notes fields are not a catch-all, which is what stops coxofemoral text landing in `PelvicNotes`.
+`ExtendedOtherNotes` is a catch-all by definition, so asking a region to honour both rules at once made it hit-and-miss.
+It now has a request whose prompt is the inverse: pass over every finding, keep everything else.
+That request also carries the intake fields, which are likewise about the visit rather than about a part of the animal.
 
-**Flags are transient.** They are the human's review list, never persisted, never in the PDF. They exist so that
-checking a parse means reading three or four items rather than re-reading ninety checkboxes against the transcript.
-A flag is a question for the reviewer, not an explanation of the model's work — an early version produced fourteen
-flags for a 533-character transcript, most of them narrating correct decisions.
+**Flags are transient.** They are the human's review list, never persisted, never in the PDF.
+They exist so that checking a parse means reading three or four items rather than re-reading ninety checkboxes against the transcript.
+A flag is a question for the reviewer, not an explanation of the model's work — an early version produced fourteen flags for a 533-character transcript, most of them narrating correct decisions.
 
 ## Clinical semantics
 
-Domain knowledge, not derivable from the code. Confirmed with the doctor.
+Domain knowledge, not derivable from the code.
+Confirmed with the doctor.
 
-- **Mobilization means the site was assessed and needed no adjustment.** It is therefore what an unmentioned
-  question means, and it is mutually exclusive with a finding for the same site — if a level was adjusted, it was
-  not left alone.
-- **Some sites are assessed at every visit** regardless of what was dictated. On the rear limb these are the
-  coxofemoral (both cranial and caudal, unless the dictation names a direction) and the phalanges (always, whatever
-  the digit findings say). Declared as `StandingSites` on the group.
-- **A cat's limbs are not.** A dog gets a full workup, so an unmentioned limb was assessed and needed nothing. A cat
-  gets worked on where it tolerates being worked on, so the same silence means the limb was not done. Feline limb
-  questions therefore set `DefaultsToMobilization: false` and carry no standing sites: nothing is recorded unless it
-  was dictated, and a feline mobilization has to be said out loud to appear. The spine and head default on both
-  species. Applied in `BuildVocabulary` through a `Limb` helper, so the exception is visible at every question it
-  touches rather than hidden in a species check inside the parser.
-- **A question covering several joints is not all-or-nothing.** Adjusting the digits says nothing about whether the
-  hip was looked at, so the mutual-exclusion rule only applies where the bare word `mobilization` is the question's
-  only mobilization option.
-- **An underspecified finding means all of its variants — but only on some questions.** "Carpal hypomobility" with
-  no anterior, accessory or distal means every carpal hypomobility option for that side. Opted into per question via
-  `ExpandsWhenUnqualified`, which appends the instruction to that property's schema description rather than stating
-  it as a shared rule.
-- **A numbered technique defaults to technique 1.** The dictation says "external rotation", not "external rotation
-  technique 1"; a number is stated only when it is 2 or above. Not declared per question — `ChiroSchemaBuilder`
-  looks for a choice containing `technique 1` and appends the rule to that property, so a question that gains or
-  loses a numbered technique carries the rule without anyone remembering to say so.
-- **A rib is different: it takes a default, not an expansion.** "Rib 11 right" with no direction means `right
-  dorsal`. Expanding it to dorsal, cranial and caudal would invent three findings from one phrase, which is why the
-  expansion rule is per question rather than general. Carried as a hint on the thoracic region.
-- **"Withers" is equine for the thoracic spine, interchangeably and level for level.** "Withers 4 left" is T4 left;
-  the number after the word is the level, over the whole run and not just the front of it. A bare "withers" with no
-  number is description — "she has some withers issues" is history, and turning it into findings would be
-  adjustments nobody performed. The model was already mostly getting both halves from its own anatomy knowledge; it
-  is stated so the form does not depend on that. The endpoints and the worked example are all indexes into
-  `ThoracicSpineRows` (`EquineModel.WithersExampleLevel` for the latter), so the glossary cannot name a row the
-  grid does not have.
-- **"Occiput superior right" is two options, not one.** The side and the plane are separate choices on the same
-  question, so that phrase is `cranial right` plus `bilateral superior` — `right` plus `bilateral superior` on
-  equine, which names its sides without the `cranial`. The `bilateral` in the option name is what makes this worth
-  stating: it reads as contradicting the side that was just said, and the model picks one or the other. Carried as
-  a hint on the head and cervical region of both vocabularies, written against `HeadOcciputChoices[1]` and `[2]` so
-  each species gets its own wording and neither can name a choice the checkboxes lack. A side with no plane, or a
-  plane with no side, still means only what was said.
-- **The date of service may come back as `MM-dd`.** Nobody says the year out loud, and demanding `yyyy-MM-dd`
-  meant a spoken month and day either came back null or came back with a guessed year. The schema now permits
-  either shape and tells the model not to guess; `ChiroDictationParser.ReadDateOfService` supplies the current
-  year. Deliberately not solved by putting today's date in the prompt — what year it is is the one fact the model
-  cannot know and the server can.
-- **A date the parse missed is caught at submit, not in the parser.** A failed or absent date still turns up on
-  the form as `0001-01-01`, and `[Required]` cannot catch that because a `DateOnly` is never null. Rather than
-  chase every way a spoken date can go wrong (or be missing from the dictation entirely), `DateOfService` carries
-  `PlausibleDateOfServiceAttribute`: more than a year old or more than a day ahead is rejected, and the doctor
-  fixes it by hand like any other empty required field.
-- **An intended-but-not-performed adjustment is not a finding.** Resisted, deferred, or not tolerated goes in the
-  notes and must never tick a box.
-- **A bare "TMJ" names no maneuver.** "TMJ" is the question's own label, not one of its options, so "TMJ right"
-  with no maneuver named defaults to ventral mandible technique 1 right. Rostral mandible, traction, and upper
-  left/right are selected only when the dictation names them by that word. Carried as a hint on the head and
-  cervical region, indexed into `HeadTmjChoices` for the same reason as the occiput hint above.
-- **A correction lands after the thing it corrects.** Dictation is spoken in one pass, so a speaker who misspeaks
-  says the right version next: the retraction and what follows it replace what came immediately before. Written
-  prose does the opposite, and reading it the written way inverts the finding rather than merely losing it —
-  "occiput superior right no occiput superior left" is one finding, superior *left*, and was being parsed as
-  superior *right* with the "no" attached forward to the left. Also covers "not that", "sorry", "I mean",
-  "actually", "make that", and a bare restatement of the same site with a different value. Guarded two ways so it
-  cannot eat real findings: only a retracting word turns a repeated site into a correction, and a negation with
-  nothing before it to retract ("no hypomobility on the left") stays a plain statement that there was none. In the
-  prompt of necessity — the trigger is a word in the transcript, and by the time the server sees selections the
-  correction and the second finding look identical.
-- **The transcript is speech-to-text and contains recognition errors.** `cairo` is `chiro`; `post` is `posterior`;
-  "on the front" means the forelimb; "l 4" is L4, "t t 6" is T6, "inner transverse" is intertransverse.
-- **Which site a side belongs to depends on where it sits.** Across eight real transcripts (four equine, four
-  canine) the side is said *after* the site almost everywhere — spine, ribs, sacrum, pelvis, intertransverse,
-  humerus, and digits ("digits 3, 4 on the front left"). The scapula is the one exception: "dorsal medial left
-  scapula", maneuver then side then site. The prompt originally carried only a side-*first* rule with an invented
-  example ("left digits 2, 3 on the front"), and applied to a side-after run that attached each side to the next
-  site — off by one exactly where the side changes, which is what the misparses looked like. Now a side belongs to
-  the site before it and never carries forward, and the scapula is called out by name. A finding said with no side
-  ("humerus left elbow traction") gets none borrowed from its neighbour and is flagged. Two sides back to back
-  ("L4 left right") are treated as a correction and flagged; a doubled word at a boundary can be two findings
-  rather than a stutter ("rib 6 right dorsal dorsal medial left scapula"). The examples in the prompt are lifted
-  from those transcripts, so this is one doctor's style; a second doctor may need the rule revisited. "On both
-  front limbs" closes everything in its phrase, confirmed by the doctor on "humerus left carpal flexion traction on
-  both front limbs".
-- **The prompt's examples are fragments, never transcripts.** The repo is public. A finding run like "L6 left L5
-  left L3 right" identifies nobody and is kept close to how it was said, because the exact word order is the point;
-  patient, owner and clinic names, visit dates and the history narrative are never copied in. Names and dates in
-  examples are made up.
-- **Numbers and dates run together.** "digits 234", "thoracic vertebra 4", "812 of 2026" for 2026-08-12, and
-  "812811 of 2026" for a date said twice, kept as the last per the correction rule and flagged. "Shoulder" is the
-  scapula, "ti" is PI, "or" is often "for", "barrel roar" is barrel roll.
-  `hypermobility` is always `hypomobility` — the transcription software reliably mishears it, and no such finding
-  exists. The same phantom option was in Scribenote's template and is what put a hypermobility entry on its list.
+- **Mobilization means the site was assessed and needed no adjustment.**
+  It is therefore what an unmentioned question means, and it is mutually exclusive with a finding for the same site — if a level was adjusted, it was not left alone.
+- **Some sites are assessed at every visit** regardless of what was dictated.
+  On the rear limb these are the coxofemoral (both cranial and caudal, unless the dictation names a direction) and the phalanges (always, whatever the digit findings say).
+  Declared as `StandingSites` on the group.
+- **A cat's limbs are not.** A dog gets a full workup, so an unmentioned limb was assessed and needed nothing.
+  A cat gets worked on where it tolerates being worked on, so the same silence means the limb was not done.
+  Feline limb questions therefore set `DefaultsToMobilization: false` and carry no standing sites: nothing is recorded unless it was dictated, and a feline mobilization has to be said out loud to appear.
+  The spine and head default on both species.
+  Applied in `BuildVocabulary` through a `Limb` helper, so the exception is visible at every question it touches rather than hidden in a species check inside the parser.
+- **A question covering several joints is not all-or-nothing.**
+  Adjusting the digits says nothing about whether the hip was looked at, so the mutual-exclusion rule only applies where the bare word `mobilization` is the question's only mobilization option.
+- **An underspecified finding means all of its variants — but only on some questions.**
+  "Carpal hypomobility" with no anterior, accessory or distal means every carpal hypomobility option for that side.
+  Opted into per question via `ExpandsWhenUnqualified`, which appends the instruction to that property's schema description rather than stating it as a shared rule.
+- **A numbered technique defaults to technique 1.**
+  The dictation says "external rotation", not "external rotation technique 1"; a number is stated only when it is 2 or above.
+  Not declared per question — `ChiroSchemaBuilder` looks for a choice containing `technique 1` and appends the rule to that property, so a question that gains or loses a numbered technique carries the rule without anyone remembering to say so.
+- **A rib is different: it takes a default, not an expansion.**
+  "Rib 11 right" with no direction means `right dorsal`.
+  Expanding it to dorsal, cranial and caudal would invent three findings from one phrase, which is why the expansion rule is per question rather than general.
+  Carried as a hint on the thoracic region.
+- **"Withers" is equine for the thoracic spine, interchangeably and level for level.**
+  "Withers 4 left" is T4 left; the number after the word is the level, over the whole run and not just the front of it.
+  A bare "withers" with no number is description — "she has some withers issues" is history, and turning it into findings would be adjustments nobody performed.
+  The model was already mostly getting both halves from its own anatomy knowledge; it is stated so the form does not depend on that.
+  The endpoints and the worked example are all indexes into `ThoracicSpineRows` (`EquineModel.WithersExampleLevel` for the latter), so the glossary cannot name a row the grid does not have.
+- **"Occiput superior right" is two options, not one.**
+  The side and the plane are separate choices on the same question, so that phrase is `cranial right` plus `bilateral superior` — `right` plus `bilateral superior` on equine, which names its sides without the `cranial`.
+  The `bilateral` in the option name is what makes this worth stating: it reads as contradicting the side that was just said, and the model picks one or the other.
+  Carried as a hint on the head and cervical region of both vocabularies, written against `HeadOcciputChoices[1]` and `[2]` so each species gets its own wording and neither can name a choice the checkboxes lack.
+  A side with no plane, or a plane with no side, still means only what was said.
+- **The date of service may come back as `MM-dd`.**
+  Nobody says the year out loud, and demanding `yyyy-MM-dd` meant a spoken month and day either came back null or came back with a guessed year.
+  The schema now permits either shape and tells the model not to guess; `ChiroDictationParser.ReadDateOfService` supplies the current year.
+  Deliberately not solved by putting today's date in the prompt — what year it is is the one fact the model cannot know and the server can.
+- **A date the parse missed is caught at submit, not in the parser.**
+  A failed or absent date still turns up on the form as `0001-01-01`, and `[Required]` cannot catch that because a `DateOnly` is never null.
+  Rather than chase every way a spoken date can go wrong (or be missing from the dictation entirely), `DateOfService` carries `PlausibleDateOfServiceAttribute`: more than a year old or more than a day ahead is rejected, and the doctor fixes it by hand like any other empty required field.
+- **An intended-but-not-performed adjustment is not a finding.**
+  Resisted, deferred, or not tolerated goes in the notes and must never tick a box.
+- **A bare "TMJ" names no maneuver.** "TMJ" is the question's own label, not one of its options, so "TMJ right" with no maneuver named defaults to ventral mandible technique 1 right.
+  Rostral mandible, traction, and upper left/right are selected only when the dictation names them by that word.
+  Carried as a hint on the head and cervical region, indexed into `HeadTmjChoices` for the same reason as the occiput hint above.
+- **A correction lands after the thing it corrects.**
+  Dictation is spoken in one pass, so a speaker who misspeaks says the right version next: the retraction and what follows it replace what came immediately before.
+  Written prose does the opposite, and reading it the written way inverts the finding rather than merely losing it — "occiput superior right no occiput superior left" is one finding, superior *left*, and was being parsed as superior *right* with the "no" attached forward to the left.
+  Also covers "not that", "sorry", "I mean", "actually", "make that", and a bare restatement of the same site with a different value.
+  Guarded two ways so it cannot eat real findings: only a retracting word turns a repeated site into a correction, and a negation with nothing before it to retract ("no hypomobility on the left") stays a plain statement that there was none.
+  In the prompt of necessity — the trigger is a word in the transcript, and by the time the server sees selections the correction and the second finding look identical.
+- **The transcript is speech-to-text and contains recognition errors.**
+  `cairo` is `chiro`; `post` is `posterior`; "on the front" means the forelimb; "l 4" is L4, "t t 6" is T6, "inner transverse" is intertransverse.
+- **Which site a side belongs to depends on where it sits.**
+  Across eight real transcripts (four equine, four canine) the side is said *after* the site almost everywhere — spine, ribs, sacrum, pelvis, intertransverse, humerus, and digits ("digits 3, 4 on the front left").
+  The scapula is the one exception: "dorsal medial left scapula", maneuver then side then site.
+  The prompt originally carried only a side-*first* rule with an invented example ("left digits 2, 3 on the front"), and applied to a side-after run that attached each side to the next site — off by one exactly where the side changes, which is what the misparses looked like.
+  Now a side belongs to the site before it and never carries forward, and the scapula is called out by name.
+  A finding said with no side ("humerus left elbow traction") gets none borrowed from its neighbour and is flagged.
+  Two sides back to back ("L4 left right") are treated as a correction and flagged; a doubled word at a boundary can be two findings rather than a stutter ("rib 6 right dorsal dorsal medial left scapula").
+  The examples in the prompt are lifted from those transcripts, so this is one doctor's style; a second doctor may need the rule revisited.
+  "On both front limbs" closes everything in its phrase, confirmed by the doctor on "humerus left carpal flexion traction on both front limbs".
+- **The prompt's examples are fragments, never transcripts.**
+  The repo is public.
+  A finding run like "L6 left L5 left L3 right" identifies nobody and is kept close to how it was said, because the exact word order is the point; patient, owner and clinic names, visit dates and the history narrative are never copied in.
+  Names and dates in examples are made up.
+- **Numbers and dates run together.** "digits 234", "thoracic vertebra 4", "812 of 2026" for 2026-08-12, and "812811 of 2026" for a date said twice, kept as the last per the correction rule and flagged.
+  "Shoulder" is the scapula, "ti" is PI, "or" is often "for", "barrel roar" is barrel roll.
+  `hypermobility` is always `hypomobility` — the transcription software reliably mishears it, and no such finding exists.
+  The same phantom option was in Scribenote's template and is what put a hypermobility entry on its list.
 
 ## Where things live
 
@@ -163,19 +138,19 @@ Domain knowledge, not derivable from the code. Confirmed with the doctor.
 | `Pages/UI/Chiro/ChiroForm.cs` | `ApplyParse`, which writes a draft onto a page model by property name |
 | `Pages/Shared/_ChiroTranscript.cshtml` | Textarea, Parse button, spinner, flag list |
 
-**Canine and feline are the same form.** Not similar — identical, down to the rib count. They share a page model
-and a Razor partial, and each page supplies only its `ChiroSpecies`; a parsing rule added to one is in the other by
-construction. That is the whole reason for the split, having already had to make every rule change twice for canine
-and equine. It is not a general base class: equine keeps its own model, and a future species should get its own
-rather than growing conditionals here. Sharing is right only where there is nothing to condition on.
+**Canine and feline are the same form.** Not similar — identical, down to the rib count.
+They share a page model and a Razor partial, and each page supplies only its `ChiroSpecies`; a parsing rule added to one is in the other by construction.
+That is the whole reason for the split, having already had to make every rule change twice for canine and equine.
+It is not a general base class: equine keeps its own model, and a future species should get its own rather than growing conditionals here.
+Sharing is right only where there is nothing to condition on.
 
-The one thing that does vary is limb defaulting, which is why `BuildVocabulary` takes a species rather than being a
-constant. Keep that the only branch. A second one is the signal that the two forms have stopped being the same form
-and want splitting again.
+The one thing that does vary is limb defaulting, which is why `BuildVocabulary` takes a species rather than being a constant.
+Keep that the only branch.
+A second one is the signal that the two forms have stopped being the same form and want splitting again.
 
-Every name in a `ChiroVocabulary` is a `nameof` of the bound property it fills. `ApplyParse` resolves them by
-reflection, which is what keeps the parser species-agnostic — a new species needs a `Vocabulary` and a handler,
-nothing else. The compiler cannot see that link, so a renamed bound property will fail at runtime, not build.
+Every name in a `ChiroVocabulary` is a `nameof` of the bound property it fills.
+`ApplyParse` resolves them by reflection, which is what keeps the parser species-agnostic — a new species needs a `Vocabulary` and a handler, nothing else.
+The compiler cannot see that link, so a renamed bound property will fail at runtime, not build.
 
 ## Configuration
 
@@ -190,26 +165,24 @@ nothing else. The compiler cannot see that link, so a renamed bound property wil
 
 ## Data handling
 
-Transcripts contain patient and owner names. They are sent to the Anthropic API, and they are logged at Information,
-which means Application Insights in production. Both are deliberate and considered equivalent in scope: Scribenote
-already records and transcribes the visit, so neither is a new category of exposure. Clinic emails are the one thing
-held back — only abbreviations and clinic names are put in the prompt.
+Transcripts contain patient and owner names.
+They are sent to the Anthropic API, and they are logged at Information, which means Application Insights in production.
+Both are deliberate and considered equivalent in scope: Scribenote already records and transcribes the visit, so neither is a new category of exposure.
+Clinic emails are the one thing held back — only abbreviations and clinic names are put in the prompt.
 
 ## Tuning
 
-Model and effort are constants at the top of `ChiroDictationParser`. Currently `claude-sonnet-5` at `Medium`.
+Model and effort are constants at the top of `ChiroDictationParser`.
+Currently `claude-sonnet-5` at `Medium`.
 
-**Cost is computed, not reported.** The api returns token counts and nothing about money, so the four rates sit
-next to `Model` as constants and `Price` turns a response's usage into dollars. They are list price per million
-tokens, with cache write at 1.25x input and cache read at 0.1x; `claude-sonnet-5` is $2/$10. **The rates have to
-move whenever `Model` moves**, because a stale rate makes the figure quietly wrong rather than failing. The number
-is an estimate, and the page says "about". It is
-rendered by `CostDisplay` rather than the `C` format, because the amount is dollars by definition: `C` takes its
-symbol from the ambient culture, which is a `¤` placeholder on a host with no `LANG` set and the wrong currency
-outright on one with a different locale.
+**Cost is computed, not reported.** The api returns token counts and nothing about money, so the four rates sit next to `Model` as constants and `Price` turns a response's usage into dollars.
+They are list price per million tokens, with cache write at 1.25x input and cache read at 0.1x; `claude-sonnet-5` is $2/$10.
+**The rates have to move whenever `Model` moves**, because a stale rate makes the figure quietly wrong rather than failing.
+The number is an estimate, and the page says "about".
+It is rendered by `CostDisplay` rather than the `C` format, because the amount is dollars by definition: `C` takes its symbol from the ambient culture, which is a `¤` placeholder on a host with no `LANG` set and the wrong currency outright on one with a different locale.
 
-It lands in two places. The page shows a line under the transcript after each parse, and the logs report per
-region and overall:
+It lands in two places.
+The page shows a line under the transcript after each parse, and the logs report per region and overall:
 
 ```
 [forelimbs] requesting. System prompt 2402 chars, schema 4729 chars, 12 groups, 0 grids, 2 notes.
@@ -217,39 +190,33 @@ region and overall:
 Parsed Canine dictation across 5 regions in 4210ms total. 12431 tokens, $0.0184.
 ```
 
-Cost is the sum across regions; elapsed is the slowest region. The first parse after a deploy pays cache writes on
-every region and costs several times a warm one, so judge a config by a repeat run. If one region dominates, splitting that region beats changing model — forelimbs is the
-obvious candidate and divides cleanly into left and right.
+Cost is the sum across regions; elapsed is the slowest region.
+The first parse after a deploy pays cache writes on every region and costs several times a warm one, so judge a config by a repeat run.
+If one region dominates, splitting that region beats changing model — forelimbs is the obvious candidate and divides cleanly into left and right.
 
-**Thinking is on and is most of the bill.** `Thinking` is not set, and on `claude-sonnet-5` omitting it runs
-adaptive thinking. Thinking tokens bill as output and are in the logged output count; the api's default of not
-returning the thinking text changes nothing about what is billed. Warm, a region's cached prefix costs a fraction
-of a cent, so the cost of a parse is almost entirely output. `Effort` is the lever: step `Medium` to `Low` first.
-Sonnet 5 also accepts thinking `disabled`, which is the step after that, but it is the one most likely to cost
-accuracy on the reading-order problems above, so it is a sweep step rather than a default.
+**Thinking is on and is most of the bill.** `Thinking` is not set, and on `claude-sonnet-5` omitting it runs adaptive thinking.
+Thinking tokens bill as output and are in the logged output count; the api's default of not returning the thinking text changes nothing about what is billed.
+Warm, a region's cached prefix costs a fraction of a cent, so the cost of a parse is almost entirely output.
+`Effort` is the lever: step `Medium` to `Low` first.
+Sonnet 5 also accepts thinking `disabled`, which is the step after that, but it is the one most likely to cost accuracy on the reading-order problems above, so it is a sweep step rather than a default.
 
-`claude-haiku-4-5` was considered and set aside. It is not a one-constant change (`effort` returns a 400, thinking
-takes a fixed `budget_tokens` instead), and a region's roughly 1.9k-token prefix is under Haiku's 4096-token
-caching minimum, so it would pay full input on every region of every parse. The saving over Sonnet at low effort
-is under a cent a parse, against more wrong sides on transcripts that already trip Sonnet.
+`claude-haiku-4-5` was considered and set aside.
+It is not a one-constant change (`effort` returns a 400, thinking takes a fixed `budget_tokens` instead), and a region's roughly 1.9k-token prefix is under Haiku's 4096-token caching minimum, so it would pay full input on every region of every parse.
+The saving over Sonnet at low effort is under a cent a parse, against more wrong sides on transcripts that already trip Sonnet.
 
-When sweeping, do not judge by the flags — they only show what the model noticed was ambiguous. Run the same
-transcripts through each config and diff the resulting checkboxes. Test negation first; it is the highest
-consequence failure, because getting it wrong ticks something that did not happen.
+When sweeping, do not judge by the flags — they only show what the model noticed was ambiguous.
+Run the same transcripts through each config and diff the resulting checkboxes.
+Test negation first; it is the highest consequence failure, because getting it wrong ticks something that did not happen.
 
 ## Open questions
 
-- **Ribs no longer need a carry rule, probably.** The thought was that a rib named without a direction was eliding
-  one stated for a neighbour in the same breath ("rib 6 right rib 6 left dorsal"), and that carrying it forward
-  would fix it. The dorsal default gets the same answer without guessing at dictation style. It would only diverge
-  where a run states a non-dorsal direction once and means it for several ribs; watch for that before building
-  anything.
-- **`ChiroVocabulary.Glossary` now carries "withers" on equine, and nothing on the small animals.** The section is
-  omitted from the prompt while empty, so an empty one costs nothing. A term goes here rather than in a region hint
-  when it can be said anywhere in the dictation: "withers" turns up in a plan or a forelimb description as readily
-  as in the thoracic run, and every region knowing the word is also what keeps the phrase out of whichever notes
-  field happened to hear it.
-- **Notes cross-contamination.** Each region sees the whole transcript, and a phrase with no home in that region's
-  questions used to land in its notes — coxofemoral text in `PelvicNotes`, tail traction in `SacrumNotes`. Addressed
-  by telling each region its notes fields are not a catch-all. Worth watching; if it recurs, the next lever is not
-  showing each region the full transcript, at the cost of the laterality context it needs.
+- **Ribs no longer need a carry rule, probably.**
+  The thought was that a rib named without a direction was eliding one stated for a neighbour in the same breath ("rib 6 right rib 6 left dorsal"), and that carrying it forward would fix it.
+  The dorsal default gets the same answer without guessing at dictation style.
+  It would only diverge where a run states a non-dorsal direction once and means it for several ribs; watch for that before building anything.
+- **`ChiroVocabulary.Glossary` now carries "withers" on equine, and nothing on the small animals.**
+  The section is omitted from the prompt while empty, so an empty one costs nothing.
+  A term goes here rather than in a region hint when it can be said anywhere in the dictation: "withers" turns up in a plan or a forelimb description as readily as in the thoracic run, and every region knowing the word is also what keeps the phrase out of whichever notes field happened to hear it.
+- **Notes cross-contamination.** Each region sees the whole transcript, and a phrase with no home in that region's questions used to land in its notes — coxofemoral text in `PelvicNotes`, tail traction in `SacrumNotes`.
+  Addressed by telling each region its notes fields are not a catch-all.
+  Worth watching; if it recurs, the next lever is not showing each region the full transcript, at the cost of the laterality context it needs.
