@@ -382,8 +382,8 @@ namespace number_sequence.DurableTaskImpl.Activities
 
                                     // Line amount
                                     _ = table.Cell().Element(RightCellStyle).Text(line.Price < 0
-                                        ? $"$ ({Math.Abs(line.Quantity * line.Price):N2})"
-                                        : $"$ {line.Quantity * line.Price:N2}");
+                                        ? $"$ ({Math.Abs(line.Total):N2})"
+                                        : $"$ {line.Total:N2}");
                                 }
 
                                 // Payment rows

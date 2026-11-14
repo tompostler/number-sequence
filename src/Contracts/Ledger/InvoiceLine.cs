@@ -46,10 +46,12 @@ namespace TcpWtf.NumberSequence.Contracts.Ledger
         public decimal Price { get; set; }
 
         /// <summary>
-        /// The total for this line item.
+        /// The total for this line item, rounded to the cent (half away from zero).
+        /// Rounding per line makes the invoice total the sum of the line amounts as displayed.
+        /// Unrounded, a fractional quantity leaves sub-cent amounts that a payment of the displayed total can never settle exactly.
         /// </summary>
         [NotMapped]
-        public decimal Total => this.Quantity * this.Price;
+        public decimal Total => Math.Round(this.Quantity * this.Price, 2, MidpointRounding.AwayFromZero);
 
         /// <summary>
         /// The date the line was created.
