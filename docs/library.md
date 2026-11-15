@@ -704,7 +704,7 @@ Saving there marks the entry added (`.../resolve/{copyId}`) and returns to the r
   A copy added by title without one gets its barcode on its edit page instead, so the shelf scan only adds new copies.
 
 **The scan page** is a shell; `library-scan-session.js` does the work against the `/library/...` api with `fetch` and the `ns-token` cookie.
-That avoids page handlers and antiforgery tokens, and is safe because the cookie is `SameSite=Strict`.
+That avoids page handlers and antiforgery tokens, and is safe because the cookie is `SameSite=Lax`, which a `fetch` or form post from another site never carries (see [web login](web-login.md)).
 The script reads the api's json by its camelCase property names, so renaming a property on the scan contracts, `LibraryCopy` or `LibraryItem` breaks the page at runtime, not at build.
 - **Unsaved codes wait in a queue** kept in `localStorage` per session and are retried every few seconds until the api takes them, so a dropped connection or a reload mid-shelf loses nothing.
   A refusal (a bad check digit, a session already applied) drops the code and lists it as refused; only network failures and 5xx are retried.

@@ -86,7 +86,10 @@ namespace number_sequence.Pages.UI
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    // Lax, not Strict: a link opened from another app (a home screen shortcut, an email) is a cross-site navigation, and Strict withholds the cookie on it.
+                    // The login page then renders an anonymous antiforgery token, the cookie comes back on the same-site post, and validation fails with a 400.
+                    // Lax still withholds the cookie from cross-site posts, puts and deletes, which is what keeps the cookie-authenticated api safe without antiforgery.
+                    SameSite = SameSiteMode.Lax,
                     Expires = token.ExpirationDate,
                 });
 

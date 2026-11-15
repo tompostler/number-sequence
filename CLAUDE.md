@@ -150,6 +150,15 @@ Constraint that will break things if forgotten:
 - **The orchestration instance id always goes through `ChiroOrchestrationNaming.InstanceId`**, at every creation site (`ChiroController`, `ReprocessChiroRegularlyBackgroundService`).
   It folds in `ChiroRecord.ProcessAttempt` so a retry's id doesn't collide with the failed attempt it's replacing — hand-building the id anywhere brings that collision back.
 
+## Web login
+
+Full design notes: [`docs/web-login.md`](docs/web-login.md).
+Constraint that will break things if forgotten:
+
+- **The `ns-token` cookie is `SameSite=Lax`, so no cookie-authenticated `GET` may change state.**
+  Lax is what keeps the api, which has no antiforgery validation, safe from cross-site requests, and it does so only for non-`GET` methods.
+  Going back to `Strict` brings back the 400 after login from a home screen shortcut.
+
 ## Account administration
 
 Full design notes: [`docs/account-admin.md`](docs/account-admin.md).
