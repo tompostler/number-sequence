@@ -168,6 +168,51 @@ namespace number_sequence.IntTests
         }
 
         [TestMethod]
+        public async Task Count_IncrementAt_Succeeds_AfterLatest()
+        {
+            // Arrange
+            _ = await this.client.Count.CreateAsync(this.count);
+            DateTimeOffset at = DateTimeOffset.UtcNow.AddHours(-6);
+
+            // Act
+            Count response = await this.client.Count.IncrementByAmountAsync(this.TestContext.TestName, 2, at);
+            List<CountEvent> events = await this.client.Count.GetEventsAsync(this.TestContext.TestName);
+
+            // Assert
+            _ = response.Value.Should().Be(2);
+            _ = events.Should().ContainSingle();
+            _ = events[0].EventDate.Should().BeCloseTo(at, TimeSpan.FromMilliseconds(1));
+            _ = events[0].CreatedDate.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+        }
+
+        [TestMethod]
+        public async Task Count_IncrementAt_Fails_BeforeLatest()
+        {
+            // Arrange
+            _ = await this.client.Count.CreateAsync(this.count);
+            _ = await this.client.Count.IncrementAsync(this.TestContext.TestName);
+
+            // Act
+            Func<Task> act = () => this.client.Count.IncrementAsync(this.TestContext.TestName, DateTimeOffset.UtcNow.AddHours(-6));
+
+            // Assert
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        }
+
+        [TestMethod]
+        public async Task Count_IncrementAt_Fails_InFuture()
+        {
+            // Arrange
+            _ = await this.client.Count.CreateAsync(this.count);
+
+            // Act
+            Func<Task> act = () => this.client.Count.IncrementAsync(this.TestContext.TestName, DateTimeOffset.UtcNow.AddHours(1));
+
+            // Assert
+            _ = (await act.Should().ThrowExactlyAsync<NsTcpWtfClientException>()).And.Response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [TestMethod]
         public async Task Count_Creation_Fails_WithNameNull()
         {
             // Arrange

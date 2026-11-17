@@ -80,29 +80,51 @@ namespace number_sequence.Controllers
         }
 
         [HttpPut("{name}")]
-        public async Task<IActionResult> IncrementAsync(string name, CancellationToken cancellationToken)
+        public async Task<IActionResult> IncrementAsync(string name, [FromQuery] DateTimeOffset? at, CancellationToken cancellationToken)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            return await this.IncrementCoreAsync(nsContext, name, 1, cancellationToken);
+            return await this.IncrementCoreAsync(nsContext, name, 1, at, cancellationToken);
         }
 
         [HttpPut("{name}/{amount}")]
-        public async Task<IActionResult> IncrementByAmountAsync(string name, ulong amount, CancellationToken cancellationToken)
+        public async Task<IActionResult> IncrementByAmountAsync(string name, ulong amount, [FromQuery] DateTimeOffset? at, CancellationToken cancellationToken)
         {
             using IServiceScope scope = this.serviceProvider.CreateScope();
             using NsContext nsContext = scope.ServiceProvider.GetRequiredService<NsContext>();
 
-            return await this.IncrementCoreAsync(nsContext, name, amount, cancellationToken);
+            return await this.IncrementCoreAsync(nsContext, name, amount, at, cancellationToken);
         }
 
-        private async Task<IActionResult> IncrementCoreAsync(NsContext nsContext, string name, ulong amount, CancellationToken cancellationToken)
+        private async Task<IActionResult> IncrementCoreAsync(NsContext nsContext, string name, ulong amount, DateTimeOffset? at, CancellationToken cancellationToken)
         {
             Count count = await nsContext.Counts.SingleOrDefaultAsync(x => x.Account == this.User.Identity.Name && x.Name == name, cancellationToken);
             if (count == default)
             {
                 return this.NotFound($"Count with name [{name}] does not exist.");
+            }
+
+            // A back-dated event may not land before the latest one.
+            // Each event's Value is the running total after it, so inserting earlier would leave every later Value short by this amount.
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            at = at?.ToUniversalTime();
+            if (at.HasValue)
+            {
+                if (at.Value > now)
+                {
+                    return this.BadRequest($"Event date [{at.Value:o}] is in the future.");
+                }
+
+                DateTimeOffset? latest = await nsContext.CountEvents
+                    .Where(x => x.Account == this.User.Identity.Name && x.CountName == name)
+                    .MaxAsync(x => (DateTimeOffset?)x.EventDate, cancellationToken);
+                if (latest.HasValue && at.Value < latest.Value)
+                {
+                    return this.Conflict($"Event date [{at.Value:o}] is before the latest event [{latest.Value:o}]. A back-dated event can't be earlier than the latest one.");
+                }
+
+                this.logger.LogInformation($"Back-dating increment of count [{name}] by {amount} to {at.Value:o}, {now - at.Value} before now.");
             }
 
             // Check tier limit for events
@@ -118,7 +140,8 @@ namespace number_sequence.Controllers
                     int toRemove = eventCount - eventLimit + 1;
                     List<CountEvent> oldest = await nsContext.CountEvents
                         .Where(x => x.Account == account.Name && x.CountName == name)
-                        .OrderBy(x => x.CreatedDate)
+                        .OrderBy(x => x.EventDate)
+                        .ThenBy(x => x.Id)
                         .Take(toRemove)
                         .ToListAsync(cancellationToken);
                     nsContext.CountEvents.RemoveRange(oldest);
@@ -130,7 +153,7 @@ namespace number_sequence.Controllers
             }
 
             count.Value += amount;
-            count.ModifiedDate = DateTimeOffset.UtcNow;
+            count.ModifiedDate = now;
 
             // Record the event
             _ = nsContext.CountEvents.Add(new CountEvent
@@ -139,6 +162,7 @@ namespace number_sequence.Controllers
                 CountName = name,
                 Value = count.Value,
                 IncrementAmount = amount,
+                EventDate = at ?? now,
             });
 
             _ = await nsContext.SaveChangesAsync(cancellationToken);
@@ -172,15 +196,16 @@ namespace number_sequence.Controllers
                 .Where(x => x.Account == this.User.Identity.Name && x.CountName == name);
             if (from.HasValue)
             {
-                query = query.Where(x => x.CreatedDate >= from.Value);
+                query = query.Where(x => x.EventDate >= from.Value);
             }
             if (to.HasValue)
             {
-                query = query.Where(x => x.CreatedDate <= to.Value);
+                query = query.Where(x => x.EventDate <= to.Value);
             }
 
             List<CountEvent> events = await query
-                .OrderByDescending(x => x.Id)
+                .OrderByDescending(x => x.EventDate)
+                .ThenByDescending(x => x.Id)
                 .Skip(skip)
                 .Take(take)
                 .ToListAsync(cancellationToken);
@@ -204,16 +229,17 @@ namespace number_sequence.Controllers
                 .Where(x => x.Account == this.User.Identity.Name && x.CountName == name);
             if (from.HasValue)
             {
-                query = query.Where(x => x.CreatedDate >= from.Value);
+                query = query.Where(x => x.EventDate >= from.Value);
             }
             if (to.HasValue)
             {
-                query = query.Where(x => x.CreatedDate <= to.Value);
+                query = query.Where(x => x.EventDate <= to.Value);
             }
 
             var events = await query
-                .OrderBy(x => x.CreatedDate)
-                .Select(x => new { x.CreatedDate, x.Value })
+                .OrderBy(x => x.EventDate)
+                .ThenBy(x => x.Id)
+                .Select(x => new { x.EventDate, x.Value })
                 .ToListAsync(cancellationToken);
 
             if (width < 100 || width > 2560 || height < 100 || height > 1440)
@@ -228,7 +254,7 @@ namespace number_sequence.Controllers
 
             ScottPlot.Plot plot = new();
             ScottPlot.Plottables.Scatter scatter = plot.Add.Scatter(
-                events.Select(x => x.CreatedDate.UtcDateTime).ToList(),
+                events.Select(x => x.EventDate.UtcDateTime).ToList(),
                 events.Select(x => x.Value).ToList());
             scatter.LegendText = name;
 

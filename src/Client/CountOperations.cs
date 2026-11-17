@@ -46,12 +46,19 @@ namespace TcpWtf.NumberSequence.Client
         /// <summary>
         /// Increment an existing count.
         /// </summary>
-        public async Task<Count> IncrementAsync(string name, CancellationToken cancellationToken = default)
+        public Task<Count> IncrementAsync(string name, CancellationToken cancellationToken = default)
+            => this.IncrementAsync(name, at: null, cancellationToken);
+
+        /// <summary>
+        /// Increment an existing count, recording the event at <paramref name="at"/> instead of now.
+        /// The time may not be in the future or before the count's latest event.
+        /// </summary>
+        public async Task<Count> IncrementAsync(string name, DateTimeOffset? at, CancellationToken cancellationToken = default)
         {
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Put,
-                    $"counts/{name}"),
+                    $"counts/{name}{AtQuery(at)}"),
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<Count>(cancellationToken);
         }
@@ -59,15 +66,25 @@ namespace TcpWtf.NumberSequence.Client
         /// <summary>
         /// Increment an existing count by a specific amount.
         /// </summary>
-        public async Task<Count> IncrementByAmountAsync(string name, ulong amount, CancellationToken cancellationToken = default)
+        public Task<Count> IncrementByAmountAsync(string name, ulong amount, CancellationToken cancellationToken = default)
+            => this.IncrementByAmountAsync(name, amount, at: null, cancellationToken);
+
+        /// <summary>
+        /// Increment an existing count by a specific amount, recording the event at <paramref name="at"/> instead of now.
+        /// The time may not be in the future or before the count's latest event.
+        /// </summary>
+        public async Task<Count> IncrementByAmountAsync(string name, ulong amount, DateTimeOffset? at, CancellationToken cancellationToken = default)
         {
             HttpResponseMessage response = await this.nsTcpWtfClient.SendRequestAsync(
                 () => new HttpRequestMessage(
                     HttpMethod.Put,
-                    $"counts/{name}/{amount}"),
+                    $"counts/{name}/{amount}{AtQuery(at)}"),
                 cancellationToken);
             return await response.Content.ReadJsonAsAsync<Count>(cancellationToken);
         }
+
+        private static string AtQuery(DateTimeOffset? at)
+            => at.HasValue ? $"?at={Uri.EscapeDataString(at.Value.ToString("o"))}" : string.Empty;
 
         /// <summary>
         /// List all existing counts.

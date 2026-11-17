@@ -27,10 +27,24 @@
     <form method="post" asp-page-handler="Increment">
       <button type="submit" class="btn btn-primary">+1</button>
     </form>
-    <form method="post" asp-page-handler="IncrementBy" class="d-flex gap-2 align-items-center">
+    <form method="post" asp-page-handler="IncrementBy" id="increment-by-form" class="d-flex flex-wrap gap-2 align-items-center">
       <input asp-for="IncrementAmount" type="number" class="form-control form-control-sm" style="width:7rem" min="1" />
+      <input type="datetime-local" id="increment-at-local" class="form-control form-control-sm" style="width:auto" title="Optional: when it happened, if earlier than now. Not before the latest event." />
+      <input type="hidden" name="At" id="increment-at" />
       <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">+ amount</button>
     </form>
+    <script>
+      // datetime-local carries no zone, so convert the browser's local time to UTC here rather than guess on the server.
+      (function () {
+        var local = document.getElementById('increment-at-local');
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        var now = new Date();
+        local.max = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + 'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+        document.getElementById('increment-by-form').addEventListener('submit', function () {
+          document.getElementById('increment-at').value = local.value ? new Date(local.value).toISOString() : '';
+        });
+      })();
+    </script>
   </div>
 </div>
 
@@ -82,16 +96,18 @@
         <th class="text-nowrap">Value</th>
         <th class="text-nowrap">+Amount</th>
         <th class="text-nowrap">Date (UTC)</th>
+        <th class="text-nowrap">Recorded (UTC)</th>
       </tr>
     </thead>
     <tbody>
-      @foreach (var e in Model.Events.OrderByDescending(x => x.Id))
+      @foreach (var e in Model.Events.OrderByDescending(x => x.EventDate).ThenByDescending(x => x.Id))
       {
         <tr>
           <td class="text-muted small">@e.Id</td>
           <td>@e.Value</td>
           <td class="text-muted">+@e.IncrementAmount</td>
-          <td class="text-nowrap">@e.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
+          <td class="text-nowrap">@e.EventDate.ToString("yyyy-MM-dd HH:mm")</td>
+          <td class="text-nowrap text-muted small">@(e.CreatedDate - e.EventDate > TimeSpan.FromMinutes(1) ? e.CreatedDate.ToString("yyyy-MM-dd HH:mm") : "")</td>
         </tr>
       }
     </tbody>

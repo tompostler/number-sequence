@@ -151,6 +151,9 @@ namespace number_sequence.Migrations
                         .HasColumnType("datetimeoffset")
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
+                    b.Property<DateTimeOffset>("EventDate")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<decimal>("IncrementAmount")
                         .HasColumnType("decimal(20,0)");
 

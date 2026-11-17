@@ -37,7 +37,14 @@ namespace TcpWtf.NumberSequence.Contracts
         public ulong IncrementAmount { get; set; }
 
         /// <summary>
-        /// When the event was created.
+        /// When the increment happened.
+        /// Defaults to when it was recorded, but can be set to an earlier time when recording it after the fact.
+        /// Never earlier than the previous event's, so <see cref="Value"/> stays a running total in this order.
+        /// </summary>
+        public DateTimeOffset EventDate { get; set; }
+
+        /// <summary>
+        /// When the event was recorded.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }

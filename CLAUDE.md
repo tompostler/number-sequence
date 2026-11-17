@@ -204,6 +204,15 @@ Constraints that will break things if forgotten:
   Copy the value into a local.
 - **The namespace and pages folder are `Libraries`, not `Library`**, because the root entity is `Library` and a type named like its own namespace breaks name resolution (CS0118).
 
+## Counts
+
+Full design notes: [`docs/counts.md`](docs/counts.md).
+Constraint that will break things if forgotten:
+
+- **`CountEvent.Value` is a stored running total, so an event may never be placed before the latest one.**
+  A back-dated increment is rejected if it is earlier than the latest event's `EventDate`, rather than rewriting every later `Value`.
+  Any new way to add or move an event has to keep that rule, or the later snapshots go wrong and the chart sawtooths.
+
 ## Random dice
 
 Full design notes: [`docs/random-dice.md`](docs/random-dice.md).

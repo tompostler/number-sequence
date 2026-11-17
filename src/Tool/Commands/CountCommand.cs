@@ -28,6 +28,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             Argument<string> countNameArgument = new("name") { Description = "The name of the count." };
             Option<bool> bareOption = new("--bare") { Description = "When used, will only return the count instead of the full count json object." };
             Option<bool> basesOption = new("--bases") { Description = "When used, will return the count object with all the bases." };
+            Option<DateTimeOffset?> atOption = new("--at") { Description = "Record the increment at this earlier time instead of now. May not be before the count's latest event." };
 
             Command readCommand = new("read", "Read an existing count to see its properties.")
             {
@@ -56,6 +57,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 countNameArgument,
                 bareOption,
                 basesOption,
+                atOption,
             };
             incrementCommand.Aliases.Add("inc");
             incrementCommand.SetAction(
@@ -66,7 +68,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     string name = parseResult.GetRequiredValue(countNameArgument);
                     bool bare = parseResult.GetValue(bareOption);
                     bool bases = parseResult.GetValue(basesOption);
-                    return HandleIncrementAsync(name, bare, bases, stamp, verbosity);
+                    DateTimeOffset? at = parseResult.GetValue(atOption);
+                    return HandleIncrementAsync(name, at, bare, bases, stamp, verbosity);
                 });
 
             Argument<ulong> incrementByAmountArgument = new("amount") { Description = "The amount to increment the count by." };
@@ -78,6 +81,7 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 incrementByAmountArgument,
                 bareOption,
                 basesOption,
+                atOption,
             };
             incrementByCommand.Aliases.Add("inc-by");
             incrementByCommand.Aliases.Add("ib");
@@ -90,7 +94,8 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                     ulong incrementByAmount = parseResult.GetRequiredValue(incrementByAmountArgument);
                     bool bare = parseResult.GetValue(bareOption);
                     bool bases = parseResult.GetValue(basesOption);
-                    return HandleIncrementByAsync(name, incrementByAmount, bare, bases, stamp, verbosity);
+                    DateTimeOffset? at = parseResult.GetValue(atOption);
+                    return HandleIncrementByAsync(name, incrementByAmount, at, bare, bases, stamp, verbosity);
                 });
 
             Command listCommand = new("list", "List existing counts.")
@@ -193,10 +198,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
         }
 
-        private static async Task HandleIncrementAsync(string name, bool bare, bool bases, Stamp stamp, Verbosity verbosity)
+        private static async Task HandleIncrementAsync(string name, DateTimeOffset? at, bool bare, bool bases, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            Contracts.Count count = await client.Count.IncrementAsync(name);
+            Contracts.Count count = await client.Count.IncrementAsync(name, at);
 
             if (bare)
             {
@@ -212,10 +217,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
             }
         }
 
-        private static async Task HandleIncrementByAsync(string name, ulong amount, bool bare, bool bases, Stamp stamp, Verbosity verbosity)
+        private static async Task HandleIncrementByAsync(string name, ulong amount, DateTimeOffset? at, bool bare, bool bases, Stamp stamp, Verbosity verbosity)
         {
             NsTcpWtfClient client = new(new Logger<NsTcpWtfClient>(verbosity), TokenProvider.GetAsync, stamp);
-            Contracts.Count count = await client.Count.IncrementByAmountAsync(name, amount);
+            Contracts.Count count = await client.Count.IncrementByAmountAsync(name, amount, at);
 
             if (bare)
             {
@@ -266,9 +271,10 @@ namespace TcpWtf.NumberSequence.Tool.Commands
                 List<Contracts.CountEvent> events = await client.Count.GetEventsAsync(name, from, to);
                 Output.WriteTable(
                     events,
-                    nameof(Contracts.CountEvent.CreatedDate),
+                    nameof(Contracts.CountEvent.EventDate),
                     nameof(Contracts.CountEvent.Value),
-                    nameof(Contracts.CountEvent.IncrementAmount));
+                    nameof(Contracts.CountEvent.IncrementAmount),
+                    nameof(Contracts.CountEvent.CreatedDate));
             }
         }
 

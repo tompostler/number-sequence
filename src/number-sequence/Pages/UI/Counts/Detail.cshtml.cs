@@ -22,6 +22,12 @@ namespace number_sequence.Pages.UI.Counts
         [BindProperty]
         public ulong IncrementAmount { get; set; } = 1;
 
+        /// <summary>
+        /// Optional earlier time for the increment, posted as UTC by the page's script from the browser's local time.
+        /// </summary>
+        [BindProperty]
+        public DateTimeOffset? At { get; set; }
+
         public string ErrorMessage { get; private set; }
 
         public async Task<IActionResult> OnGetAsync(string name, CancellationToken cancellationToken)
@@ -75,7 +81,7 @@ namespace number_sequence.Pages.UI.Counts
         {
             try
             {
-                _ = await this.nsClient.Count.IncrementByAmountAsync(name, this.IncrementAmount, cancellationToken);
+                _ = await this.nsClient.Count.IncrementByAmountAsync(name, this.IncrementAmount, this.At, cancellationToken);
             }
             catch (NsTcpWtfClientException ex)
             {
