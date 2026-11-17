@@ -96,7 +96,10 @@
         <th class="text-nowrap">Value</th>
         <th class="text-nowrap">+Amount</th>
         <th class="text-nowrap">Date (UTC)</th>
-        <th class="text-nowrap">Recorded (UTC)</th>
+        @if (Model.ShowRecorded)
+        {
+          <th class="text-nowrap">Recorded (UTC)</th>
+        }
       </tr>
     </thead>
     <tbody>
@@ -107,7 +110,10 @@
           <td>@e.Value</td>
           <td class="text-muted">+@e.IncrementAmount</td>
           <td class="text-nowrap">@e.EventDate.ToString("yyyy-MM-dd HH:mm")</td>
-          <td class="text-nowrap text-muted small">@(e.CreatedDate - e.EventDate > TimeSpan.FromMinutes(1) ? e.CreatedDate.ToString("yyyy-MM-dd HH:mm") : "")</td>
+          @if (Model.ShowRecorded)
+          {
+            <td class="text-nowrap text-muted small">@(DetailModel.IsBackdated(e) ? e.CreatedDate.ToString("yyyy-MM-dd HH:mm") : "")</td>
+          }
         </tr>
       }
     </tbody>

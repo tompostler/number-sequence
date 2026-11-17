@@ -19,6 +19,16 @@ namespace number_sequence.Pages.UI.Counts
         public Count Count { get; private set; }
         public List<CountEvent> Events { get; private set; }
 
+        /// <summary>
+        /// The recorded-time column only appears when at least one listed event was back-dated; otherwise it would be empty.
+        /// </summary>
+        public bool ShowRecorded => this.Events?.Any(IsBackdated) == true;
+
+        /// <summary>
+        /// Recorded more than a minute after it happened, so the recorded time is worth showing.
+        /// </summary>
+        public static bool IsBackdated(CountEvent countEvent) => countEvent.CreatedDate - countEvent.EventDate > TimeSpan.FromMinutes(1);
+
         [BindProperty]
         public ulong IncrementAmount { get; set; } = 1;
 

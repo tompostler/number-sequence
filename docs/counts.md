@@ -17,6 +17,7 @@ The case it exists for is recording something the morning after, like a deployme
 
 `EventDate` is when the increment happened, and `CreatedDate` stays when it was recorded, so a back-dated event is still visible as one.
 The detail page shows the recorded time only on events where the two differ by more than a minute.
+Its Recorded column appears only when at least one listed event is back-dated, since it would otherwise be empty on almost every count.
 Filtering, ordering, the chart and overflow dropping all go by `EventDate`.
 The migration that added it filled existing rows from `CreatedDate`.
 
