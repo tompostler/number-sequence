@@ -68,7 +68,7 @@ namespace number_sequence.Pages.UI.Chiro
         public static readonly string[] ForelimbCarpusChoices = ["anterior hypomobility", "accessory hypomobility", "mobilization"];
         public static readonly string[] ForelimbMetatarsalsPhalangesChoices = ["digit 1 hypomobility", "digit 2 hypomobility", "digit 3 hypomobility", "digit 4 hypomobility", "digit 5 hypomobility", "mobilization"];
 
-        public static readonly string[] RearLimbChoices = ["Coxo-Femoral cranial mobilization", "Coxo-Femoral caudal mobilization", "Internally rotated Tibia", "Externally rotated Tibia", "Lateral Calcaneus", "Medial Calcaneus", "Dorsal Calcaneus", "Anterior Tarsal", "Tarsal traction", "digit 1 hypomobility", "digit 2 hypomobility", "digit 3 hypomobility", "digit 4 hypomobility", "Phalange mobilization"];
+        public static readonly string[] RearLimbChoices = ["Coxo-Femoral cranial mobilization", "Coxo-Femoral caudal mobilization", "Internally rotated Tibia", "Externally rotated Tibia", "Lateral Calcaneus", "Medial Calcaneus", "Dorsal Calcaneus", "Anterior Tarsal", "Tarsal traction", "digit 1 hypomobility", "digit 2 hypomobility", "digit 3 hypomobility", "digit 4 hypomobility", "digit 5 hypomobility", "Phalange mobilization"];
 
         public static readonly string[] CoccygealChoices = ["traction", "thrust", "manipulation"];
 

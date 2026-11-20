@@ -65,6 +65,9 @@ Confirmed with the doctor.
   Feline limb questions therefore set `DefaultsToMobilization: false` and carry no standing sites: nothing is recorded unless it was dictated, and a feline mobilization has to be said out loud to appear.
   The spine and head default on both species.
   Applied in `BuildVocabulary` through a `Limb` helper, so the exception is visible at every question it touches rather than hidden in a species check inside the parser.
+- **A dog's hind paw has five digits, so the rear limb offers digits 1 to 5 like the forelimb.**
+  A cat's hind paw has four, but the feline form shows digit 5 too, because one unused checkbox is cheaper than splitting the shared model over it.
+  A digit 5 dictated on a cat's rear limb is therefore recorded rather than salvaged into notes.
 - **A question covering several joints is not all-or-nothing.**
   Adjusting the digits says nothing about whether the hip was looked at, so the mutual-exclusion rule only applies where the bare word `mobilization` is the question's only mobilization option.
 - **An underspecified finding means all of its variants — but only on some questions.**
