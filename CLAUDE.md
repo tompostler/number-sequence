@@ -24,19 +24,10 @@ Real compile errors (`CS####`) show up before that copy step regardless of the l
 
 ## Versioning
 
-`version.json` (Nerdbank.GitVersioning) holds `major.minor`; the patch is git height, so never set it by hand.
-Bump it by semver without asking, in the same change as the work; the user reviews it.
-Major for a break to anyone consuming the published packages (`Client`, `Contracts`, `Tool`) or the api: a dropped target framework, a removed or renamed public member or contract property.
-Minor for a feature, a user-visible change, or a dependency update.
-Nothing for a pure fix or internal cleanup.
+`Client`, `Contracts` and `Tool` are published packages, so a break to any of them, or to the api, is a major bump.
 
 ## Preferences
 
-- **Running the code beats maintaining unit tests here** — but the user does that running, not Claude.
-  Don't start the app (`dotnet run`, IIS Express, etc.) or drive it in a browser to validate a change; the user runs and validates themselves, often via a `dotnet watch` tab already open.
-  Confirm with a build instead, reading for `CS####` errors rather than treating a locked-exe copy failure as a problem — see the note above.
-- Tests that have to be rewritten every time a shape changes are not worth their upkeep.
-  Prefer a quick real run over a test suite for verifying behavior, understanding that the user is the one doing that run.
 - **JSON goes through `Utilities.RelaxedJson.Options` everywhere in the web project, reads as well as writes.**
   It uses the relaxed encoder (a bare call escapes non-ascii as `\uXXXX`, which is what ends up in the db) and writes enums by name.
   A bare `Deserialize` can't parse a named enum, so a reader without these options throws on any stored json containing one.
@@ -48,20 +39,8 @@ Nothing for a pure fix or internal cleanup.
 
 ## Documenting a feature
 
-**A feature is not done until its docs are written.**
-Do it in the same turn as the code, before reporting done — not as a follow-up offer.
-Two places, and they hold different things:
-
-- **`docs/<feature>.md`** — the full design notes.
-  Why it is shaped this way, what the constraints were, what was tried and rejected, and the flow through the pieces.
-  New feature gets a new file; a change to an existing feature edits that feature's file.
-  [`docs/chiro-dictation-parsing.md`](docs/chiro-dictation-parsing.md) is the pattern.
-- **This file** — a one-line pointer to the design notes, followed only by the constraints that will break things if forgotten.
-  Keep it short; everything here is read on every single session, so it competes with everything else.
-
-Write what is not reconstructible from the source: decisions, limits found the hard way, the coupling between two files that nothing in either file mentions.
-Do not restate class structure, method lists, or anything a reader gets faster by opening the file.
-`README.md` is build and release badges only — it is not the place for any of this.
+[`docs/chiro-dictation-parsing.md`](docs/chiro-dictation-parsing.md) is the pattern for a feature's design notes.
+`README.md` is build and release badges only, so design notes and constraints never go there.
 
 ## Deployment
 
