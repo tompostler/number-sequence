@@ -176,10 +176,11 @@ Clinic emails are the one thing held back — only abbreviations and clinic name
 ## Tuning
 
 Model and effort are constants at the top of `ChiroDictationParser`.
-Currently `claude-sonnet-5` at `Medium`.
+Currently `claude-sonnet-5-5` at `Medium`.
 
 **Cost is computed, not reported.** The api returns token counts and nothing about money, so the four rates sit next to `Model` as constants and `Price` turns a response's usage into dollars.
-They are list price per million tokens, with cache write at 1.25x input and cache read at 0.1x; `claude-sonnet-5` is $2/$10.
+They are list price per million tokens, with cache write at 1.25x input; `claude-sonnet-5-5` is $2/$10.
+The cache read multiplier is per model, not a constant of the api: 0.05x on Sonnet 5.5, 0.1x on Sonnet 5 and Haiku 5.5.
 **The rates have to move whenever `Model` moves**, because a stale rate makes the figure quietly wrong rather than failing.
 The number is an estimate, and the page says "about".
 It is rendered by `CostDisplay` rather than the `C` format, because the amount is dollars by definition: `C` takes its symbol from the ambient culture, which is a `¤` placeholder on a host with no `LANG` set and the wrong currency outright on one with a different locale.
@@ -197,15 +198,19 @@ Cost is the sum across regions; elapsed is the slowest region.
 The first parse after a deploy pays cache writes on every region and costs several times a warm one, so judge a config by a repeat run.
 If one region dominates, splitting that region beats changing model — forelimbs is the obvious candidate and divides cleanly into left and right.
 
-**Thinking is on and is most of the bill.** `Thinking` is not set, and on `claude-sonnet-5` omitting it runs adaptive thinking.
+**Thinking is on and is most of the bill.** `Thinking` is not set, and on `claude-sonnet-5-5` omitting it runs adaptive thinking.
 Thinking tokens bill as output and are in the logged output count; the api's default of not returning the thinking text changes nothing about what is billed.
 Warm, a region's cached prefix costs a fraction of a cent, so the cost of a parse is almost entirely output.
 `Effort` is the lever: step `Medium` to `Low` first.
-Sonnet 5 also accepts thinking `disabled`, which is the step after that, but it is the one most likely to cost accuracy on the reading-order problems above, so it is a sweep step rather than a default.
+Turning thinking off is the step after that, but it is the one most likely to cost accuracy on the reading-order problems above, so it is a sweep step rather than a default.
+On Sonnet 5.5, `disabled` returns a 400; the off switch is `between_tools`, which for a request with no tools means no thinking at all, and is accepted only at `High` effort or below.
+Effort levels were recalibrated from Sonnet 5, so `Medium` there and `Medium` here are not the same amount of thinking; a sweep run on Sonnet 5 doesn't carry over.
 
-`claude-haiku-4-5` was considered and set aside.
-It is not a one-constant change (`effort` returns a 400, thinking takes a fixed `budget_tokens` instead), and a region's roughly 1.9k-token prefix is under Haiku's 4096-token caching minimum, so it would pay full input on every region of every parse.
-The saving over Sonnet at low effort is under a cent a parse, against more wrong sides on transcripts that already trip Sonnet.
+`claude-haiku-4-5` was considered and set aside, because it was not a one-constant change (`effort` returned a 400, thinking took a fixed `budget_tokens`), and a region's roughly 1.9k-token prefix was under its 4096-token caching minimum.
+`claude-haiku-5-5` removes all three: it takes `effort` and adaptive thinking, and its caching minimum is 512 tokens, so trying it is a change to `Model` and the rates alone.
+At $0.10/$0.50 it is about a twentieth of Sonnet's price, which is a cent or two a parse in absolute terms.
+That makes accuracy, not price, the deciding question: it belongs in the sweep at `Low` and `Medium`, judged on wrong sides and negation against Sonnet, rather than being adopted outright.
+Its rates are per prompt length, five times higher past 100K tokens, which a region's prompt never approaches.
 
 When sweeping, do not judge by the flags — they only show what the model noticed was ambiguous.
 Run the same transcripts through each config and diff the resulting checkboxes.

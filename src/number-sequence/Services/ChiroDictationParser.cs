@@ -26,18 +26,19 @@ namespace number_sequence.Services
         // Tune these against real transcripts. The per region and overall log lines report the model, the effort,
         // the elapsed time, and the output token count together, which is what makes a sweep readable.
         // A region is a small, bounded extraction with the legal values already fixed by the schema, so this starts
-        // well below the top of the range; claude-haiku-4-5 at low is the next step down if this holds up.
-        private const string Model = "claude-sonnet-5";
+        // well below the top of the range; claude-haiku-5-5 is the next step down if this holds up.
+        private const string Model = "claude-sonnet-5-5";
         private static readonly Effort ParseEffort = Effort.Medium;
 
         // The api reports tokens, never money, so the rates have to live next to the model they belong to. List
-        // price in dollars per million tokens; cache write bills at 1.25x the input rate and cache read at 0.1x.
+        // price in dollars per million tokens; cache write bills at 1.25x the input rate. The cache read multiplier
+        // varies by model (0.05x on Sonnet 5.5, 0.1x on most others), so it moves with the model too.
         // A rate left stale after a model change makes the number quietly wrong rather than failing, so move these
         // whenever Model moves.
         private const decimal InputRatePerMillion = 2.00m;
         private const decimal OutputRatePerMillion = 10.00m;
         private const decimal CacheWriteRatePerMillion = InputRatePerMillion * 1.25m;
-        private const decimal CacheReadRatePerMillion = InputRatePerMillion * 0.10m;
+        private const decimal CacheReadRatePerMillion = InputRatePerMillion * 0.05m;
 
         private readonly AnthropicClient client;
         private readonly Options.Email emailOptions;
